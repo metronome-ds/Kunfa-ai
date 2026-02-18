@@ -5,7 +5,7 @@ import { uploadFile } from '@/lib/upload'
 import { generateExpandedMemo } from '@/lib/anthropic'
 import type { ScoringResult } from '@/lib/anthropic'
 
-export const maxDuration = 120
+export const maxDuration = 300
 
 export async function GET(
   request: NextRequest,
