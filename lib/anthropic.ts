@@ -12,7 +12,7 @@ export interface ScoringResult {
     team: DimensionResult
     market: DimensionResult
     product: DimensionResult
-    financial: DimensionResult
+    financial: DimensionResul
   }
   sector_benchmarks: {
     sector: string
@@ -411,7 +411,7 @@ export async function generateExpandedMemo(
 
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 12000,
+    max_tokens: 16384,
     system: `You are a senior investment analyst at a top-tier venture capital firm writing a comprehensive Investment Memorandum.
 
 CRITICAL RULES:
