@@ -122,7 +122,7 @@ ${financialsText || '[No financials text could be extracted]'}
 
 /**
  * Try to extract valid JSON from a string that may contain surrounding text.
- * Attempts: direct parse → strip code fences → regex extract outer braces.
+ * Attempts: direct parse â strip code fences â regex extract outer braces.
  */
 function extractJson(raw: string): Record<string, unknown> {
   const trimmed = raw.trim()
@@ -145,7 +145,7 @@ function extractJson(raw: string): Record<string, unknown> {
     // continue
   }
 
-  // Attempt 3: find the first { and last } — extract the JSON object
+  // Attempt 3: find the first { and last } â extract the JSON object
   const firstBrace = raw.indexOf('{')
   const lastBrace = raw.lastIndexOf('}')
   if (firstBrace !== -1 && lastBrace > firstBrace) {
@@ -324,80 +324,80 @@ export interface ExpandedMemoContent {
 }
 
 function buildExpandedMemoPrompt(scoringData: ScoringResult): string {
-  return `You are a senior investment analyst at a top-tier venture capital firm. Generate a comprehensive Investment Memorandum based on the following scoring data.
+  return `You are a senior investment analyst. Generate a concise Investment Memorandum based on the following scoring data.
 
 ## Scoring Data:
 ${JSON.stringify(scoringData, null, 2)}
 
 ## Instructions:
-1. Use the scoring data above as the foundation, but EXPAND significantly beyond it.
-2. Each dimension's detailed_analysis must be 5-8 substantive paragraphs (600-800 words total). Separate paragraphs with double newlines.
-3. Each strength/risk/recommendation must have a detailed 2-3 sentence explanation in the "detail" field.
-4. The executive_summary overview should be 3-4 paragraphs (~400 words). Separate paragraphs with double newlines.
-5. The investment_thesis should be 2-3 paragraphs. Separate paragraphs with double newlines.
-6. The key_findings should be 2-3 paragraphs. Separate paragraphs with double newlines.
-7. Include 4-5 items for each strength/risk/recommendation array.
-8. Include 5-6 items in risk_assessment with specific, actionable mitigations.
-9. Include 5-6 items in strategic_recommendations covering immediate, short-term, and long-term priorities.
-10. Include 4-6 items in fundraising_readiness.next_steps.
-11. The executive summary should read like a professional PE/VC investment memo.
-12. Include concrete, actionable insights grounded in the data.
-13. Output ONLY valid JSON with no additional text, commentary, or markdown.
+1. Use the scoring data as the foundation and expand with professional analysis.
+2. Each dimension's detailed_analysis should be 1-2 paragraphs (150-200 words). Separate paragraphs with double newlines.
+3. Each strength/risk/recommendation needs a "point" (title) and "detail" (1 sentence explanation).
+4. The executive_summary overview should be 1 paragraph (~100 words).
+5. The investment_thesis should be 1 paragraph (~80 words).
+6. The key_findings should be 1 paragraph (~80 words).
+7. Include exactly 3 items for each strengths/risks/recommendations array per dimension.
+8. Include exactly 3 items in SWOT arrays.
+9. Include exactly 3 items in risk_assessment.
+10. Include exactly 3 items in strategic_recommendations.
+11. Include exactly 3 items in fundraising_readiness.next_steps.
+12. Keep all text concise and professional.
+13. Output ONLY valid JSON with no additional text.
 
 ## Required JSON Structure:
 {
   "executive_summary": {
-    "overview": "3-4 paragraphs (~400 words) providing comprehensive company overview and investment opportunity",
-    "investment_thesis": "2-3 paragraphs articulating the core investment thesis and value creation potential",
-    "key_findings": "2-3 paragraphs highlighting the most critical findings across all dimensions"
+    "overview": "1 paragraph (~100 words) company overview and investment opportunity",
+    "investment_thesis": "1 paragraph (~80 words) core investment thesis",
+    "key_findings": "1 paragraph (~80 words) critical findings"
   },
   "company_overview": {
-    "description": "2-3 paragraphs describing the company, its mission, and what it does",
-    "business_model": "1-2 paragraphs explaining the revenue model and unit economics",
-    "target_market": "1-2 paragraphs describing the total addressable market and customer segments"
+    "description": "1 paragraph describing the company and its mission",
+    "business_model": "1 paragraph on revenue model",
+    "target_market": "1 paragraph on TAM and customers"
   },
   "dimensions": {
     "team": {
-      "detailed_analysis": "5-8 detailed paragraphs (600-800 words) analyzing founder/team composition, experience, track record, execution capability, domain expertise, team gaps, and hiring plans",
-      "strengths": [{ "point": "strength title", "detail": "2-3 sentence explanation" }],
-      "risks": [{ "point": "risk title", "detail": "2-3 sentence explanation" }],
-      "recommendations": [{ "point": "recommendation title", "detail": "2-3 sentence explanation" }]
+      "detailed_analysis": "1-2 paragraphs (150-200 words) on team quality",
+      "strengths": [{ "point": "title", "detail": "1 sentence" }],
+      "risks": [{ "point": "title", "detail": "1 sentence" }],
+      "recommendations": [{ "point": "title", "detail": "1 sentence" }]
     },
     "market": {
-      "detailed_analysis": "5-8 detailed paragraphs (600-800 words) analyzing market size, growth dynamics, competitive landscape, timing, regulatory environment, and TAM expansion potential",
-      "strengths": [{ "point": "strength title", "detail": "2-3 sentence explanation" }],
-      "risks": [{ "point": "risk title", "detail": "2-3 sentence explanation" }],
-      "recommendations": [{ "point": "recommendation title", "detail": "2-3 sentence explanation" }]
+      "detailed_analysis": "1-2 paragraphs (150-200 words) on market opportunity",
+      "strengths": [{ "point": "title", "detail": "1 sentence" }],
+      "risks": [{ "point": "title", "detail": "1 sentence" }],
+      "recommendations": [{ "point": "title", "detail": "1 sentence" }]
     },
     "product": {
-      "detailed_analysis": "5-8 detailed paragraphs (600-800 words) analyzing product differentiation, technical architecture, IP/moat, product-market fit evidence, scalability, and user experience",
-      "strengths": [{ "point": "strength title", "detail": "2-3 sentence explanation" }],
-      "risks": [{ "point": "risk title", "detail": "2-3 sentence explanation" }],
-      "recommendations": [{ "point": "recommendation title", "detail": "2-3 sentence explanation" }]
+      "detailed_analysis": "1-2 paragraphs (150-200 words) on product differentiation",
+      "strengths": [{ "point": "title", "detail": "1 sentence" }],
+      "risks": [{ "point": "title", "detail": "1 sentence" }],
+      "recommendations": [{ "point": "title", "detail": "1 sentence" }]
     },
     "financial": {
-      "detailed_analysis": "5-8 detailed paragraphs (600-800 words) analyzing revenue model, unit economics, burn rate, runway, financial projections, capital efficiency, and path to profitability",
-      "strengths": [{ "point": "strength title", "detail": "2-3 sentence explanation" }],
-      "risks": [{ "point": "risk title", "detail": "2-3 sentence explanation" }],
-      "recommendations": [{ "point": "recommendation title", "detail": "2-3 sentence explanation" }]
+      "detailed_analysis": "1-2 paragraphs (150-200 words) on financial health",
+      "strengths": [{ "point": "title", "detail": "1 sentence" }],
+      "risks": [{ "point": "title", "detail": "1 sentence" }],
+      "recommendations": [{ "point": "title", "detail": "1 sentence" }]
     }
   },
   "swot": {
-    "strengths": ["4-5 major strengths"],
-    "weaknesses": ["4-5 key weaknesses"],
-    "opportunities": ["4-5 growth opportunities"],
-    "threats": ["4-5 external threats"]
+    "strengths": ["3 strengths"],
+    "weaknesses": ["3 weaknesses"],
+    "opportunities": ["3 opportunities"],
+    "threats": ["3 threats"]
   },
   "risk_assessment": [
-    { "risk": "risk description", "severity": "High|Medium|Low", "mitigation": "mitigation strategy" }
+    { "risk": "description", "severity": "High|Medium|Low", "mitigation": "strategy" }
   ],
   "strategic_recommendations": [
-    { "recommendation": "title", "priority": "Immediate|Short-term|Long-term", "detail": "detailed explanation" }
+    { "recommendation": "title", "priority": "Immediate|Short-term|Long-term", "detail": "explanation" }
   ],
   "fundraising_readiness": {
-    "current_status": "paragraph assessing readiness",
-    "next_steps": ["concrete next steps"],
-    "timeline": "paragraph with realistic timeline"
+    "current_status": "1 paragraph assessing readiness",
+    "next_steps": ["3 concrete next steps"],
+    "timeline": "1 sentence timeline"
   }
 }
 
@@ -411,8 +411,8 @@ export async function generateExpandedMemo(
 
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
-    max_tokens: 16384,
-    system: `You are a senior investment analyst at a top-tier venture capital firm writing a comprehensive Investment Memorandum.
+    max_tokens: 8000,
+    system: `You are a senior investment analyst writing a concise Investment Memorandum.
 
 CRITICAL RULES:
 - Your ENTIRE response must be a single valid JSON object.
@@ -421,9 +421,8 @@ CRITICAL RULES:
 - Do NOT include any explanation, commentary, or preamble.
 - Start your response with { and end with }.
 - All string values must be properly escaped for JSON.
-- Use \\n\\n to separate paragraphs within text fields.
-- Provide substantive, detailed analysis — each dimension analysis must be 600-800 words.
-- Include 4-5 items for each strengths/risks/recommendations array.`,
+- Keep analysis concise: 150-200 words per dimension, ~100 words for summaries.
+- Include exactly 3 items for each array field.`,
     messages: [
       {
         role: 'user',
