@@ -12,7 +12,7 @@ export interface ScoringResult {
     team: DimensionResult
     market: DimensionResult
     product: DimensionResult
-    financial: DimensionResul
+    financial: DimensionResult
   }
   sector_benchmarks: {
     sector: string
