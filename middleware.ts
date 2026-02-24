@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Protected routes: require authentication
-  const protectedPaths = ['/dashboard']
+  const protectedPaths = ['/dashboard', '/auth/onboarding']
   const isProtected = protectedPaths.some(p => pathname.startsWith(p))
 
   if (isProtected && !user) {
@@ -42,8 +42,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Redirect authenticated users away from auth pages
-  if (pathname.startsWith('/auth/login') && user) {
+  // Redirect authenticated users away from login/signup pages
+  if ((pathname === '/auth/login' || pathname === '/auth/signup') && user) {
+    // Check if user needs onboarding
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('onboarding_completed')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!profile || !profile.onboarding_completed) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/auth/onboarding'
+      return NextResponse.redirect(url)
+    }
+
     const url = request.nextUrl.clone()
     url.pathname = '/dashboard'
     return NextResponse.redirect(url)
