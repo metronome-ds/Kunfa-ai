@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 interface NavbarProps {
   onApplyNow: () => void
@@ -26,7 +27,7 @@ export default function Navbar({ onApplyNow }: NavbarProps) {
             <a href="#product" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Product</a>
             <a href="#pricing" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Pricing</a>
             <a href="#about" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">About</a>
-            <a href="mailto:hello@vitality.capital" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Sign In</a>
+            <Link href="/auth/login" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Sign In</Link>
             <button
               onClick={onApplyNow}
               className="bg-kunfa-green hover:bg-kunfa-green-dark text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
@@ -57,7 +58,8 @@ export default function Navbar({ onApplyNow }: NavbarProps) {
               <a href="#product" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1">Product</a>
               <a href="#pricing" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1">Pricing</a>
               <a href="#about" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1">About</a>
-              <a href="mailto:hello@vitality.capital" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1">Sign In</a>
+              <Link href="/auth/login" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>Sign In</Link>
+              <Link href="/auth/signup" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>Sign Up</Link>
               <button
                 onClick={() => { onApplyNow(); setMobileOpen(false) }}
                 className="bg-kunfa-green hover:bg-kunfa-green-dark text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors w-fit"

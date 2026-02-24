@@ -81,7 +81,14 @@ export default function ScorePage() {
         )}
 
         {result && (
-          <TeaserScore result={result} submissionId={id} onUnlock={handleUnlock} />
+          <div>
+            <TeaserScore result={result} submissionId={id} onUnlock={handleUnlock} />
+            <div className="text-center py-4 border-t border-gray-100">
+              <a href="/dashboard" className="text-kunfa-green text-sm font-medium hover:underline">
+                Go to your Dashboard
+              </a>
+            </div>
+          </div>
         )}
       </div>
     </div>

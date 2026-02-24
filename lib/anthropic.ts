@@ -122,7 +122,7 @@ ${financialsText || '[No financials text could be extracted]'}
 
 /**
  * Try to extract valid JSON from a string that may contain surrounding text.
- * Attempts: direct parse â strip code fences â regex extract outer braces.
+ * Attempts: direct parse → strip code fences → regex extract outer braces.
  */
 function extractJson(raw: string): Record<string, unknown> {
   const trimmed = raw.trim()
@@ -145,7 +145,7 @@ function extractJson(raw: string): Record<string, unknown> {
     // continue
   }
 
-  // Attempt 3: find the first { and last } â extract the JSON object
+  // Attempt 3: find the first { and last } — extract the JSON object
   const firstBrace = raw.indexOf('{')
   const lastBrace = raw.lastIndexOf('}')
   if (firstBrace !== -1 && lastBrace > firstBrace) {

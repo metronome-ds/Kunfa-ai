@@ -129,7 +129,7 @@ function PageHeader() {
 
 function PageFooter({ pageNum }: { pageNum: number }) {
   return React.createElement(View, { style: styles.footer },
-    React.createElement(Text, { style: styles.footerText }, 'Kunfa.AI â Confidential Investment Memorandum'),
+    React.createElement(Text, { style: styles.footerText }, 'Kunfa.AI — Confidential Investment Memorandum'),
     React.createElement(Text, { style: styles.footerText }, `Page ${pageNum}`)
   )
 }
@@ -187,7 +187,7 @@ function PriorityBadge({ priority }: { priority: string }) {
 }
 
 // ============================================
-// Main PDF Generator â Compact 5-Page Report
+// Main PDF Generator — Compact 5-Page Report
 // ============================================
 
 export async function generateReport(
@@ -343,7 +343,7 @@ export async function generateReport(
         `Report generated for ${email} on ${date}`
       ),
       React.createElement(Text, { style: { textAlign: 'center', fontSize: 9, color: green, marginTop: 6, fontWeight: 'bold' } },
-        'Kunfa.AI â A Vitality Capital Platform'
+        'Kunfa.AI — A Vitality Capital Platform'
       ),
       React.createElement(PageFooter, { pageNum: 5 })
     )

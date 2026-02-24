@@ -55,8 +55,9 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   const [submissionId, setSubmissionId] = useState('')
   const [error, setError] = useState('')
   const [uploadProgress, setUploadProgress] = useState('')
+  const [emailStatus, setEmailStatus] = useState<'idle' | 'checking' | 'new' | 'existing' | 'has_submission'>('idle')
 
-  const isFormValid = email && pitchDeck && financials && linkedinUrl
+  const isFormValid = email && pitchDeck && financials && linkedinUrl && emailStatus !== 'has_submission'
 
   const handleSubmit = useCallback(async () => {
     if (!isFormValid || isSubmitting || !pitchDeck || !financials) return
@@ -164,6 +165,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     setSubmissionId('')
     setError('')
     setUploadProgress('')
+    setEmailStatus('idle')
     onClose()
   }
 
@@ -222,10 +224,46 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value)
+                  setEmailStatus('idle')
+                }}
+                onBlur={async () => {
+                  if (!email || !email.includes('@')) return
+                  setEmailStatus('checking')
+                  try {
+                    const res = await fetch('/api/auth/check-email', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email }),
+                    })
+                    const data = await res.json()
+                    if (data.hasSubmission) {
+                      setEmailStatus('has_submission')
+                    } else if (data.exists) {
+                      setEmailStatus('existing')
+                    } else {
+                      setEmailStatus('new')
+                    }
+                  } catch {
+                    setEmailStatus('new')
+                  }
+                }}
                 placeholder="founder@company.com"
                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent"
               />
+              {emailStatus === 'checking' && (
+                <p className="text-xs text-gray-400 mt-1">Checking email...</p>
+              )}
+              {emailStatus === 'new' && (
+                <p className="text-xs text-emerald-600 mt-1">We&apos;ll create your free Kunfa account with this email.</p>
+              )}
+              {emailStatus === 'existing' && (
+                <p className="text-xs text-blue-600 mt-1">Welcome back! This score will be linked to your account.</p>
+              )}
+              {emailStatus === 'has_submission' && (
+                <p className="text-xs text-red-600 mt-1">This email already has a submission. Each account is limited to one. Use a different email to score another business.</p>
+              )}
             </div>
 
             {/* Pitch Deck */}

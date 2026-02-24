@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { scoreStartup, extractTeaser } from '@/lib/anthropic'
 import { extractTextFromBlobUrl } from '@/lib/upload'
-import { createSubmission, updateSubmissionScore, isDatabaseConfigured } from '@/lib/db'
+import {
+  createSubmission,
+  updateSubmissionScore,
+  isDatabaseConfigured,
+  findOrCreateUser,
+  userHasSubmission,
+  createCompanyPage,
+} from '@/lib/db'
 import { v4 as uuid } from 'uuid'
 
 export const maxDuration = 120
@@ -36,15 +43,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // --- DB: save submission (best-effort, don't block scoring) ---
+    // --- Find or create user account ---
+    let userId: string | null = null
     if (isDatabaseConfigured()) {
+      try {
+        userId = await findOrCreateUser(email)
+
+        // Check if user already has a submission (one per account)
+        const hasExisting = await userHasSubmission(userId)
+        if (hasExisting) {
+          return NextResponse.json(
+            { error: 'You already have a submission. Each account is limited to one submission. Use a different email to score another business.' },
+            { status: 409 },
+          )
+        }
+      } catch (userErr) {
+        console.error('User creation failed (continuing without user link):', userErr)
+      }
+    }
+
+    // --- DB: save submission ---
+    if (isDatabaseConfigured() && userId) {
       try {
         await createSubmission({
           id: submissionId,
+          user_id: userId,
           email,
           linkedin_url: linkedinUrl,
           pitch_deck_url: pitchDeckUrl,
+          pitch_deck_filename: pitchDeckFilename,
           financials_url: financialsUrl,
+          financials_filename: financialsFilename,
           voice_note_url: voiceNoteUrl,
         })
       } catch (dbErr) {
@@ -98,10 +127,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // --- DB: save analysis (best-effort) ---
+    // --- DB: save analysis ---
     if (isDatabaseConfigured()) {
       try {
         await updateSubmissionScore(submissionId, fullResult as unknown as Record<string, unknown>)
+
+        // Create company page (extract company name from AI analysis if available)
+        if (userId) {
+          const companyName = (fullResult as any)?.company_name ||
+            (fullResult as any)?.summary?.split(' ')[0] ||
+            email.split('@')[1]?.split('.')[0] ||
+            'Unnamed Company'
+          await createCompanyPage({
+            userId,
+            submissionId,
+            companyName,
+            overallScore: (fullResult as any)?.overall_score || 0,
+            description: (fullResult as any)?.summary || undefined,
+          })
+        }
       } catch (dbErr) {
         console.error('DB updateSubmissionScore failed (continuing):', dbErr)
       }
