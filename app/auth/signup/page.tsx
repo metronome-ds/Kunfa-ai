@@ -31,21 +31,18 @@ export default function SignupPage() {
     }
 
     if (data.user) {
-      // Create profile
-      const { error: profileError } = await supabase.from('profiles').insert({
-        user_id: data.user.id,
-        email,
-      })
-
-      if (profileError) {
-        console.error('Profile creation error:', profileError)
-      }
-
       if (data.session) {
-        // Auto-confirmed (e.g. in dev) — go to onboarding
+        // Auto-confirmed (e.g. in dev) — create profile and go to onboarding
+        const { error: profileError } = await supabase.from('profiles').insert({
+          user_id: data.user.id,
+          email,
+        })
+        if (profileError) {
+          console.error('Profile creation error:', profileError)
+        }
         window.location.href = '/auth/onboarding'
       } else {
-        // Email confirmation required
+        // Email confirmation required — profile will be created after confirmation in /auth/confirm
         setSuccess(true)
       }
     }
