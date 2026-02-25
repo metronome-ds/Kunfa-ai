@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -16,6 +16,13 @@ import {
   Brain,
   FileText,
   PieChart,
+  Building2,
+  FolderOpen,
+  Handshake,
+  Gift,
+  Star,
+  LayoutDashboard,
+  Landmark,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -25,7 +32,8 @@ interface NavItem {
   href?: string;
 }
 
-const navigationSections: Record<string, NavItem[]> = {
+// Investor navigation sections
+const investorNavSections: Record<string, NavItem[]> = {
   DISCOVER: [
     {
       label: 'Browse Deals',
@@ -101,7 +109,7 @@ const navigationSections: Record<string, NavItem[]> = {
   ],
 };
 
-const bottomSections: NavItem[] = [
+const investorBottomSections: NavItem[] = [
   {
     label: 'Settings',
     icon: <Settings className="h-5 w-5" />,
@@ -111,6 +119,59 @@ const bottomSections: NavItem[] = [
     label: 'Team',
     icon: <Users className="h-5 w-5" />,
     href: '/team',
+  },
+];
+
+// Startup navigation sections
+const startupNavSections: Record<string, NavItem[]> = {
+  'MY COMPANY': [
+    {
+      label: 'Dashboard',
+      icon: <LayoutDashboard className="h-5 w-5" />,
+      href: '/',
+    },
+    {
+      label: 'Company Profile',
+      icon: <Building2 className="h-5 w-5" />,
+      href: '/company-profile',
+    },
+    {
+      label: 'Data Room',
+      icon: <FolderOpen className="h-5 w-5" />,
+      href: '/data-room',
+    },
+  ],
+  FUNDING: [
+    {
+      label: 'Investors',
+      icon: <Users className="h-5 w-5" />,
+      href: '/investors',
+    },
+    {
+      label: 'Debt Partners',
+      icon: <Landmark className="h-5 w-5" />,
+      href: '/debt-partners',
+    },
+  ],
+  REWARDS: [
+    {
+      label: 'Points',
+      icon: <Star className="h-5 w-5" />,
+      href: '/points',
+    },
+    {
+      label: 'Rewards Catalog',
+      icon: <Gift className="h-5 w-5" />,
+      href: '/rewards',
+    },
+  ],
+};
+
+const startupBottomSections: NavItem[] = [
+  {
+    label: 'Settings',
+    icon: <Settings className="h-5 w-5" />,
+    href: '/settings',
   },
 ];
 
@@ -139,7 +200,7 @@ function SidebarSection({ title, items, pathname }: SidebarSectionProps) {
           {items.map((item) => {
             const isActive =
               pathname === item.href ||
-              pathname.startsWith(item.href + '/');
+              (item.href !== '/' && pathname.startsWith(item.href + '/'));
             return (
               <Link
                 key={item.label}
@@ -163,11 +224,46 @@ function SidebarSection({ title, items, pathname }: SidebarSectionProps) {
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUserRole = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('user_id', user.id)
+            .single();
+
+          setUserRole(profile?.role || 'investor');
+        }
+      } catch (err) {
+        console.error('Error loading user role:', err);
+        setUserRole('investor'); // Default fallback
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserRole();
+  }, []);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     window.location.href = '/login';
   };
+
+  // Determine which nav to show based on role
+  const isStartup = userRole === 'founder';
+  const navigationSections = isStartup ? startupNavSections : investorNavSections;
+  const bottomSections = isStartup ? startupBottomSections : investorBottomSections;
+  const tagline = isStartup ? 'Startup Growth Platform' : 'Deal Flow Intelligence';
 
   return (
     <div className="fixed left-0 top-0 h-screen w-64 bg-gray-900 border-r border-gray-800 flex flex-col overflow-hidden">
@@ -181,14 +277,20 @@ export function Sidebar() {
             </span>
           </Link>
         </div>
-        <p className="text-xs text-gray-400 mt-1">Deal Flow Intelligence</p>
+        <p className="text-xs text-gray-400 mt-1">{tagline}</p>
       </div>
 
       {/* Navigation Sections */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-2">
-        {Object.entries(navigationSections).map(([title, items]) => (
-          <SidebarSection key={title} title={title} items={items} pathname={pathname} />
-        ))}
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
+          </div>
+        ) : (
+          Object.entries(navigationSections).map(([title, items]) => (
+            <SidebarSection key={title} title={title} items={items} pathname={pathname} />
+          ))
+        )}
       </div>
 
       {/* Bottom Navigation and User Section */}
