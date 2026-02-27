@@ -45,6 +45,32 @@ interface DealData {
   funding_amount_requested: number | null;
 }
 
+// Map actual DB stages to UI pipeline stages
+function mapStageToPipeline(dbStage: string): PipelineStage {
+  switch (dbStage) {
+    case 'sourced': return 'sourcing';
+    case 'screening': return 'screening';
+    case 'due_diligence':
+    case 'ic_review': return 'diligence';
+    case 'term_sheet':
+    case 'closed': return 'close';
+    default: return 'sourcing';
+  }
+}
+
+// Transform a raw deal row (with company_pages join) into DealData for the UI
+function transformDeal(row: Record<string, unknown>): DealData {
+  const company = row.company_pages as Record<string, unknown> | null;
+  return {
+    id: row.id as string,
+    company_name: (company?.company_name as string) || (row.sector as string) || 'Unknown',
+    industry: (company?.industry as string) || (row.sector as string) || 'N/A',
+    stage: row.stage as string,
+    overall_score: (row.ai_score as number | null) ?? (company?.overall_score as number | null) ?? null,
+    funding_amount_requested: row.raise_amount as number | null,
+  };
+}
+
 interface ActivityData {
   id: string;
   title: string;
@@ -115,103 +141,104 @@ export default function DashboardPage() {
 
   const loadInvestorData = async (userId: string) => {
     try {
-      // Load saved deals count
+      // Load watchlisted deals count (replaces saved_deals)
       const { count: savedCount } = await supabase
-        .from('saved_deals')
+        .from('watchlist')
         .select('*', { count: 'exact' })
-        .eq('user_id', userId);
+        .eq('investor_id', userId);
 
-      // Load deals for scoring
-      const { data: deals } = await supabase
+      // Load deals with company info for scoring
+      const { data: rawDeals } = await supabase
         .from('deals')
-        .select('id, company_name, industry, stage, overall_score, funding_amount_requested')
-        .order('overall_score', { ascending: false })
-        .limit(4);
+        .select(`
+          id, created_by, assigned_to, company_id, stage, ai_score, sector,
+          raise_amount, priority_flag, is_watchlisted, days_in_stage,
+          stage_changed_at, created_at, updated_at,
+          company_pages (id, company_name, slug, description, overall_score, industry, logo_url)
+        `)
+        .order('ai_score', { ascending: false, nullsFirst: false })
+        .limit(10);
 
-      // Load pipeline summary
-      const { data: pipeline } = await supabase
+      const deals: DealData[] = (rawDeals || []).map(transformDeal);
+
+      // Load all deals for pipeline counts
+      const { data: allDeals } = await supabase
         .from('deals')
-        .select('pipeline_stage')
-        .in('pipeline_stage', ['sourcing', 'screening', 'diligence', 'close']);
+        .select('stage');
 
-      // Calculate pipeline counts
-      const pipelineCounts = [
-        {
-          stage: 'sourcing' as PipelineStage,
-          count: pipeline?.filter((p) => p.pipeline_stage === 'sourcing').length || 0,
-        },
-        {
-          stage: 'screening' as PipelineStage,
-          count: pipeline?.filter((p) => p.pipeline_stage === 'screening').length || 0,
-        },
-        {
-          stage: 'diligence' as PipelineStage,
-          count: pipeline?.filter((p) => p.pipeline_stage === 'diligence').length || 0,
-        },
-        {
-          stage: 'close' as PipelineStage,
-          count: pipeline?.filter((p) => p.pipeline_stage === 'close').length || 0,
-        },
+      // Map DB stages to UI pipeline stages and count
+      const pipelineCounts: Array<{ stage: PipelineStage; count: number }> = [
+        { stage: 'sourcing', count: allDeals?.filter((d) => d.stage === 'sourced').length || 0 },
+        { stage: 'screening', count: allDeals?.filter((d) => d.stage === 'screening').length || 0 },
+        { stage: 'diligence', count: allDeals?.filter((d) => d.stage === 'due_diligence' || d.stage === 'ic_review').length || 0 },
+        { stage: 'close', count: allDeals?.filter((d) => d.stage === 'term_sheet' || d.stage === 'closed').length || 0 },
       ];
 
+      // Load portfolio value from funds
+      const { data: funds } = await supabase
+        .from('funds')
+        .select('committed')
+        .eq('owner_id', userId);
+      const totalPortfolio = funds?.reduce((sum, f) => sum + (Number(f.committed) || 0), 0) || 0;
+
       setStats({
-        activePipeline: pipeline?.length || 0,
+        activePipeline: allDeals?.length || 0,
         savedDeals: savedCount || 0,
-        portfolioValue: 0, // Would need portfolio data
-        scoresGenerated: deals?.filter((d) => d.overall_score !== null).length || 0,
+        portfolioValue: totalPortfolio,
+        scoresGenerated: deals.filter((d) => d.overall_score !== null).length,
         myActiveDeals: 0,
         totalViews: 0,
         documentsUploaded: 0,
         averageScore: 0,
       });
 
-      setTopDeals((deals || []).slice(0, 4));
+      setTopDeals(deals.slice(0, 4));
       setPipelineData(pipelineCounts);
 
-      // Mock activity data
-      const mockActivity: ActivityData[] = [
-        {
-          id: '1',
-          title: 'AI Scoring Complete',
-          description: 'Deal score updated for TechStartup Inc.',
-          icon: 'score',
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-          href: '/deals',
-        },
-        {
-          id: '2',
-          title: 'Pipeline Updated',
-          description: 'Moved deal to diligence stage',
-          icon: 'pipeline',
-          timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: '3',
-          title: 'New Deal Added',
-          description: 'Added 2 new deals to your pipeline',
-          icon: 'deal',
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-      ];
+      // Load recent notifications as activity
+      const { data: notifications } = await supabase
+        .from('notifications')
+        .select('id, title, body, type, link, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(5);
 
-      setActivity(mockActivity);
+      const activityItems: ActivityData[] = (notifications || []).map((n) => ({
+        id: n.id,
+        title: n.title,
+        description: n.body || '',
+        icon: (n.type === 'score' ? 'score' : n.type === 'pipeline' ? 'pipeline' : n.type === 'document' ? 'document' : 'deal') as ActivityData['icon'],
+        timestamp: n.created_at,
+        href: n.link || undefined,
+      }));
+
+      // Fallback mock activity if no notifications
+      if (activityItems.length === 0) {
+        activityItems.push(
+          { id: '1', title: 'Welcome to Kunfa', description: 'Your deal flow platform is ready', icon: 'deal', timestamp: new Date().toISOString() },
+        );
+      }
+
+      setActivity(activityItems);
 
       // Market pulse data
       const { count: recentCount } = await supabase
         .from('deals')
         .select('*', { count: 'exact' })
-        .gte(
-          'created_at',
-          new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        );
+        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
 
-      const scores = deals?.filter((d) => d.overall_score !== null).map((d) => d.overall_score) || [];
+      const scores = deals.filter((d) => d.overall_score !== null).map((d) => d.overall_score!);
       const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+
+      // Find top sector
+      const sectorCounts: Record<string, number> = {};
+      deals.forEach((d) => { if (d.industry) sectorCounts[d.industry] = (sectorCounts[d.industry] || 0) + 1; });
+      const topSector = Object.entries(sectorCounts).sort((a, b) => b[1] - a[1])[0];
 
       setMarketPulse({
         newDealsThisWeek: recentCount || 0,
-        topIndustry: 'B2B SaaS',
-        topIndustryCount: deals?.filter((d) => d.industry === 'B2B SaaS').length || 0,
+        topIndustry: topSector?.[0] || 'N/A',
+        topIndustryCount: topSector?.[1] || 0,
         averageScore: avgScore,
       });
     } catch (error) {
@@ -221,57 +248,78 @@ export default function DashboardPage() {
 
   const loadFounderData = async (userId: string) => {
     try {
-      // Load founder's deals
-      const { data: myDeals } = await supabase
+      // Load founder's deals (deals assigned to them or where their company is referenced)
+      const { data: rawDeals } = await supabase
         .from('deals')
-        .select('id, company_name, industry, stage, overall_score, funding_amount_requested')
+        .select(`
+          id, created_by, assigned_to, company_id, stage, ai_score, sector,
+          raise_amount, priority_flag, is_watchlisted, days_in_stage,
+          stage_changed_at, created_at, updated_at,
+          company_pages (id, company_name, slug, description, overall_score, industry, logo_url)
+        `)
         .eq('assigned_to', userId)
         .order('created_at', { ascending: false });
+
+      const myDeals = (rawDeals || []).map(transformDeal);
+
+      // Load document views for founder's companies
+      const { data: companyPages } = await supabase
+        .from('company_pages')
+        .select('id')
+        .eq('user_id', userId);
+
+      const companyIds = (companyPages || []).map(c => c.id);
+      let viewCount = 0;
+      if (companyIds.length > 0) {
+        const { count } = await supabase
+          .from('document_views')
+          .select('*', { count: 'exact' })
+          .in('company_id', companyIds);
+        viewCount = count || 0;
+      }
+
+      const scoredDeals = myDeals.filter((d) => d.overall_score !== null);
+      const avgScore = scoredDeals.length > 0
+        ? scoredDeals.reduce((sum, d) => sum + (d.overall_score || 0), 0) / scoredDeals.length
+        : 0;
 
       setStats({
         activePipeline: 0,
         savedDeals: 0,
         portfolioValue: 0,
-        scoresGenerated: myDeals?.filter((d) => d.overall_score !== null).length || 0,
-        myActiveDeals: myDeals?.length || 0,
-        totalViews: 0,
+        scoresGenerated: scoredDeals.length,
+        myActiveDeals: myDeals.length,
+        totalViews: viewCount,
         documentsUploaded: 0,
-        averageScore: myDeals?.filter((d) => d.overall_score).length
-          ? myDeals
-              .filter((d) => d.overall_score)
-              .reduce((sum, d) => sum + (d.overall_score || 0), 0) /
-            myDeals.filter((d) => d.overall_score).length
-          : 0,
+        averageScore: avgScore,
       });
 
-      setTopDeals((myDeals || []).slice(0, 4));
+      setTopDeals(myDeals.slice(0, 4));
 
-      // Mock activity for founder
-      const mockActivity: ActivityData[] = [
-        {
-          id: '1',
-          title: 'Deal Scored',
-          description: 'Your deal received an AI score',
-          icon: 'score',
-          timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: '2',
-          title: 'Document Reviewed',
-          description: 'Your pitch deck was analyzed',
-          icon: 'document',
-          timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(),
-        },
-        {
-          id: '3',
-          title: 'Investor Interest',
-          description: 'An investor viewed your deal',
-          icon: 'deal',
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-        },
-      ];
+      // Load notifications as activity
+      const { data: notifications } = await supabase
+        .from('notifications')
+        .select('id, title, body, type, link, created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(5);
 
-      setActivity(mockActivity);
+      const activityItems: ActivityData[] = (notifications || []).map((n) => ({
+        id: n.id,
+        title: n.title,
+        description: n.body || '',
+        icon: (n.type === 'score' ? 'score' : n.type === 'document' ? 'document' : 'deal') as ActivityData['icon'],
+        timestamp: n.created_at,
+        href: n.link || undefined,
+      }));
+
+      if (activityItems.length === 0) {
+        activityItems.push(
+          { id: '1', title: 'Welcome to Kunfa', description: 'Set up your company profile to get started', icon: 'deal', timestamp: new Date().toISOString() },
+        );
+      }
+
+      setActivity(activityItems);
     } catch (error) {
       console.error('Failed to load founder data:', error);
     }
@@ -419,7 +467,7 @@ export default function DashboardPage() {
             />
             <StatsCard
               label="Portfolio Value"
-              value="$0"
+              value={stats.portfolioValue > 0 ? `$${(stats.portfolioValue / 1_000_000).toFixed(1)}M` : '$0'}
               icon={PieChart}
               color="purple"
               isLoading={isLoading}
