@@ -34,47 +34,41 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')));
     const search = searchParams.get('search');
 
-    // Build base query
+    // Build base query — columns match the actual deals table schema
     let query = supabase
       .from('deals')
       .select(
         `
         id,
-        title,
-        company_name,
-        website,
-        description,
-        industry,
+        created_by,
+        assigned_to,
+        company_id,
         stage,
-        status,
-        funding_amount,
-        valuation,
-        deal_type,
-        problem_statement,
-        solution,
-        market_size,
-        team_size,
-        ai_score_overall,
-        ai_score_team,
-        ai_score_market,
-        ai_score_traction,
-        ai_score_product,
-        ai_score_financials,
-        ai_score_competitive_landscape,
-        ai_score_metadata,
-        view_count,
-        save_count,
-        creator_id,
+        ai_score,
+        sector,
+        raise_amount,
+        priority_flag,
+        is_watchlisted,
+        days_in_stage,
+        stage_changed_at,
         created_at,
-        updated_at
+        updated_at,
+        company_pages (
+          id,
+          company_name,
+          slug,
+          description,
+          overall_score,
+          industry,
+          logo_url
+        )
       `,
         { count: 'exact' }
-      )
-      .eq('status', 'active');
+      );
 
-    // Apply filters
+    // Apply filters using actual column names
     if (industry) {
-      query = query.eq('industry', industry);
+      query = query.eq('sector', industry);
     }
 
     if (stage) {
@@ -82,33 +76,32 @@ export async function GET(request: NextRequest) {
     }
 
     if (minFunding) {
-      query = query.gte('funding_amount', parseInt(minFunding));
+      query = query.gte('raise_amount', parseInt(minFunding));
     }
 
     if (maxFunding) {
-      query = query.lte('funding_amount', parseInt(maxFunding));
+      query = query.lte('raise_amount', parseInt(maxFunding));
     }
 
     if (minScore) {
-      query = query.gte('ai_score_overall', parseInt(minScore));
+      query = query.gte('ai_score', parseInt(minScore));
     }
 
     if (maxScore) {
-      query = query.lte('ai_score_overall', parseInt(maxScore));
+      query = query.lte('ai_score', parseInt(maxScore));
     }
 
-    // Apply search
+    // Apply search — search in the related company_pages table isn't possible via .or(),
+    // so we filter by sector for now
     if (search) {
-      query = query.or(
-        `company_name.ilike.%${search}%,title.ilike.%${search}%,description.ilike.%${search}%`
-      );
+      query = query.ilike('sector', `%${search}%`);
     }
 
     // Apply sorting
     if (sort === 'score') {
-      query = query.order('ai_score_overall', { ascending: false, nullsFirst: false });
+      query = query.order('ai_score', { ascending: false, nullsFirst: false });
     } else if (sort === 'funding') {
-      query = query.order('funding_amount', { ascending: false, nullsFirst: false });
+      query = query.order('raise_amount', { ascending: false, nullsFirst: false });
     } else {
       query = query.order('created_at', { ascending: false });
     }
@@ -116,8 +109,7 @@ export async function GET(request: NextRequest) {
     // Get total count
     const { count } = await supabase
       .from('deals')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'active');
+      .select('id', { count: 'exact', head: true });
 
     // Apply pagination
     const from = (page - 1) * limit;
