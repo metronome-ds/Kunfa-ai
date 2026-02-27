@@ -40,9 +40,9 @@ export async function PUT(
 
     // Get current user's profile
     const { data: userProfile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (!userProfile) {
@@ -132,9 +132,9 @@ export async function DELETE(
 
     // Get current user's profile
     const { data: userProfile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (!userProfile) {

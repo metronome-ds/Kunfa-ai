@@ -26,6 +26,18 @@
   --color-accent: var(--primary-accent);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-kunfa-green: #10B981;
+  --color-kunfa-green-dark: #059669;
+  --color-kunfa-navy: #0F172A;
+  --color-kunfa-card-dark: #1E293B;
+  --color-kunfa-text-primary: #0F172A;
+  --color-kunfa-text-secondary: #64748B;
+  --color-kunfa-light-bg: #F8FAFC;
+  --color-kunfa-orange: #F97316;
+  --color-kunfa-indigo: #6366F1;
+  --color-kunfa-yellow: #EAB308;
+  --color-kunfa-red: #EF4444;
+  --font-sans: 'Inter', system-ui, sans-serif;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -54,4 +66,120 @@ input,
 textarea,
 select {
   @apply transition-all duration-200;
+}
+
+/* ===== Landing Page Component Classes ===== */
+.btn-primary {
+  background-color: #10B981;
+  color: white;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+.btn-primary:hover {
+  background-color: #059669;
+}
+.btn-outline {
+  border: 1px solid #d1d5db;
+  color: #374151;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+.btn-outline:hover {
+  background-color: #f9fafb;
+}
+.badge-green {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background-color: #ecfdf5;
+  color: #047857;
+}
+.text-gradient-green {
+  background: linear-gradient(to right, #34d399, #059669);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ===== Landing Page Styles ===== */
+
+/* Marquee animation for ticker bar */
+.marquee-content {
+  display: flex;
+  animation: marquee 40s linear infinite;
+}
+.marquee-content:hover {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* Glow effect for score card */
+.card-glow {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3), 0 0 30px rgba(16, 185, 129, 0.1);
+  animation: glow 2s ease-in-out infinite alternate;
+}
+@keyframes glow {
+  0% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.1); }
+  100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.2); }
+}
+
+/* Pulse animation for LIVE badge */
+.live-pulse {
+  animation: livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Blur overlay for locked content */
+.blur-locked {
+  filter: blur(6px);
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Score circle */
+.score-circle {
+  background: conic-gradient(
+    #10B981 calc(var(--score) * 1%),
+    #e5e7eb calc(var(--score) * 1%)
+  );
+}
+
+/* Upload zone */
+.upload-zone {
+  border: 2px dashed #d1d5db;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.upload-zone:hover,
+.upload-zone.dragover {
+  border-color: #10B981;
+  background-color: #ecfdf5;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

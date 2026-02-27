@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { role, interests } = body;
+    const { role } = body;
 
     if (!role) {
       return NextResponse.json(
@@ -23,22 +23,49 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { error } = await supabase
-      .from('users')
-      .update({
-        role,
-        interests: interests || [],
-        onboarding_completed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', user.id);
+    // Check if profile already exists
+    const { data: existingProfile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
 
-    if (error) {
-      console.error('Error completing onboarding:', error);
-      return NextResponse.json(
-        { error: error.message },
-        { status: 400 }
-      );
+    if (existingProfile) {
+      // Update existing profile
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          role,
+          onboarding_completed: true,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error updating profile during onboarding:', error);
+        return NextResponse.json(
+          { error: error.message },
+          { status: 400 }
+        );
+      }
+    } else {
+      // Create new profile
+      const { error } = await supabase
+        .from('profiles')
+        .insert({
+          user_id: user.id,
+          email: user.email,
+          role,
+          onboarding_completed: true,
+        });
+
+      if (error) {
+        console.error('Error creating profile during onboarding:', error);
+        return NextResponse.json(
+          { error: error.message },
+          { status: 400 }
+        );
+      }
     }
 
     return NextResponse.json(

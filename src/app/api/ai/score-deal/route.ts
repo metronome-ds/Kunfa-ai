@@ -48,9 +48,9 @@ export async function POST(request: NextRequest) {
     // Check if user has access (either assigned or is admin)
     if (deal.assigned_to !== user.id) {
       const { data: userData } = await supabase
-        .from('users')
+        .from('profiles')
         .select('role')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single();
 
       if (userData?.role !== 'admin') {

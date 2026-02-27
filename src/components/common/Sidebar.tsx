@@ -128,7 +128,7 @@ const startupNavSections: Record<string, NavItem[]> = {
     {
       label: 'Dashboard',
       icon: <LayoutDashboard className="h-5 w-5" />,
-      href: '/',
+      href: '/dashboard',
     },
     {
       label: 'Company Profile',
@@ -270,7 +270,7 @@ export function Sidebar() {
       {/* Logo and Branding */}
       <div className="p-6 border-b border-gray-800">
         <div className="flex items-baseline gap-2">
-          <Link href="/" className="flex items-baseline gap-2 hover:opacity-80 transition-opacity">
+          <Link href="/dashboard" className="flex items-baseline gap-2 hover:opacity-80 transition-opacity">
             <h1 className="text-2xl font-bold text-white">Kunfa</h1>
             <span className="text-xs font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
               AI

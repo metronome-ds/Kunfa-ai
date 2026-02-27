@@ -44,9 +44,9 @@ export default function ViewProfilePage() {
 
         // Fetch profile by user_id
         const { data: profileData, error: fetchError } = await supabase
-          .from('users')
+          .from('profiles')
           .select('*')
-          .eq('id', profileId)
+          .eq('user_id', profileId)
           .single();
 
         if (fetchError) {
@@ -80,9 +80,9 @@ export default function ViewProfilePage() {
     try {
       // Get current user profile ID
       const { data: currentUserProfile } = await supabase
-        .from('users')
+        .from('profiles')
         .select('id')
-        .eq('id', currentUser.id)
+        .eq('user_id', currentUser.id)
         .single();
 
       if (!currentUserProfile) {

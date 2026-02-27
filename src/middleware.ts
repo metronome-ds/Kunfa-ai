@@ -64,7 +64,7 @@ export async function middleware(request: NextRequest) {
   if (
     !user &&
     (pathname.startsWith("/onboarding") ||
-      pathname === "/" ||
+      pathname.startsWith("/dashboard") ||
       pathname.startsWith("/deals") ||
       pathname.startsWith("/pipeline") ||
       pathname.startsWith("/saved-deals") ||
@@ -90,7 +90,7 @@ export async function middleware(request: NextRequest) {
   // Redirect authenticated users away from login/signup
   if ((pathname === "/login" || pathname === "/signup") && user) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/dashboard";
     return NextResponse.redirect(url);
   }
 

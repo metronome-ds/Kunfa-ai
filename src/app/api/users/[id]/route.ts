@@ -18,9 +18,9 @@ export async function GET(
     }
 
     const { data: user, error } = await supabase
-      .from('users')
+      .from('profiles')
       .select('*')
-      .eq('id', id)
+      .eq('user_id', id)
       .single();
 
     if (error || !user) {
@@ -67,18 +67,18 @@ export async function PUT(
     const body = await request.json();
 
     const { error } = await supabase
-      .from('users')
+      .from('profiles')
       .update({
         full_name: body.full_name,
         headline: body.headline,
-        company: body.company,
+        company_name: body.company,
         location: body.location,
         bio: body.bio,
         interests: body.interests,
         role: body.role,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', id);
+      .eq('user_id', id);
 
     if (error) {
       return NextResponse.json(
@@ -88,9 +88,9 @@ export async function PUT(
     }
 
     const { data: updatedUser } = await supabase
-      .from('users')
+      .from('profiles')
       .select('*')
-      .eq('id', id)
+      .eq('user_id', id)
       .single();
 
     return NextResponse.json(updatedUser);

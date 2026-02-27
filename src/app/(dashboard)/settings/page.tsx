@@ -59,9 +59,9 @@ export default function SettingsPage() {
       setUser(user);
 
       const { data: profileData } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('user_id', user.id)
         .single();
 
       if (profileData) {
@@ -89,16 +89,16 @@ export default function SettingsPage() {
 
     try {
       const { error } = await supabase
-        .from('users')
+        .from('profiles')
         .update({
           full_name: formData.full_name,
-          company: formData.company,
+          company_name: formData.company,
           headline: formData.headline,
           bio: formData.bio,
           location: formData.location,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', user.id);
+        .eq('user_id', user.id);
 
       if (error) {
         alert('Failed to save profile. Please try again.');

@@ -24,9 +24,9 @@ export async function GET(request: NextRequest) {
 
     // Get current user's profile to find team_id
     const { data: userProfile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (!userProfile) {
@@ -123,9 +123,9 @@ export async function POST(request: NextRequest) {
 
     // Get current user's profile to find team_id
     const { data: userProfile } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (!userProfile) {
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user exists
     const { data: existingUser } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id, user_id')
       .eq('email', email)
       .single();

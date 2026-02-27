@@ -73,9 +73,9 @@ export async function GET(
     // Fetch creator profile separately
     if (deal?.creator_id) {
       const { data: creator } = await supabase
-        .from('users')
-        .select('id, email, full_name, avatar_url, company, headline, location')
-        .eq('id', deal.creator_id)
+        .from('profiles')
+        .select('id, email, full_name, avatar_url, company_name, role, linkedin_url')
+        .eq('user_id', deal.creator_id)
         .single();
 
       (deal as any).creator = creator;

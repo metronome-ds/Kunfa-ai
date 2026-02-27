@@ -39,14 +39,10 @@ export default function LoginPage() {
 
         if (data.user) {
           // Create user profile
-          await supabase.from("users").insert({
-            id: data.user.id,
+          await supabase.from("profiles").insert({
+            user_id: data.user.id,
             email: data.user.email || "",
-            full_name: "",
-            avatar_url: null,
-            onboarding_completed_at: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            onboarding_completed: false,
           });
 
           // If email confirmation is required, show message
@@ -79,13 +75,13 @@ export default function LoginPage() {
         if (data.user) {
           // Check onboarding status
           const { data: profile } = await supabase
-            .from("users")
-            .select("onboarding_completed_at")
-            .eq("id", data.user.id)
+            .from("profiles")
+            .select("onboarding_completed")
+            .eq("user_id", data.user.id)
             .single();
 
-          if (profile?.onboarding_completed_at) {
-            window.location.href = "/";
+          if (profile?.onboarding_completed) {
+            window.location.href = "/dashboard";
           } else {
             window.location.href = "/onboarding";
           }

@@ -29,11 +29,11 @@ import {
 interface UserProfile {
   id: string;
   user_id: string;
-  name: string;
+  full_name: string;
   email: string;
   role: UserRole;
   avatar_url?: string;
-  company?: string;
+  company_name?: string;
 }
 
 interface DealData {
@@ -88,9 +88,9 @@ export default function DashboardPage() {
 
         // Load user profile
         const { data: profile } = await supabase
-          .from('users')
+          .from('profiles')
           .select('*')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single();
 
         if (profile) {
@@ -388,7 +388,7 @@ export default function DashboardPage() {
       {/* Welcome Banner */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900">
-          Welcome back, {userProfile?.name?.split(' ')[0]}!
+          Welcome back, {userProfile?.full_name?.split(' ')[0]}!
         </h1>
         <p className="text-gray-600 mt-2">
           {isInvestor

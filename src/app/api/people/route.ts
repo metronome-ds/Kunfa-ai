@@ -22,18 +22,16 @@ export async function GET(request: NextRequest) {
 
     // Build query for public profile data only
     let query = supabase
-      .from('users')
+      .from('profiles')
       .select(
         `
         id,
         full_name,
         email,
-        headline,
-        company,
-        location,
-        avatar_url,
         role,
-        interests,
+        company_name,
+        avatar_url,
+        linkedin_url,
         created_at
       `,
         { count: 'exact' }
@@ -47,7 +45,7 @@ export async function GET(request: NextRequest) {
     // Apply search
     if (search) {
       query = query.or(
-        `full_name.ilike.%${search}%,company.ilike.%${search}%,headline.ilike.%${search}%`
+        `full_name.ilike.%${search}%,company_name.ilike.%${search}%`
       );
     }
 
@@ -73,12 +71,11 @@ export async function GET(request: NextRequest) {
     const publicPeople = (people || []).map(person => ({
       id: person.id,
       full_name: person.full_name,
-      headline: person.headline,
-      company: person.company,
-      location: person.location,
+      email: person.email,
+      company_name: person.company_name,
       avatar_url: person.avatar_url,
       role: person.role,
-      interests: person.interests || [],
+      linkedin_url: person.linkedin_url,
       created_at: person.created_at,
     }));
 

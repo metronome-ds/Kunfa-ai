@@ -51,9 +51,9 @@ export default function ProfilePage() {
       setIsOwnProfile(!userId || userId === user.id);
 
       const { data: profileData } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
-        .eq('id', targetUserId)
+        .eq('user_id', targetUserId)
         .single();
 
       if (profileData) {
@@ -95,7 +95,7 @@ export default function ProfilePage() {
         <div className="text-center">
           <p className="text-gray-600 text-lg">Profile not found</p>
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/dashboard')}
             className="text-blue-600 hover:text-blue-700 font-medium mt-4"
           >
             Back to Dashboard

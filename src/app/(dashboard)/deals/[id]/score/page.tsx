@@ -44,9 +44,9 @@ export default async function ScorePage({ params }: ScorePageProps) {
   // Check access
   if (deal.assigned_to !== user.id) {
     const { data: userData } = await supabase
-      .from('users')
+      .from('profiles')
       .select('role')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
       .single();
 
     if (userData?.role !== 'admin') {
