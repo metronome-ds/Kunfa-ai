@@ -34,6 +34,13 @@ interface NavItem {
 
 // Investor navigation sections
 const investorNavSections: Record<string, NavItem[]> = {
+  OVERVIEW: [
+    {
+      label: 'Dashboard',
+      icon: <LayoutDashboard className="h-5 w-5" />,
+      href: '/dashboard',
+    },
+  ],
   DISCOVER: [
     {
       label: 'Browse Deals',
