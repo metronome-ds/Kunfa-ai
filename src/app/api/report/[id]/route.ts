@@ -21,7 +21,7 @@ export async function GET(
 
     // Allow test bypass with secret key
     const bypassKey = request.nextUrl.searchParams.get('key')
-    const isTestBypass = bypassKey === process.env.TEST_BYPASS_KEY || bypassKey === 'kunfa-test-2024'
+    const isTestBypass = bypassKey != null && bypassKey === process.env.TEST_BYPASS_KEY
 
     if (!submission.paid && !isTestBypass) {
       return NextResponse.json({ error: 'Payment required' }, { status: 403 })

@@ -49,7 +49,7 @@ export default function SignupPage() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/confirm` }
+      options: { redirectTo: `${window.location.origin}/auth/callback` }
     })
     if (error) { setError(error.message); setLoading(false) }
   }
@@ -58,7 +58,7 @@ export default function SignupPage() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'linkedin_oidc',
-      options: { redirectTo: `${window.location.origin}/auth/confirm` }
+      options: { redirectTo: `${window.location.origin}/auth/callback` }
     })
     if (error) { setError(error.message); setLoading(false) }
   }
