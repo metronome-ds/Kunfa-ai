@@ -77,6 +77,17 @@ export async function findOrCreateUser(email: string): Promise<string> {
   return newUser.user.id
 }
 
+// Get user profile by user_id
+export async function getProfileByUserId(userId: string) {
+  const supabase = getSupabase()
+  const { data } = await supabase
+    .from('profiles')
+    .select('full_name, job_title, company_name, company_country, company_website, one_liner')
+    .eq('user_id', userId)
+    .single()
+  return data
+}
+
 // Check if a user already has a submission
 export async function userHasSubmission(userId: string): Promise<boolean> {
   const supabase = getSupabase()
@@ -200,7 +211,18 @@ export async function createCompanyPage(data: {
   stage?: string
   raiseAmount?: number
   teamSize?: number
+  foundedYear?: number
   source?: string
+  problemSummary?: string
+  solutionSummary?: string
+  businessModel?: string
+  traction?: string
+  useOfFunds?: string
+  keyRisks?: string
+  country?: string
+  websiteUrl?: string
+  founderName?: string
+  founderTitle?: string
 }) {
   const supabase = getSupabase()
   // Generate slug from company name
@@ -223,7 +245,18 @@ export async function createCompanyPage(data: {
       stage: data.stage || null,
       raise_amount: data.raiseAmount || null,
       team_size: data.teamSize || null,
+      founded_year: data.foundedYear || null,
       source: data.source || 'startup_submission',
+      problem_summary: data.problemSummary || null,
+      solution_summary: data.solutionSummary || null,
+      business_model: data.businessModel || null,
+      traction: data.traction || null,
+      use_of_funds: data.useOfFunds || null,
+      key_risks: data.keyRisks || null,
+      country: data.country || null,
+      website_url: data.websiteUrl || null,
+      founder_name: data.founderName || null,
+      founder_title: data.founderTitle || null,
     })
 
   if (error) console.error('Failed to create company page:', error)

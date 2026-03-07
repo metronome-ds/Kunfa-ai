@@ -19,11 +19,20 @@ async function getCompanyPage(slug: string) {
 }
 
 function getScoreColor(score: number | null) {
-  if (!score) return 'text-gray-400 bg-gray-700'
+  if (!score) return 'text-gray-400 bg-gray-700 border-gray-600'
   if (score >= 80) return 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30'
   if (score >= 60) return 'text-blue-400 bg-blue-500/20 border-blue-500/30'
   if (score >= 40) return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30'
   return 'text-red-400 bg-red-500/20 border-red-500/30'
+}
+
+function formatRaiseAmount(amount: number | string | null) {
+  if (!amount) return null
+  const num = Number(amount)
+  if (isNaN(num)) return String(amount)
+  if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(1)}M`
+  if (num >= 1_000) return `$${(num / 1_000).toFixed(0)}K`
+  return `$${num.toLocaleString()}`
 }
 
 export default async function CompanyPublicPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -35,6 +44,12 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
   }
 
   const scoreColor = getScoreColor(company.overall_score)
+  const raiseFormatted = formatRaiseAmount(company.raise_amount)
+
+  const hasOverview = company.description || company.website_url || company.founder_name
+  const hasFunding = raiseFormatted || company.stage || company.use_of_funds
+  const hasTeam = company.founder_name || company.team_size || company.founded_year
+  const hasAnalysis = company.problem_summary || company.solution_summary || company.business_model || company.traction || company.key_risks
 
   return (
     <div className="min-h-screen bg-[#0F172A]">
@@ -57,9 +72,9 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
       </nav>
 
       {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="max-w-4xl mx-auto px-6 py-12 space-y-8">
         {/* Header */}
-        <div className="flex items-start gap-6 mb-8">
+        <div className="flex items-start gap-6">
           {/* Score badge */}
           <div className={`w-20 h-20 rounded-2xl border flex items-center justify-center flex-shrink-0 ${scoreColor}`}>
             <span className="text-3xl font-bold">{company.overall_score ?? '—'}</span>
@@ -78,49 +93,141 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
                   {company.stage}
                 </span>
               )}
+              {company.country && (
+                <span className="px-3 py-1 rounded-full bg-gray-500/20 text-gray-300 text-xs font-medium">
+                  {company.country}
+                </span>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Key metrics */}
-        {(company.raise_amount || company.team_size) && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-            {company.raise_amount && (
-              <div className="bg-[#1E293B] rounded-xl p-4 border border-gray-700">
-                <p className="text-xs text-gray-400 mb-1">Raise Amount</p>
-                <p className="text-lg font-semibold text-white">
-                  ${Number(company.raise_amount).toLocaleString()}
-                </p>
-              </div>
+        {/* Overview */}
+        {hasOverview && (
+          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Overview</h2>
+            {company.description && (
+              <p className="text-gray-300 leading-relaxed mb-4">{company.description}</p>
             )}
-            {company.team_size && (
-              <div className="bg-[#1E293B] rounded-xl p-4 border border-gray-700">
-                <p className="text-xs text-gray-400 mb-1">Team Size</p>
-                <p className="text-lg font-semibold text-white">{company.team_size}</p>
-              </div>
-            )}
-            {company.founded_year && (
-              <div className="bg-[#1E293B] rounded-xl p-4 border border-gray-700">
-                <p className="text-xs text-gray-400 mb-1">Founded</p>
-                <p className="text-lg font-semibold text-white">{company.founded_year}</p>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              {company.founder_name && (
+                <div className="text-sm">
+                  <span className="text-gray-400">Founder: </span>
+                  <span className="text-white font-medium">{company.founder_name}</span>
+                  {company.founder_title && (
+                    <span className="text-gray-400"> — {company.founder_title}</span>
+                  )}
+                </div>
+              )}
+              {company.website_url && (
+                <a
+                  href={company.website_url.startsWith('http') ? company.website_url : `https://${company.website_url}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#10B981] text-sm hover:underline"
+                >
+                  {company.website_url.replace(/^https?:\/\//, '')}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Funding Ask */}
+        {hasFunding && (
+          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Funding</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+              {raiseFormatted && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Raise Amount</p>
+                  <p className="text-lg font-semibold text-white">{raiseFormatted}</p>
+                </div>
+              )}
+              {company.stage && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Stage</p>
+                  <p className="text-lg font-semibold text-white">{company.stage}</p>
+                </div>
+              )}
+            </div>
+            {company.use_of_funds && (
+              <div>
+                <p className="text-xs text-gray-400 mb-1">Use of Funds</p>
+                <p className="text-gray-300 text-sm leading-relaxed">{company.use_of_funds}</p>
               </div>
             )}
           </div>
         )}
 
-        {/* Description */}
-        {company.description && (
-          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700 mb-8">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">About</h2>
-            <p className="text-gray-300 leading-relaxed">{company.description}</p>
+        {/* Team */}
+        {hasTeam && (
+          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Team</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {company.founder_name && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Founder</p>
+                  <p className="text-white font-medium">{company.founder_name}</p>
+                  {company.founder_title && (
+                    <p className="text-gray-400 text-sm">{company.founder_title}</p>
+                  )}
+                </div>
+              )}
+              {company.team_size && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Team Size</p>
+                  <p className="text-lg font-semibold text-white">{company.team_size}</p>
+                </div>
+              )}
+              {company.founded_year && (
+                <div>
+                  <p className="text-xs text-gray-400 mb-1">Founded</p>
+                  <p className="text-lg font-semibold text-white">{company.founded_year}</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-        {company.website_url && (
-          <div className="mb-8">
-            <a href={company.website_url} target="_blank" rel="noopener noreferrer" className="text-[#10B981] text-sm hover:underline">
-              {company.website_url}
-            </a>
+        {/* Traction */}
+        {company.traction && (
+          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Traction</h2>
+            <p className="text-gray-300 leading-relaxed">{company.traction}</p>
+          </div>
+        )}
+
+        {/* AI Analysis */}
+        {hasAnalysis && (
+          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">AI Analysis</h2>
+            <div className="space-y-5">
+              {company.problem_summary && (
+                <div>
+                  <h3 className="text-sm font-medium text-white mb-1">Problem</h3>
+                  <p className="text-gray-300 text-sm leading-relaxed">{company.problem_summary}</p>
+                </div>
+              )}
+              {company.solution_summary && (
+                <div>
+                  <h3 className="text-sm font-medium text-white mb-1">Solution</h3>
+                  <p className="text-gray-300 text-sm leading-relaxed">{company.solution_summary}</p>
+                </div>
+              )}
+              {company.business_model && (
+                <div>
+                  <h3 className="text-sm font-medium text-white mb-1">Business Model</h3>
+                  <p className="text-gray-300 text-sm leading-relaxed">{company.business_model}</p>
+                </div>
+              )}
+              {company.key_risks && (
+                <div>
+                  <h3 className="text-sm font-medium text-white mb-1">Key Risks</h3>
+                  <p className="text-gray-300 text-sm leading-relaxed">{company.key_risks}</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 

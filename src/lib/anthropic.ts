@@ -4,10 +4,25 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 })
 
+export interface CompanyProfile {
+  company_name: string
+  industry: string
+  stage: string
+  team_size: number | null
+  founded_year: number | null
+  problem_summary: string
+  solution_summary: string
+  business_model: string
+  traction: string
+  use_of_funds: string
+  key_risks: string
+}
+
 export interface ScoringResult {
   overall_score: number
   percentile: number
   summary: string
+  company_profile: CompanyProfile
   dimensions: {
     team: DimensionResult
     market: DimensionResult
@@ -71,6 +86,19 @@ ${financialsText || '[No financials text could be extracted]'}
   "overall_score": 0,
   "percentile": 0,
   "summary": "2-3 sentence executive summary",
+  "company_profile": {
+    "company_name": "the company name extracted from the pitch deck",
+    "industry": "the sector or industry (e.g. FinTech, HealthTech, SaaS, E-commerce)",
+    "stage": "Pre-seed, Seed, Series A, Series B, or Growth",
+    "team_size": 5,
+    "founded_year": 2023,
+    "problem_summary": "1-2 sentence description of the problem being solved",
+    "solution_summary": "1-2 sentence description of the solution/product",
+    "business_model": "1-2 sentence description of the revenue/business model",
+    "traction": "1-2 sentence summary of traction and key metrics",
+    "use_of_funds": "1-2 sentence description of how the raise will be used",
+    "key_risks": "1-2 sentence summary of the top investment risks"
+  },
   "dimensions": {
     "team": {
       "score": 0,

@@ -8,6 +8,7 @@ import {
   findOrCreateUser,
   userHasSubmission,
   createCompanyPage,
+  getProfileByUserId,
 } from '@/lib/db'
 import { v4 as uuid } from 'uuid'
 
@@ -133,22 +134,40 @@ export async function POST(request: NextRequest) {
       try {
         await updateSubmissionScore(submissionId, fullResult as unknown as Record<string, unknown>)
 
-        // Create company page (extract company name from AI analysis if available)
+        // Create company page with AI-extracted profile + user profile data
         if (userId) {
-          const companyName = (fullResult as any)?.company_name ||
-            (fullResult as any)?.summary?.split(' ')[0] ||
+          const cp = (fullResult as any)?.company_profile || {}
+          let profile: Awaited<ReturnType<typeof getProfileByUserId>> = null
+          try {
+            profile = await getProfileByUserId(userId)
+          } catch { /* continue without profile data */ }
+
+          const companyName = cp.company_name ||
+            profile?.company_name ||
             email.split('@')[1]?.split('.')[0] ||
             'Unnamed Company'
+
           slug = await createCompanyPage({
             userId,
             submissionId,
             companyName,
             overallScore: (fullResult as any)?.overall_score || 0,
             description: (fullResult as any)?.summary || undefined,
-            industry: (fullResult as any)?.industry || undefined,
-            stage: (fullResult as any)?.stage || undefined,
-            raiseAmount: (fullResult as any)?.raise_amount || undefined,
-            teamSize: (fullResult as any)?.team_size || undefined,
+            industry: cp.industry || (fullResult as any)?.sector_benchmarks?.sector || undefined,
+            stage: cp.stage || undefined,
+            raiseAmount: cp.raise_amount || undefined,
+            teamSize: cp.team_size || undefined,
+            foundedYear: cp.founded_year || undefined,
+            problemSummary: cp.problem_summary || undefined,
+            solutionSummary: cp.solution_summary || undefined,
+            businessModel: cp.business_model || undefined,
+            traction: cp.traction || undefined,
+            useOfFunds: cp.use_of_funds || undefined,
+            keyRisks: cp.key_risks || undefined,
+            country: profile?.company_country || undefined,
+            websiteUrl: profile?.company_website || undefined,
+            founderName: profile?.full_name || undefined,
+            founderTitle: profile?.job_title || undefined,
             source: 'startup_submission',
           })
         }
