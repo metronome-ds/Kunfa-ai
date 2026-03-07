@@ -389,13 +389,13 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
   const handleProcessingComplete = useCallback(() => {
     if (scoreResult) {
-      if (resultSlug) {
-        window.location.href = `/company/${resultSlug}`
+      if (submissionId) {
+        window.location.href = `/score/${submissionId}`
         return
       }
       setStep('results')
     }
-  }, [scoreResult, resultSlug])
+  }, [scoreResult, submissionId])
 
   const handleUnlock = useCallback(async () => {
     try {

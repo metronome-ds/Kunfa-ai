@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { CompanyActions } from '@/components/company/CompanyActions'
+import { CompanyNav } from '@/components/company/CompanyNav'
+import { ReportBanner } from '@/components/company/ReportBanner'
 
 async function getCompanyPage(slug: string) {
   const supabase = createClient(
@@ -54,23 +55,7 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Nav */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#10B981] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">K</span>
-            </div>
-            <span className="text-gray-900 font-semibold text-lg">Kunfa.AI</span>
-          </Link>
-          <Link
-            href="/"
-            className="bg-[#10B981] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#059669] transition"
-          >
-            Get Your Score
-          </Link>
-        </div>
-      </nav>
+      <CompanyNav />
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-6">
@@ -107,6 +92,9 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
             </div>
           </div>
         </div>
+
+        {/* Report Banner */}
+        <ReportBanner submissionId={company.submission_id} />
 
         {/* Overview */}
         {hasOverview && (
@@ -237,21 +225,6 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
           </div>
         )}
 
-        {/* CTA */}
-        {company.submission_id && (
-          <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-xl p-8 border border-emerald-200 text-center">
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Get the Full Investment Memo</h2>
-            <p className="text-gray-600 mb-6 text-sm max-w-md mx-auto">
-              Detailed AI-powered analysis with actionable insights, risk assessment, and investment recommendations.
-            </p>
-            <a
-              href={`/api/stripe/checkout?submissionId=${company.submission_id}`}
-              className="inline-block bg-[#10B981] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#059669] transition"
-            >
-              Get Full Investment Memo
-            </a>
-          </div>
-        )}
       </main>
     </div>
   )
