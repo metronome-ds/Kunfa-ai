@@ -25,6 +25,8 @@ export async function POST(request: NextRequest) {
       industry,
       company_stage,
       raise_amount,
+      linkedin_url,
+      team_size,
     } = body;
 
     if (!role) {
@@ -50,6 +52,8 @@ export async function POST(request: NextRequest) {
     if (industry !== undefined) profileData.industry = industry;
     if (company_stage !== undefined) profileData.company_stage = company_stage;
     if (raise_amount !== undefined) profileData.raise_amount = raise_amount;
+    if (linkedin_url !== undefined) profileData.linkedin_url = linkedin_url;
+    if (team_size !== undefined) profileData.team_size = team_size;
 
     // Check if profile already exists
     const { data: existingProfile } = await supabase

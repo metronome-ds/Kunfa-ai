@@ -82,7 +82,7 @@ export async function getProfileByUserId(userId: string) {
   const supabase = getSupabase()
   const { data } = await supabase
     .from('profiles')
-    .select('full_name, job_title, company_name, company_country, company_website, one_liner')
+    .select('full_name, job_title, company_name, company_country, company_website, one_liner, industry, company_stage, linkedin_url, team_size')
     .eq('user_id', userId)
     .single()
   return data
@@ -206,7 +206,9 @@ export async function createCompanyPage(data: {
   submissionId: string
   companyName: string
   overallScore: number
+  slug?: string
   description?: string
+  oneLiner?: string
   industry?: string
   stage?: string
   raiseAmount?: number
@@ -220,17 +222,22 @@ export async function createCompanyPage(data: {
   useOfFunds?: string
   keyRisks?: string
   country?: string
+  headquarters?: string
   websiteUrl?: string
   founderName?: string
   founderTitle?: string
+  linkedinUrl?: string
 }) {
   const supabase = getSupabase()
-  // Generate slug from company name
-  const slug = data.companyName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    + '-' + data.submissionId.slice(0, 8)
+
+  // Use user-provided slug, or auto-generate from company name
+  const slug = data.slug || (
+    data.companyName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      + '-' + data.submissionId.slice(0, 8)
+  )
 
   const { data: inserted, error } = await supabase
     .from('company_pages')
@@ -241,6 +248,7 @@ export async function createCompanyPage(data: {
       slug,
       overall_score: data.overallScore,
       description: data.description || null,
+      one_liner: data.oneLiner || null,
       industry: data.industry || null,
       stage: data.stage || null,
       raise_amount: data.raiseAmount || null,
@@ -254,9 +262,11 @@ export async function createCompanyPage(data: {
       use_of_funds: data.useOfFunds || null,
       key_risks: data.keyRisks || null,
       country: data.country || null,
+      headquarters: data.headquarters || null,
       website_url: data.websiteUrl || null,
       founder_name: data.founderName || null,
       founder_title: data.founderTitle || null,
+      linkedin_url: data.linkedinUrl || null,
     })
     .select('id')
     .single()

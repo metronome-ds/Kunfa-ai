@@ -28,6 +28,7 @@ export async function POST(request: NextRequest) {
       financialsUrl,
       financialsFilename,
       voiceNoteUrl,
+      slug: userSlug,
     } = body as {
       email: string
       linkedinUrl: string
@@ -36,6 +37,7 @@ export async function POST(request: NextRequest) {
       financialsUrl: string
       financialsFilename: string
       voiceNoteUrl?: string
+      slug?: string
     }
 
     if (!email || !pitchDeckUrl || !financialsUrl || !linkedinUrl) {
@@ -143,23 +145,26 @@ export async function POST(request: NextRequest) {
             profile = await getProfileByUserId(userId)
           } catch { /* continue without profile data */ }
 
-          const companyName = cp.company_name ||
-            profile?.company_name ||
+          const companyName = profile?.company_name ||
+            cp.company_name ||
             email.split('@')[1]?.split('.')[0] ||
             'Unnamed Company'
 
-          const industry = cp.industry || (fullResult as any)?.sector_benchmarks?.sector || undefined
+          // User's industry choice (from onboarding) takes precedence over AI extraction
+          const industry = profile?.industry || cp.industry || (fullResult as any)?.sector_benchmarks?.sector || undefined
 
           const result = await createCompanyPage({
             userId,
             submissionId,
             companyName,
             overallScore: (fullResult as any)?.overall_score || 0,
+            slug: userSlug || undefined,
             description: (fullResult as any)?.summary || undefined,
+            oneLiner: profile?.one_liner || undefined,
             industry,
-            stage: cp.stage || undefined,
+            stage: profile?.company_stage || cp.stage || undefined,
             raiseAmount: cp.raise_amount || undefined,
-            teamSize: cp.team_size || undefined,
+            teamSize: profile?.team_size || cp.team_size || undefined,
             foundedYear: cp.founded_year || undefined,
             problemSummary: cp.problem_summary || undefined,
             solutionSummary: cp.solution_summary || undefined,
@@ -168,9 +173,11 @@ export async function POST(request: NextRequest) {
             useOfFunds: cp.use_of_funds || undefined,
             keyRisks: cp.key_risks || undefined,
             country: profile?.company_country || undefined,
+            headquarters: profile?.company_country || undefined,
             websiteUrl: profile?.company_website || undefined,
             founderName: profile?.full_name || undefined,
             founderTitle: profile?.job_title || undefined,
+            linkedinUrl: profile?.linkedin_url || linkedinUrl || undefined,
             source: 'startup_submission',
           })
           slug = result.slug

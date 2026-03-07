@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { upload } from '@vercel/blob/client'
 import { supabase } from '@/lib/supabase'
 import Modal from '@/components/ui/Modal'
@@ -8,13 +8,14 @@ import UploadZone from './UploadZone'
 import VoiceRecorder from './VoiceRecorder'
 import ProcessingAnimation from './ProcessingAnimation'
 import TeaserScore from './TeaserScore'
+import { Check, X, Loader2 } from 'lucide-react'
 
 interface ScoreModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
-type Step = 'account' | 'company1' | 'company2' | 'upload' | 'processing' | 'results'
+type Step = 'account' | 'company' | 'founder' | 'upload' | 'processing' | 'results'
 
 interface ScoreResult {
   overall_score: number
@@ -30,28 +31,52 @@ interface ScoreResult {
 }
 
 const INDUSTRIES = [
-  'AI/ML', 'FinTech', 'HealthTech', 'CleanTech',
-  'SaaS', 'B2B', 'B2C', 'EdTech',
-  'BioTech', 'Real Estate', 'E-Commerce', 'Crypto/Web3',
-  'IoT', 'Cybersecurity', 'Consumer', 'Enterprise',
-]
+  'AI & Machine Learning',
+  'B2B SaaS',
+  'B2C',
+  'Biotech & Life Sciences',
+  'CleanTech & Energy',
+  'Consumer Hardware',
+  'Cybersecurity',
+  'DevTools & Infrastructure',
+  'E-commerce & Marketplace',
+  'EdTech',
+  'FinTech',
+  'Food & Beverage',
+  'Gaming',
+  'HealthTech',
+  'Logistics & Supply Chain',
+  'Media & Entertainment',
+  'PropTech & Real Estate',
+  'Social',
+  'Travel & Hospitality',
+  'Web3 & Crypto',
+  'Other',
+] as const
 
 const STAGES = [
-  { id: 'idea', label: 'Idea Stage', desc: 'Concept only, no product yet' },
-  { id: 'pre-seed', label: 'Pre-Seed', desc: 'MVP or early prototype' },
-  { id: 'seed', label: 'Seed', desc: 'Product-market fit exploration' },
-  { id: 'series-a', label: 'Series A', desc: 'Scaling with proven traction' },
-  { id: 'series-b+', label: 'Series B+', desc: 'Growth or late-stage' },
-]
+  { value: 'pre-seed', label: 'Pre-Seed' },
+  { value: 'seed', label: 'Seed' },
+  { value: 'series-a', label: 'Series A' },
+  { value: 'series-b', label: 'Series B' },
+  { value: 'series-c+', label: 'Series C+' },
+  { value: 'growth', label: 'Growth' },
+] as const
 
-const RAISE_RANGES = [
-  { id: 'under-250k', label: 'Under $250K' },
-  { id: '250k-500k', label: '$250K – $500K' },
-  { id: '500k-1m', label: '$500K – $1M' },
-  { id: '1m-3m', label: '$1M – $3M' },
-  { id: '3m-10m', label: '$3M – $10M' },
-  { id: '10m+', label: '$10M+' },
-]
+const INPUT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent'
+const SELECT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent'
+
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40)
+}
+
+function isSlugFormatValid(slug: string): boolean {
+  return /^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])?$/.test(slug)
+}
 
 async function uploadToBlob(
   file: File | Blob,
@@ -76,30 +101,76 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   const [authLoading, setAuthLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
 
-  // Company step 1
-  const [fullName, setFullName] = useState('')
-  const [jobTitle, setJobTitle] = useState('')
+  // Company step
   const [companyName, setCompanyName] = useState('')
+  const [chosenSlug, setChosenSlug] = useState('')
+  const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'invalid'>('idle')
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [oneLiner, setOneLiner] = useState('')
+  const [industry, setIndustry] = useState('')
+  const [companyStage, setCompanyStage] = useState('')
   const [companyCountry, setCompanyCountry] = useState('')
   const [companyWebsite, setCompanyWebsite] = useState('')
 
-  // Company step 2
-  const [industry, setIndustry] = useState('')
-  const [companyStage, setCompanyStage] = useState('')
-  const [raiseAmount, setRaiseAmount] = useState('')
+  // Founder step
+  const [founderName, setFounderName] = useState('')
+  const [founderTitle, setFounderTitle] = useState('')
+  const [linkedinUrl, setLinkedinUrl] = useState('')
+  const [teamSize, setTeamSize] = useState('')
 
   // Upload step
   const [pitchDeck, setPitchDeck] = useState<File | null>(null)
   const [financials, setFinancials] = useState<File | null>(null)
-  const [linkedinUrl, setLinkedinUrl] = useState('')
   const [voiceNote, setVoiceNote] = useState<Blob | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null)
   const [submissionId, setSubmissionId] = useState('')
-  const [slug, setSlug] = useState('')
+  const [resultSlug, setResultSlug] = useState('')
   const [error, setError] = useState('')
   const [uploadProgress, setUploadProgress] = useState('')
+
+  const slugCheckTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Auto-generate slug from company name (only if not manually edited)
+  useEffect(() => {
+    if (!slugManuallyEdited && companyName) {
+      const generated = generateSlug(companyName)
+      setChosenSlug(generated)
+    } else if (!companyName) {
+      setChosenSlug('')
+      setSlugStatus('idle')
+    }
+  }, [companyName, slugManuallyEdited])
+
+  // Debounced slug uniqueness check
+  useEffect(() => {
+    if (slugCheckTimerRef.current) clearTimeout(slugCheckTimerRef.current)
+
+    if (!chosenSlug || chosenSlug.length < 3) {
+      setSlugStatus(chosenSlug.length > 0 ? 'invalid' : 'idle')
+      return
+    }
+
+    if (!isSlugFormatValid(chosenSlug)) {
+      setSlugStatus('invalid')
+      return
+    }
+
+    setSlugStatus('checking')
+    slugCheckTimerRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/company/check-slug?slug=${encodeURIComponent(chosenSlug)}`)
+        const data = await res.json()
+        setSlugStatus(data.available ? 'available' : 'taken')
+      } catch {
+        setSlugStatus('idle')
+      }
+    }, 500)
+
+    return () => {
+      if (slugCheckTimerRef.current) clearTimeout(slugCheckTimerRef.current)
+    }
+  }, [chosenSlug])
 
   // Check auth state on open
   useEffect(() => {
@@ -112,20 +183,19 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         setUserId(user.id)
         setEmail(user.email || '')
 
-        // Check profile completeness
         const { data: profile } = await supabase
           .from('profiles')
-          .select('onboarding_completed, full_name, role')
+          .select('onboarding_completed, full_name, company_name, role')
           .eq('user_id', user.id)
           .single()
 
         if (profile?.onboarding_completed && profile?.role === 'startup') {
           setStep('upload')
-        } else if (profile?.full_name) {
-          // Has some profile data but not complete — go to company2
-          setStep('company2')
+        } else if (profile?.company_name) {
+          setStep('founder')
+          if (profile?.full_name) setFounderName(profile.full_name)
         } else {
-          setStep('company1')
+          setStep('company')
         }
       } else {
         setStep('account')
@@ -136,7 +206,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     checkAuth()
   }, [isOpen])
 
-  // Account step handlers
+  // Account handlers
   const handleAuth = async () => {
     setAuthError('')
     setAuthLoading(true)
@@ -147,19 +217,19 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         if (error) { setAuthError(error.message); return }
         if (data.user) {
           setUserId(data.user.id)
-          // Check if onboarding done
           const { data: profile } = await supabase
             .from('profiles')
-            .select('onboarding_completed, full_name, role')
+            .select('onboarding_completed, full_name, company_name, role')
             .eq('user_id', data.user.id)
             .single()
 
           if (profile?.onboarding_completed && profile?.role === 'startup') {
             setStep('upload')
-          } else if (profile?.full_name) {
-            setStep('company2')
+          } else if (profile?.company_name) {
+            setStep('founder')
+            if (profile?.full_name) setFounderName(profile.full_name)
           } else {
-            setStep('company1')
+            setStep('company')
           }
         }
       } else {
@@ -171,12 +241,11 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         if (error) { setAuthError(error.message); return }
         if (data.user && data.session) {
           setUserId(data.user.id)
-          // Create profile stub
           await supabase.from('profiles').upsert({
             user_id: data.user.id,
             email,
           }, { onConflict: 'user_id' })
-          setStep('company1')
+          setStep('company')
         } else if (data.user && !data.session) {
           setAuthError('Check your email to confirm your account, then try again.')
         }
@@ -202,13 +271,12 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     })
   }
 
-  // Company step 1 validation
-  const isCompany1Valid = fullName && companyName && oneLiner
+  // Validation
+  const isCompanyValid = companyName && chosenSlug && slugStatus === 'available' && oneLiner && industry && companyStage && companyCountry
+  const isFounderValid = founderName && founderTitle
+  const isUploadValid = pitchDeck && financials
 
-  // Company step 2 validation
-  const isCompany2Valid = industry && companyStage && raiseAmount
-
-  // Save company profile
+  // Save profile (called at end of founder step)
   const handleSaveProfile = async () => {
     setAuthLoading(true)
     setError('')
@@ -219,15 +287,16 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           role: 'startup',
-          full_name: fullName,
-          job_title: jobTitle,
+          full_name: founderName,
+          job_title: founderTitle,
           company_name: companyName,
           one_liner: oneLiner,
           company_country: companyCountry,
           company_website: companyWebsite,
           industry,
           company_stage: companyStage,
-          raise_amount: raiseAmount,
+          linkedin_url: linkedinUrl,
+          team_size: teamSize ? parseInt(teamSize) : undefined,
         }),
       })
 
@@ -244,9 +313,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     }
   }
 
-  // Upload step
-  const isUploadValid = pitchDeck && financials && linkedinUrl
-
+  // Submit for scoring
   const handleSubmit = useCallback(async () => {
     if (!isUploadValid || isSubmitting || !pitchDeck || !financials) return
     setError('')
@@ -296,6 +363,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
           financialsUrl,
           financialsFilename: financials.name,
           voiceNoteUrl,
+          slug: chosenSlug,
         }),
       })
 
@@ -308,7 +376,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
       setScoreResult(data.teaser)
       setSubmissionId(data.submissionId)
       if (data.slug) {
-        setSlug(data.slug)
+        setResultSlug(data.slug)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
@@ -317,17 +385,17 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
       setIsSubmitting(false)
       setUploadProgress('')
     }
-  }, [email, pitchDeck, financials, linkedinUrl, voiceNote, isUploadValid, isSubmitting])
+  }, [email, chosenSlug, pitchDeck, financials, linkedinUrl, voiceNote, isUploadValid, isSubmitting])
 
   const handleProcessingComplete = useCallback(() => {
     if (scoreResult) {
-      if (slug) {
-        window.location.href = `/company/${slug}`
+      if (resultSlug) {
+        window.location.href = `/company/${resultSlug}`
         return
       }
       setStep('results')
     }
-  }, [scoreResult, slug])
+  }, [scoreResult, resultSlug])
 
   const handleUnlock = useCallback(async () => {
     try {
@@ -352,22 +420,25 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     setIsLogin(false)
     setAuthError('')
     setUserId(null)
-    setFullName('')
-    setJobTitle('')
     setCompanyName('')
+    setChosenSlug('')
+    setSlugStatus('idle')
+    setSlugManuallyEdited(false)
     setOneLiner('')
-    setCompanyCountry('')
-    setCompanyWebsite('')
     setIndustry('')
     setCompanyStage('')
-    setRaiseAmount('')
+    setCompanyCountry('')
+    setCompanyWebsite('')
+    setFounderName('')
+    setFounderTitle('')
+    setLinkedinUrl('')
+    setTeamSize('')
     setPitchDeck(null)
     setFinancials(null)
-    setLinkedinUrl('')
     setVoiceNote(null)
     setScoreResult(null)
     setSubmissionId('')
-    setSlug('')
+    setResultSlug('')
     setError('')
     setUploadProgress('')
     onClose()
@@ -375,12 +446,18 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
   const STEP_LABELS = [
     { key: 'account', label: 'Account' },
-    { key: 'company1', label: 'Company' },
-    { key: 'company2', label: 'Details' },
+    { key: 'company', label: 'Company' },
+    { key: 'founder', label: 'Founder' },
     { key: 'upload', label: 'Upload' },
   ]
-  const stepOrder = ['account', 'company1', 'company2', 'upload', 'processing', 'results']
+  const stepOrder: Step[] = ['account', 'company', 'founder', 'upload', 'processing', 'results']
   const currentIdx = stepOrder.indexOf(step)
+
+  const handleSlugChange = (value: string) => {
+    const sanitized = value.toLowerCase().replace(/[^a-z0-9-]/g, '')
+    setChosenSlug(sanitized.slice(0, 40))
+    setSlugManuallyEdited(true)
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
@@ -390,11 +467,11 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
           <h2 className="text-2xl font-bold text-kunfa-navy">Get Your Kunfa Score</h2>
         </div>
 
-        {/* Progress Steps — only show for first 4 steps */}
+        {/* Progress Steps */}
         {currentIdx <= 3 && !initialLoading && (
           <div className="flex items-center justify-center gap-2 mb-8">
             {STEP_LABELS.map((s, i) => {
-              const thisIdx = stepOrder.indexOf(s.key)
+              const thisIdx = stepOrder.indexOf(s.key as Step)
               const isActive = thisIdx <= currentIdx
               return (
                 <div key={s.key} className="flex items-center gap-2">
@@ -455,7 +532,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               <input
                 type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="founder@company.com"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent"
+                className={INPUT_CLASS}
               />
             </div>
             <div>
@@ -463,7 +540,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               <input
                 type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                 placeholder="Min 6 characters" minLength={6}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent"
+                className={INPUT_CLASS}
               />
             </div>
 
@@ -483,127 +560,161 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
           </div>
         )}
 
-        {/* STEP 2: Company Page 1 */}
-        {!initialLoading && step === 'company1' && (
+        {/* STEP 2: Company */}
+        {!initialLoading && step === 'company' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Full Name *</label>
-                <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Jane Smith"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Job Title</label>
-                <input type="text" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)}
-                  placeholder="CEO & Co-Founder"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
-              </div>
-            </div>
-
+            {/* Company Name */}
             <div>
               <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Company Name *</label>
               <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="Acme Corp"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
+                className={INPUT_CLASS} />
             </div>
 
+            {/* Slug Picker */}
             <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">One-liner *</label>
-              <input type="text" value={oneLiner} onChange={(e) => setOneLiner(e.target.value)}
-                placeholder="What does your company do in one sentence?"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Your Kunfa URL *</label>
+              <div className="flex items-center">
+                <span className="text-sm text-gray-500 bg-gray-50 px-3 py-2.5 rounded-l-lg border border-r-0 border-gray-300 whitespace-nowrap">
+                  kunfa.ai/company/
+                </span>
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={chosenSlug}
+                    onChange={(e) => handleSlugChange(e.target.value)}
+                    placeholder="your-company"
+                    className="w-full border border-gray-300 rounded-r-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent pr-10"
+                  />
+                  {/* Status indicator */}
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    {slugStatus === 'checking' && <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />}
+                    {slugStatus === 'available' && <Check className="h-4 w-4 text-emerald-500" />}
+                    {slugStatus === 'taken' && <X className="h-4 w-4 text-red-500" />}
+                    {slugStatus === 'invalid' && <X className="h-4 w-4 text-red-500" />}
+                  </div>
+                </div>
+              </div>
+              {slugStatus === 'taken' && (
+                <p className="text-xs text-red-500 mt-1">This URL is already taken. Try another.</p>
+              )}
+              {slugStatus === 'invalid' && chosenSlug.length > 0 && (
+                <p className="text-xs text-red-500 mt-1">3-40 characters, lowercase letters, numbers, and hyphens only.</p>
+              )}
+              {slugStatus === 'available' && (
+                <p className="text-xs text-emerald-600 mt-1">This URL is available!</p>
+              )}
             </div>
 
+            {/* One-liner */}
+            <div>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">
+                Elevator Pitch *
+                <span className="ml-2 text-xs font-normal text-gray-400">{oneLiner.length}/160</span>
+              </label>
+              <input type="text" value={oneLiner}
+                onChange={(e) => setOneLiner(e.target.value.slice(0, 160))}
+                placeholder="What does your company do in one sentence?"
+                maxLength={160}
+                className={INPUT_CLASS} />
+            </div>
+
+            {/* Industry Dropdown */}
+            <div>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Industry *</label>
+              <select
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+                className={SELECT_CLASS}
+              >
+                <option value="">Select industry...</option>
+                {INDUSTRIES.map((ind) => (
+                  <option key={ind} value={ind}>{ind}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Stage Dropdown */}
+            <div>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Stage *</label>
+              <select
+                value={companyStage}
+                onChange={(e) => setCompanyStage(e.target.value)}
+                className={SELECT_CLASS}
+              >
+                <option value="">Select stage...</option>
+                {STAGES.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Country + Website */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Country</label>
+                <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Country / HQ *</label>
                 <input type="text" value={companyCountry} onChange={(e) => setCompanyCountry(e.target.value)}
                   placeholder="United States"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
+                  className={INPUT_CLASS} />
               </div>
               <div>
                 <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Website</label>
                 <input type="url" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)}
                   placeholder="https://acme.com"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
+                  className={INPUT_CLASS} />
               </div>
             </div>
 
-            <button onClick={() => setStep('company2')} disabled={!isCompany1Valid}
+            <button onClick={() => setStep('founder')} disabled={!isCompanyValid}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
-                isCompany1Valid ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                isCompanyValid ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}>
               Continue
             </button>
           </div>
         )}
 
-        {/* STEP 3: Company Page 2 */}
-        {!initialLoading && step === 'company2' && (
-          <div className="space-y-5">
-            {/* Industry */}
-            <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-2">Industry *</label>
-              <div className="grid grid-cols-4 gap-2">
-                {INDUSTRIES.map((ind) => (
-                  <button key={ind} onClick={() => setIndustry(ind)}
-                    className={`px-3 py-2 rounded-lg text-xs font-medium transition ${
-                      industry === ind
-                        ? 'bg-kunfa-green text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}>
-                    {ind}
-                  </button>
-                ))}
+        {/* STEP 3: Founder & Team */}
+        {!initialLoading && step === 'founder' && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Founder Name *</label>
+                <input type="text" value={founderName} onChange={(e) => setFounderName(e.target.value)}
+                  placeholder="Jane Smith"
+                  className={INPUT_CLASS} />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Title *</label>
+                <input type="text" value={founderTitle} onChange={(e) => setFounderTitle(e.target.value)}
+                  placeholder="CEO & Co-Founder"
+                  className={INPUT_CLASS} />
               </div>
             </div>
 
-            {/* Stage */}
             <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-2">Company Stage *</label>
-              <div className="space-y-2">
-                {STAGES.map((s) => (
-                  <button key={s.id} onClick={() => setCompanyStage(s.id)}
-                    className={`w-full text-left px-4 py-3 rounded-lg border transition ${
-                      companyStage === s.id
-                        ? 'border-kunfa-green bg-emerald-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}>
-                    <span className={`text-sm font-medium ${companyStage === s.id ? 'text-kunfa-green' : 'text-kunfa-navy'}`}>
-                      {s.label}
-                    </span>
-                    <span className="text-xs text-gray-400 ml-2">{s.desc}</span>
-                  </button>
-                ))}
-              </div>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">LinkedIn URL</label>
+              <input type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)}
+                placeholder="https://linkedin.com/in/yourprofile"
+                className={INPUT_CLASS} />
             </div>
 
-            {/* Raise Amount */}
             <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-2">Raise Amount *</label>
-              <div className="grid grid-cols-3 gap-2">
-                {RAISE_RANGES.map((r) => (
-                  <button key={r.id} onClick={() => setRaiseAmount(r.id)}
-                    className={`px-3 py-2.5 rounded-lg text-xs font-medium transition ${
-                      raiseAmount === r.id
-                        ? 'bg-kunfa-green text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}>
-                    {r.label}
-                  </button>
-                ))}
-              </div>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Team Size</label>
+              <input type="number" value={teamSize} onChange={(e) => setTeamSize(e.target.value)}
+                placeholder="e.g. 5"
+                min="1"
+                className={INPUT_CLASS} />
             </div>
 
             <div className="flex gap-3">
-              <button onClick={() => setStep('company1')}
+              <button onClick={() => setStep('company')}
                 className="flex-1 py-3 rounded-lg font-semibold text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
                 Back
               </button>
-              <button onClick={handleSaveProfile} disabled={!isCompany2Valid || authLoading}
+              <button onClick={handleSaveProfile} disabled={!isFounderValid || authLoading}
                 className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-all ${
-                  isCompany2Valid ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  isFounderValid ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}>
                 {authLoading ? 'Saving...' : 'Continue'}
               </button>
@@ -615,7 +726,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         {!initialLoading && step === 'upload' && (
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Pitch Deck</label>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Pitch Deck *</label>
               <UploadZone
                 label="Tap to upload"
                 subtitle="PDF, PPT, Keynote — up to 50 MB"
@@ -627,7 +738,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Financials & Metrics</label>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Financials & Metrics *</label>
               <UploadZone
                 label="Tap to upload"
                 subtitle="Financials, data room — up to 50 MB"
@@ -635,18 +746,6 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 accept=".pdf,.xlsx,.xls,.csv"
                 file={financials}
                 onFileSelect={setFinancials}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">
-                LinkedIn Profile URL
-                <span className="ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">REQUIRED</span>
-              </label>
-              <input
-                type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)}
-                placeholder="https://linkedin.com/in/yourprofile"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent"
               />
             </div>
 
@@ -659,7 +758,6 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               {[
                 { label: 'Pitch deck', done: !!pitchDeck },
                 { label: 'Financials', done: !!financials },
-                { label: 'LinkedIn', done: !!linkedinUrl },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-1.5">
                   <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
