@@ -455,7 +455,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               <input
                 type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="founder@company.com"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent"
               />
             </div>
             <div>
@@ -463,7 +463,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               <input
                 type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                 placeholder="Min 6 characters" minLength={6}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent"
               />
             </div>
 
@@ -491,13 +491,13 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Full Name *</label>
                 <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}
                   placeholder="Jane Smith"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Job Title</label>
                 <input type="text" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)}
                   placeholder="CEO & Co-Founder"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
               </div>
             </div>
 
@@ -505,14 +505,14 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Company Name *</label>
               <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="Acme Corp"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-kunfa-navy mb-1.5">One-liner *</label>
               <input type="text" value={oneLiner} onChange={(e) => setOneLiner(e.target.value)}
                 placeholder="What does your company do in one sentence?"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
@@ -520,13 +520,13 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Country</label>
                 <input type="text" value={companyCountry} onChange={(e) => setCompanyCountry(e.target.value)}
                   placeholder="United States"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Website</label>
                 <input type="url" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)}
                   placeholder="https://acme.com"
-                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent" />
               </div>
             </div>
 
@@ -646,7 +646,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               <input
                 type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)}
                 placeholder="https://linkedin.com/in/yourprofile"
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent"
+                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent"
               />
             </div>
 

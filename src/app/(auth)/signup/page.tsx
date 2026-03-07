@@ -224,13 +224,13 @@ function SignupContent() {
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-                className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                 placeholder="you@company.com" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">Password</label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
-                className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
                 placeholder="Min 6 characters" />
             </div>
 
