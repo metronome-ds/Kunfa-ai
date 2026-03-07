@@ -5,7 +5,6 @@ import { upload } from '@vercel/blob/client'
 import { supabase } from '@/lib/supabase'
 import Modal from '@/components/ui/Modal'
 import UploadZone from './UploadZone'
-import VoiceRecorder from './VoiceRecorder'
 import ProcessingAnimation from './ProcessingAnimation'
 import TeaserScore from './TeaserScore'
 import { Check, X, Loader2 } from 'lucide-react'
@@ -96,6 +95,8 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   // Account step
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [linkedinUrl, setLinkedinUrl] = useState('')
   const [isLogin, setIsLogin] = useState(false)
   const [authError, setAuthError] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
@@ -115,13 +116,11 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   // Founder step
   const [founderName, setFounderName] = useState('')
   const [founderTitle, setFounderTitle] = useState('')
-  const [linkedinUrl, setLinkedinUrl] = useState('')
   const [teamSize, setTeamSize] = useState('')
 
   // Upload step
   const [pitchDeck, setPitchDeck] = useState<File | null>(null)
   const [financials, setFinancials] = useState<File | null>(null)
-  const [voiceNote, setVoiceNote] = useState<Blob | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null)
   const [submissionId, setSubmissionId] = useState('')
@@ -185,9 +184,12 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
         const { data: profile } = await supabase
           .from('profiles')
-          .select('onboarding_completed, full_name, company_name, role')
+          .select('onboarding_completed, full_name, company_name, role, linkedin_url')
           .eq('user_id', user.id)
           .single()
+
+        if (profile?.full_name) setFullName(profile.full_name)
+        if (profile?.linkedin_url) setLinkedinUrl(profile.linkedin_url)
 
         if (profile?.onboarding_completed && profile?.role === 'startup') {
           setStep('upload')
@@ -219,9 +221,12 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
           setUserId(data.user.id)
           const { data: profile } = await supabase
             .from('profiles')
-            .select('onboarding_completed, full_name, company_name, role')
+            .select('onboarding_completed, full_name, company_name, role, linkedin_url')
             .eq('user_id', data.user.id)
             .single()
+
+          if (profile?.full_name) setFullName(profile.full_name)
+          if (profile?.linkedin_url) setLinkedinUrl(profile.linkedin_url)
 
           if (profile?.onboarding_completed && profile?.role === 'startup') {
             setStep('upload')
@@ -241,10 +246,14 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         if (error) { setAuthError(error.message); return }
         if (data.user && data.session) {
           setUserId(data.user.id)
+          // Save full_name and linkedin_url to profile on signup
           await supabase.from('profiles').upsert({
             user_id: data.user.id,
             email,
+            full_name: fullName || undefined,
+            linkedin_url: linkedinUrl || undefined,
           }, { onConflict: 'user_id' })
+          setFounderName(fullName) // Pre-fill founder name from full name
           setStep('company')
         } else if (data.user && !data.session) {
           setAuthError('Check your email to confirm your account, then try again.')
@@ -272,12 +281,48 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   }
 
   // Validation
+  const isAccountValid = email && password && password.length >= 6 && fullName
   const isCompanyValid = companyName && chosenSlug && slugStatus === 'available' && oneLiner && industry && companyStage && companyCountry
   const isFounderValid = founderName && founderTitle
-  const isUploadValid = pitchDeck && financials
+  const isUploadValid = !!pitchDeck
 
-  // Save profile (called at end of founder step)
-  const handleSaveProfile = async () => {
+  // Save company data to profile (called at end of company step)
+  const handleSaveCompany = async () => {
+    setAuthLoading(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/users/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: 'startup',
+          full_name: fullName,
+          linkedin_url: linkedinUrl || undefined,
+          company_name: companyName,
+          one_liner: oneLiner,
+          company_country: companyCountry,
+          company_website: companyWebsite || undefined,
+          industry,
+          company_stage: companyStage,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to save company info')
+      }
+
+      setStep('founder')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save company info')
+    } finally {
+      setAuthLoading(false)
+    }
+  }
+
+  // Save founder data to profile (called at end of founder step)
+  const handleSaveFounder = async () => {
     setAuthLoading(true)
     setError('')
 
@@ -289,25 +334,18 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
           role: 'startup',
           full_name: founderName,
           job_title: founderTitle,
-          company_name: companyName,
-          one_liner: oneLiner,
-          company_country: companyCountry,
-          company_website: companyWebsite,
-          industry,
-          company_stage: companyStage,
-          linkedin_url: linkedinUrl,
           team_size: teamSize ? parseInt(teamSize) : undefined,
         }),
       })
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || 'Failed to save profile')
+        throw new Error(data.error || 'Failed to save founder info')
       }
 
       setStep('upload')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save profile')
+      setError(err instanceof Error ? err.message : 'Failed to save founder info')
     } finally {
       setAuthLoading(false)
     }
@@ -315,7 +353,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
   // Submit for scoring
   const handleSubmit = useCallback(async () => {
-    if (!isUploadValid || isSubmitting || !pitchDeck || !financials) return
+    if (!isUploadValid || isSubmitting || !pitchDeck) return
     setError('')
     setIsSubmitting(true)
     setStep('processing')
@@ -323,8 +361,8 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     try {
       const timestamp = Date.now()
       let pitchDeckUrl: string
-      let financialsUrl: string
-      let voiceNoteUrl: string | undefined
+      let financialsUrl: string | undefined
+      let financialsFilename: string | undefined
 
       try {
         setUploadProgress('Uploading pitch deck...')
@@ -332,17 +370,13 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
           pitchDeck,
           `submissions/${timestamp}/pitch-deck-${pitchDeck.name}`,
         )
-        setUploadProgress('Uploading financials...')
-        financialsUrl = await uploadToBlob(
-          financials,
-          `submissions/${timestamp}/financials-${financials.name}`,
-        )
-        if (voiceNote) {
-          setUploadProgress('Uploading voice note...')
-          voiceNoteUrl = await uploadToBlob(
-            voiceNote,
-            `submissions/${timestamp}/voice-note.webm`,
+        if (financials) {
+          setUploadProgress('Uploading financials...')
+          financialsUrl = await uploadToBlob(
+            financials,
+            `submissions/${timestamp}/financials-${financials.name}`,
           )
+          financialsFilename = financials.name
         }
       } catch (uploadErr) {
         throw new Error(
@@ -357,12 +391,11 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          linkedinUrl,
+          linkedinUrl: linkedinUrl || undefined,
           pitchDeckUrl,
           pitchDeckFilename: pitchDeck.name,
           financialsUrl,
-          financialsFilename: financials.name,
-          voiceNoteUrl,
+          financialsFilename,
           slug: chosenSlug,
         }),
       })
@@ -385,7 +418,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
       setIsSubmitting(false)
       setUploadProgress('')
     }
-  }, [email, chosenSlug, pitchDeck, financials, linkedinUrl, voiceNote, isUploadValid, isSubmitting])
+  }, [email, chosenSlug, pitchDeck, financials, linkedinUrl, isUploadValid, isSubmitting])
 
   const handleProcessingComplete = useCallback(() => {
     if (scoreResult) {
@@ -417,6 +450,8 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     setStep('account')
     setEmail('')
     setPassword('')
+    setFullName('')
+    setLinkedinUrl('')
     setIsLogin(false)
     setAuthError('')
     setUserId(null)
@@ -431,11 +466,9 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     setCompanyWebsite('')
     setFounderName('')
     setFounderTitle('')
-    setLinkedinUrl('')
     setTeamSize('')
     setPitchDeck(null)
     setFinancials(null)
-    setVoiceNote(null)
     setScoreResult(null)
     setSubmissionId('')
     setResultSlug('')
@@ -528,7 +561,15 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Full Name *</label>
+              <input
+                type="text" value={fullName} onChange={(e) => setFullName(e.target.value)}
+                placeholder="Jane Smith"
+                className={INPUT_CLASS}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Email *</label>
               <input
                 type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="founder@company.com"
@@ -536,17 +577,25 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Password</label>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Password *</label>
               <input
                 type="password" value={password} onChange={(e) => setPassword(e.target.value)}
                 placeholder="Min 6 characters" minLength={6}
                 className={INPUT_CLASS}
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">LinkedIn Profile URL</label>
+              <input
+                type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)}
+                placeholder="https://linkedin.com/in/yourprofile"
+                className={INPUT_CLASS}
+              />
+            </div>
 
-            <button onClick={handleAuth} disabled={authLoading || !email || !password}
+            <button onClick={handleAuth} disabled={authLoading || !isAccountValid}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
-                email && password ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                isAccountValid ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}>
               {authLoading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
             </button>
@@ -573,7 +622,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
             {/* Slug Picker */}
             <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Your Kunfa URL *</label>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Choose Your URL *</label>
               <div className="flex items-center">
                 <span className="text-sm text-gray-500 bg-gray-50 px-3 py-2.5 rounded-l-lg border border-r-0 border-gray-300 whitespace-nowrap">
                   kunfa.ai/company/
@@ -665,11 +714,11 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               </div>
             </div>
 
-            <button onClick={() => setStep('founder')} disabled={!isCompanyValid}
+            <button onClick={handleSaveCompany} disabled={!isCompanyValid || authLoading}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
                 isCompanyValid ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}>
-              Continue
+              {authLoading ? 'Saving...' : 'Continue'}
             </button>
           </div>
         )}
@@ -693,13 +742,6 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">LinkedIn URL</label>
-              <input type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)}
-                placeholder="https://linkedin.com/in/yourprofile"
-                className={INPUT_CLASS} />
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Team Size</label>
               <input type="number" value={teamSize} onChange={(e) => setTeamSize(e.target.value)}
                 placeholder="e.g. 5"
@@ -712,7 +754,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 className="flex-1 py-3 rounded-lg font-semibold text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
                 Back
               </button>
-              <button onClick={handleSaveProfile} disabled={!isFounderValid || authLoading}
+              <button onClick={handleSaveFounder} disabled={!isFounderValid || authLoading}
                 className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-all ${
                   isFounderValid ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}>
@@ -722,7 +764,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
           </div>
         )}
 
-        {/* STEP 4: Upload */}
+        {/* STEP 4: Upload & Score */}
         {!initialLoading && step === 'upload' && (
           <div className="space-y-4">
             <div>
@@ -738,26 +780,21 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Financials & Metrics *</label>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Financials & Metrics</label>
               <UploadZone
                 label="Tap to upload"
-                subtitle="Financials, data room — up to 50 MB"
-                required={true}
+                subtitle="Financials, data room — up to 50 MB (optional)"
+                required={false}
                 accept=".pdf,.xlsx,.xls,.csv"
                 file={financials}
                 onFileSelect={setFinancials}
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Voice Note</label>
-              <VoiceRecorder recording={voiceNote} onRecordingComplete={setVoiceNote} />
-            </div>
-
             <div className="flex items-center gap-4 pt-2">
               {[
                 { label: 'Pitch deck', done: !!pitchDeck },
-                { label: 'Financials', done: !!financials },
+                { label: 'Financials', done: !!financials, optional: true },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-1.5">
                   <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
@@ -770,7 +807,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                     )}
                   </div>
                   <span className={`text-xs ${item.done ? 'text-kunfa-navy font-medium' : 'text-gray-400'}`}>
-                    {item.label}
+                    {item.label}{item.optional ? ' (optional)' : ''}
                   </span>
                 </div>
               ))}

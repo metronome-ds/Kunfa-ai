@@ -27,22 +27,20 @@ export async function POST(request: NextRequest) {
       pitchDeckFilename,
       financialsUrl,
       financialsFilename,
-      voiceNoteUrl,
       slug: userSlug,
     } = body as {
       email: string
-      linkedinUrl: string
+      linkedinUrl?: string
       pitchDeckUrl: string
       pitchDeckFilename: string
-      financialsUrl: string
-      financialsFilename: string
-      voiceNoteUrl?: string
+      financialsUrl?: string
+      financialsFilename?: string
       slug?: string
     }
 
-    if (!email || !pitchDeckUrl || !financialsUrl || !linkedinUrl) {
+    if (!email || !pitchDeckUrl) {
       return NextResponse.json(
-        { error: 'Missing required fields: email, pitchDeckUrl, financialsUrl, linkedinUrl' },
+        { error: 'Missing required fields: email, pitchDeckUrl' },
         { status: 400 },
       )
     }
@@ -73,12 +71,11 @@ export async function POST(request: NextRequest) {
           id: submissionId,
           user_id: userId,
           email,
-          linkedin_url: linkedinUrl,
+          linkedin_url: linkedinUrl || null,
           pitch_deck_url: pitchDeckUrl,
           pitch_deck_filename: pitchDeckFilename,
-          financials_url: financialsUrl,
-          financials_filename: financialsFilename,
-          voice_note_url: voiceNoteUrl,
+          financials_url: financialsUrl || null,
+          financials_filename: financialsFilename || null,
         })
       } catch (dbErr) {
         console.error('DB createSubmission failed (continuing):', dbErr)
@@ -87,12 +84,13 @@ export async function POST(request: NextRequest) {
 
     // --- Fetch files from Blob and extract text ---
     let pitchDeckText: string
-    let financialsText: string
+    let financialsText = ''
     try {
-      ;[pitchDeckText, financialsText] = await Promise.all([
-        extractTextFromBlobUrl(pitchDeckUrl, pitchDeckFilename || 'file.pdf'),
-        extractTextFromBlobUrl(financialsUrl, financialsFilename || 'file.pdf'),
-      ])
+      pitchDeckText = await extractTextFromBlobUrl(pitchDeckUrl, pitchDeckFilename || 'file.pdf')
+
+      if (financialsUrl) {
+        financialsText = await extractTextFromBlobUrl(financialsUrl, financialsFilename || 'file.pdf')
+      }
     } catch (fetchErr) {
       console.error('File fetch/extract error:', fetchErr)
       return NextResponse.json(
@@ -109,20 +107,13 @@ export async function POST(request: NextRequest) {
         { status: 422 },
       )
     }
-    if (!financialsText || financialsText.trim().length < 20) {
-      console.error('Financials text extraction yielded too little text:', financialsText?.length || 0, 'chars')
-      return NextResponse.json(
-        { error: 'Could not extract enough data from your financials file. Please check the file format and try again.' },
-        { status: 422 },
-      )
-    }
 
     console.log(`Extracted text: pitchDeck=${pitchDeckText.length} chars, financials=${financialsText.length} chars`)
 
     // --- Score with Claude ---
     let fullResult
     try {
-      fullResult = await scoreStartup(pitchDeckText, financialsText, linkedinUrl)
+      fullResult = await scoreStartup(pitchDeckText, financialsText, linkedinUrl || '')
     } catch (aiErr) {
       console.error('Claude API error:', aiErr)
       return NextResponse.json(

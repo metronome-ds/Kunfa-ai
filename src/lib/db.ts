@@ -103,12 +103,11 @@ export async function createSubmission(data: {
   id: string
   user_id: string
   email: string
-  linkedin_url: string
+  linkedin_url?: string | null
   pitch_deck_url: string
-  pitch_deck_filename?: string
-  financials_url: string
-  financials_filename?: string
-  voice_note_url?: string
+  pitch_deck_filename?: string | null
+  financials_url?: string | null
+  financials_filename?: string | null
 }) {
   const supabase = getSupabase()
   const { data: submission, error } = await supabase
@@ -117,12 +116,11 @@ export async function createSubmission(data: {
       id: data.id,
       user_id: data.user_id,
       email: data.email,
-      linkedin_url: data.linkedin_url,
+      linkedin_url: data.linkedin_url || null,
       pitch_deck_url: data.pitch_deck_url,
       pitch_deck_filename: data.pitch_deck_filename || null,
-      financials_url: data.financials_url,
+      financials_url: data.financials_url || null,
       financials_filename: data.financials_filename || null,
-      voice_note_url: data.voice_note_url || null,
     })
     .select()
     .single()
