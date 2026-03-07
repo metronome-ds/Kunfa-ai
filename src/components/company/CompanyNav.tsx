@@ -6,7 +6,6 @@ import { supabase } from '@/lib/supabase'
 
 export function CompanyNav() {
   const [userRole, setUserRole] = useState<string | null>(null)
-  const [mySlug, setMySlug] = useState<string | null>(null)
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
@@ -17,7 +16,6 @@ export function CompanyNav() {
         return
       }
 
-      // Get role
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -25,18 +23,6 @@ export function CompanyNav() {
         .single()
 
       setUserRole(profile?.role || null)
-
-      // If startup, check for company page
-      if (profile?.role === 'startup') {
-        try {
-          const res = await fetch('/api/my-company')
-          const data = await res.json()
-          setMySlug(data.slug || null)
-        } catch {
-          // ignore
-        }
-      }
-
       setLoaded(true)
     }
 
@@ -56,18 +42,14 @@ export function CompanyNav() {
         <div className="flex items-center gap-3">
           {loaded && (
             <>
-              {/* Startup with company page → See My Profile */}
-              {userRole === 'startup' && mySlug && (
+              {userRole === 'startup' ? (
                 <Link
-                  href={`/company/${mySlug}`}
-                  className="text-gray-700 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 hover:bg-gray-50 transition"
+                  href="/dashboard"
+                  className="bg-[#10B981] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#059669] transition"
                 >
                   See My Profile
                 </Link>
-              )}
-
-              {/* Investor → Browse Companies */}
-              {userRole === 'investor' ? (
+              ) : userRole === 'investor' ? (
                 <Link
                   href="/deals"
                   className="bg-[#10B981] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#059669] transition"
@@ -75,15 +57,12 @@ export function CompanyNav() {
                   Browse Companies
                 </Link>
               ) : (
-                /* Logged out or startup without company → Get Your Score */
-                !userRole || (userRole === 'startup' && !mySlug) ? (
-                  <Link
-                    href="/"
-                    className="bg-[#10B981] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#059669] transition"
-                  >
-                    Get Your Score
-                  </Link>
-                ) : null
+                <Link
+                  href="/"
+                  className="bg-[#10B981] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#059669] transition"
+                >
+                  Get Your Score
+                </Link>
               )}
             </>
           )}
