@@ -44,7 +44,7 @@ const investorNavSections: Record<string, NavItem[]> = {
   ],
   DISCOVER: [
     {
-      label: 'Browse Deals',
+      label: 'Browse Companies',
       icon: <Compass className="h-5 w-5" />,
       href: '/deals',
     },

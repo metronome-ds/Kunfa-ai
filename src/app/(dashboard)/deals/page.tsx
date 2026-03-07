@@ -1,23 +1,11 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { DealCard } from '@/components/deals/DealCard';
-import { DealFilter } from '@/components/deals/DealFilter';
+import { CompanyCard } from '@/components/companies/CompanyCard';
+import { CompanyFilter, CompanyFilterState } from '@/components/companies/CompanyFilter';
 import { Button } from '@/components/common/Button';
-import { Plus, Loader2, AlertCircle } from 'lucide-react';
-import { Deal } from '@/lib/types';
-
-interface FilterState {
-  search: string;
-  industries: string[];
-  stages: string[];
-  minFunding: number | null;
-  maxFunding: number | null;
-  minScore: number | null;
-  maxScore: number | null;
-  sort: 'newest' | 'score' | 'funding';
-}
+import { AlertCircle, Rocket } from 'lucide-react';
+import Link from 'next/link';
 
 interface PaginationData {
   page: number;
@@ -26,18 +14,12 @@ interface PaginationData {
   totalPages: number;
 }
 
-export default function DealsPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [deals, setDeals] = useState<any[]>([]);
-  const [filters, setFilters] = useState<FilterState>({
+export default function BrowseCompaniesPage() {
+  const [companies, setCompanies] = useState<any[]>([]);
+  const [filters, setFilters] = useState<CompanyFilterState>({
     search: '',
     industries: [],
     stages: [],
-    minFunding: null,
-    maxFunding: null,
-    minScore: null,
-    maxScore: null,
     sort: 'newest',
   });
   const [pagination, setPagination] = useState<PaginationData>({
@@ -48,26 +30,11 @@ export default function DealsPage() {
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [savedDealIds, setSavedDealIds] = useState<Set<string>>(new Set());
+  const [watchlistedIds, setWatchlistedIds] = useState<Set<string>>(new Set());
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Load filters from URL params
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams);
-    const newFilters: FilterState = {
-      search: params.get('search') || '',
-      industries: params.getAll('industries') || [],
-      stages: params.getAll('stages') || [],
-      minFunding: params.get('minFunding') ? parseInt(params.get('minFunding')!) : null,
-      maxFunding: params.get('maxFunding') ? parseInt(params.get('maxFunding')!) : null,
-      minScore: params.get('minScore') ? parseInt(params.get('minScore')!) : null,
-      maxScore: params.get('maxScore') ? parseInt(params.get('maxScore')!) : null,
-      sort: (params.get('sort') as FilterState['sort']) || 'newest',
-    };
-    setFilters(newFilters);
-  }, [searchParams]);
-
-  // Fetch deals
-  const fetchDeals = useCallback(
+  // Fetch companies from company_pages
+  const fetchCompanies = useCallback(
     async (pageNum = 1) => {
       setIsLoading(true);
       setError(null);
@@ -81,22 +48,16 @@ export default function DealsPage() {
         if (filters.search) params.set('search', filters.search);
         filters.industries.forEach((ind) => params.append('industry', ind));
         filters.stages.forEach((stage) => params.append('stage', stage));
-        if (filters.minFunding) params.set('minFunding', filters.minFunding.toString());
-        if (filters.maxFunding) params.set('maxFunding', filters.maxFunding.toString());
-        if (filters.minScore) params.set('minScore', filters.minScore.toString());
-        if (filters.maxScore) params.set('maxScore', filters.maxScore.toString());
 
-        const response = await fetch(`/api/deals?${params.toString()}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch deals');
-        }
+        const response = await fetch(`/api/companies/browse?${params.toString()}`);
+        if (!response.ok) throw new Error('Failed to fetch companies');
 
         const data = await response.json();
-        setDeals(data.data || []);
-        setPagination(data.pagination || {});
+        setCompanies(data.data || []);
+        setPagination(data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
-        setDeals([]);
+        setCompanies([]);
       } finally {
         setIsLoading(false);
       }
@@ -104,55 +65,55 @@ export default function DealsPage() {
     [filters, pagination.limit]
   );
 
-  // Fetch saved deals
-  const fetchSavedDeals = useCallback(async () => {
+  // Fetch watchlisted company IDs (only if logged in)
+  const fetchWatchlist = useCallback(async () => {
     try {
-      const response = await fetch('/api/deals/saved');
+      const response = await fetch('/api/watchlist');
       if (response.ok) {
         const data = await response.json();
-        setSavedDealIds(new Set(data.data.map((d: any) => d.company_id)));
+        const ids = new Set<string>(
+          (data.data || []).map((item: any) => {
+            const cp = item.company_pages;
+            return cp?.id || null;
+          }).filter(Boolean)
+        );
+        setWatchlistedIds(ids);
+        setIsLoggedIn(true);
+      } else if (response.status === 401) {
+        setIsLoggedIn(false);
       }
-    } catch (err) {
-      console.error('Failed to fetch saved deals:', err);
+    } catch {
+      // Not logged in or error — don't show watchlist icons
+      setIsLoggedIn(false);
     }
   }, []);
 
   // Initial load
   useEffect(() => {
-    fetchDeals(1);
-    fetchSavedDeals();
+    fetchCompanies(1);
+    fetchWatchlist();
   }, [filters]);
 
-  const handleFilterChange = (newFilters: FilterState) => {
+  const handleFilterChange = (newFilters: CompanyFilterState) => {
     setFilters(newFilters);
-    // Update URL
-    const params = new URLSearchParams();
-    if (newFilters.search) params.set('search', newFilters.search);
-    newFilters.industries.forEach((ind) => params.append('industries', ind));
-    newFilters.stages.forEach((stage) => params.append('stages', stage));
-    if (newFilters.minFunding) params.set('minFunding', newFilters.minFunding.toString());
-    if (newFilters.maxFunding) params.set('maxFunding', newFilters.maxFunding.toString());
-    if (newFilters.minScore) params.set('minScore', newFilters.minScore.toString());
-    if (newFilters.maxScore) params.set('maxScore', newFilters.maxScore.toString());
-    params.set('sort', newFilters.sort);
-
-    router.push(`/deals?${params.toString()}`);
   };
 
-  const handleSaveToggle = async (_dealId: string, _saved: boolean) => {
-    // Re-fetch watchlist to stay in sync (watchlist uses company_id, not deal_id)
-    await fetchSavedDeals();
+  const handleWatchlistToggle = async () => {
+    // Re-fetch watchlist to stay in sync
+    await fetchWatchlist();
   };
 
-  const activeFilterCount = Object.values(filters).filter((v) => {
-    if (Array.isArray(v)) return v.length > 0;
-    return v !== null && v !== '' && v !== 'newest';
-  }).length;
+  const activeFilterCount = [
+    filters.search,
+    ...filters.industries,
+    ...filters.stages,
+    filters.sort !== 'newest' ? filters.sort : null,
+  ].filter(Boolean).length;
 
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar Filter */}
-      <DealFilter
+      <CompanyFilter
         onFilterChange={handleFilterChange}
         activeFilterCount={activeFilterCount}
       />
@@ -162,18 +123,10 @@ export default function DealsPage() {
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">Deal Marketplace</h1>
-            <Button
-              onClick={() => router.push('/deals/create')}
-              icon={<Plus className="h-5 w-5" />}
-              variant="primary"
-              size="lg"
-            >
-              List a Deal
-            </Button>
+            <h1 className="text-3xl font-bold text-gray-900">Browse Companies</h1>
           </div>
           <p className="text-gray-600">
-            {isLoading ? 'Loading...' : `${pagination.total} deals available`}
+            {isLoading ? 'Loading...' : `${pagination.total} companies on the platform`}
           </p>
         </div>
 
@@ -183,66 +136,62 @@ export default function DealsPage() {
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
               <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
               <div>
-                <h3 className="font-semibold text-red-900">Error loading deals</h3>
+                <h3 className="font-semibold text-red-900">Error loading companies</h3>
                 <p className="text-sm text-red-700">{error}</p>
               </div>
             </div>
           )}
 
-          {isLoading && deals.length === 0 ? (
+          {isLoading && companies.length === 0 ? (
+            /* Skeleton loader */
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
                   className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse"
                 >
-                  <div className="h-4 bg-gray-200 rounded mb-3 w-20"></div>
-                  <div className="h-6 bg-gray-200 rounded mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-4 w-32"></div>
+                  <div className="flex gap-2 mb-3">
+                    <div className="h-5 bg-gray-200 rounded-full w-20"></div>
+                    <div className="h-5 bg-gray-200 rounded-full w-16"></div>
+                  </div>
+                  <div className="h-6 bg-gray-200 rounded mb-2 w-3/4"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-4 w-full"></div>
                   <div className="flex justify-between items-end pt-4 border-t border-gray-100">
                     <div className="h-8 bg-gray-200 rounded w-24"></div>
-                    <div className="h-16 w-16 bg-gray-200 rounded-full"></div>
+                    <div className="h-14 w-14 bg-gray-200 rounded-full"></div>
                   </div>
                 </div>
               ))}
             </div>
-          ) : deals.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="inline-flex items-center justify-center h-16 w-16 bg-gray-100 rounded-full mb-4">
-                <AlertCircle className="h-8 w-8 text-gray-400" />
+          ) : companies.length === 0 ? (
+            /* Empty state */
+            <div className="text-center py-16">
+              <div className="inline-flex items-center justify-center h-20 w-20 bg-emerald-50 rounded-full mb-6">
+                <Rocket className="h-10 w-10 text-emerald-500" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                No deals found
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                No companies yet
               </h3>
-              <p className="text-gray-600 mb-6 max-w-sm mx-auto">
-                Try adjusting your filters or search terms to find more deals.
+              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                Be the first to get scored! Submit your pitch deck and get an AI-powered investment analysis in minutes.
               </p>
-              <Button
-                onClick={() => handleFilterChange({
-                  search: '',
-                  industries: [],
-                  stages: [],
-                  minFunding: null,
-                  maxFunding: null,
-                  minScore: null,
-                  maxScore: null,
-                  sort: 'newest',
-                })}
-                variant="secondary"
-              >
-                Clear Filters
-              </Button>
+              <Link href="/">
+                <Button variant="primary" size="lg">
+                  Get Your Kunfa Score
+                </Button>
+              </Link>
             </div>
           ) : (
             <>
               {/* Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                {deals.map((deal) => (
-                  <DealCard
-                    key={deal.id}
-                    deal={deal}
-                    isSaved={savedDealIds.has(deal.company_id)}
-                    onSaveToggle={handleSaveToggle}
+                {companies.map((company) => (
+                  <CompanyCard
+                    key={company.id}
+                    company={company}
+                    isWatchlisted={watchlistedIds.has(company.id)}
+                    showWatchlist={isLoggedIn}
+                    onWatchlistToggle={handleWatchlistToggle}
                   />
                 ))}
               </div>
@@ -251,7 +200,7 @@ export default function DealsPage() {
               {pagination.totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2">
                   <Button
-                    onClick={() => fetchDeals(pagination.page - 1)}
+                    onClick={() => fetchCompanies(pagination.page - 1)}
                     disabled={pagination.page === 1}
                     variant="secondary"
                   >
@@ -267,10 +216,10 @@ export default function DealsPage() {
                       .map((pageNum) => (
                         <button
                           key={pageNum}
-                          onClick={() => fetchDeals(pageNum)}
+                          onClick={() => fetchCompanies(pageNum)}
                           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                             pagination.page === pageNum
-                              ? 'bg-blue-600 text-white'
+                              ? 'bg-emerald-600 text-white'
                               : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
                           }`}
                         >
@@ -280,7 +229,7 @@ export default function DealsPage() {
                   </div>
 
                   <Button
-                    onClick={() => fetchDeals(pagination.page + 1)}
+                    onClick={() => fetchCompanies(pagination.page + 1)}
                     disabled={pagination.page === pagination.totalPages}
                     variant="secondary"
                   >
