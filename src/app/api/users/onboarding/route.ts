@@ -14,7 +14,18 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { role } = body;
+    const {
+      role,
+      full_name,
+      job_title,
+      company_name,
+      one_liner,
+      company_country,
+      company_website,
+      industry,
+      company_stage,
+      raise_amount,
+    } = body;
 
     if (!role) {
       return NextResponse.json(
@@ -22,6 +33,23 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Build update payload — only include provided fields
+    const profileData: Record<string, unknown> = {
+      role,
+      onboarding_completed: true,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (full_name !== undefined) profileData.full_name = full_name;
+    if (job_title !== undefined) profileData.job_title = job_title;
+    if (company_name !== undefined) profileData.company_name = company_name;
+    if (one_liner !== undefined) profileData.one_liner = one_liner;
+    if (company_country !== undefined) profileData.company_country = company_country;
+    if (company_website !== undefined) profileData.company_website = company_website;
+    if (industry !== undefined) profileData.industry = industry;
+    if (company_stage !== undefined) profileData.company_stage = company_stage;
+    if (raise_amount !== undefined) profileData.raise_amount = raise_amount;
 
     // Check if profile already exists
     const { data: existingProfile } = await supabase
@@ -31,14 +59,9 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (existingProfile) {
-      // Update existing profile
       const { error } = await supabase
         .from('profiles')
-        .update({
-          role,
-          onboarding_completed: true,
-          updated_at: new Date().toISOString(),
-        })
+        .update(profileData)
         .eq('user_id', user.id);
 
       if (error) {
@@ -49,14 +72,12 @@ export async function POST(request: NextRequest) {
         );
       }
     } else {
-      // Create new profile
       const { error } = await supabase
         .from('profiles')
         .insert({
           user_id: user.id,
           email: user.email,
-          role,
-          onboarding_completed: true,
+          ...profileData,
         });
 
       if (error) {
