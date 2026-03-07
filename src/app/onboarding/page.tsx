@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { CheckCircle, ArrowRight, Briefcase, TrendingUp, Zap } from 'lucide-react';
 
-type Role = 'founder' | 'investor' | 'service_provider';
+type Role = 'founder' | 'startup' | 'investor' | 'service_provider';
 
 const ROLES = [
   {
@@ -47,8 +47,14 @@ const INTERESTS = [
   'Enterprise',
 ];
 
-const MATCHED_TOOLS = {
+const MATCHED_TOOLS: Record<string, string[]> = {
   founder: [
+    'List a Deal',
+    'AI Company Briefs',
+    'Valuation Calculator',
+    'Deal Pipeline',
+  ],
+  startup: [
     'List a Deal',
     'AI Company Briefs',
     'Valuation Calculator',

@@ -23,6 +23,7 @@ import {
   Star,
   LayoutDashboard,
   Landmark,
+  PlusCircle,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -59,6 +60,11 @@ const investorNavSections: Record<string, NavItem[]> = {
     },
   ],
   'DEAL FLOW': [
+    {
+      label: 'Add Company',
+      icon: <PlusCircle className="h-5 w-5" />,
+      href: '/companies/new',
+    },
     {
       label: 'Pipeline',
       icon: <TrendingUp className="h-5 w-5" />,
@@ -267,7 +273,7 @@ export function Sidebar() {
   };
 
   // Determine which nav to show based on role
-  const isStartup = userRole === 'founder';
+  const isStartup = userRole === 'founder' || userRole === 'startup';
   const navigationSections = isStartup ? startupNavSections : investorNavSections;
   const bottomSections = isStartup ? startupBottomSections : investorBottomSections;
   const tagline = isStartup ? 'Startup Growth Platform' : 'Deal Flow Intelligence';

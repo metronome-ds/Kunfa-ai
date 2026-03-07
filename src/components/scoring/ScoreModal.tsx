@@ -53,6 +53,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null)
   const [submissionId, setSubmissionId] = useState('')
+  const [slug, setSlug] = useState('')
   const [error, setError] = useState('')
   const [uploadProgress, setUploadProgress] = useState('')
   const [emailStatus, setEmailStatus] = useState<'idle' | 'checking' | 'new' | 'existing' | 'has_submission'>('idle')
@@ -123,6 +124,9 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
       setScoreResult(data.teaser)
       setSubmissionId(data.submissionId)
+      if (data.slug) {
+        setSlug(data.slug)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
       setStep('upload')
@@ -134,9 +138,13 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
   const handleProcessingComplete = useCallback(() => {
     if (scoreResult) {
+      if (slug) {
+        window.location.href = `/company/${slug}`
+        return
+      }
       setStep('results')
     }
-  }, [scoreResult])
+  }, [scoreResult, slug])
 
   const handleUnlock = useCallback(async () => {
     try {
@@ -163,6 +171,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     setVoiceNote(null)
     setScoreResult(null)
     setSubmissionId('')
+    setSlug('')
     setError('')
     setUploadProgress('')
     setEmailStatus('idle')

@@ -1,15 +1,46 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import { Building2, TrendingUp } from 'lucide-react'
 
 export default function SignupPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
+      </div>
+    }>
+      <SignupContent />
+    </Suspense>
+  )
+}
+
+function SignupContent() {
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [showRoleSelection, setShowRoleSelection] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (searchParams.get('step') === 'role') {
+      // Coming from OAuth callback — user needs to pick a role
+      const checkUser = async () => {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          setUserId(user.id)
+          setShowRoleSelection(true)
+        }
+      }
+      checkUser()
+    }
+  }, [searchParams])
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
@@ -30,19 +61,42 @@ export default function SignupPage() {
 
     if (data.user) {
       if (data.session) {
-        // Auto-confirmed — create profile and go to onboarding
+        // Auto-confirmed — create profile and show role selection
         await supabase.from('profiles').insert({
           user_id: data.user.id,
           email,
         })
-        window.location.href = '/onboarding'
+        setUserId(data.user.id)
+        setShowRoleSelection(true)
       } else {
-        // Email confirmation required — do NOT create profile yet
+        // Email confirmation required
         setSuccess(true)
       }
     }
 
     setLoading(false)
+  }
+
+  async function handleRoleSelect(role: 'startup' | 'investor') {
+    if (!userId) return
+    setLoading(true)
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ role })
+      .eq('user_id', userId)
+
+    if (error) {
+      setError('Failed to set role. Please try again.')
+      setLoading(false)
+      return
+    }
+
+    if (role === 'startup') {
+      window.location.href = '/'
+    } else {
+      window.location.href = '/dashboard'
+    }
   }
 
   async function handleGoogleLogin() {
@@ -61,6 +115,55 @@ export default function SignupPage() {
       options: { redirectTo: `${window.location.origin}/auth/callback` }
     })
     if (error) { setError(error.message); setLoading(false) }
+  }
+
+  if (showRoleSelection) {
+    return (
+      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
+        <div className="w-full max-w-lg">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 mb-6">
+              <div className="w-10 h-10 rounded-lg bg-[#10B981] flex items-center justify-center">
+                <span className="text-white font-bold text-xl">K</span>
+              </div>
+              <span className="text-white font-bold text-xl">Kunfa.AI</span>
+            </div>
+            <h1 className="text-2xl font-bold text-white">How will you use Kunfa?</h1>
+            <p className="text-gray-400 mt-2">Choose your role to get started</p>
+          </div>
+
+          {error && (
+            <div className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3 mb-6">{error}</div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <button
+              onClick={() => handleRoleSelect('startup')}
+              disabled={loading}
+              className="group bg-[#1E293B] rounded-xl p-8 border-2 border-gray-700 hover:border-[#10B981] transition-all text-left disabled:opacity-50"
+            >
+              <div className="w-14 h-14 rounded-xl bg-[#10B981]/20 flex items-center justify-center mb-4 group-hover:bg-[#10B981]/30 transition">
+                <Building2 className="w-7 h-7 text-[#10B981]" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-1">I'm a Startup</h3>
+              <p className="text-sm text-gray-400">Get your pitch scored by AI and connect with investors</p>
+            </button>
+
+            <button
+              onClick={() => handleRoleSelect('investor')}
+              disabled={loading}
+              className="group bg-[#1E293B] rounded-xl p-8 border-2 border-gray-700 hover:border-blue-500 transition-all text-left disabled:opacity-50"
+            >
+              <div className="w-14 h-14 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4 group-hover:bg-blue-500/30 transition">
+                <TrendingUp className="w-7 h-7 text-blue-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-1">I'm an Investor</h3>
+              <p className="text-sm text-gray-400">Discover deals, manage pipeline, and track portfolio</p>
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (success) {

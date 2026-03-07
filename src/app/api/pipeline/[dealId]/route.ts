@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * PUT /api/pipeline/[dealId]
- * Update pipeline entry (change stage, notes, follow_up_date)
+ * Update deal stage and stage_changed_at
  */
 export async function PUT(
   request: NextRequest,
@@ -11,7 +11,7 @@ export async function PUT(
 ) {
   try {
     const supabase = await createServerSupabaseClient();
-    const resolvedParams = await params;
+    const { dealId } = await params;
 
     const {
       data: { user },
@@ -19,60 +19,46 @@ export async function PUT(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { current_stage, notes, next_steps, follow_up_date } = body;
+    const { stage, notes } = body;
 
-    const updateData: any = {};
-    if (current_stage) updateData.current_stage = current_stage;
+    const updateData: Record<string, unknown> = {};
+    if (stage) {
+      updateData.stage = stage;
+      updateData.stage_changed_at = new Date().toISOString();
+    }
     if (notes !== undefined) updateData.notes = notes;
-    if (next_steps !== undefined) updateData.next_steps = next_steps;
-    if (follow_up_date !== undefined) updateData.follow_up_date = follow_up_date;
 
     const { data, error } = await supabase
-      .from('deal_pipeline')
+      .from('deals')
       .update(updateData)
-      .eq('user_id', user.id)
-      .eq('deal_id', resolvedParams.dealId)
+      .eq('id', dealId)
+      .eq('created_by', user.id)
       .select()
       .single();
 
     if (error) {
-      console.error('Error updating pipeline entry:', error);
-      return NextResponse.json(
-        { error: 'Failed to update pipeline entry' },
-        { status: 500 }
-      );
+      console.error('Error updating deal:', error);
+      return NextResponse.json({ error: 'Failed to update deal' }, { status: 500 });
     }
 
     if (!data) {
-      return NextResponse.json(
-        { error: 'Pipeline entry not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Deal not found' }, { status: 404 });
     }
 
-    return NextResponse.json(
-      { data },
-      { status: 200 }
-    );
+    return NextResponse.json({ data }, { status: 200 });
   } catch (error) {
     console.error('Unexpected error in PUT /api/pipeline/[dealId]:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 /**
  * DELETE /api/pipeline/[dealId]
- * Remove deal from pipeline
+ * Remove deal
  */
 export async function DELETE(
   request: NextRequest,
@@ -80,7 +66,7 @@ export async function DELETE(
 ) {
   try {
     const supabase = await createServerSupabaseClient();
-    const resolvedParams = await params;
+    const { dealId } = await params;
 
     const {
       data: { user },
@@ -88,35 +74,23 @@ export async function DELETE(
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { error } = await supabase
-      .from('deal_pipeline')
+      .from('deals')
       .delete()
-      .eq('user_id', user.id)
-      .eq('deal_id', resolvedParams.dealId);
+      .eq('id', dealId)
+      .eq('created_by', user.id);
 
     if (error) {
-      console.error('Error removing deal from pipeline:', error);
-      return NextResponse.json(
-        { error: 'Failed to remove deal from pipeline' },
-        { status: 500 }
-      );
+      console.error('Error deleting deal:', error);
+      return NextResponse.json({ error: 'Failed to delete deal' }, { status: 500 });
     }
 
-    return NextResponse.json(
-      { message: 'Deal removed from pipeline' },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Deal removed' }, { status: 200 });
   } catch (error) {
     console.error('Unexpected error in DELETE /api/pipeline/[dealId]:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

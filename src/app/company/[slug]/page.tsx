@@ -5,18 +5,25 @@ import { notFound } from 'next/navigation'
 async function getCompanyPage(slug: string) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
   const { data } = await supabase
     .from('company_pages')
-    .select('*, submissions(overall_score, full_analysis)')
+    .select('*')
     .eq('slug', slug)
-    .eq('is_public', true)
     .single()
 
   return data
+}
+
+function getScoreColor(score: number | null) {
+  if (!score) return 'text-gray-400 bg-gray-700'
+  if (score >= 80) return 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30'
+  if (score >= 60) return 'text-blue-400 bg-blue-500/20 border-blue-500/30'
+  if (score >= 40) return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30'
+  return 'text-red-400 bg-red-500/20 border-red-500/30'
 }
 
 export default async function CompanyPublicPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -27,8 +34,7 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
     notFound()
   }
 
-  const analysis = (company.submissions as any)?.full_analysis
-  const dimensions = analysis?.dimensions || {}
+  const scoreColor = getScoreColor(company.overall_score)
 
   return (
     <div className="min-h-screen bg-[#0F172A]">
@@ -53,55 +59,86 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-6 py-12">
         {/* Header */}
-        <div className="text-center mb-10">
-          {company.logo_url && (
-            <img src={company.logo_url} alt="" className="w-20 h-20 rounded-xl mx-auto mb-4 object-cover" />
-          )}
-          <h1 className="text-3xl font-bold text-white">{company.company_name}</h1>
-          {company.description && (
-            <p className="text-gray-400 mt-3 max-w-2xl mx-auto">{company.description}</p>
-          )}
-          {company.website_url && (
-            <a href={company.website_url} target="_blank" rel="noopener noreferrer" className="text-[#10B981] text-sm hover:underline mt-2 inline-block">
+        <div className="flex items-start gap-6 mb-8">
+          {/* Score badge */}
+          <div className={`w-20 h-20 rounded-2xl border flex items-center justify-center flex-shrink-0 ${scoreColor}`}>
+            <span className="text-3xl font-bold">{company.overall_score ?? '—'}</span>
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl font-bold text-white">{company.company_name}</h1>
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {company.industry && (
+                <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-medium">
+                  {company.industry}
+                </span>
+              )}
+              {company.stage && (
+                <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-medium">
+                  {company.stage}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Key metrics */}
+        {(company.raise_amount || company.team_size) && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+            {company.raise_amount && (
+              <div className="bg-[#1E293B] rounded-xl p-4 border border-gray-700">
+                <p className="text-xs text-gray-400 mb-1">Raise Amount</p>
+                <p className="text-lg font-semibold text-white">
+                  ${Number(company.raise_amount).toLocaleString()}
+                </p>
+              </div>
+            )}
+            {company.team_size && (
+              <div className="bg-[#1E293B] rounded-xl p-4 border border-gray-700">
+                <p className="text-xs text-gray-400 mb-1">Team Size</p>
+                <p className="text-lg font-semibold text-white">{company.team_size}</p>
+              </div>
+            )}
+            {company.founded_year && (
+              <div className="bg-[#1E293B] rounded-xl p-4 border border-gray-700">
+                <p className="text-xs text-gray-400 mb-1">Founded</p>
+                <p className="text-lg font-semibold text-white">{company.founded_year}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Description */}
+        {company.description && (
+          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700 mb-8">
+            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">About</h2>
+            <p className="text-gray-300 leading-relaxed">{company.description}</p>
+          </div>
+        )}
+
+        {company.website_url && (
+          <div className="mb-8">
+            <a href={company.website_url} target="_blank" rel="noopener noreferrer" className="text-[#10B981] text-sm hover:underline">
               {company.website_url}
             </a>
-          )}
-        </div>
-
-        {/* Score */}
-        <div className="bg-[#1E293B] rounded-xl p-8 border border-gray-700 text-center mb-8">
-          <p className="text-gray-400 text-sm mb-2">Kunfa Score</p>
-          <div className="text-6xl font-bold text-[#10B981]">{company.overall_score ?? '—'}</div>
-          <p className="text-gray-500 text-sm mt-2">out of 100</p>
-        </div>
-
-        {/* Dimensions */}
-        {Object.keys(dimensions).length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-            {Object.entries(dimensions).map(([key, dim]: [string, any]) => (
-              <div key={key} className="bg-[#1E293B] rounded-xl p-5 border border-gray-700 text-center">
-                <div className="text-3xl font-bold text-white">{dim?.score ?? '—'}</div>
-                <div className="text-xs text-gray-400 capitalize mt-1">{key}</div>
-                {dim?.letter_grade && (
-                  <div className="text-xs text-[#10B981] font-medium mt-1 bg-[#10B981]/10 inline-block px-2 py-0.5 rounded">
-                    {dim.letter_grade}
-                  </div>
-                )}
-              </div>
-            ))}
           </div>
         )}
 
         {/* CTA */}
-        <div className="text-center mt-12">
-          <p className="text-gray-400 mb-4">Want to see how your startup compares?</p>
-          <Link
-            href="/"
-            className="inline-block bg-[#10B981] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#059669] transition"
-          >
-            Get Your Own Kunfa Score
-          </Link>
-        </div>
+        {company.submission_id && (
+          <div className="bg-gradient-to-r from-[#10B981]/10 to-blue-500/10 rounded-xl p-8 border border-[#10B981]/20 text-center">
+            <h2 className="text-xl font-bold text-white mb-2">Get the Full Investment Memo</h2>
+            <p className="text-gray-400 mb-6 text-sm max-w-md mx-auto">
+              Detailed AI-powered analysis with actionable insights, risk assessment, and investment recommendations.
+            </p>
+            <a
+              href={`/api/stripe/checkout?submissionId=${company.submission_id}`}
+              className="inline-block bg-[#10B981] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#059669] transition"
+            >
+              Get Full Investment Memo
+            </a>
+          </div>
+        )}
       </main>
     </div>
   )

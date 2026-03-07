@@ -1,0 +1,2990 @@
+diff --git a/app/api/auth/check-email/route.ts b/app/api/auth/check-email/route.ts
+new file mode 100644
+index 0000000..46cf033
+--- /dev/null
++++ b/app/api/auth/check-email/route.ts
+@@ -0,0 +1,43 @@
++import { NextResponse } from 'next/server'
++import { createAdminClient } from '@/lib/supabase-server'
++
++export async function POST(request: Request) {
++  try {
++    const { email } = await request.json()
++
++    if (!email) {
++      return NextResponse.json({ error: 'Email required' }, { status: 400 })
++    }
++
++    const supabase = createAdminClient()
++
++    // Check if user exists with this email
++    const { data, error } = await supabase.auth.admin.listUsers()
++
++    if (error) {
++      console.error('Error checking email:', error)
++      return NextResponse.json({ exists: false })
++    }
++
++    const existingUser = data.users.find(u => u.email === email)
++
++    // Also check if they already have a submission
++    let hasSubmission = false
++    if (existingUser) {
++      const { data: submission } = await supabase
++        .from('submissions')
++        .select('id')
++        .eq('user_id', existingUser.id)
++        .single()
++      hasSubmission = !!submission
++    }
++
++    return NextResponse.json({
++      exists: !!existingUser,
++      hasSubmission,
++    })
++  } catch (err) {
++    console.error('Check email error:', err)
++    return NextResponse.json({ exists: false, hasSubmission: false })
++  }
++}
+diff --git a/app/api/score/route.ts b/app/api/score/route.ts
+index 76f5c77..991a5f4 100644
+--- a/app/api/score/route.ts
++++ b/app/api/score/route.ts
+@@ -1,7 +1,14 @@
+ import { NextRequest, NextResponse } from 'next/server'
+ import { scoreStartup, extractTeaser } from '@/lib/anthropic'
+ import { extractTextFromBlobUrl } from '@/lib/upload'
+-import { createSubmission, updateSubmissionScore, isDatabaseConfigured } from '@/lib/db'
++import {
++  createSubmission,
++  updateSubmissionScore,
++  isDatabaseConfigured,
++  findOrCreateUser,
++  userHasSubmission,
++  createCompanyPage,
++} from '@/lib/db'
+ import { v4 as uuid } from 'uuid'
+ 
+ export const maxDuration = 120
+@@ -36,15 +43,37 @@ export async function POST(request: NextRequest) {
+       )
+     }
+ 
+-    // --- DB: save submission (best-effort, don't block scoring) ---
++    // --- Find or create user account ---
++    let userId: string | null = null
+     if (isDatabaseConfigured()) {
++      try {
++        userId = await findOrCreateUser(email)
++
++        // Check if user already has a submission (one per account)
++        const hasExisting = await userHasSubmission(userId)
++        if (hasExisting) {
++          return NextResponse.json(
++            { error: 'You already have a submission. Each account is limited to one submission. Use a different email to score another business.' },
++            { status: 409 },
++          )
++        }
++      } catch (userErr) {
++        console.error('User creation failed (continuing without user link):', userErr)
++      }
++    }
++
++    // --- DB: save submission ---
++    if (isDatabaseConfigured() && userId) {
+       try {
+         await createSubmission({
+           id: submissionId,
++          user_id: userId,
+           email,
+           linkedin_url: linkedinUrl,
+           pitch_deck_url: pitchDeckUrl,
++          pitch_deck_filename: pitchDeckFilename,
+           financials_url: financialsUrl,
++          financials_filename: financialsFilename,
+           voice_note_url: voiceNoteUrl,
+         })
+       } catch (dbErr) {
+@@ -98,10 +127,25 @@ export async function POST(request: NextRequest) {
+       )
+     }
+ 
+-    // --- DB: save analysis (best-effort) ---
++    // --- DB: save analysis ---
+     if (isDatabaseConfigured()) {
+       try {
+         await updateSubmissionScore(submissionId, fullResult as unknown as Record<string, unknown>)
++
++        // Create company page (extract company name from AI analysis if available)
++        if (userId) {
++          const companyName = (fullResult as any)?.company_name ||
++            (fullResult as any)?.summary?.split(' ')[0] ||
++            email.split('@')[1]?.split('.')[0] ||
++            'Unnamed Company'
++          await createCompanyPage({
++            userId,
++            submissionId,
++            companyName,
++            overallScore: (fullResult as any)?.overall_score || 0,
++            description: (fullResult as any)?.summary || undefined,
++          })
++        }
+       } catch (dbErr) {
+         console.error('DB updateSubmissionScore failed (continuing):', dbErr)
+       }
+diff --git a/app/auth/callback/route.ts b/app/auth/callback/route.ts
+new file mode 100644
+index 0000000..47b4bd0
+--- /dev/null
++++ b/app/auth/callback/route.ts
+@@ -0,0 +1,61 @@
++import { createServerClient } from '@supabase/ssr'
++import { cookies } from 'next/headers'
++import { NextResponse } from 'next/server'
++import type { NextRequest } from 'next/server'
++
++export async function GET(request: NextRequest) {
++  const { searchParams, origin } = new URL(request.url)
++  const code = searchParams.get('code')
++  const redirect = searchParams.get('redirect') || '/dashboard'
++
++  if (code) {
++    const cookieStore = cookies()
++    const supabase = createServerClient(
++      process.env.NEXT_PUBLIC_SUPABASE_URL!,
++      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
++      {
++        cookies: {
++          getAll() { return cookieStore.getAll() },
++          setAll(cookiesToSet) {
++            try {
++              cookiesToSet.forEach(({ name, value, options }) =>
++                cookieStore.set(name, value, options)
++              )
++            } catch {}
++          },
++        },
++      }
++    )
++
++    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
++
++    if (!error && data.user) {
++      // Check if profile exists, create if not (for OAuth signups)
++      const { data: profile } = await supabase
++        .from('profiles')
++        .select('id, onboarding_completed')
++        .eq('user_id', data.user.id)
++        .single()
++
++      if (!profile) {
++        // First time OAuth login — create profile
++        await supabase.from('profiles').insert({
++          user_id: data.user.id,
++          email: data.user.email,
++          full_name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || '',
++          avatar_url: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture || '',
++        })
++        return NextResponse.redirect(`${origin}/auth/onboarding`)
++      }
++
++      if (!profile.onboarding_completed) {
++        return NextResponse.redirect(`${origin}/auth/onboarding`)
++      }
++
++      return NextResponse.redirect(`${origin}${redirect}`)
++    }
++  }
++
++  // Auth error — redirect to login
++  return NextResponse.redirect(`${origin}/auth/login?error=auth_failed`)
++}
+diff --git a/app/auth/login/page.tsx b/app/auth/login/page.tsx
+new file mode 100644
+index 0000000..75db10e
+--- /dev/null
++++ b/app/auth/login/page.tsx
+@@ -0,0 +1,150 @@
++'use client'
++
++import { useState } from 'react'
++import { createClient } from '@/lib/supabase'
++import Link from 'next/link'
++import { useSearchParams } from 'next/navigation'
++
++export default function LoginPage() {
++  const [email, setEmail] = useState('')
++  const [password, setPassword] = useState('')
++  const [loading, setLoading] = useState(false)
++  const [error, setError] = useState('')
++  const searchParams = useSearchParams()
++  const redirect = searchParams.get('redirect') || '/dashboard'
++
++  const supabase = createClient()
++
++  async function handleEmailLogin(e: React.FormEvent) {
++    e.preventDefault()
++    setLoading(true)
++    setError('')
++
++    const { error } = await supabase.auth.signInWithPassword({ email, password })
++    if (error) {
++      setError(error.message)
++      setLoading(false)
++    } else {
++      window.location.href = redirect
++    }
++  }
++
++  async function handleGoogleLogin() {
++    setLoading(true)
++    const { error } = await supabase.auth.signInWithOAuth({
++      provider: 'google',
++      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}` }
++    })
++    if (error) {
++      setError(error.message)
++      setLoading(false)
++    }
++  }
++
++  async function handleLinkedInLogin() {
++    setLoading(true)
++    const { error } = await supabase.auth.signInWithOAuth({
++      provider: 'linkedin_oidc',
++      options: { redirectTo: `${window.location.origin}/auth/callback?redirect=${redirect}` }
++    })
++    if (error) {
++      setError(error.message)
++      setLoading(false)
++    }
++  }
++
++  return (
++    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
++      <div className="w-full max-w-md">
++        <div className="text-center mb-8">
++          <Link href="/" className="inline-flex items-center gap-2 mb-6">
++            <div className="w-10 h-10 rounded-lg bg-[#10B981] flex items-center justify-center">
++              <span className="text-white font-bold text-xl">K</span>
++            </div>
++            <span className="text-white font-bold text-xl">Kunfa.AI</span>
++          </Link>
++          <h1 className="text-2xl font-bold text-white">Welcome back</h1>
++          <p className="text-gray-400 mt-2">Sign in to your account</p>
++        </div>
++
++        <div className="bg-[#1E293B] rounded-xl p-8 border border-gray-700">
++          {/* SSO Buttons */}
++          <div className="space-y-3 mb-6">
++            <button
++              onClick={handleGoogleLogin}
++              disabled={loading}
++              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-gray-800 rounded-lg font-medium hover:bg-gray-100 transition disabled:opacity-50"
++            >
++              <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
++              Continue with Google
++            </button>
++            <button
++              onClick={handleLinkedInLogin}
++              disabled={loading}
++              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#0A66C2] text-white rounded-lg font-medium hover:bg-[#004182] transition disabled:opacity-50"
++            >
++              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
++              Continue with LinkedIn
++            </button>
++          </div>
++
++          <div className="relative mb-6">
++            <div className="absolute inset-0 flex items-center">
++              <div className="w-full border-t border-gray-600"></div>
++            </div>
++            <div className="relative flex justify-center text-sm">
++              <span className="px-2 bg-[#1E293B] text-gray-400">or</span>
++            </div>
++          </div>
++
++          {/* Email/Password Form */}
++          <form onSubmit={handleEmailLogin} className="space-y-4">
++            <div>
++              <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
++              <input
++                type="email"
++                value={email}
++                onChange={(e) => setEmail(e.target.value)}
++                required
++                className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
++                placeholder="you@company.com"
++              />
++            </div>
++            <div>
++              <label className="block text-sm font-medium text-gray-300 mb-1">Password</label>
++              <input
++                type="password"
++                value={password}
++                onChange={(e) => setPassword(e.target.value)}
++                required
++                className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981] focus:border-transparent"
++                placeholder="Enter your password"
++              />
++            </div>
++
++            {error && (
++              <div className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3">
++                {error}
++              </div>
++            )}
++
++            <button
++              type="submit"
++              disabled={loading}
++              className="w-full py-3 bg-[#10B981] text-white rounded-lg font-semibold hover:bg-[#059669] transition disabled:opacity-50"
++            >
++              {loading ? 'Signing in...' : 'Sign In'}
++            </button>
++          </form>
++
++          <p className="text-center text-gray-400 text-sm mt-6">
++            Don&apos;t have an account?{' '}
++            <Link href="/auth/signup" className="text-[#10B981] hover:underline">
++              Sign up
++            </Link>
++          </p>
++        </div>
++      </div>
++    </div>
++  )
++}
+diff --git a/app/auth/onboarding/page.tsx b/app/auth/onboarding/page.tsx
+new file mode 100644
+index 0000000..e0b3137
+--- /dev/null
++++ b/app/auth/onboarding/page.tsx
+@@ -0,0 +1,150 @@
++'use client'
++
++import { useState, useEffect } from 'react'
++import { createClient } from '@/lib/supabase'
++import Link from 'next/link'
++
++type CompanyType = 'startup' | 'investor' | 'service_provider'
++
++export default function OnboardingPage() {
++  const [step, setStep] = useState(1)
++  const [companyType, setCompanyType] = useState<CompanyType | ''>('')
++  const [companyName, setCompanyName] = useState('')
++  const [linkedinUrl, setLinkedinUrl] = useState('')
++  const [loading, setLoading] = useState(false)
++  const [error, setError] = useState('')
++
++  const supabase = createClient()
++
++  async function handleComplete() {
++    if (!companyType || !companyName) return
++    setLoading(true)
++    setError('')
++
++    const { data: { user } } = await supabase.auth.getUser()
++    if (!user) {
++      setError('Not authenticated')
++      setLoading(false)
++      return
++    }
++
++    const { error } = await supabase
++      .from('profiles')
++      .update({
++        company_type: companyType,
++        company_name: companyName,
++        linkedin_url: linkedinUrl || null,
++        role: companyType === 'startup' ? 'founder' : companyType,
++        onboarding_completed: true,
++      })
++      .eq('user_id', user.id)
++
++    if (error) {
++      setError(error.message)
++      setLoading(false)
++      return
++    }
++
++    window.location.href = '/dashboard'
++  }
++
++  const typeOptions = [
++    { value: 'startup' as CompanyType, label: 'Startup / Founder', desc: 'Get your startup scored and generate investment memos', icon: '🚀' },
++    { value: 'investor' as CompanyType, label: 'Investor', desc: 'Discover and evaluate startups with AI-powered insights', icon: '💼' },
++    { value: 'service_provider' as CompanyType, label: 'Service Provider', desc: 'Connect with startups and investors', icon: '🔧' },
++  ]
++
++  return (
++    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
++      <div className="w-full max-w-lg">
++        <div className="text-center mb-8">
++          <Link href="/" className="inline-flex items-center gap-2 mb-6">
++            <div className="w-10 h-10 rounded-lg bg-[#10B981] flex items-center justify-center">
++              <span className="text-white font-bold text-xl">K</span>
++            </div>
++            <span className="text-white font-bold text-xl">Kunfa.AI</span>
++          </Link>
++          <h1 className="text-2xl font-bold text-white">Set up your profile</h1>
++          <p className="text-gray-400 mt-2">Step {step} of 2</p>
++          <div className="flex gap-2 justify-center mt-4">
++            <div className={`h-1 w-16 rounded ${step >= 1 ? 'bg-[#10B981]' : 'bg-gray-600'}`}></div>
++            <div className={`h-1 w-16 rounded ${step >= 2 ? 'bg-[#10B981]' : 'bg-gray-600'}`}></div>
++          </div>
++        </div>
++
++        <div className="bg-[#1E293B] rounded-xl p-8 border border-gray-700">
++          {step === 1 && (
++            <div>
++              <h2 className="text-lg font-semibold text-white mb-4">What describes you best?</h2>
++              <div className="space-y-3">
++                {typeOptions.map((opt) => (
++                  <button
++                    key={opt.value}
++                    onClick={() => { setCompanyType(opt.value); setStep(2) }}
++                    className={`w-full text-left px-4 py-4 rounded-lg border transition ${
++                      companyType === opt.value
++                        ? 'border-[#10B981] bg-[#10B981]/10'
++                        : 'border-gray-600 hover:border-gray-500 bg-[#0F172A]'
++                    }`}
++                  >
++                    <div className="flex items-center gap-3">
++                      <span className="text-2xl">{opt.icon}</span>
++                      <div>
++                        <div className="text-white font-medium">{opt.label}</div>
++                        <div className="text-gray-400 text-sm">{opt.desc}</div>
++                      </div>
++                    </div>
++                  </button>
++                ))}
++              </div>
++            </div>
++          )}
++
++          {step === 2 && (
++            <div>
++              <h2 className="text-lg font-semibold text-white mb-4">Company details</h2>
++              <div className="space-y-4">
++                <div>
++                  <label className="block text-sm font-medium text-gray-300 mb-1">Company Name *</label>
++                  <input
++                    type="text"
++                    value={companyName}
++                    onChange={(e) => setCompanyName(e.target.value)}
++                    required
++                    className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
++                    placeholder="Your company name"
++                  />
++                </div>
++                <div>
++                  <label className="block text-sm font-medium text-gray-300 mb-1">LinkedIn URL (optional)</label>
++                  <input
++                    type="url"
++                    value={linkedinUrl}
++                    onChange={(e) => setLinkedinUrl(e.target.value)}
++                    className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
++                    placeholder="https://linkedin.com/in/yourprofile"
++                  />
++                </div>
++
++                {error && (
++                  <div className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3">{error}</div>
++                )}
++
++                <div className="flex gap-3">
++                  <button onClick={() => setStep(1)}
++                    className="px-6 py-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition">
++                    Back
++                  </button>
++                  <button onClick={handleComplete} disabled={loading || !companyName}
++                    className="flex-1 py-3 bg-[#10B981] text-white rounded-lg font-semibold hover:bg-[#059669] transition disabled:opacity-50">
++                    {loading ? 'Saving...' : 'Complete Setup'}
++                  </button>
++                </div>
++              </div>
++            </div>
++          )}
++        </div>
++      </div>
++    </div>
++  )
++}
+diff --git a/app/auth/signup/page.tsx b/app/auth/signup/page.tsx
+new file mode 100644
+index 0000000..cdb0c11
+--- /dev/null
++++ b/app/auth/signup/page.tsx
+@@ -0,0 +1,160 @@
++'use client'
++
++import { useState } from 'react'
++import { createClient } from '@/lib/supabase'
++import Link from 'next/link'
++
++export default function SignupPage() {
++  const [email, setEmail] = useState('')
++  const [password, setPassword] = useState('')
++  const [loading, setLoading] = useState(false)
++  const [error, setError] = useState('')
++  const [success, setSuccess] = useState(false)
++
++  const supabase = createClient()
++
++  async function handleSignup(e: React.FormEvent) {
++    e.preventDefault()
++    setLoading(true)
++    setError('')
++
++    const { data, error } = await supabase.auth.signUp({
++      email,
++      password,
++      options: { emailRedirectTo: `${window.location.origin}/auth/callback` }
++    })
++
++    if (error) {
++      setError(error.message)
++      setLoading(false)
++      return
++    }
++
++    if (data.user) {
++      // Create profile
++      const { error: profileError } = await supabase.from('profiles').insert({
++        user_id: data.user.id,
++        email,
++      })
++
++      if (profileError) {
++        console.error('Profile creation error:', profileError)
++      }
++
++      if (data.session) {
++        // Auto-confirmed (e.g. in dev) — go to onboarding
++        window.location.href = '/auth/onboarding'
++      } else {
++        // Email confirmation required
++        setSuccess(true)
++      }
++    }
++
++    setLoading(false)
++  }
++
++  async function handleGoogleLogin() {
++    setLoading(true)
++    const { error } = await supabase.auth.signInWithOAuth({
++      provider: 'google',
++      options: { redirectTo: `${window.location.origin}/auth/callback` }
++    })
++    if (error) { setError(error.message); setLoading(false) }
++  }
++
++  async function handleLinkedInLogin() {
++    setLoading(true)
++    const { error } = await supabase.auth.signInWithOAuth({
++      provider: 'linkedin_oidc',
++      options: { redirectTo: `${window.location.origin}/auth/callback` }
++    })
++    if (error) { setError(error.message); setLoading(false) }
++  }
++
++  if (success) {
++    return (
++      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
++        <div className="w-full max-w-md text-center">
++          <div className="w-16 h-16 rounded-full bg-[#10B981]/20 flex items-center justify-center mx-auto mb-6">
++            <svg className="w-8 h-8 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
++              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
++            </svg>
++          </div>
++          <h2 className="text-2xl font-bold text-white mb-2">Check your email</h2>
++          <p className="text-gray-400 mb-6">
++            We sent a confirmation link to <strong className="text-white">{email}</strong>. Click the link to activate your account.
++          </p>
++          <Link href="/auth/login" className="text-[#10B981] hover:underline text-sm">
++            Back to login
++          </Link>
++        </div>
++      </div>
++    )
++  }
++
++  return (
++    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
++      <div className="w-full max-w-md">
++        <div className="text-center mb-8">
++          <Link href="/" className="inline-flex items-center gap-2 mb-6">
++            <div className="w-10 h-10 rounded-lg bg-[#10B981] flex items-center justify-center">
++              <span className="text-white font-bold text-xl">K</span>
++            </div>
++            <span className="text-white font-bold text-xl">Kunfa.AI</span>
++          </Link>
++          <h1 className="text-2xl font-bold text-white">Create your account</h1>
++          <p className="text-gray-400 mt-2">Get your startup scored by AI</p>
++        </div>
++
++        <div className="bg-[#1E293B] rounded-xl p-8 border border-gray-700">
++          <div className="space-y-3 mb-6">
++            <button onClick={handleGoogleLogin} disabled={loading}
++              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-gray-800 rounded-lg font-medium hover:bg-gray-100 transition disabled:opacity-50">
++              <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
++              Sign up with Google
++            </button>
++            <button onClick={handleLinkedInLogin} disabled={loading}
++              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#0A66C2] text-white rounded-lg font-medium hover:bg-[#004182] transition disabled:opacity-50">
++              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
++              Sign up with LinkedIn
++            </button>
++          </div>
++
++          <div className="relative mb-6">
++            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-600"></div></div>
++            <div className="relative flex justify-center text-sm"><span className="px-2 bg-[#1E293B] text-gray-400">or</span></div>
++          </div>
++
++          <form onSubmit={handleSignup} className="space-y-4">
++            <div>
++              <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
++              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
++                className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
++                placeholder="you@company.com" />
++            </div>
++            <div>
++              <label className="block text-sm font-medium text-gray-300 mb-1">Password</label>
++              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
++                className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
++                placeholder="Min 6 characters" />
++            </div>
++
++            {error && (
++              <div className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3">{error}</div>
++            )}
++
++            <button type="submit" disabled={loading}
++              className="w-full py-3 bg-[#10B981] text-white rounded-lg font-semibold hover:bg-[#059669] transition disabled:opacity-50">
++              {loading ? 'Creating account...' : 'Create Account'}
++            </button>
++          </form>
++
++          <p className="text-center text-gray-400 text-sm mt-6">
++            Already have an account?{' '}
++            <Link href="/auth/login" className="text-[#10B981] hover:underline">Sign in</Link>
++          </p>
++        </div>
++      </div>
++    </div>
++  )
++}
+diff --git a/app/company/[slug]/page.tsx b/app/company/[slug]/page.tsx
+new file mode 100644
+index 0000000..8481cd6
+--- /dev/null
++++ b/app/company/[slug]/page.tsx
+@@ -0,0 +1,107 @@
++import { createClient } from '@supabase/supabase-js'
++import Link from 'next/link'
++import { notFound } from 'next/navigation'
++
++async function getCompanyPage(slug: string) {
++  const supabase = createClient(
++    process.env.NEXT_PUBLIC_SUPABASE_URL!,
++    process.env.SUPABASE_SERVICE_ROLE_KEY!,
++    { auth: { autoRefreshToken: false, persistSession: false } }
++  )
++
++  const { data } = await supabase
++    .from('company_pages')
++    .select('*, submissions(overall_score, full_analysis)')
++    .eq('slug', slug)
++    .eq('is_public', true)
++    .single()
++
++  return data
++}
++
++export default async function CompanyPublicPage({ params }: { params: { slug: string } }) {
++  const company = await getCompanyPage(params.slug)
++
++  if (!company) {
++    notFound()
++  }
++
++  const analysis = (company.submissions as any)?.full_analysis
++  const dimensions = analysis?.dimensions || {}
++
++  return (
++    <div className="min-h-screen bg-[#0F172A]">
++      {/* Nav */}
++      <nav className="border-b border-gray-800 px-6 py-4">
++        <div className="max-w-4xl mx-auto flex items-center justify-between">
++          <Link href="/" className="flex items-center gap-2">
++            <div className="w-8 h-8 bg-[#10B981] rounded-lg flex items-center justify-center">
++              <span className="text-white font-bold text-lg">K</span>
++            </div>
++            <span className="text-white font-semibold text-lg">Kunfa.AI</span>
++          </Link>
++          <Link
++            href="/"
++            className="bg-[#10B981] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#059669] transition"
++          >
++            Get Your Score
++          </Link>
++        </div>
++      </nav>
++
++      {/* Content */}
++      <main className="max-w-4xl mx-auto px-6 py-12">
++        {/* Header */}
++        <div className="text-center mb-10">
++          {company.logo_url && (
++            <img src={company.logo_url} alt="" className="w-20 h-20 rounded-xl mx-auto mb-4 object-cover" />
++          )}
++          <h1 className="text-3xl font-bold text-white">{company.company_name}</h1>
++          {company.description && (
++            <p className="text-gray-400 mt-3 max-w-2xl mx-auto">{company.description}</p>
++          )}
++          {company.website_url && (
++            <a href={company.website_url} target="_blank" rel="noopener noreferrer" className="text-[#10B981] text-sm hover:underline mt-2 inline-block">
++              {company.website_url}
++            </a>
++          )}
++        </div>
++
++        {/* Score */}
++        <div className="bg-[#1E293B] rounded-xl p-8 border border-gray-700 text-center mb-8">
++          <p className="text-gray-400 text-sm mb-2">Kunfa Score</p>
++          <div className="text-6xl font-bold text-[#10B981]">{company.overall_score ?? '—'}</div>
++          <p className="text-gray-500 text-sm mt-2">out of 100</p>
++        </div>
++
++        {/* Dimensions */}
++        {Object.keys(dimensions).length > 0 && (
++          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
++            {Object.entries(dimensions).map(([key, dim]: [string, any]) => (
++              <div key={key} className="bg-[#1E293B] rounded-xl p-5 border border-gray-700 text-center">
++                <div className="text-3xl font-bold text-white">{dim?.score ?? '—'}</div>
++                <div className="text-xs text-gray-400 capitalize mt-1">{key}</div>
++                {dim?.letter_grade && (
++                  <div className="text-xs text-[#10B981] font-medium mt-1 bg-[#10B981]/10 inline-block px-2 py-0.5 rounded">
++                    {dim.letter_grade}
++                  </div>
++                )}
++              </div>
++            ))}
++          </div>
++        )}
++
++        {/* CTA */}
++        <div className="text-center mt-12">
++          <p className="text-gray-400 mb-4">Want to see how your startup compares?</p>
++          <Link
++            href="/"
++            className="inline-block bg-[#10B981] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#059669] transition"
++          >
++            Get Your Own Kunfa Score
++          </Link>
++        </div>
++      </main>
++    </div>
++  )
++}
+diff --git a/app/dashboard/company/page.tsx b/app/dashboard/company/page.tsx
+new file mode 100644
+index 0000000..dd7b068
+--- /dev/null
++++ b/app/dashboard/company/page.tsx
+@@ -0,0 +1,104 @@
++'use client'
++
++import { useEffect, useState } from 'react'
++import { createClient } from '@/lib/supabase'
++import Link from 'next/link'
++
++export default function CompanyManagePage() {
++  const [loading, setLoading] = useState(true)
++  const [companyPage, setCompanyPage] = useState<{
++    slug: string
++    company_name: string
++    overall_score: number | null
++    is_public: boolean
++    description: string | null
++  } | null>(null)
++
++  const supabase = createClient()
++
++  useEffect(() => {
++    async function load() {
++      const { data: { user } } = await supabase.auth.getUser()
++      if (!user) return
++
++      const { data } = await supabase
++        .from('company_pages')
++        .select('*')
++        .eq('user_id', user.id)
++        .single()
++
++      if (data) setCompanyPage(data)
++      setLoading(false)
++    }
++    load()
++  }, [supabase])
++
++  if (loading) {
++    return (
++      <div className="max-w-2xl space-y-4">
++        <div className="h-8 w-48 bg-gray-800 rounded animate-pulse" />
++        <div className="h-64 bg-gray-800 rounded-xl animate-pulse" />
++      </div>
++    )
++  }
++
++  if (!companyPage) {
++    return (
++      <div className="max-w-2xl text-center py-16">
++        <h1 className="text-2xl font-bold text-white mb-3">No Company Page Yet</h1>
++        <p className="text-gray-400 mb-6">Your company page will be created automatically after you submit your startup for scoring.</p>
++        <Link href="/" className="inline-block bg-[#10B981] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#059669] transition">
++          Get Your Score
++        </Link>
++      </div>
++    )
++  }
++
++  return (
++    <div className="max-w-2xl space-y-6">
++      <div className="flex items-center justify-between">
++        <h1 className="text-2xl font-bold text-white">Your Company Page</h1>
++        <Link
++          href={`/company/${companyPage.slug}`}
++          target="_blank"
++          className="text-[#10B981] text-sm hover:underline"
++        >
++          View public page
++        </Link>
++      </div>
++
++      <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700 space-y-4">
++        <div>
++          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Company Name</p>
++          <p className="text-white font-medium text-lg">{companyPage.company_name as string}</p>
++        </div>
++
++        <div>
++          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Kunfa Score</p>
++          <p className="text-[#10B981] font-bold text-2xl">{(companyPage.overall_score as number) ?? '—'}</p>
++        </div>
++
++        <div>
++          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Public URL</p>
++          <p className="text-blue-400 text-sm">
++            {typeof window !== 'undefined' ? window.location.origin : ''}/company/{companyPage.slug as string}
++          </p>
++        </div>
++
++        <div>
++          <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Visibility</p>
++          <span className={`text-xs font-medium px-2 py-1 rounded ${companyPage.is_public ? 'bg-green-900/30 text-green-400' : 'bg-gray-700 text-gray-400'}`}>
++            {companyPage.is_public ? 'Public' : 'Private'}
++          </span>
++        </div>
++
++        {companyPage.description ? (
++          <div>
++            <p className="text-gray-400 text-xs uppercase tracking-wider mb-1">Description</p>
++            <p className="text-gray-300 text-sm">{String(companyPage.description)}</p>
++          </div>
++        ) : null}
++      </div>
++    </div>
++  )
++}
+diff --git a/app/dashboard/layout.tsx b/app/dashboard/layout.tsx
+new file mode 100644
+index 0000000..4653a35
+--- /dev/null
++++ b/app/dashboard/layout.tsx
+@@ -0,0 +1,16 @@
++import Sidebar from '@/components/dashboard/Sidebar'
++import DashboardNav from '@/components/dashboard/DashboardNav'
++
++export default function DashboardLayout({ children }: { children: React.ReactNode }) {
++  return (
++    <div className="flex h-screen bg-[#0F172A]">
++      <Sidebar />
++      <div className="ml-64 flex flex-col flex-1 overflow-hidden">
++        <DashboardNav />
++        <main className="flex-1 overflow-auto pt-16 p-6">
++          {children}
++        </main>
++      </div>
++    </div>
++  )
++}
+diff --git a/app/dashboard/page.tsx b/app/dashboard/page.tsx
+new file mode 100644
+index 0000000..11ccf01
+--- /dev/null
++++ b/app/dashboard/page.tsx
+@@ -0,0 +1,198 @@
++'use client'
++
++import { useEffect, useState } from 'react'
++import { createClient } from '@/lib/supabase'
++import Link from 'next/link'
++
++interface Submission {
++  id: string
++  overall_score: number | null
++  paid: boolean
++  report_url: string | null
++  full_analysis: Record<string, unknown> | null
++  created_at: string
++}
++
++interface CompanyPage {
++  slug: string
++  company_name: string
++  overall_score: number | null
++  is_public: boolean
++}
++
++export default function DashboardPage() {
++  const [loading, setLoading] = useState(true)
++  const [userName, setUserName] = useState('')
++  const [submission, setSubmission] = useState<Submission | null>(null)
++  const [companyPage, setCompanyPage] = useState<CompanyPage | null>(null)
++
++  const supabase = createClient()
++
++  useEffect(() => {
++    async function load() {
++      const { data: { user } } = await supabase.auth.getUser()
++      if (!user) return
++
++      // Load profile
++      const { data: profile } = await supabase
++        .from('profiles')
++        .select('full_name, company_name')
++        .eq('user_id', user.id)
++        .single()
++
++      setUserName(profile?.full_name || profile?.company_name || user.email?.split('@')[0] || '')
++
++      // Load submission
++      const { data: sub } = await supabase
++        .from('submissions')
++        .select('id, overall_score, paid, report_url, full_analysis, created_at')
++        .eq('user_id', user.id)
++        .single()
++
++      if (sub) setSubmission(sub)
++
++      // Load company page
++      const { data: cp } = await supabase
++        .from('company_pages')
++        .select('slug, company_name, overall_score, is_public')
++        .eq('user_id', user.id)
++        .single()
++
++      if (cp) setCompanyPage(cp)
++
++      setLoading(false)
++    }
++    load()
++  }, [supabase])
++
++  if (loading) {
++    return (
++      <div className="space-y-6">
++        <div className="h-8 w-64 bg-gray-800 rounded animate-pulse" />
++        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
++          {[1, 2, 3].map(i => (
++            <div key={i} className="h-32 bg-gray-800 rounded-xl animate-pulse" />
++          ))}
++        </div>
++      </div>
++    )
++  }
++
++  const score = submission?.overall_score
++  const analysis = submission?.full_analysis as Record<string, unknown> | null
++
++  return (
++    <div className="space-y-6 max-w-5xl">
++      {/* Welcome */}
++      <div>
++        <h1 className="text-2xl font-bold text-white">
++          Welcome back{userName ? `, ${userName}` : ''}
++        </h1>
++        <p className="text-gray-400 mt-1">Here&apos;s an overview of your Kunfa Score and company page.</p>
++      </div>
++
++      {/* Stats Cards */}
++      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
++        {/* Overall Score */}
++        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
++          <p className="text-gray-400 text-sm mb-2">Kunfa Score</p>
++          {score != null ? (
++            <div className="flex items-baseline gap-2">
++              <span className="text-4xl font-bold text-[#10B981]">{score}</span>
++              <span className="text-gray-500 text-sm">/ 100</span>
++            </div>
++          ) : (
++            <p className="text-gray-500 text-sm">No score yet</p>
++          )}
++        </div>
++
++        {/* Report Status */}
++        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
++          <p className="text-gray-400 text-sm mb-2">Full Report</p>
++          {submission?.paid ? (
++            <div>
++              <span className="text-green-400 text-sm font-medium">Unlocked</span>
++              {submission.report_url && (
++                <a
++                  href={submission.report_url}
++                  target="_blank"
++                  rel="noopener noreferrer"
++                  className="block mt-2 text-[#10B981] text-sm hover:underline"
++                >
++                  Download PDF
++                </a>
++              )}
++            </div>
++          ) : submission ? (
++            <div>
++              <span className="text-yellow-400 text-sm font-medium">Locked</span>
++              <Link href={`/score/${submission.id}`} className="block mt-2 text-[#10B981] text-sm hover:underline">
++                Unlock for $59
++              </Link>
++            </div>
++          ) : (
++            <p className="text-gray-500 text-sm">No submission yet</p>
++          )}
++        </div>
++
++        {/* Company Page */}
++        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
++          <p className="text-gray-400 text-sm mb-2">Company Page</p>
++          {companyPage ? (
++            <div>
++              <span className="text-white font-medium">{companyPage.company_name}</span>
++              <Link
++                href={`/company/${companyPage.slug}`}
++                className="block mt-2 text-[#10B981] text-sm hover:underline"
++              >
++                View public page
++              </Link>
++            </div>
++          ) : (
++            <p className="text-gray-500 text-sm">Created after scoring</p>
++          )}
++        </div>
++      </div>
++
++      {/* Score Breakdown */}
++      {analysis && (analysis as any).dimensions && (
++        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
++          <h2 className="text-white font-semibold text-lg mb-4">Score Breakdown</h2>
++          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
++            {Object.entries((analysis as any).dimensions || {}).map(([key, dim]: [string, any]) => (
++              <div key={key} className="text-center">
++                <div className="text-2xl font-bold text-white">{dim?.score ?? '—'}</div>
++                <div className="text-xs text-gray-400 capitalize mt-1">{key}</div>
++                {dim?.letter_grade && (
++                  <div className="text-xs text-[#10B981] font-medium mt-0.5">{dim.letter_grade}</div>
++                )}
++              </div>
++            ))}
++          </div>
++        </div>
++      )}
++
++      {/* Summary */}
++      {analysis && (analysis as any).summary && (
++        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
++          <h2 className="text-white font-semibold text-lg mb-3">AI Summary</h2>
++          <p className="text-gray-300 text-sm leading-relaxed">{(analysis as any).summary}</p>
++        </div>
++      )}
++
++      {/* No Submission CTA */}
++      {!submission && (
++        <div className="bg-[#1E293B] rounded-xl p-8 border border-gray-700 text-center">
++          <h2 className="text-white font-semibold text-xl mb-2">Get Your Kunfa Score</h2>
++          <p className="text-gray-400 mb-4">Upload your pitch deck and financials to get an AI-powered score.</p>
++          <Link
++            href="/"
++            className="inline-block bg-[#10B981] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#059669] transition"
++          >
++            Start Scoring
++          </Link>
++        </div>
++      )}
++    </div>
++  )
++}
+diff --git a/app/dashboard/score/page.tsx b/app/dashboard/score/page.tsx
+new file mode 100644
+index 0000000..e6c04af
+--- /dev/null
++++ b/app/dashboard/score/page.tsx
+@@ -0,0 +1,141 @@
++'use client'
++
++import { useEffect, useState } from 'react'
++import { createClient } from '@/lib/supabase'
++import Link from 'next/link'
++
++export default function ScorePage() {
++  const [loading, setLoading] = useState(true)
++  const [submission, setSubmission] = useState<{
++    id: string
++    overall_score: number | null
++    paid: boolean
++    report_url: string | null
++    full_analysis: Record<string, unknown> | null
++  } | null>(null)
++
++  const supabase = createClient()
++
++  useEffect(() => {
++    async function load() {
++      const { data: { user } } = await supabase.auth.getUser()
++      if (!user) return
++
++      const { data } = await supabase
++        .from('submissions')
++        .select('*')
++        .eq('user_id', user.id)
++        .single()
++
++      if (data) setSubmission(data)
++      setLoading(false)
++    }
++    load()
++  }, [supabase])
++
++  if (loading) {
++    return (
++      <div className="space-y-4 max-w-3xl">
++        <div className="h-8 w-48 bg-gray-800 rounded animate-pulse" />
++        <div className="h-96 bg-gray-800 rounded-xl animate-pulse" />
++      </div>
++    )
++  }
++
++  if (!submission) {
++    return (
++      <div className="max-w-3xl text-center py-16">
++        <h1 className="text-2xl font-bold text-white mb-3">No Score Yet</h1>
++        <p className="text-gray-400 mb-6">You haven&apos;t submitted your startup for scoring yet.</p>
++        <Link href="/" className="inline-block bg-[#10B981] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#059669] transition">
++          Get Your Score
++        </Link>
++      </div>
++    )
++  }
++
++  const analysis = submission.full_analysis as Record<string, unknown> | null
++  const dimensions = (analysis as any)?.dimensions || {}
++
++  return (
++    <div className="max-w-3xl space-y-6">
++      <div className="flex items-center justify-between">
++        <h1 className="text-2xl font-bold text-white">Your Kunfa Score</h1>
++        {submission.paid && submission.report_url ? (
++          <a
++            href={submission.report_url as string}
++            target="_blank"
++            rel="noopener noreferrer"
++            className="bg-[#10B981] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#059669] transition"
++          >
++            Download Report
++          </a>
++        ) : null}
++      </div>
++
++      {/* Score Header */}
++      <div className="bg-[#1E293B] rounded-xl p-8 border border-gray-700 text-center">
++        <p className="text-gray-400 text-sm mb-2">Overall Score</p>
++        <div className="text-6xl font-bold text-[#10B981]">{submission.overall_score ?? '—'}</div>
++        <p className="text-gray-500 text-sm mt-2">out of 100</p>
++        {!submission.paid && (
++          <Link
++            href={`/score/${submission.id}`}
++            className="inline-block mt-4 bg-[#10B981] text-white px-6 py-2 rounded-lg text-sm font-semibold hover:bg-[#059669] transition"
++          >
++            Unlock Full Report — $59
++          </Link>
++        )}
++      </div>
++
++      {/* Dimension Scores */}
++      {Object.keys(dimensions).length > 0 && (
++        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
++          <h2 className="text-white font-semibold text-lg mb-4">Dimension Breakdown</h2>
++          <div className="space-y-4">
++            {Object.entries(dimensions).map(([key, dim]: [string, any]) => (
++              <div key={key}>
++                <div className="flex justify-between items-center mb-1">
++                  <span className="text-gray-300 text-sm capitalize">{key}</span>
++                  <div className="flex items-center gap-2">
++                    {dim?.letter_grade && (
++                      <span className="text-xs font-medium text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded">
++                        {dim.letter_grade}
++                      </span>
++                    )}
++                    <span className="text-white font-semibold text-sm">{dim?.score ?? 0}/100</span>
++                  </div>
++                </div>
++                <div className="w-full bg-gray-700 rounded-full h-2">
++                  <div
++                    className="bg-[#10B981] h-2 rounded-full transition-all"
++                    style={{ width: `${dim?.score ?? 0}%` }}
++                  />
++                </div>
++                {dim?.headline && (
++                  <p className="text-xs text-gray-500 mt-1">{dim.headline}</p>
++                )}
++              </div>
++            ))}
++          </div>
++        </div>
++      )}
++
++      {/* Summary */}
++      {(analysis as any)?.summary && (
++        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
++          <h2 className="text-white font-semibold text-lg mb-3">Summary</h2>
++          <p className="text-gray-300 text-sm leading-relaxed">{(analysis as any).summary}</p>
++        </div>
++      )}
++
++      {/* Investment Readiness */}
++      {(analysis as any)?.investment_readiness && (
++        <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
++          <h2 className="text-white font-semibold text-lg mb-3">Investment Readiness</h2>
++          <p className="text-gray-300 text-sm leading-relaxed">{(analysis as any).investment_readiness}</p>
++        </div>
++      )}
++    </div>
++  )
++}
+diff --git a/app/dashboard/settings/page.tsx b/app/dashboard/settings/page.tsx
+new file mode 100644
+index 0000000..82effa8
+--- /dev/null
++++ b/app/dashboard/settings/page.tsx
+@@ -0,0 +1,140 @@
++'use client'
++
++import { useEffect, useState } from 'react'
++import { createClient } from '@/lib/supabase'
++
++export default function SettingsPage() {
++  const [loading, setLoading] = useState(true)
++  const [saving, setSaving] = useState(false)
++  const [message, setMessage] = useState('')
++  const [fullName, setFullName] = useState('')
++  const [companyName, setCompanyName] = useState('')
++  const [linkedinUrl, setLinkedinUrl] = useState('')
++  const [email, setEmail] = useState('')
++
++  const supabase = createClient()
++
++  useEffect(() => {
++    async function load() {
++      const { data: { user } } = await supabase.auth.getUser()
++      if (!user) return
++
++      setEmail(user.email || '')
++
++      const { data: profile } = await supabase
++        .from('profiles')
++        .select('full_name, company_name, linkedin_url')
++        .eq('user_id', user.id)
++        .single()
++
++      if (profile) {
++        setFullName(profile.full_name || '')
++        setCompanyName(profile.company_name || '')
++        setLinkedinUrl(profile.linkedin_url || '')
++      }
++      setLoading(false)
++    }
++    load()
++  }, [supabase])
++
++  async function handleSave(e: React.FormEvent) {
++    e.preventDefault()
++    setSaving(true)
++    setMessage('')
++
++    const { data: { user } } = await supabase.auth.getUser()
++    if (!user) return
++
++    const { error } = await supabase
++      .from('profiles')
++      .update({
++        full_name: fullName,
++        company_name: companyName,
++        linkedin_url: linkedinUrl,
++        updated_at: new Date().toISOString(),
++      })
++      .eq('user_id', user.id)
++
++    if (error) {
++      setMessage('Failed to save. Please try again.')
++    } else {
++      setMessage('Settings saved successfully.')
++    }
++    setSaving(false)
++  }
++
++  if (loading) {
++    return (
++      <div className="max-w-2xl space-y-4">
++        <div className="h-8 w-48 bg-gray-800 rounded animate-pulse" />
++        <div className="h-64 bg-gray-800 rounded-xl animate-pulse" />
++      </div>
++    )
++  }
++
++  return (
++    <div className="max-w-2xl">
++      <h1 className="text-2xl font-bold text-white mb-6">Account Settings</h1>
++
++      <form onSubmit={handleSave} className="bg-[#1E293B] rounded-xl p-6 border border-gray-700 space-y-5">
++        <div>
++          <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
++          <input
++            type="email"
++            value={email}
++            disabled
++            className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-gray-500 cursor-not-allowed"
++          />
++          <p className="text-xs text-gray-500 mt-1">Email cannot be changed.</p>
++        </div>
++
++        <div>
++          <label className="block text-sm font-medium text-gray-300 mb-1">Full Name</label>
++          <input
++            type="text"
++            value={fullName}
++            onChange={(e) => setFullName(e.target.value)}
++            className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
++            placeholder="Your name"
++          />
++        </div>
++
++        <div>
++          <label className="block text-sm font-medium text-gray-300 mb-1">Company Name</label>
++          <input
++            type="text"
++            value={companyName}
++            onChange={(e) => setCompanyName(e.target.value)}
++            className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
++            placeholder="Your company"
++          />
++        </div>
++
++        <div>
++          <label className="block text-sm font-medium text-gray-300 mb-1">LinkedIn URL</label>
++          <input
++            type="url"
++            value={linkedinUrl}
++            onChange={(e) => setLinkedinUrl(e.target.value)}
++            className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
++            placeholder="https://linkedin.com/in/yourprofile"
++          />
++        </div>
++
++        {message && (
++          <div className={`text-sm p-3 rounded-lg ${message.includes('Failed') ? 'bg-red-900/20 text-red-400 border border-red-800' : 'bg-green-900/20 text-green-400 border border-green-800'}`}>
++            {message}
++          </div>
++        )}
++
++        <button
++          type="submit"
++          disabled={saving}
++          className="w-full py-3 bg-[#10B981] text-white rounded-lg font-semibold hover:bg-[#059669] transition disabled:opacity-50"
++        >
++          {saving ? 'Saving...' : 'Save Changes'}
++        </button>
++      </form>
++    </div>
++  )
++}
+diff --git a/app/score/[id]/page.tsx b/app/score/[id]/page.tsx
+index 7da6a5e..0a216c4 100644
+--- a/app/score/[id]/page.tsx
++++ b/app/score/[id]/page.tsx
+@@ -81,7 +81,14 @@ export default function ScorePage() {
+         )}
+ 
+         {result && (
+-          <TeaserScore result={result} submissionId={id} onUnlock={handleUnlock} />
++          <div>
++            <TeaserScore result={result} submissionId={id} onUnlock={handleUnlock} />
++            <div className="text-center py-4 border-t border-gray-100">
++              <a href="/dashboard" className="text-kunfa-green text-sm font-medium hover:underline">
++                Go to your Dashboard
++              </a>
++            </div>
++          </div>
+         )}
+       </div>
+     </div>
+diff --git a/components/dashboard/DashboardNav.tsx b/components/dashboard/DashboardNav.tsx
+new file mode 100644
+index 0000000..3c14be1
+--- /dev/null
++++ b/components/dashboard/DashboardNav.tsx
+@@ -0,0 +1,51 @@
++'use client'
++
++import { useEffect, useState } from 'react'
++import { createClient } from '@/lib/supabase'
++
++export default function DashboardNav() {
++  const [userName, setUserName] = useState('')
++  const [avatarUrl, setAvatarUrl] = useState('')
++  const supabase = createClient()
++
++  useEffect(() => {
++    async function loadProfile() {
++      const { data: { user } } = await supabase.auth.getUser()
++      if (!user) return
++
++      const { data: profile } = await supabase
++        .from('profiles')
++        .select('full_name, avatar_url')
++        .eq('user_id', user.id)
++        .single()
++
++      if (profile) {
++        setUserName(profile.full_name || user.email?.split('@')[0] || '')
++        setAvatarUrl(profile.avatar_url || '')
++      } else {
++        setUserName(user.email?.split('@')[0] || '')
++      }
++    }
++    loadProfile()
++  }, [supabase])
++
++  return (
++    <header className="fixed top-0 left-64 right-0 h-16 bg-[#1E293B] border-b border-gray-700 flex items-center justify-between px-6 z-40">
++      <div>
++        <h1 className="text-white font-semibold text-lg">Dashboard</h1>
++      </div>
++      <div className="flex items-center gap-3">
++        <span className="text-gray-300 text-sm">{userName}</span>
++        {avatarUrl ? (
++          <img src={avatarUrl} alt="" className="w-8 h-8 rounded-full" />
++        ) : (
++          <div className="w-8 h-8 rounded-full bg-[#10B981] flex items-center justify-center">
++            <span className="text-white text-sm font-medium">
++              {userName?.charAt(0)?.toUpperCase() || '?'}
++            </span>
++          </div>
++        )}
++      </div>
++    </header>
++  )
++}
+diff --git a/components/dashboard/Sidebar.tsx b/components/dashboard/Sidebar.tsx
+new file mode 100644
+index 0000000..c825ac9
+--- /dev/null
++++ b/components/dashboard/Sidebar.tsx
+@@ -0,0 +1,103 @@
++'use client'
++
++import Link from 'next/link'
++import { usePathname } from 'next/navigation'
++import { createClient } from '@/lib/supabase'
++
++const navItems = [
++  {
++    label: 'Dashboard',
++    href: '/dashboard',
++    icon: (
++      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
++        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
++      </svg>
++    ),
++  },
++  {
++    label: 'My Score',
++    href: '/dashboard/score',
++    icon: (
++      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
++        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
++      </svg>
++    ),
++  },
++  {
++    label: 'Company Page',
++    href: '/dashboard/company',
++    icon: (
++      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
++        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
++      </svg>
++    ),
++  },
++  {
++    label: 'Settings',
++    href: '/dashboard/settings',
++    icon: (
++      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
++        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
++        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
++      </svg>
++    ),
++  },
++]
++
++export default function Sidebar() {
++  const pathname = usePathname()
++  const supabase = createClient()
++
++  async function handleSignOut() {
++    await supabase.auth.signOut()
++    window.location.href = '/'
++  }
++
++  return (
++    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[#0F172A] border-r border-gray-800 flex flex-col z-50">
++      {/* Logo */}
++      <div className="px-6 py-5 border-b border-gray-800">
++        <Link href="/" className="flex items-center gap-2">
++          <div className="w-8 h-8 bg-[#10B981] rounded-lg flex items-center justify-center">
++            <span className="text-white font-bold text-lg">K</span>
++          </div>
++          <span className="text-white font-semibold text-lg">Kunfa.AI</span>
++        </Link>
++      </div>
++
++      {/* Navigation */}
++      <nav className="flex-1 px-3 py-4 space-y-1">
++        {navItems.map((item) => {
++          const isActive = pathname === item.href
++          return (
++            <Link
++              key={item.href}
++              href={item.href}
++              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
++                isActive
++                  ? 'bg-[#10B981]/20 text-[#10B981]'
++                  : 'text-gray-400 hover:text-white hover:bg-gray-800'
++              }`}
++            >
++              {item.icon}
++              {item.label}
++            </Link>
++          )
++        })}
++      </nav>
++
++      {/* Sign Out */}
++      <div className="px-3 py-4 border-t border-gray-800">
++        <button
++          onClick={handleSignOut}
++          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-400 hover:text-white hover:bg-gray-800 transition-colors w-full"
++        >
++          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
++            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
++          </svg>
++          Sign Out
++        </button>
++      </div>
++    </aside>
++  )
++}
+diff --git a/components/landing/Navbar.tsx b/components/landing/Navbar.tsx
+index 932658e..e870ef5 100644
+--- a/components/landing/Navbar.tsx
++++ b/components/landing/Navbar.tsx
+@@ -1,6 +1,7 @@
+ 'use client'
+ 
+ import { useState } from 'react'
++import Link from 'next/link'
+ 
+ interface NavbarProps {
+   onApplyNow: () => void
+@@ -26,7 +27,7 @@ export default function Navbar({ onApplyNow }: NavbarProps) {
+             <a href="#product" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Product</a>
+             <a href="#pricing" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Pricing</a>
+             <a href="#about" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">About</a>
+-            <a href="mailto:hello@vitality.capital" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Sign In</a>
++            <Link href="/auth/login" className="text-gray-300 hover:text-white text-sm font-medium transition-colors">Sign In</Link>
+             <button
+               onClick={onApplyNow}
+               className="bg-kunfa-green hover:bg-kunfa-green-dark text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
+@@ -57,7 +58,8 @@ export default function Navbar({ onApplyNow }: NavbarProps) {
+               <a href="#product" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1">Product</a>
+               <a href="#pricing" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1">Pricing</a>
+               <a href="#about" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1">About</a>
+-              <a href="mailto:hello@vitality.capital" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1">Sign In</a>
++              <Link href="/auth/login" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>Sign In</Link>
++              <Link href="/auth/signup" className="text-gray-300 hover:text-white text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>Sign Up</Link>
+               <button
+                 onClick={() => { onApplyNow(); setMobileOpen(false) }}
+                 className="bg-kunfa-green hover:bg-kunfa-green-dark text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors w-fit"
+diff --git a/components/scoring/ScoreModal.tsx b/components/scoring/ScoreModal.tsx
+index 70f9836..fc3a977 100644
+--- a/components/scoring/ScoreModal.tsx
++++ b/components/scoring/ScoreModal.tsx
+@@ -55,8 +55,9 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
+   const [submissionId, setSubmissionId] = useState('')
+   const [error, setError] = useState('')
+   const [uploadProgress, setUploadProgress] = useState('')
++  const [emailStatus, setEmailStatus] = useState<'idle' | 'checking' | 'new' | 'existing' | 'has_submission'>('idle')
+ 
+-  const isFormValid = email && pitchDeck && financials && linkedinUrl
++  const isFormValid = email && pitchDeck && financials && linkedinUrl && emailStatus !== 'has_submission'
+ 
+   const handleSubmit = useCallback(async () => {
+     if (!isFormValid || isSubmitting || !pitchDeck || !financials) return
+@@ -164,6 +165,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
+     setSubmissionId('')
+     setError('')
+     setUploadProgress('')
++    setEmailStatus('idle')
+     onClose()
+   }
+ 
+@@ -222,10 +224,46 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
+               <input
+                 type="email"
+                 value={email}
+-                onChange={(e) => setEmail(e.target.value)}
++                onChange={(e) => {
++                  setEmail(e.target.value)
++                  setEmailStatus('idle')
++                }}
++                onBlur={async () => {
++                  if (!email || !email.includes('@')) return
++                  setEmailStatus('checking')
++                  try {
++                    const res = await fetch('/api/auth/check-email', {
++                      method: 'POST',
++                      headers: { 'Content-Type': 'application/json' },
++                      body: JSON.stringify({ email }),
++                    })
++                    const data = await res.json()
++                    if (data.hasSubmission) {
++                      setEmailStatus('has_submission')
++                    } else if (data.exists) {
++                      setEmailStatus('existing')
++                    } else {
++                      setEmailStatus('new')
++                    }
++                  } catch {
++                    setEmailStatus('new')
++                  }
++                }}
+                 placeholder="founder@company.com"
+                 className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent"
+               />
++              {emailStatus === 'checking' && (
++                <p className="text-xs text-gray-400 mt-1">Checking email...</p>
++              )}
++              {emailStatus === 'new' && (
++                <p className="text-xs text-emerald-600 mt-1">We&apos;ll create your free Kunfa account with this email.</p>
++              )}
++              {emailStatus === 'existing' && (
++                <p className="text-xs text-blue-600 mt-1">Welcome back! This score will be linked to your account.</p>
++              )}
++              {emailStatus === 'has_submission' && (
++                <p className="text-xs text-red-600 mt-1">This email already has a submission. Each account is limited to one. Use a different email to score another business.</p>
++              )}
+             </div>
+ 
+             {/* Pitch Deck */}
+diff --git a/lib/anthropic.ts b/lib/anthropic.ts
+index 0c123e5..ab199b7 100644
+--- a/lib/anthropic.ts
++++ b/lib/anthropic.ts
+@@ -324,80 +324,80 @@ export interface ExpandedMemoContent {
+ }
+ 
+ function buildExpandedMemoPrompt(scoringData: ScoringResult): string {
+-  return `You are a senior investment analyst at a top-tier venture capital firm. Generate a comprehensive Investment Memorandum based on the following scoring data.
++  return `You are a senior investment analyst. Generate a concise Investment Memorandum based on the following scoring data.
+ 
+ ## Scoring Data:
+ ${JSON.stringify(scoringData, null, 2)}
+ 
+ ## Instructions:
+-1. Use the scoring data above as the foundation, but EXPAND significantly beyond it.
+-2. Each dimension's detailed_analysis must be 5-8 substantive paragraphs (600-800 words total). Separate paragraphs with double newlines.
+-3. Each strength/risk/recommendation must have a detailed 2-3 sentence explanation in the "detail" field.
+-4. The executive_summary overview should be 3-4 paragraphs (~400 words). Separate paragraphs with double newlines.
+-5. The investment_thesis should be 2-3 paragraphs. Separate paragraphs with double newlines.
+-6. The key_findings should be 2-3 paragraphs. Separate paragraphs with double newlines.
+-7. Include 4-5 items for each strength/risk/recommendation array.
+-8. Include 5-6 items in risk_assessment with specific, actionable mitigations.
+-9. Include 5-6 items in strategic_recommendations covering immediate, short-term, and long-term priorities.
+-10. Include 4-6 items in fundraising_readiness.next_steps.
+-11. The executive summary should read like a professional PE/VC investment memo.
+-12. Include concrete, actionable insights grounded in the data.
+-13. Output ONLY valid JSON with no additional text, commentary, or markdown.
++1. Use the scoring data as the foundation and expand with professional analysis.
++2. Each dimension's detailed_analysis should be 1-2 paragraphs (150-200 words). Separate paragraphs with double newlines.
++3. Each strength/risk/recommendation needs a "point" (title) and "detail" (1 sentence explanation).
++4. The executive_summary overview should be 1 paragraph (~100 words).
++5. The investment_thesis should be 1 paragraph (~80 words).
++6. The key_findings should be 1 paragraph (~80 words).
++7. Include exactly 3 items for each strengths/risks/recommendations array per dimension.
++8. Include exactly 3 items in SWOT arrays.
++9. Include exactly 3 items in risk_assessment.
++10. Include exactly 3 items in strategic_recommendations.
++11. Include exactly 3 items in fundraising_readiness.next_steps.
++12. Keep all text concise and professional.
++13. Output ONLY valid JSON with no additional text.
+ 
+ ## Required JSON Structure:
+ {
+   "executive_summary": {
+-    "overview": "3-4 paragraphs (~400 words) providing comprehensive company overview and investment opportunity",
+-    "investment_thesis": "2-3 paragraphs articulating the core investment thesis and value creation potential",
+-    "key_findings": "2-3 paragraphs highlighting the most critical findings across all dimensions"
++    "overview": "1 paragraph (~100 words) company overview and investment opportunity",
++    "investment_thesis": "1 paragraph (~80 words) core investment thesis",
++    "key_findings": "1 paragraph (~80 words) critical findings"
+   },
+   "company_overview": {
+-    "description": "2-3 paragraphs describing the company, its mission, and what it does",
+-    "business_model": "1-2 paragraphs explaining the revenue model and unit economics",
+-    "target_market": "1-2 paragraphs describing the total addressable market and customer segments"
++    "description": "1 paragraph describing the company and its mission",
++    "business_model": "1 paragraph on revenue model",
++    "target_market": "1 paragraph on TAM and customers"
+   },
+   "dimensions": {
+     "team": {
+-      "detailed_analysis": "5-8 detailed paragraphs (600-800 words) analyzing founder/team composition, experience, track record, execution capability, domain expertise, team gaps, and hiring plans",
+-      "strengths": [{ "point": "strength title", "detail": "2-3 sentence explanation" }],
+-      "risks": [{ "point": "risk title", "detail": "2-3 sentence explanation" }],
+-      "recommendations": [{ "point": "recommendation title", "detail": "2-3 sentence explanation" }]
++      "detailed_analysis": "1-2 paragraphs (150-200 words) on team quality",
++      "strengths": [{ "point": "title", "detail": "1 sentence" }],
++      "risks": [{ "point": "title", "detail": "1 sentence" }],
++      "recommendations": [{ "point": "title", "detail": "1 sentence" }]
+     },
+     "market": {
+-      "detailed_analysis": "5-8 detailed paragraphs (600-800 words) analyzing market size, growth dynamics, competitive landscape, timing, regulatory environment, and TAM expansion potential",
+-      "strengths": [{ "point": "strength title", "detail": "2-3 sentence explanation" }],
+-      "risks": [{ "point": "risk title", "detail": "2-3 sentence explanation" }],
+-      "recommendations": [{ "point": "recommendation title", "detail": "2-3 sentence explanation" }]
++      "detailed_analysis": "1-2 paragraphs (150-200 words) on market opportunity",
++      "strengths": [{ "point": "title", "detail": "1 sentence" }],
++      "risks": [{ "point": "title", "detail": "1 sentence" }],
++      "recommendations": [{ "point": "title", "detail": "1 sentence" }]
+     },
+     "product": {
+-      "detailed_analysis": "5-8 detailed paragraphs (600-800 words) analyzing product differentiation, technical architecture, IP/moat, product-market fit evidence, scalability, and user experience",
+-      "strengths": [{ "point": "strength title", "detail": "2-3 sentence explanation" }],
+-      "risks": [{ "point": "risk title", "detail": "2-3 sentence explanation" }],
+-      "recommendations": [{ "point": "recommendation title", "detail": "2-3 sentence explanation" }]
++      "detailed_analysis": "1-2 paragraphs (150-200 words) on product differentiation",
++      "strengths": [{ "point": "title", "detail": "1 sentence" }],
++      "risks": [{ "point": "title", "detail": "1 sentence" }],
++      "recommendations": [{ "point": "title", "detail": "1 sentence" }]
+     },
+     "financial": {
+-      "detailed_analysis": "5-8 detailed paragraphs (600-800 words) analyzing revenue model, unit economics, burn rate, runway, financial projections, capital efficiency, and path to profitability",
+-      "strengths": [{ "point": "strength title", "detail": "2-3 sentence explanation" }],
+-      "risks": [{ "point": "risk title", "detail": "2-3 sentence explanation" }],
+-      "recommendations": [{ "point": "recommendation title", "detail": "2-3 sentence explanation" }]
++      "detailed_analysis": "1-2 paragraphs (150-200 words) on financial health",
++      "strengths": [{ "point": "title", "detail": "1 sentence" }],
++      "risks": [{ "point": "title", "detail": "1 sentence" }],
++      "recommendations": [{ "point": "title", "detail": "1 sentence" }]
+     }
+   },
+   "swot": {
+-    "strengths": ["4-5 major strengths"],
+-    "weaknesses": ["4-5 key weaknesses"],
+-    "opportunities": ["4-5 growth opportunities"],
+-    "threats": ["4-5 external threats"]
++    "strengths": ["3 strengths"],
++    "weaknesses": ["3 weaknesses"],
++    "opportunities": ["3 opportunities"],
++    "threats": ["3 threats"]
+   },
+   "risk_assessment": [
+-    { "risk": "risk description", "severity": "High|Medium|Low", "mitigation": "mitigation strategy" }
++    { "risk": "description", "severity": "High|Medium|Low", "mitigation": "strategy" }
+   ],
+   "strategic_recommendations": [
+-    { "recommendation": "title", "priority": "Immediate|Short-term|Long-term", "detail": "detailed explanation" }
++    { "recommendation": "title", "priority": "Immediate|Short-term|Long-term", "detail": "explanation" }
+   ],
+   "fundraising_readiness": {
+-    "current_status": "paragraph assessing readiness",
+-    "next_steps": ["concrete next steps"],
+-    "timeline": "paragraph with realistic timeline"
++    "current_status": "1 paragraph assessing readiness",
++    "next_steps": ["3 concrete next steps"],
++    "timeline": "1 sentence timeline"
+   }
+ }
+ 
+@@ -411,8 +411,8 @@ export async function generateExpandedMemo(
+ 
+   const message = await anthropic.messages.create({
+     model: 'claude-sonnet-4-20250514',
+-    max_tokens: 16384,
+-    system: `You are a senior investment analyst at a top-tier venture capital firm writing a comprehensive Investment Memorandum.
++    max_tokens: 8000,
++    system: `You are a senior investment analyst writing a concise Investment Memorandum.
+ 
+ CRITICAL RULES:
+ - Your ENTIRE response must be a single valid JSON object.
+@@ -421,9 +421,8 @@ CRITICAL RULES:
+ - Do NOT include any explanation, commentary, or preamble.
+ - Start your response with { and end with }.
+ - All string values must be properly escaped for JSON.
+-- Use \\n\\n to separate paragraphs within text fields.
+-- Provide substantive, detailed analysis — each dimension analysis must be 600-800 words.
+-- Include 4-5 items for each strengths/risks/recommendations array.`,
++- Keep analysis concise: 150-200 words per dimension, ~100 words for summaries.
++- Include exactly 3 items for each array field.`,
+     messages: [
+       {
+         role: 'user',
+diff --git a/lib/db.ts b/lib/db.ts
+index 19b11dc..5c1b6c1 100644
+--- a/lib/db.ts
++++ b/lib/db.ts
+@@ -1,38 +1,28 @@
+-import { Pool } from 'pg'
++import { createClient } from '@supabase/supabase-js'
+ 
+-let pool: Pool | null = null
+-
+-function getPool(): Pool {
+-  if (!pool) {
+-    const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL
+-    if (!connectionString) {
+-      throw new Error('DATABASE_URL or POSTGRES_URL environment variable is required')
+-    }
+-    pool = new Pool({
+-      connectionString,
+-      ssl: { rejectUnauthorized: false },
+-      max: 3,
+-      idleTimeoutMillis: 10000,
+-      connectionTimeoutMillis: 10000,
+-    })
+-    pool.on('error', (err) => {
+-      console.error('Unexpected pool error:', err)
+-      pool = null
+-    })
+-  }
+-  return pool
++// Use service role key to bypass RLS in API routes
++function getSupabase() {
++  return createClient(
++    process.env.NEXT_PUBLIC_SUPABASE_URL!,
++    process.env.SUPABASE_SERVICE_ROLE_KEY!,
++    { auth: { autoRefreshToken: false, persistSession: false } }
++  )
+ }
+ 
+ export function isDatabaseConfigured(): boolean {
+-  return !!(process.env.DATABASE_URL || process.env.POSTGRES_URL)
++  return !!(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY)
+ }
+ 
+ export interface Submission {
+   id: string
++  user_id: string
+   email: string
++  company_name: string | null
+   linkedin_url: string | null
+   pitch_deck_url: string | null
++  pitch_deck_filename: string | null
+   financials_url: string | null
++  financials_filename: string | null
+   voice_note_url: string | null
+   overall_score: number | null
+   team_score: number | null
+@@ -53,53 +43,81 @@ export interface Submission {
+   updated_at: string
+ }
+ 
++// No-op for backward compatibility — tables are created via Supabase migrations
+ export async function initializeDatabase() {
+-  const db = getPool()
+-  await db.query(`
+-    CREATE TABLE IF NOT EXISTS submissions (
+-      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-      email VARCHAR(255) NOT NULL,
+-      linkedin_url TEXT,
+-      pitch_deck_url TEXT,
+-      financials_url TEXT,
+-      voice_note_url TEXT,
+-      overall_score INTEGER,
+-      team_score INTEGER,
+-      team_grade VARCHAR(2),
+-      market_score INTEGER,
+-      market_grade VARCHAR(2),
+-      product_score INTEGER,
+-      product_grade VARCHAR(2),
+-      financial_score INTEGER,
+-      financial_grade VARCHAR(2),
+-      full_analysis JSONB,
+-      stripe_session_id VARCHAR(255),
+-      paid BOOLEAN DEFAULT FALSE,
+-      paid_at TIMESTAMP,
+-      report_url TEXT,
+-      report_generated_at TIMESTAMP,
+-      created_at TIMESTAMP DEFAULT NOW(),
+-      updated_at TIMESTAMP DEFAULT NOW()
+-    )
+-  `)
++  // Tables already created via Supabase migrations
++}
++
++// Find or create a Supabase auth user by email, returns user_id
++export async function findOrCreateUser(email: string): Promise<string> {
++  const supabase = getSupabase()
++
++  // Check if user exists
++  const { data: existingUsers } = await supabase.auth.admin.listUsers()
++  const existingUser = existingUsers?.users?.find(u => u.email === email)
++
++  if (existingUser) {
++    return existingUser.id
++  }
++
++  // Create new user (unconfirmed — they'll need to verify or set password)
++  const { data: newUser, error } = await supabase.auth.admin.createUser({
++    email,
++    email_confirm: false,
++  })
++
++  if (error) throw new Error(`Failed to create user: ${error.message}`)
++
++  // Create profile for the new user
++  await supabase.from('profiles').insert({
++    user_id: newUser.user.id,
++    email,
++  })
++
++  return newUser.user.id
++}
++
++// Check if a user already has a submission
++export async function userHasSubmission(userId: string): Promise<boolean> {
++  const supabase = getSupabase()
++  const { data } = await supabase
++    .from('submissions')
++    .select('id')
++    .eq('user_id', userId)
++    .single()
++  return !!data
+ }
+ 
+ export async function createSubmission(data: {
+   id: string
++  user_id: string
+   email: string
+   linkedin_url: string
+   pitch_deck_url: string
++  pitch_deck_filename?: string
+   financials_url: string
++  financials_filename?: string
+   voice_note_url?: string
+ }) {
+-  const db = getPool()
+-  const result = await db.query(
+-    `INSERT INTO submissions (id, email, linkedin_url, pitch_deck_url, financials_url, voice_note_url)
+-     VALUES ($1, $2, $3, $4, $5, $6)
+-     RETURNING *`,
+-    [data.id, data.email, data.linkedin_url, data.pitch_deck_url, data.financials_url, data.voice_note_url || null]
+-  )
+-  return result.rows[0] as Submission
++  const supabase = getSupabase()
++  const { data: submission, error } = await supabase
++    .from('submissions')
++    .insert({
++      id: data.id,
++      user_id: data.user_id,
++      email: data.email,
++      linkedin_url: data.linkedin_url,
++      pitch_deck_url: data.pitch_deck_url,
++      pitch_deck_filename: data.pitch_deck_filename || null,
++      financials_url: data.financials_url,
++      financials_filename: data.financials_filename || null,
++      voice_note_url: data.voice_note_url || null,
++    })
++    .select()
++    .single()
++
++  if (error) throw new Error(`Failed to create submission: ${error.message}`)
++  return submission as Submission
+ }
+ 
+ export async function updateSubmissionScore(
+@@ -116,64 +134,88 @@ export async function updateSubmissionScore(
+     }
+   }
+ 
+-  const db = getPool()
+-  await db.query(
+-    `UPDATE submissions SET
+-      overall_score = $1,
+-      team_score = $2,
+-      team_grade = $3,
+-      market_score = $4,
+-      market_grade = $5,
+-      product_score = $6,
+-      product_grade = $7,
+-      financial_score = $8,
+-      financial_grade = $9,
+-      full_analysis = $10,
+-      updated_at = NOW()
+-    WHERE id = $11`,
+-    [
+-      a.overall_score,
+-      a.dimensions.team.score,
+-      a.dimensions.team.letter_grade,
+-      a.dimensions.market.score,
+-      a.dimensions.market.letter_grade,
+-      a.dimensions.product.score,
+-      a.dimensions.product.letter_grade,
+-      a.dimensions.financial.score,
+-      a.dimensions.financial.letter_grade,
+-      JSON.stringify(analysis),
+-      id,
+-    ]
+-  )
++  const supabase = getSupabase()
++  const { error } = await supabase
++    .from('submissions')
++    .update({
++      overall_score: a.overall_score,
++      team_score: a.dimensions.team.score,
++      team_grade: a.dimensions.team.letter_grade,
++      market_score: a.dimensions.market.score,
++      market_grade: a.dimensions.market.letter_grade,
++      product_score: a.dimensions.product.score,
++      product_grade: a.dimensions.product.letter_grade,
++      financial_score: a.dimensions.financial.score,
++      financial_grade: a.dimensions.financial.letter_grade,
++      full_analysis: analysis,
++    })
++    .eq('id', id)
++
++  if (error) console.error('Failed to update submission score:', error)
+ }
+ 
+ export async function getSubmission(id: string) {
+-  const db = getPool()
+-  const result = await db.query('SELECT * FROM submissions WHERE id = $1', [id])
+-  return result.rows[0] as Submission | undefined
++  const supabase = getSupabase()
++  const { data, error } = await supabase
++    .from('submissions')
++    .select('*')
++    .eq('id', id)
++    .single()
++
++  if (error) return undefined
++  return data as Submission
+ }
+ 
+ export async function markSubmissionPaid(id: string, stripeSessionId: string) {
+-  const db = getPool()
+-  await db.query(
+-    `UPDATE submissions SET
+-      paid = TRUE,
+-      stripe_session_id = $1,
+-      paid_at = NOW(),
+-      updated_at = NOW()
+-    WHERE id = $2`,
+-    [stripeSessionId, id]
+-  )
++  const supabase = getSupabase()
++  await supabase
++    .from('submissions')
++    .update({
++      paid: true,
++      stripe_session_id: stripeSessionId,
++      paid_at: new Date().toISOString(),
++    })
++    .eq('id', id)
+ }
+ 
+ export async function updateReportUrl(id: string, reportUrl: string) {
+-  const db = getPool()
+-  await db.query(
+-    `UPDATE submissions SET
+-      report_url = $1,
+-      report_generated_at = NOW(),
+-      updated_at = NOW()
+-    WHERE id = $2`,
+-    [reportUrl, id]
+-  )
++  const supabase = getSupabase()
++  await supabase
++    .from('submissions')
++    .update({
++      report_url: reportUrl,
++      report_generated_at: new Date().toISOString(),
++    })
++    .eq('id', id)
++}
++
++// Create a company page from a scored submission
++export async function createCompanyPage(data: {
++  userId: string
++  submissionId: string
++  companyName: string
++  overallScore: number
++  description?: string
++}) {
++  const supabase = getSupabase()
++  // Generate slug from company name
++  const slug = data.companyName
++    .toLowerCase()
++    .replace(/[^a-z0-9]+/g, '-')
++    .replace(/^-|-$/g, '')
++    + '-' + data.submissionId.slice(0, 8)
++
++  const { error } = await supabase
++    .from('company_pages')
++    .insert({
++      user_id: data.userId,
++      submission_id: data.submissionId,
++      company_name: data.companyName,
++      slug,
++      overall_score: data.overallScore,
++      description: data.description || null,
++    })
++
++  if (error) console.error('Failed to create company page:', error)
++  return slug
+ }
+diff --git a/lib/pdf.ts b/lib/pdf.ts
+index 2c08b9b..6fc66df 100644
+--- a/lib/pdf.ts
++++ b/lib/pdf.ts
+@@ -58,8 +58,8 @@ const styles = StyleSheet.create({
+     flexDirection: 'row',
+     justifyContent: 'space-between',
+     alignItems: 'center',
+-    marginBottom: 24,
+-    paddingBottom: 10,
++    marginBottom: 20,
++    paddingBottom: 8,
+     borderBottomWidth: 2,
+     borderBottomColor: green,
+   },
+@@ -77,40 +77,36 @@ const styles = StyleSheet.create({
+     paddingTop: 8,
+   },
+   footerText: { fontSize: 8, color: gray },
+-  sectionTitle: { fontSize: 22, fontWeight: 'bold', color: navy, marginBottom: 16 },
+-  subsectionTitle: { fontSize: 13, fontWeight: 'bold', color: navy, marginBottom: 8, marginTop: 6 },
+-  body: { fontSize: 10.5, lineHeight: 1.6, color: '#334155', marginBottom: 10 },
+-  bodySmall: { fontSize: 9.5, lineHeight: 1.5, color: '#475569', marginBottom: 8 },
++  sectionTitle: { fontSize: 18, fontWeight: 'bold', color: navy, marginBottom: 10 },
++  subsectionTitle: { fontSize: 12, fontWeight: 'bold', color: navy, marginBottom: 6, marginTop: 4 },
++  body: { fontSize: 10, lineHeight: 1.5, color: '#334155', marginBottom: 8 },
++  bodySmall: { fontSize: 9, lineHeight: 1.4, color: '#475569', marginBottom: 6 },
+   footNote: { fontSize: 8, color: gray, lineHeight: 1.4 },
+-  badge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, alignSelf: 'flex-start', marginBottom: 10 },
+-  gradeBox: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, backgroundColor: '#ECFDF5' },
+-  gradeText: { fontSize: 14, fontWeight: 'bold', color: green },
+-  barContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+-  barLabel: { width: 130, fontSize: 10, color: navy },
+-  barTrack: { flex: 1, height: 12, backgroundColor: '#E2E8F0', borderRadius: 6, marginHorizontal: 8 },
+-  barFill: { height: 12, backgroundColor: green, borderRadius: 6 },
+-  barScore: { width: 45, textAlign: 'right', fontSize: 10, fontWeight: 'bold', color: navy },
+-  listItem: { flexDirection: 'row', marginBottom: 6 },
+-  bullet: { width: 5, height: 5, borderRadius: 3, marginRight: 8, marginTop: 5, flexShrink: 0 },
+-  listText: { fontSize: 10, color: '#334155', flex: 1, lineHeight: 1.5 },
+-  detailedBulletContainer: { flexDirection: 'row', marginBottom: 10 },
++  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, alignSelf: 'flex-start', marginBottom: 8 },
++  gradeBox: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, backgroundColor: '#ECFDF5' },
++  gradeText: { fontSize: 12, fontWeight: 'bold', color: green },
++  barContainer: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
++  barLabel: { width: 120, fontSize: 9, color: navy },
++  barTrack: { flex: 1, height: 10, backgroundColor: '#E2E8F0', borderRadius: 5, marginHorizontal: 6 },
++  barFill: { height: 10, backgroundColor: green, borderRadius: 5 },
++  barScore: { width: 40, textAlign: 'right', fontSize: 9, fontWeight: 'bold', color: navy },
++  listItem: { flexDirection: 'row', marginBottom: 4 },
++  bullet: { width: 4, height: 4, borderRadius: 2, marginRight: 6, marginTop: 4, flexShrink: 0 },
++  listText: { fontSize: 9, color: '#334155', flex: 1, lineHeight: 1.4 },
++  detailedBulletContainer: { flexDirection: 'row', marginBottom: 6 },
+   detailedBulletContent: { flex: 1 },
+-  detailedBulletPointText: { fontSize: 10.5, fontWeight: 'bold', color: navy, marginBottom: 2 },
+-  detailedBulletDetail: { fontSize: 9.5, color: '#475569', lineHeight: 1.4 },
+-  divider: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 12 },
++  detailedBulletPointText: { fontSize: 9.5, fontWeight: 'bold', color: navy, marginBottom: 1 },
++  detailedBulletDetail: { fontSize: 8.5, color: '#475569', lineHeight: 1.3 },
++  divider: { height: 1, backgroundColor: '#E2E8F0', marginVertical: 8 },
+   swotGrid: { flexDirection: 'row', flexWrap: 'wrap' },
+-  swotQuadrant: { width: '48%', padding: 12, borderRadius: 8, margin: '1%', marginBottom: 8 },
+-  swotTitle: { fontSize: 11, fontWeight: 'bold', color: navy, marginBottom: 6 },
+-  riskRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E2E8F0', paddingVertical: 8 },
++  swotQuadrant: { width: '48%', padding: 8, borderRadius: 6, margin: '1%', marginBottom: 6 },
++  swotTitle: { fontSize: 10, fontWeight: 'bold', color: navy, marginBottom: 4 },
++  riskRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#E2E8F0', paddingVertical: 5 },
+   riskRowHeader: { borderBottomWidth: 2, borderBottomColor: '#CBD5E1', backgroundColor: lightGray, paddingHorizontal: 4 },
+-  riskCellRisk: { flex: 2, fontSize: 9.5, color: '#334155', paddingRight: 6 },
+-  riskCellSeverity: { width: 65 },
+-  riskCellMitigation: { flex: 2, fontSize: 9.5, color: '#475569', paddingLeft: 6 },
+-  tocItem: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10, paddingVertical: 2 },
+-  tocItemNumber: { fontWeight: 'bold', color: navy, marginRight: 8, fontSize: 10.5 },
+-  tocItemTitle: { flex: 1, color: navy, fontSize: 10.5 },
+-  tocItemPage: { textAlign: 'right', minWidth: 25, fontSize: 10.5, color: gray },
+-  headline: { fontSize: 11, color: '#475569', fontStyle: 'italic', marginBottom: 12, lineHeight: 1.5 },
++  riskCellRisk: { flex: 2, fontSize: 8.5, color: '#334155', paddingRight: 4 },
++  riskCellSeverity: { width: 55 },
++  riskCellMitigation: { flex: 2, fontSize: 8.5, color: '#475569', paddingLeft: 4 },
++  headline: { fontSize: 10, color: '#475569', fontStyle: 'italic', marginBottom: 8, lineHeight: 1.4 },
+ })
+ 
+ const dimensionNames: Record<string, string> = {
+@@ -120,25 +116,10 @@ const dimensionNames: Record<string, string> = {
+   financial: 'Financial Analysis',
+ }
+ 
+-// ============================================
+-// Helper Functions
+-// ============================================
+-
+ function splitIntoParagraphs(text: string): string[] {
+   return text.split(/\n\n+/).filter(p => p.trim().length > 0)
+ }
+ 
+-function splitParagraphsForPages(text: string): [string[], string[]] {
+-  const paragraphs = splitIntoParagraphs(text)
+-  if (paragraphs.length <= 1) return [paragraphs, []]
+-  const mid = Math.ceil(paragraphs.length / 2)
+-  return [paragraphs.slice(0, mid), paragraphs.slice(mid)]
+-}
+-
+-// ============================================
+-// Helper Components
+-// ============================================
+-
+ function PageHeader() {
+   return React.createElement(View, { style: styles.header },
+     React.createElement(Text, { style: styles.headerLogo }, 'Kunfa.AI'),
+@@ -192,7 +173,7 @@ function SeverityBadge({ severity }: { severity: string }) {
+   const bg = s.includes('high') ? '#FEE2E2' : s.includes('medium') ? '#FEF3C7' : '#EEF2FF'
+   const fg = s.includes('high') ? red : s.includes('medium') ? amber : indigo
+   return React.createElement(View, { style: { ...styles.badge, backgroundColor: bg } },
+-    React.createElement(Text, { style: { fontSize: 8, fontWeight: 'bold', color: fg } }, severity)
++    React.createElement(Text, { style: { fontSize: 7, fontWeight: 'bold', color: fg } }, severity)
+   )
+ }
+ 
+@@ -201,71 +182,12 @@ function PriorityBadge({ priority }: { priority: string }) {
+   const bg = p.includes('immediate') ? '#FEE2E2' : p.includes('short') ? '#FEF3C7' : '#EEF2FF'
+   const fg = p.includes('immediate') ? red : p.includes('short') ? amber : indigo
+   return React.createElement(View, { style: { ...styles.badge, backgroundColor: bg, marginBottom: 0 } },
+-    React.createElement(Text, { style: { fontSize: 8, fontWeight: 'bold', color: fg } }, priority)
++    React.createElement(Text, { style: { fontSize: 7, fontWeight: 'bold', color: fg } }, priority)
+   )
+ }
+ 
+-function DimensionPages({
+-  dimKey,
+-  result,
+-  memo,
+-  startPage,
+-}: {
+-  dimKey: string
+-  result: ScoringResult
+-  memo: ExpandedMemoContent
+-  startPage: number
+-}) {
+-  const dim = result.dimensions[dimKey as keyof typeof result.dimensions]
+-  const expanded = memo.dimensions[dimKey as keyof typeof memo.dimensions]
+-  const name = dimensionNames[dimKey] || dimKey
+-  const [firstParagraphs, secondParagraphs] = splitParagraphsForPages(expanded.detailed_analysis)
+-
+-  return [
+-    // Page 1: Title + first half of analysis
+-    React.createElement(Page, { key: `${dimKey}-1`, size: 'A4', style: styles.page },
+-      React.createElement(PageHeader, null),
+-      React.createElement(View, { style: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 } },
+-        React.createElement(Text, { style: styles.sectionTitle }, name),
+-        React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', gap: 8 } },
+-          React.createElement(View, { style: styles.gradeBox },
+-            React.createElement(Text, { style: styles.gradeText }, dim.letter_grade)
+-          ),
+-          React.createElement(Text, { style: { fontSize: 14, fontWeight: 'bold', color: green } }, `${dim.score}/25`)
+-        )
+-      ),
+-      React.createElement(Text, { style: styles.headline }, dim.headline),
+-      ...renderParagraphs(firstParagraphs),
+-      React.createElement(PageFooter, { pageNum: startPage })
+-    ),
+-    // Page 2: Remaining analysis + Strengths/Risks/Recommendations
+-    React.createElement(Page, { key: `${dimKey}-2`, size: 'A4', style: styles.page },
+-      React.createElement(PageHeader, null),
+-      ...(secondParagraphs.length > 0 ? [
+-        ...renderParagraphs(secondParagraphs),
+-        React.createElement(View, { key: `${dimKey}-div1`, style: styles.divider }),
+-      ] : []),
+-      React.createElement(Text, { key: `${dimKey}-st`, style: styles.subsectionTitle }, 'Strengths'),
+-      ...expanded.strengths.map((item, idx) =>
+-        DetailedBulletItem({ point: item.point, detail: item.detail, color: green })
+-      ),
+-      React.createElement(View, { key: `${dimKey}-div2`, style: styles.divider }),
+-      React.createElement(Text, { key: `${dimKey}-rt`, style: styles.subsectionTitle }, 'Risks'),
+-      ...expanded.risks.map((item, idx) =>
+-        DetailedBulletItem({ point: item.point, detail: item.detail, color: red })
+-      ),
+-      React.createElement(View, { key: `${dimKey}-div3`, style: styles.divider }),
+-      React.createElement(Text, { key: `${dimKey}-rect`, style: styles.subsectionTitle }, 'Recommendations'),
+-      ...expanded.recommendations.map((item, idx) =>
+-        DetailedBulletItem({ point: item.point, detail: item.detail, color: indigo })
+-      ),
+-      React.createElement(PageFooter, { pageNum: startPage + 1 })
+-    ),
+-  ]
+-}
+-
+ // ============================================
+-// Main PDF Generator
++// Main PDF Generator — Compact 5-Page Report
+ // ============================================
+ 
+ export async function generateReport(
+@@ -275,26 +197,8 @@ export async function generateReport(
+ ): Promise<Buffer> {
+   const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+ 
+-  const tocEntries = [
+-    { title: 'Executive Summary', page: '3' },
+-    { title: 'Key Findings & Score Dashboard', page: '4' },
+-    { title: 'Company Overview', page: '5' },
+-    { title: 'Team & Founders Deep Dive', page: '6-7' },
+-    { title: 'Market Opportunity Deep Dive', page: '8-9' },
+-    { title: 'Product & Technology Deep Dive', page: '10-11' },
+-    { title: 'Financial Analysis Deep Dive', page: '12-13' },
+-    { title: 'SWOT Analysis', page: '14' },
+-    { title: 'Risk Assessment', page: '15' },
+-    { title: 'Strategic Recommendations & Fundraising', page: '16' },
+-    { title: 'Methodology & Disclaimers', page: '17' },
+-  ]
+-
+   const overviewParagraphs = splitIntoParagraphs(memo.executive_summary.overview)
+   const thesisParagraphs = splitIntoParagraphs(memo.executive_summary.investment_thesis)
+-  const findingsParagraphs = splitIntoParagraphs(memo.executive_summary.key_findings)
+-  const compDescParagraphs = splitIntoParagraphs(memo.company_overview.description)
+-  const compModelParagraphs = splitIntoParagraphs(memo.company_overview.business_model)
+-  const compMarketParagraphs = splitIntoParagraphs(memo.company_overview.target_market)
+ 
+   const doc = React.createElement(Document, {},
+ 
+@@ -311,132 +215,92 @@ export async function generateReport(
+       React.createElement(Text, { style: styles.coverConfidential }, 'CONFIDENTIAL')
+     ),
+ 
+-    // ---- PAGE 2: TABLE OF CONTENTS ----
+-    React.createElement(Page, { size: 'A4', style: styles.page },
+-      React.createElement(PageHeader, null),
+-      React.createElement(Text, { style: styles.sectionTitle }, 'Table of Contents'),
+-      React.createElement(View, { style: styles.divider }),
+-      ...tocEntries.map((item, idx) =>
+-        React.createElement(View, { key: `toc-${idx}`, style: styles.tocItem },
+-          React.createElement(View, { style: { flexDirection: 'row', flex: 1 } },
+-            React.createElement(Text, { style: styles.tocItemNumber }, `${idx + 1}.`),
+-            React.createElement(Text, { style: styles.tocItemTitle }, item.title)
+-          ),
+-          React.createElement(Text, { style: styles.tocItemPage }, item.page)
+-        )
+-      ),
+-      React.createElement(PageFooter, { pageNum: 2 })
+-    ),
+-
+-    // ---- PAGE 3: EXECUTIVE SUMMARY ----
++    // ---- PAGE 2: EXECUTIVE SUMMARY + SCORE DASHBOARD ----
+     React.createElement(Page, { size: 'A4', style: styles.page },
+       React.createElement(PageHeader, null),
+       React.createElement(Text, { style: styles.sectionTitle }, 'Executive Summary'),
+       React.createElement(View, { style: { ...styles.badge, backgroundColor: '#ECFDF5' } },
+-        React.createElement(Text, { style: { fontSize: 10, fontWeight: 'bold', color: green } }, result.investment_readiness)
++        React.createElement(Text, { style: { fontSize: 9, fontWeight: 'bold', color: green } }, result.investment_readiness)
+       ),
+-      React.createElement(Text, { style: styles.subsectionTitle }, 'Overview'),
+       ...renderParagraphs(overviewParagraphs),
+       React.createElement(View, { style: styles.divider }),
+       React.createElement(Text, { style: styles.subsectionTitle }, 'Investment Thesis'),
+       ...renderParagraphs(thesisParagraphs),
+-      React.createElement(PageFooter, { pageNum: 3 })
+-    ),
+-
+-    // ---- PAGE 4: KEY FINDINGS & SCORE DASHBOARD ----
+-    React.createElement(Page, { size: 'A4', style: styles.page },
+-      React.createElement(PageHeader, null),
+-      React.createElement(Text, { style: styles.sectionTitle }, 'Key Findings & Score Dashboard'),
+-      ...renderParagraphs(findingsParagraphs),
+       React.createElement(View, { style: styles.divider }),
+-      React.createElement(Text, { style: styles.subsectionTitle }, 'Dimension Scores'),
++      React.createElement(Text, { style: styles.subsectionTitle }, 'Score Dashboard'),
+       ...(Object.entries(result.dimensions) as [string, { score: number }][]).map(([key, dim]) =>
+         ScoreBar({ label: dimensionNames[key], score: dim.score, maxScore: 25 })
+       ),
+-      React.createElement(View, { style: { marginTop: 8, padding: 12, backgroundColor: lightGray, borderRadius: 8 } },
+-        React.createElement(Text, { style: { fontSize: 12, fontWeight: 'bold', color: navy, marginBottom: 4 } },
++      React.createElement(View, { style: { marginTop: 6, padding: 10, backgroundColor: lightGray, borderRadius: 6 } },
++        React.createElement(Text, { style: { fontSize: 11, fontWeight: 'bold', color: navy, marginBottom: 2 } },
+           `Overall: ${result.overall_score}/100`
+         ),
+-        React.createElement(Text, { style: { fontSize: 10, color: gray } },
+-          `Top ${result.percentile}% of submissions`
++        React.createElement(Text, { style: { fontSize: 9, color: gray } },
++          `Top ${result.percentile}% of submissions | Sector: ${result.sector_benchmarks.sector}`
+         )
+       ),
+-      React.createElement(View, { style: styles.divider }),
+-      React.createElement(Text, { style: styles.subsectionTitle }, 'Sector Benchmarks'),
+-      React.createElement(Text, { style: styles.bodySmall }, `Sector: ${result.sector_benchmarks.sector}`),
+-      React.createElement(Text, { style: styles.bodySmall }, `Average Score: ${result.sector_benchmarks.avg_score}/100`),
+-      React.createElement(Text, { style: styles.bodySmall }, result.sector_benchmarks.comparison),
+-      React.createElement(PageFooter, { pageNum: 4 })
++      React.createElement(PageFooter, { pageNum: 2 })
+     ),
+ 
+-    // ---- PAGE 5: COMPANY OVERVIEW ----
++    // ---- PAGE 3: DIMENSION ANALYSIS (ALL 4) ----
+     React.createElement(Page, { size: 'A4', style: styles.page },
+       React.createElement(PageHeader, null),
+-      React.createElement(Text, { style: styles.sectionTitle }, 'Company Overview'),
+-      React.createElement(Text, { style: styles.subsectionTitle }, 'Description'),
+-      ...renderParagraphs(compDescParagraphs),
+-      React.createElement(View, { style: styles.divider }),
+-      React.createElement(Text, { style: styles.subsectionTitle }, 'Business Model'),
+-      ...renderParagraphs(compModelParagraphs),
+-      React.createElement(View, { style: styles.divider }),
+-      React.createElement(Text, { style: styles.subsectionTitle }, 'Target Market'),
+-      ...renderParagraphs(compMarketParagraphs),
+-      React.createElement(PageFooter, { pageNum: 5 })
++      React.createElement(Text, { style: styles.sectionTitle }, 'Dimension Analysis'),
++      ...(['team', 'market', 'product', 'financial'] as const).flatMap((dimKey) => {
++        const dim = result.dimensions[dimKey]
++        const expanded = memo.dimensions[dimKey]
++        const name = dimensionNames[dimKey]
++        const paragraphs = splitIntoParagraphs(expanded.detailed_analysis)
++        return [
++          React.createElement(View, { key: `${dimKey}-header`, style: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
++            React.createElement(Text, { style: { fontSize: 12, fontWeight: 'bold', color: navy } }, name),
++            React.createElement(Text, { style: { fontSize: 11, fontWeight: 'bold', color: green } }, `${dim.score}/25 (${dim.letter_grade})`)
++          ),
++          ...paragraphs.map((p, i) =>
++            React.createElement(Text, { key: `${dimKey}-p-${i}`, style: styles.bodySmall }, p)
++          ),
++          React.createElement(View, { key: `${dimKey}-div`, style: { ...styles.divider, marginVertical: 6 } }),
++        ]
++      }),
++      React.createElement(PageFooter, { pageNum: 3 })
+     ),
+ 
+-    // ---- PAGES 6-13: DIMENSION DEEP DIVES ----
+-    ...DimensionPages({ dimKey: 'team', result, memo, startPage: 6 }),
+-    ...DimensionPages({ dimKey: 'market', result, memo, startPage: 8 }),
+-    ...DimensionPages({ dimKey: 'product', result, memo, startPage: 10 }),
+-    ...DimensionPages({ dimKey: 'financial', result, memo, startPage: 12 }),
+-
+-    // ---- PAGE 14: SWOT ANALYSIS ----
++    // ---- PAGE 4: SWOT + RISK ASSESSMENT ----
+     React.createElement(Page, { size: 'A4', style: styles.page },
+       React.createElement(PageHeader, null),
+       React.createElement(Text, { style: styles.sectionTitle }, 'SWOT Analysis'),
+       React.createElement(View, { style: styles.swotGrid },
+-        // Strengths
+-        React.createElement(View, { style: { ...styles.swotQuadrant, backgroundColor: '#ECFDF5', borderLeftWidth: 4, borderLeftColor: green } },
++        React.createElement(View, { style: { ...styles.swotQuadrant, backgroundColor: '#ECFDF5', borderLeftWidth: 3, borderLeftColor: green } },
+           React.createElement(Text, { style: styles.swotTitle }, 'Strengths'),
+           ...memo.swot.strengths.map((item, idx) =>
+             BulletItem({ text: item, color: green })
+           )
+         ),
+-        // Weaknesses
+-        React.createElement(View, { style: { ...styles.swotQuadrant, backgroundColor: '#FEE2E2', borderLeftWidth: 4, borderLeftColor: red } },
++        React.createElement(View, { style: { ...styles.swotQuadrant, backgroundColor: '#FEE2E2', borderLeftWidth: 3, borderLeftColor: red } },
+           React.createElement(Text, { style: styles.swotTitle }, 'Weaknesses'),
+           ...memo.swot.weaknesses.map((item, idx) =>
+             BulletItem({ text: item, color: red })
+           )
+         ),
+-        // Opportunities
+-        React.createElement(View, { style: { ...styles.swotQuadrant, backgroundColor: '#EEF2FF', borderLeftWidth: 4, borderLeftColor: indigo } },
++        React.createElement(View, { style: { ...styles.swotQuadrant, backgroundColor: '#EEF2FF', borderLeftWidth: 3, borderLeftColor: indigo } },
+           React.createElement(Text, { style: styles.swotTitle }, 'Opportunities'),
+           ...memo.swot.opportunities.map((item, idx) =>
+             BulletItem({ text: item, color: indigo })
+           )
+         ),
+-        // Threats
+-        React.createElement(View, { style: { ...styles.swotQuadrant, backgroundColor: '#FEF3C7', borderLeftWidth: 4, borderLeftColor: amber } },
++        React.createElement(View, { style: { ...styles.swotQuadrant, backgroundColor: '#FEF3C7', borderLeftWidth: 3, borderLeftColor: amber } },
+           React.createElement(Text, { style: styles.swotTitle }, 'Threats'),
+           ...memo.swot.threats.map((item, idx) =>
+             BulletItem({ text: item, color: amber })
+           )
+         )
+       ),
+-      React.createElement(PageFooter, { pageNum: 14 })
+-    ),
+-
+-    // ---- PAGE 15: RISK ASSESSMENT ----
+-    React.createElement(Page, { size: 'A4', style: styles.page },
+-      React.createElement(PageHeader, null),
++      React.createElement(View, { style: styles.divider }),
+       React.createElement(Text, { style: styles.sectionTitle }, 'Risk Assessment'),
+-      React.createElement(Text, { style: styles.body }, 'The following risks have been identified through our analysis and should be carefully monitored.'),
+-      // Header row
+       React.createElement(View, { style: { ...styles.riskRow, ...styles.riskRowHeader } },
+-        React.createElement(Text, { style: { ...styles.riskCellRisk, fontWeight: 'bold', fontSize: 9 } }, 'RISK'),
+-        React.createElement(Text, { style: { ...styles.riskCellSeverity, fontWeight: 'bold', fontSize: 9 } }, 'SEVERITY'),
+-        React.createElement(Text, { style: { ...styles.riskCellMitigation, fontWeight: 'bold', fontSize: 9 } }, 'MITIGATION')
++        React.createElement(Text, { style: { ...styles.riskCellRisk, fontWeight: 'bold', fontSize: 8 } }, 'RISK'),
++        React.createElement(Text, { style: { ...styles.riskCellSeverity, fontWeight: 'bold', fontSize: 8 } }, 'SEVERITY'),
++        React.createElement(Text, { style: { ...styles.riskCellMitigation, fontWeight: 'bold', fontSize: 8 } }, 'MITIGATION')
+       ),
+       ...memo.risk_assessment.map((risk, idx) =>
+         React.createElement(View, { key: `risk-${idx}`, style: styles.riskRow },
+@@ -447,65 +311,41 @@ export async function generateReport(
+           React.createElement(Text, { style: styles.riskCellMitigation }, risk.mitigation)
+         )
+       ),
+-      React.createElement(PageFooter, { pageNum: 15 })
++      React.createElement(PageFooter, { pageNum: 4 })
+     ),
+ 
+-    // ---- PAGE 16: STRATEGIC RECOMMENDATIONS & FUNDRAISING ----
++    // ---- PAGE 5: RECOMMENDATIONS + DISCLAIMER ----
+     React.createElement(Page, { size: 'A4', style: styles.page },
+       React.createElement(PageHeader, null),
+       React.createElement(Text, { style: styles.sectionTitle }, 'Strategic Recommendations'),
+       ...memo.strategic_recommendations.map((rec, idx) =>
+-        React.createElement(View, { key: `rec-${idx}`, style: { marginBottom: 12 } },
+-          React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 } },
++        React.createElement(View, { key: `rec-${idx}`, style: { marginBottom: 8 } },
++          React.createElement(View, { style: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 } },
+             PriorityBadge({ priority: rec.priority }),
+-            React.createElement(Text, { style: { fontSize: 11, fontWeight: 'bold', color: navy, flex: 1 } }, rec.recommendation)
++            React.createElement(Text, { style: { fontSize: 10, fontWeight: 'bold', color: navy, flex: 1 } }, rec.recommendation)
+           ),
+           React.createElement(Text, { style: styles.bodySmall }, rec.detail)
+         )
+       ),
+       React.createElement(View, { style: styles.divider }),
+       React.createElement(Text, { style: styles.subsectionTitle }, 'Fundraising Readiness'),
+-      React.createElement(Text, { style: styles.body }, memo.fundraising_readiness.current_status),
+-      React.createElement(Text, { style: styles.subsectionTitle }, 'Next Steps'),
++      React.createElement(Text, { style: styles.bodySmall }, memo.fundraising_readiness.current_status),
+       ...memo.fundraising_readiness.next_steps.map((step, idx) =>
+         BulletItem({ text: step, color: green })
+       ),
+-      React.createElement(Text, { style: { ...styles.subsectionTitle, marginTop: 8 } }, 'Timeline'),
+-      React.createElement(Text, { style: styles.bodySmall }, memo.fundraising_readiness.timeline),
+-      React.createElement(PageFooter, { pageNum: 16 })
+-    ),
+-
+-    // ---- PAGE 17: METHODOLOGY & DISCLAIMERS ----
+-    React.createElement(Page, { size: 'A4', style: styles.page },
+-      React.createElement(PageHeader, null),
+-      React.createElement(Text, { style: styles.sectionTitle }, 'Methodology & Disclaimers'),
+-      React.createElement(Text, { style: styles.subsectionTitle }, 'How Kunfa Scoring Works'),
+-      React.createElement(Text, { style: styles.body },
+-        'The Kunfa Score is generated by our proprietary AI engine, which analyzes startup materials across four key dimensions: Team & Founders, Market Opportunity, Product & Technology, and Financial Analysis. Each dimension is scored out of 25 points for a maximum of 100.'
+-      ),
+-      React.createElement(Text, { style: styles.body },
+-        'Our AI has been trained on thousands of successful and unsuccessful startup pitches and company analyses, allowing it to identify patterns correlated with fundraising success, investor interest, and long-term viability.'
+-      ),
+-      React.createElement(View, { style: styles.divider }),
+-      React.createElement(Text, { style: styles.subsectionTitle }, 'Scoring Scale'),
+-      React.createElement(Text, { style: styles.bodySmall }, '90-100: Exceptional — Investment ready, strong across all dimensions'),
+-      React.createElement(Text, { style: styles.bodySmall }, '75-89: Strong — Well-positioned with minor areas for improvement'),
+-      React.createElement(Text, { style: styles.bodySmall }, '60-74: Promising — Good foundation but needs work in key areas'),
+-      React.createElement(Text, { style: styles.bodySmall }, '40-59: Developing — Significant improvements needed before fundraising'),
+-      React.createElement(Text, { style: styles.bodySmall }, 'Below 40: Early Stage — Fundamental elements need to be addressed'),
+       React.createElement(View, { style: styles.divider }),
+-      React.createElement(Text, { style: styles.subsectionTitle }, 'Disclaimer'),
++      React.createElement(Text, { style: { fontSize: 9, fontWeight: 'bold', color: navy, marginBottom: 4 } }, 'Disclaimer'),
+       React.createElement(Text, { style: styles.footNote },
+-        'This report is generated by artificial intelligence and is provided for informational purposes only. It does not constitute investment advice, financial advice, or a recommendation to invest. Kunfa.AI and its partners make no guarantees regarding the accuracy, completeness, or reliability of this analysis. Investment decisions should always be made with the guidance of qualified financial professionals and thorough due diligence.'
++        'This report is generated by artificial intelligence and is provided for informational purposes only. It does not constitute investment advice, financial advice, or a recommendation to invest. Kunfa.AI makes no guarantees regarding the accuracy, completeness, or reliability of this analysis. Investment decisions should always be made with the guidance of qualified financial professionals.'
+       ),
+       React.createElement(View, { style: styles.divider }),
+-      React.createElement(Text, { style: { textAlign: 'center', fontSize: 9, color: gray, marginTop: 20 } },
++      React.createElement(Text, { style: { textAlign: 'center', fontSize: 8, color: gray, marginTop: 10 } },
+         `Report generated for ${email} on ${date}`
+       ),
+-      React.createElement(Text, { style: { textAlign: 'center', fontSize: 10, color: green, marginTop: 8, fontWeight: 'bold' } },
++      React.createElement(Text, { style: { textAlign: 'center', fontSize: 9, color: green, marginTop: 6, fontWeight: 'bold' } },
+         'Kunfa.AI — A Vitality Capital Platform'
+       ),
+-      React.createElement(PageFooter, { pageNum: 17 })
++      React.createElement(PageFooter, { pageNum: 5 })
+     )
+   )
+ 
+diff --git a/lib/supabase-server.ts b/lib/supabase-server.ts
+new file mode 100644
+index 0000000..ffb392f
+--- /dev/null
++++ b/lib/supabase-server.ts
+@@ -0,0 +1,45 @@
++import { createServerClient } from '@supabase/ssr'
++import { cookies } from 'next/headers'
++import { createClient } from '@supabase/supabase-js'
++
++// Server client with cookie-based session (for API routes & server components)
++export async function createServerSupabaseClient() {
++  const cookieStore = cookies()
++
++  return createServerClient(
++    process.env.NEXT_PUBLIC_SUPABASE_URL!,
++    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
++    {
++      cookies: {
++        getAll() {
++          return cookieStore.getAll()
++        },
++        setAll(cookiesToSet) {
++          try {
++            cookiesToSet.forEach(({ name, value, options }) =>
++              cookieStore.set(name, value, options)
++            )
++          } catch {
++            // Ignored in Server Components (read-only)
++          }
++        },
++      },
++    }
++  )
++}
++
++// Admin client with service role key (bypasses RLS)
++export function createAdminClient() {
++  return createClient(
++    process.env.NEXT_PUBLIC_SUPABASE_URL!,
++    process.env.SUPABASE_SERVICE_ROLE_KEY!,
++    { auth: { autoRefreshToken: false, persistSession: false } }
++  )
++}
++
++// Helper: get authenticated user from server context
++export async function getServerUser() {
++  const supabase = await createServerSupabaseClient()
++  const { data: { user } } = await supabase.auth.getUser()
++  return user
++}
+diff --git a/lib/supabase.ts b/lib/supabase.ts
+new file mode 100644
+index 0000000..792b457
+--- /dev/null
++++ b/lib/supabase.ts
+@@ -0,0 +1,8 @@
++import { createBrowserClient } from '@supabase/ssr'
++
++export function createClient() {
++  return createBrowserClient(
++    process.env.NEXT_PUBLIC_SUPABASE_URL!,
++    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
++  )
++}
+diff --git a/middleware.ts b/middleware.ts
+new file mode 100644
+index 0000000..caca9a1
+--- /dev/null
++++ b/middleware.ts
+@@ -0,0 +1,60 @@
++import { createServerClient } from '@supabase/ssr'
++import { NextResponse } from 'next/server'
++import type { NextRequest } from 'next/server'
++
++export async function middleware(request: NextRequest) {
++  let supabaseResponse = NextResponse.next({ request })
++
++  const supabase = createServerClient(
++    process.env.NEXT_PUBLIC_SUPABASE_URL!,
++    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
++    {
++      cookies: {
++        getAll() {
++          return request.cookies.getAll()
++        },
++        setAll(cookiesToSet) {
++          cookiesToSet.forEach(({ name, value, options }) =>
++            request.cookies.set(name, value)
++          )
++          supabaseResponse = NextResponse.next({ request })
++          cookiesToSet.forEach(({ name, value, options }) =>
++            supabaseResponse.cookies.set(name, value, options)
++          )
++        },
++      },
++    }
++  )
++
++  // Refresh session (important for keeping auth alive)
++  const { data: { user } } = await supabase.auth.getUser()
++
++  const { pathname } = request.nextUrl
++
++  // Protected routes: require authentication
++  const protectedPaths = ['/dashboard']
++  const isProtected = protectedPaths.some(p => pathname.startsWith(p))
++
++  if (isProtected && !user) {
++    const url = request.nextUrl.clone()
++    url.pathname = '/auth/login'
++    url.searchParams.set('redirect', pathname)
++    return NextResponse.redirect(url)
++  }
++
++  // Redirect authenticated users away from auth pages
++  if (pathname.startsWith('/auth/login') && user) {
++    const url = request.nextUrl.clone()
++    url.pathname = '/dashboard'
++    return NextResponse.redirect(url)
++  }
++
++  return supabaseResponse
++}
++
++export const config = {
++  matcher: [
++    // Match all routes except static files, images, and API routes that should be public
++    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api/score|api/upload|api/stripe|api/init-db|api/report).*)',
++  ],
++}
+diff --git a/package-lock.json b/package-lock.json
+index edae779..5c3be03 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -10,6 +10,8 @@
+       "dependencies": {
+         "@anthropic-ai/sdk": "^0.30.0",
+         "@react-pdf/renderer": "^3.4.0",
++        "@supabase/ssr": "^0.8.0",
++        "@supabase/supabase-js": "^2.97.0",
+         "@vercel/blob": "^0.22.0",
+         "next": "^14.2.0",
+         "pdf-parse": "^1.1.1",
+@@ -790,6 +792,98 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/@supabase/auth-js": {
++      "version": "2.97.0",
++      "resolved": "https://registry.npmjs.org/@supabase/auth-js/-/auth-js-2.97.0.tgz",
++      "integrity": "sha512-2Og/1lqp+AIavr8qS2X04aSl8RBY06y4LrtIAGxat06XoXYiDxKNQMQzWDAKm1EyZFZVRNH48DO5YvIZ7la5fQ==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
++    "node_modules/@supabase/functions-js": {
++      "version": "2.97.0",
++      "resolved": "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.97.0.tgz",
++      "integrity": "sha512-fSaA0ZeBUS9hMgpGZt5shIZvfs3Mvx2ZdajQT4kv/whubqDBAp3GU5W8iIXy21MRvKmO2NpAj8/Q6y+ZkZyF/w==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
++    "node_modules/@supabase/postgrest-js": {
++      "version": "2.97.0",
++      "resolved": "https://registry.npmjs.org/@supabase/postgrest-js/-/postgrest-js-2.97.0.tgz",
++      "integrity": "sha512-g4Ps0eaxZZurvfv/KGoo2XPZNpyNtjth9aW8eho9LZWM0bUuBtxPZw3ZQ6ERSpEGogshR+XNgwlSPIwcuHCNww==",
++      "license": "MIT",
++      "dependencies": {
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
++    "node_modules/@supabase/realtime-js": {
++      "version": "2.97.0",
++      "resolved": "https://registry.npmjs.org/@supabase/realtime-js/-/realtime-js-2.97.0.tgz",
++      "integrity": "sha512-37Jw0NLaFP0CZd7qCan97D1zWutPrTSpgWxAw6Yok59JZoxp4IIKMrPeftJ3LZHmf+ILQOPy3i0pRDHM9FY36Q==",
++      "license": "MIT",
++      "dependencies": {
++        "@types/phoenix": "^1.6.6",
++        "@types/ws": "^8.18.1",
++        "tslib": "2.8.1",
++        "ws": "^8.18.2"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
++    "node_modules/@supabase/ssr": {
++      "version": "0.8.0",
++      "resolved": "https://registry.npmjs.org/@supabase/ssr/-/ssr-0.8.0.tgz",
++      "integrity": "sha512-/PKk8kNFSs8QvvJ2vOww1mF5/c5W8y42duYtXvkOSe+yZKRgTTZywYG2l41pjhNomqESZCpZtXuWmYjFRMV+dw==",
++      "license": "MIT",
++      "dependencies": {
++        "cookie": "^1.0.2"
++      },
++      "peerDependencies": {
++        "@supabase/supabase-js": "^2.76.1"
++      }
++    },
++    "node_modules/@supabase/storage-js": {
++      "version": "2.97.0",
++      "resolved": "https://registry.npmjs.org/@supabase/storage-js/-/storage-js-2.97.0.tgz",
++      "integrity": "sha512-9f6NniSBfuMxOWKwEFb+RjJzkfMdJUwv9oHuFJKfe/5VJR8cd90qw68m6Hn0ImGtwG37TUO+QHtoOechxRJ1Yg==",
++      "license": "MIT",
++      "dependencies": {
++        "iceberg-js": "^0.8.1",
++        "tslib": "2.8.1"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
++    "node_modules/@supabase/supabase-js": {
++      "version": "2.97.0",
++      "resolved": "https://registry.npmjs.org/@supabase/supabase-js/-/supabase-js-2.97.0.tgz",
++      "integrity": "sha512-kTD91rZNO4LvRUHv4x3/4hNmsEd2ofkYhuba2VMUPRVef1RCmnHtm7rIws38Fg0yQnOSZOplQzafn0GSiy6GVg==",
++      "license": "MIT",
++      "dependencies": {
++        "@supabase/auth-js": "2.97.0",
++        "@supabase/functions-js": "2.97.0",
++        "@supabase/postgrest-js": "2.97.0",
++        "@supabase/realtime-js": "2.97.0",
++        "@supabase/storage-js": "2.97.0"
++      },
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
+     "node_modules/@swc/counter": {
+       "version": "0.1.3",
+       "resolved": "https://registry.npmjs.org/@swc/counter/-/counter-0.1.3.tgz",
+@@ -861,6 +955,12 @@
+         "pg-types": "^2.2.0"
+       }
+     },
++    "node_modules/@types/phoenix": {
++      "version": "1.6.7",
++      "resolved": "https://registry.npmjs.org/@types/phoenix/-/phoenix-1.6.7.tgz",
++      "integrity": "sha512-oN9ive//QSBkf19rfDv45M7eZPi0eEXylht2OLEXicu5b4KoQ1OzXIw+xDSGWxSxe1JmepRR/ZH283vsu518/Q==",
++      "license": "MIT"
++    },
+     "node_modules/@types/prop-types": {
+       "version": "15.7.15",
+       "resolved": "https://registry.npmjs.org/@types/prop-types/-/prop-types-15.7.15.tgz",
+@@ -896,6 +996,15 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/@types/ws": {
++      "version": "8.18.1",
++      "resolved": "https://registry.npmjs.org/@types/ws/-/ws-8.18.1.tgz",
++      "integrity": "sha512-ThVF6DCVhA8kUGy+aazFQ4kXQ7E1Ty7A3ypFOe0IcJV8O/M511G99AW24irKrW56Wt44yG9+ij8FaqoBGkuBXg==",
++      "license": "MIT",
++      "dependencies": {
++        "@types/node": "*"
++      }
++    },
+     "node_modules/@typescript-eslint/eslint-plugin": {
+       "version": "8.55.0",
+       "resolved": "https://registry.npmjs.org/@typescript-eslint/eslint-plugin/-/eslint-plugin-8.55.0.tgz",
+@@ -2264,6 +2373,19 @@
+       "dev": true,
+       "license": "MIT"
+     },
++    "node_modules/cookie": {
++      "version": "1.1.1",
++      "resolved": "https://registry.npmjs.org/cookie/-/cookie-1.1.1.tgz",
++      "integrity": "sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=18"
++      },
++      "funding": {
++        "type": "opencollective",
++        "url": "https://opencollective.com/express"
++      }
++    },
+     "node_modules/crc-32": {
+       "version": "1.2.2",
+       "resolved": "https://registry.npmjs.org/crc-32/-/crc-32-1.2.2.tgz",
+@@ -3808,6 +3930,15 @@
+       "integrity": "sha512-kvL8xYl5QMTh+LwohVN72ciOxC0OEV79IPdJSTwEXok9y9QHebXGdFgrED4sWfiax/ODx++CAMk3hMy4XPJPOw==",
+       "license": "ISC"
+     },
++    "node_modules/iceberg-js": {
++      "version": "0.8.1",
++      "resolved": "https://registry.npmjs.org/iceberg-js/-/iceberg-js-0.8.1.tgz",
++      "integrity": "sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=20.0.0"
++      }
++    },
+     "node_modules/ignore": {
+       "version": "5.3.2",
+       "resolved": "https://registry.npmjs.org/ignore/-/ignore-5.3.2.tgz",
+@@ -7294,6 +7425,27 @@
+       "dev": true,
+       "license": "ISC"
+     },
++    "node_modules/ws": {
++      "version": "8.19.0",
++      "resolved": "https://registry.npmjs.org/ws/-/ws-8.19.0.tgz",
++      "integrity": "sha512-blAT2mjOEIi0ZzruJfIhb3nps74PRWTCz1IjglWEEpQl5XS/UNama6u2/rjFkDDouqr4L67ry+1aGIALViWjDg==",
++      "license": "MIT",
++      "engines": {
++        "node": ">=10.0.0"
++      },
++      "peerDependencies": {
++        "bufferutil": "^4.0.1",
++        "utf-8-validate": ">=5.0.2"
++      },
++      "peerDependenciesMeta": {
++        "bufferutil": {
++          "optional": true
++        },
++        "utf-8-validate": {
++          "optional": true
++        }
++      }
++    },
+     "node_modules/xlsx": {
+       "version": "0.18.5",
+       "resolved": "https://registry.npmjs.org/xlsx/-/xlsx-0.18.5.tgz",
+diff --git a/package.json b/package.json
+index 1976a95..c04da2e 100644
+--- a/package.json
++++ b/package.json
+@@ -11,6 +11,8 @@
+   "dependencies": {
+     "@anthropic-ai/sdk": "^0.30.0",
+     "@react-pdf/renderer": "^3.4.0",
++    "@supabase/ssr": "^0.8.0",
++    "@supabase/supabase-js": "^2.97.0",
+     "@vercel/blob": "^0.22.0",
+     "next": "^14.2.0",
+     "pdf-parse": "^1.1.1",

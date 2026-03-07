@@ -128,6 +128,7 @@ export async function POST(request: NextRequest) {
     }
 
     // --- DB: save analysis ---
+    let slug: string | undefined
     if (isDatabaseConfigured()) {
       try {
         await updateSubmissionScore(submissionId, fullResult as unknown as Record<string, unknown>)
@@ -138,12 +139,17 @@ export async function POST(request: NextRequest) {
             (fullResult as any)?.summary?.split(' ')[0] ||
             email.split('@')[1]?.split('.')[0] ||
             'Unnamed Company'
-          await createCompanyPage({
+          slug = await createCompanyPage({
             userId,
             submissionId,
             companyName,
             overallScore: (fullResult as any)?.overall_score || 0,
             description: (fullResult as any)?.summary || undefined,
+            industry: (fullResult as any)?.industry || undefined,
+            stage: (fullResult as any)?.stage || undefined,
+            raiseAmount: (fullResult as any)?.raise_amount || undefined,
+            teamSize: (fullResult as any)?.team_size || undefined,
+            source: 'startup_submission',
           })
         }
       } catch (dbErr) {
@@ -156,6 +162,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       submissionId,
       teaser,
+      slug,
     })
   } catch (error) {
     console.error('Scoring route unexpected error:', error)

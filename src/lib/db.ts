@@ -196,6 +196,11 @@ export async function createCompanyPage(data: {
   companyName: string
   overallScore: number
   description?: string
+  industry?: string
+  stage?: string
+  raiseAmount?: number
+  teamSize?: number
+  source?: string
 }) {
   const supabase = getSupabase()
   // Generate slug from company name
@@ -214,6 +219,11 @@ export async function createCompanyPage(data: {
       slug,
       overall_score: data.overallScore,
       description: data.description || null,
+      industry: data.industry || null,
+      stage: data.stage || null,
+      raise_amount: data.raiseAmount || null,
+      team_size: data.teamSize || null,
+      source: data.source || 'startup_submission',
     })
 
   if (error) console.error('Failed to create company page:', error)
