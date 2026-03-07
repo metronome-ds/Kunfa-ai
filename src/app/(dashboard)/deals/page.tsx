@@ -29,7 +29,7 @@ interface PaginationData {
 export default function DealsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [deals, setDeals] = useState<(Deal & { users?: any })[]>([]);
+  const [deals, setDeals] = useState<any[]>([]);
   const [filters, setFilters] = useState<FilterState>({
     search: '',
     industries: [],
@@ -110,7 +110,7 @@ export default function DealsPage() {
       const response = await fetch('/api/deals/saved');
       if (response.ok) {
         const data = await response.json();
-        setSavedDealIds(new Set(data.data.map((d: any) => d.deal_id)));
+        setSavedDealIds(new Set(data.data.map((d: any) => d.company_id)));
       }
     } catch (err) {
       console.error('Failed to fetch saved deals:', err);
@@ -139,16 +139,9 @@ export default function DealsPage() {
     router.push(`/deals?${params.toString()}`);
   };
 
-  const handleSaveToggle = async (dealId: string, saved: boolean) => {
-    if (saved) {
-      setSavedDealIds((prev) => new Set([...prev, dealId]));
-    } else {
-      setSavedDealIds((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(dealId);
-        return newSet;
-      });
-    }
+  const handleSaveToggle = async (_dealId: string, _saved: boolean) => {
+    // Re-fetch watchlist to stay in sync (watchlist uses company_id, not deal_id)
+    await fetchSavedDeals();
   };
 
   const activeFilterCount = Object.values(filters).filter((v) => {
@@ -248,7 +241,7 @@ export default function DealsPage() {
                   <DealCard
                     key={deal.id}
                     deal={deal}
-                    isSaved={savedDealIds.has(deal.id)}
+                    isSaved={savedDealIds.has(deal.company_id)}
                     onSaveToggle={handleSaveToggle}
                   />
                 ))}

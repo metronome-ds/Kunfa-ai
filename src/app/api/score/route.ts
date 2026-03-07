@@ -10,6 +10,7 @@ import {
   createCompanyPage,
   getProfileByUserId,
 } from '@/lib/db'
+import { getSupabase } from '@/lib/db'
 import { v4 as uuid } from 'uuid'
 
 export const maxDuration = 120
@@ -147,13 +148,15 @@ export async function POST(request: NextRequest) {
             email.split('@')[1]?.split('.')[0] ||
             'Unnamed Company'
 
-          slug = await createCompanyPage({
+          const industry = cp.industry || (fullResult as any)?.sector_benchmarks?.sector || undefined
+
+          const result = await createCompanyPage({
             userId,
             submissionId,
             companyName,
             overallScore: (fullResult as any)?.overall_score || 0,
             description: (fullResult as any)?.summary || undefined,
-            industry: cp.industry || (fullResult as any)?.sector_benchmarks?.sector || undefined,
+            industry,
             stage: cp.stage || undefined,
             raiseAmount: cp.raise_amount || undefined,
             teamSize: cp.team_size || undefined,
@@ -170,6 +173,24 @@ export async function POST(request: NextRequest) {
             founderTitle: profile?.job_title || undefined,
             source: 'startup_submission',
           })
+          slug = result.slug
+
+          // Auto-create deals record so company appears in Browse Deals
+          if (result.id) {
+            try {
+              const supabase = getSupabase()
+              await supabase.from('deals').insert({
+                created_by: userId,
+                company_id: result.id,
+                stage: 'sourced',
+                ai_score: (fullResult as any)?.overall_score || null,
+                sector: industry || null,
+                raise_amount: cp.raise_amount || null,
+              })
+            } catch (dealErr) {
+              console.error('Failed to create deals record (continuing):', dealErr)
+            }
+          }
         }
       } catch (dbErr) {
         console.error('DB updateSubmissionScore failed (continuing):', dbErr)

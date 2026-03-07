@@ -21,41 +21,37 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch deals created by user with engagement stats
     const { data: deals, error: dealsError } = await supabase
       .from('deals')
       .select(
         `
         id,
-        title,
-        company_name,
-        website,
-        description,
-        industry,
+        created_by,
+        company_id,
         stage,
-        status,
-        funding_amount,
-        valuation,
-        deal_type,
-        problem_statement,
-        solution,
-        market_size,
-        team_size,
-        ai_score_overall,
-        ai_score_team,
-        ai_score_market,
-        ai_score_traction,
-        ai_score_product,
-        ai_score_financials,
-        ai_score_competitive_landscape,
-        ai_score_metadata,
-        view_count,
-        save_count,
+        ai_score,
+        sector,
+        raise_amount,
+        priority_flag,
+        is_watchlisted,
+        days_in_stage,
+        stage_changed_at,
+        notes,
         created_at,
-        updated_at
+        updated_at,
+        company_pages!company_id (
+          id,
+          company_name,
+          slug,
+          description,
+          overall_score,
+          industry,
+          stage,
+          raise_amount
+        )
       `
       )
-      .eq('creator_id', user.id)
+      .eq('created_by', user.id)
       .order('created_at', { ascending: false });
 
     if (dealsError) {
@@ -66,32 +62,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get engagement stats for each deal
-    const dealsWithStats = await Promise.all(
-      (deals || []).map(async (deal) => {
-        const { data: engagement, error: engError } = await supabase
-          .from('engagement_scores')
-          .select('views, score')
-          .eq('deal_id', deal.id);
-
-        const stats = engagement?.reduce(
-          (acc, e) => ({
-            views: (acc.views || 0) + (e.views || 0),
-            saves: (acc.saves || 0) + ((e as any).score || 0),
-          }),
-          { views: 0, saves: 0 }
-        ) || { views: 0, saves: 0 };
-
-        return {
-          ...deal,
-          views: stats.views,
-          saves: stats.saves,
-        };
-      })
-    );
+    // Flatten company_pages data for the frontend
+    const flatDeals = (deals || []).map((deal) => {
+      const company = deal.company_pages as any;
+      return {
+        id: deal.id,
+        company_name: company?.company_name || 'Unknown',
+        industry: company?.industry || deal.sector || 'N/A',
+        stage: deal.stage,
+        ai_score_overall: deal.ai_score || company?.overall_score || null,
+        slug: company?.slug,
+        description: company?.description,
+        raise_amount: deal.raise_amount || company?.raise_amount,
+        created_at: deal.created_at,
+        updated_at: deal.updated_at,
+        status: 'active',
+      };
+    });
 
     return NextResponse.json(
-      { data: dealsWithStats },
+      { data: flatDeals },
       { status: 200 }
     );
   } catch (error) {

@@ -141,9 +141,9 @@ export default function DashboardPage() {
 
   const loadInvestorData = async (userId: string) => {
     try {
-      // Load watchlisted deals count (replaces saved_deals)
+      // Load watchlisted deals count
       const { count: savedCount } = await supabase
-        .from('watchlist')
+        .from('watchlist_items')
         .select('*', { count: 'exact' })
         .eq('investor_id', userId);
 
@@ -436,7 +436,7 @@ export default function DashboardPage() {
       {/* Welcome Banner */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-gray-900">
-          Welcome back, {userProfile?.full_name?.split(' ')[0]}!
+          Welcome back{userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}!
         </h1>
         <p className="text-gray-600 mt-2">
           {isInvestor

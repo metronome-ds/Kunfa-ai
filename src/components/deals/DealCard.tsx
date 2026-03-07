@@ -1,13 +1,12 @@
 'use client';
 
-import { Deal } from '@/lib/types';
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import { getScoreRange } from '@/lib/constants';
 
 interface DealCardProps {
-  deal: Deal & { users?: any };
+  deal: any;
   isSaved?: boolean;
   onSaveToggle?: (dealId: string, saved: boolean) => void;
 }
@@ -16,10 +15,18 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
   const [saved, setSaved] = useState(isSaved);
   const [isLoading, setIsLoading] = useState(false);
 
-  const scoreRange = deal.ai_score_overall ? getScoreRange(deal.ai_score_overall) : null;
+  const company = deal.company_pages || {};
+  const companyName = company.company_name || 'Unknown Company';
+  const description = company.description || null;
+  const industry = company.industry || deal.sector || 'N/A';
+  const score = company.overall_score || deal.ai_score || null;
+  const scoreRange = score ? getScoreRange(score) : null;
+  const raiseAmount = deal.raise_amount || company.raise_amount;
+  const slug = company.slug;
 
   const handleSaveClick = async (e: React.MouseEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setIsLoading(true);
 
     try {
@@ -39,13 +46,17 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
     }
   };
 
-  const formattedFunding = deal.funding_amount
-    ? `$${(deal.funding_amount / 1000000).toFixed(1)}M`
+  const formattedFunding = raiseAmount
+    ? raiseAmount >= 1_000_000
+      ? `$${(raiseAmount / 1_000_000).toFixed(1)}M`
+      : raiseAmount >= 1_000
+        ? `$${(raiseAmount / 1_000).toFixed(0)}K`
+        : `$${Number(raiseAmount).toLocaleString()}`
     : 'N/A';
 
-  const stageLabel = deal.stage
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+  const stageLabel = (deal.stage || 'unknown')
+    .split(/[-_]/)
+    .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 
   return (
@@ -59,7 +70,7 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
               {/* Badges */}
               <div className="flex items-center gap-2 mb-3">
                 <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                  {deal.industry}
+                  {industry}
                 </span>
                 <span className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
                   {stageLabel}
@@ -68,7 +79,7 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
 
               {/* Company Name */}
               <h3 className="text-lg font-bold text-gray-900 line-clamp-2">
-                {deal.company_name}
+                {companyName}
               </h3>
             </div>
 
@@ -77,7 +88,7 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
               onClick={handleSaveClick}
               disabled={isLoading}
               className="ml-2 p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-              title={saved ? 'Remove from saved' : 'Save deal'}
+              title={saved ? 'Remove from watchlist' : 'Add to watchlist'}
             >
               {saved ? (
                 <BookmarkCheck className="h-5 w-5 text-blue-600 fill-blue-600" />
@@ -88,9 +99,11 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
           </div>
 
           {/* Description */}
-          <p className="text-sm text-gray-600 line-clamp-2 mb-4">
-            {deal.description}
-          </p>
+          {description && (
+            <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+              {description}
+            </p>
+          )}
 
           {/* Footer */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-100">
@@ -100,21 +113,34 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
             </div>
 
             {/* AI Score Circle */}
-            {deal.ai_score_overall !== null && (
+            {score !== null && scoreRange && (
               <div className="flex items-center justify-center">
                 <div
                   className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${
-                    scoreRange?.bgColor || 'bg-gray-100'
+                    scoreRange.bgColor || 'bg-gray-100'
                   }`}
-                  title={`AI Score: ${deal.ai_score_overall} - ${scoreRange?.label}`}
+                  title={`AI Score: ${score} - ${scoreRange.label}`}
                 >
-                  <span className={scoreRange?.textColor || 'text-gray-600'}>
-                    {deal.ai_score_overall}
+                  <span className={scoreRange.textColor || 'text-gray-600'}>
+                    {score}
                   </span>
                 </div>
               </div>
             )}
           </div>
+
+          {/* View Profile Link */}
+          {slug && (
+            <div className="pt-3">
+              <Link
+                href={`/company/${slug}`}
+                onClick={(e) => e.stopPropagation()}
+                className="text-sm text-emerald-600 hover:text-emerald-700 font-medium hover:underline"
+              >
+                View Profile &rarr;
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </Link>

@@ -2,38 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Deal, DealDocument } from '@/lib/types';
 import { Button } from '@/components/common/Button';
-import { SCORING_DIMENSIONS, getScoreRange } from '@/lib/constants';
+import { getScoreRange } from '@/lib/constants';
 import {
   Bookmark,
   BookmarkCheck,
   Globe,
-  Users,
-  TrendingUp,
   AlertCircle,
-  CheckCircle,
   Loader2,
   MessageSquare,
-  Download,
-  FileText,
+  ArrowLeft,
+  ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
 
-interface DealDetailData extends Deal {
-  creator?: {
-    id: string;
-    email: string;
-    full_name: string;
-    avatar_url: string | null;
-    company: string | null;
-    headline: string | null;
-    location: string | null;
-  };
-  deal_documents?: DealDocument[];
-}
-
-type TabType = 'overview' | 'documents' | 'analysis' | 'diligence';
+type TabType = 'overview' | 'analysis';
 
 export default function DealDetailPage() {
   const params = useParams();
@@ -57,11 +40,11 @@ export default function DealDetailPage() {
         const data = await response.json();
         setDeal(data.data);
 
-        // Check if deal is saved
+        // Check if deal is saved (watchlisted)
         const savedResponse = await fetch('/api/deals/saved');
         if (savedResponse.ok) {
           const savedData = await savedResponse.json();
-          setIsSaved(savedData.data.some((d: any) => d.deal_id === dealId));
+          setIsSaved(savedData.data.some((d: any) => d.company_id === data.data?.company_id));
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load deal');
@@ -76,9 +59,15 @@ export default function DealDetailPage() {
   }, [dealId]);
 
   const handleSaveToggle = async () => {
+    const companyId = deal?.company_id;
+    if (!companyId) return;
     try {
       const method = isSaved ? 'DELETE' : 'POST';
-      const response = await fetch(`/api/deals/${dealId}/save`, { method });
+      const response = await fetch('/api/watchlist', {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyId }),
+      });
       if (response.ok) {
         setIsSaved(!isSaved);
       }
@@ -133,104 +122,127 @@ export default function DealDetailPage() {
     );
   }
 
-  const scoreRange = deal.ai_score_overall ? getScoreRange(deal.ai_score_overall) : null;
-  const stageLabel = (deal.stage || 'unknown')
-    .split('-')
+  const company = deal.company_pages || {};
+  const score = company.overall_score || deal.ai_score;
+  const scoreRange = score ? getScoreRange(score) : null;
+  const companyName = company.company_name || 'Unknown Company';
+  const industry = company.industry || deal.sector || 'N/A';
+  const raiseAmount = deal.raise_amount || company.raise_amount;
+  const formattedFunding = raiseAmount
+    ? raiseAmount >= 1_000_000
+      ? `$${(raiseAmount / 1_000_000).toFixed(1)}M`
+      : raiseAmount >= 1_000
+        ? `$${(raiseAmount / 1_000).toFixed(0)}K`
+        : `$${Number(raiseAmount).toLocaleString()}`
+    : 'Not specified';
+  const stageLabel = (company.stage || deal.stage || 'unknown')
+    .split(/[-_]/)
     .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
-
-  const formattedFunding = deal.funding_amount
-    ? `$${(deal.funding_amount / 1000000).toFixed(1)}M`
-    : 'Not specified';
-
-  const formattedValuation = deal.valuation
-    ? `$${(deal.valuation / 1000000).toFixed(1)}M`
-    : 'Not specified';
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
       <div className="bg-white border-b border-gray-200 p-8">
-        <div className="max-w-6xl mx-auto flex items-start justify-between gap-8">
-          <div className="flex-1">
-            {/* Badges */}
-            <div className="flex items-center gap-2 mb-4">
-              <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
-                {deal.industry}
-              </span>
-              <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full">
-                {stageLabel}
-              </span>
-              {deal.ai_score_overall && (
-                <span
-                  className={`px-3 py-1 ${scoreRange?.bgColor} ${scoreRange?.textColor} text-sm font-semibold rounded-full`}
-                >
-                  Score: {deal.ai_score_overall}
+        <div className="max-w-6xl mx-auto">
+          <button
+            onClick={() => router.back()}
+            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </button>
+
+          <div className="flex items-start justify-between gap-8">
+            <div className="flex-1">
+              {/* Badges */}
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
+                  {industry}
                 </span>
-              )}
-            </div>
-
-            {/* Title */}
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              {deal.company_name}
-            </h1>
-            <p className="text-lg text-gray-600">{deal.description}</p>
-
-            {/* Links */}
-            <div className="flex items-center gap-4 mt-4">
-              {deal.website && (
-                <a
-                  href={deal.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
-                >
-                  <Globe className="h-4 w-4" />
-                  Visit Website
-                </a>
-              )}
-            </div>
-          </div>
-
-          {/* Right Side - Score Circle & Action Buttons */}
-          <div className="flex flex-col items-end gap-4">
-            {deal.ai_score_overall !== null && (
-              <div
-                className={`w-24 h-24 rounded-full flex items-center justify-center font-bold text-3xl ${
-                  scoreRange?.bgColor || 'bg-gray-100'
-                }`}
-              >
-                <span className={scoreRange?.textColor || 'text-gray-600'}>
-                  {deal.ai_score_overall}
+                <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full">
+                  {stageLabel}
                 </span>
+                {company.country && (
+                  <span className="px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full">
+                    {company.country}
+                  </span>
+                )}
               </div>
-            )}
 
-            <div className="flex flex-col gap-2 w-full max-w-xs">
-              <Button
-                onClick={handleSaveToggle}
-                variant={isSaved ? 'primary' : 'outline'}
-                className="w-full"
-                icon={
-                  isSaved ? (
-                    <BookmarkCheck className="h-5 w-5" />
-                  ) : (
-                    <Bookmark className="h-5 w-5" />
-                  )
-                }
-              >
-                {isSaved ? 'Saved' : 'Save Deal'}
-              </Button>
+              {/* Title */}
+              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                {companyName}
+              </h1>
+              {company.description && (
+                <p className="text-lg text-gray-600">{company.description}</p>
+              )}
 
-              <Button
-                onClick={handleRequestMeeting}
-                isLoading={isRequestingMeeting}
-                variant="primary"
-                className="w-full"
-                icon={<MessageSquare className="h-5 w-5" />}
-              >
-                Request Meeting
-              </Button>
+              {/* Links */}
+              <div className="flex items-center gap-4 mt-4">
+                {company.website_url && (
+                  <a
+                    href={company.website_url.startsWith('http') ? company.website_url : `https://${company.website_url}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+                  >
+                    <Globe className="h-4 w-4" />
+                    Visit Website
+                  </a>
+                )}
+                {company.slug && (
+                  <Link
+                    href={`/company/${company.slug}`}
+                    className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    View Full Profile
+                  </Link>
+                )}
+              </div>
+            </div>
+
+            {/* Right Side - Score Circle & Action Buttons */}
+            <div className="flex flex-col items-end gap-4">
+              {score !== null && score !== undefined && (
+                <div
+                  className={`w-24 h-24 rounded-full flex items-center justify-center font-bold text-3xl ${
+                    scoreRange?.bgColor || 'bg-gray-100'
+                  }`}
+                >
+                  <span className={scoreRange?.textColor || 'text-gray-600'}>
+                    {score}
+                  </span>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-2 w-full max-w-xs">
+                <Button
+                  onClick={handleSaveToggle}
+                  variant={isSaved ? 'primary' : 'outline'}
+                  className="w-full"
+                  icon={
+                    isSaved ? (
+                      <BookmarkCheck className="h-5 w-5" />
+                    ) : (
+                      <Bookmark className="h-5 w-5" />
+                    )
+                  }
+                >
+                  {isSaved ? 'Watchlisted' : 'Add to Watchlist'}
+                </Button>
+
+                <Button
+                  onClick={handleRequestMeeting}
+                  isLoading={isRequestingMeeting}
+                  variant="primary"
+                  className="w-full"
+                  icon={<MessageSquare className="h-5 w-5" />}
+                >
+                  Request Meeting
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -239,7 +251,7 @@ export default function DealDetailPage() {
       {/* Tabs */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-6xl mx-auto flex items-center gap-8 px-8">
-          {(['overview', 'documents', 'analysis', 'diligence'] as const).map(
+          {(['overview', 'analysis'] as const).map(
             (tab) => (
               <button
                 key={tab}
@@ -268,131 +280,83 @@ export default function DealDetailPage() {
                 <p className="text-2xl font-bold text-gray-900">{formattedFunding}</p>
               </div>
               <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-sm text-gray-600 mb-2">Post-Money Valuation</p>
-                <p className="text-2xl font-bold text-gray-900">{formattedValuation}</p>
-              </div>
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <p className="text-sm text-gray-600 mb-2">Team Size</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {deal.team_size || 'N/A'}
+                  {company.team_size || 'N/A'}
                 </p>
               </div>
               <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-sm text-gray-600 mb-2">Deal Type</p>
-                <p className="text-2xl font-bold text-gray-900 capitalize">
-                  {deal.deal_type || 'N/A'}
+                <p className="text-sm text-gray-600 mb-2">Founded</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {company.founded_year || 'N/A'}
                 </p>
+              </div>
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <p className="text-sm text-gray-600 mb-2">Founder</p>
+                <p className="text-lg font-bold text-gray-900">
+                  {company.founder_name || 'N/A'}
+                </p>
+                {company.founder_title && (
+                  <p className="text-sm text-gray-500">{company.founder_title}</p>
+                )}
               </div>
             </div>
 
-            {/* AI Summary */}
-            {deal.ai_score_metadata?.summary && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">
-                  AI Analysis Summary
-                </h3>
-                <p className="text-gray-700 leading-relaxed">{deal.ai_score_metadata?.summary}</p>
-              </div>
-            )}
-
-            {/* Scoring Dimensions */}
-            {deal.ai_score_overall && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">
-                  Scoring Breakdown
-                </h3>
-                <div className="space-y-6">
-                  {[
-                    { label: 'Team', score: deal.ai_score_team },
-                    { label: 'Market', score: deal.ai_score_market },
-                    { label: 'Traction', score: deal.ai_score_traction },
-                    { label: 'Product', score: deal.ai_score_product },
-                    { label: 'Financials', score: deal.ai_score_financials },
-                    { label: 'Competitive Landscape', score: deal.ai_score_competitive_landscape },
-                  ].map((dim) => (
-                    <div key={dim.label}>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="font-semibold text-gray-900">{dim.label}</p>
-                        <p className="text-lg font-bold text-gray-900">{dim.score ?? '—'}</p>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div
-                          className="bg-blue-600 h-2 rounded-full transition-all"
-                          style={{ width: `${dim.score || 0}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
             {/* Problem & Solution */}
-            {(deal.problem_statement || deal.solution) && (
+            {(company.problem_summary || company.solution_summary) && (
               <div className="bg-white rounded-lg border border-gray-200 p-6">
-                {deal.problem_statement && (
+                {company.problem_summary && (
                   <div className="mb-4">
                     <h3 className="text-lg font-bold text-gray-900 mb-2">Problem</h3>
-                    <p className="text-gray-700">{deal.problem_statement}</p>
+                    <p className="text-gray-700">{company.problem_summary}</p>
                   </div>
                 )}
-                {deal.solution && (
+                {company.solution_summary && (
                   <div>
                     <h3 className="text-lg font-bold text-gray-900 mb-2">Solution</h3>
-                    <p className="text-gray-700">{deal.solution}</p>
+                    <p className="text-gray-700">{company.solution_summary}</p>
                   </div>
                 )}
               </div>
             )}
-          </div>
-        )}
 
-        {activeTab === 'documents' && (
-          <div className="space-y-6">
-            {deal.deal_documents && deal.deal_documents.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {deal.deal_documents.map((doc: any) => (
-                  <div
-                    key={doc.id}
-                    className="bg-white rounded-lg border border-gray-200 p-6 hover:border-blue-400 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-4">
-                      <FileText className="h-8 w-8 text-blue-600" />
-                      <span
-                        className={`px-2 py-1 text-xs font-semibold rounded ${
-                          doc.parse_status === 'completed'
-                            ? 'bg-green-100 text-green-700'
-                            : doc.parse_status === 'failed'
-                              ? 'bg-red-100 text-red-700'
-                              : 'bg-yellow-100 text-yellow-700'
-                        }`}
-                      >
-                        {doc.parse_status}
-                      </span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-1 truncate">
-                      {doc.file_name}
-                    </h4>
-                    <p className="text-xs text-gray-500 mb-4">
-                      {(doc.file_size / 1024).toFixed(0)} KB • Uploaded{' '}
-                      {new Date(doc.created_at).toLocaleDateString()}
-                    </p>
-                    <a
-                      href={doc.file_path}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium"
-                    >
-                      <Download className="h-4 w-4" />
-                      Download
-                    </a>
-                  </div>
-                ))}
+            {/* Business Model */}
+            {company.business_model && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Business Model</h3>
+                <p className="text-gray-700">{company.business_model}</p>
               </div>
-            ) : (
-              <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600">No documents uploaded yet</p>
+            )}
+
+            {/* Traction */}
+            {company.traction && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Traction</h3>
+                <p className="text-gray-700">{company.traction}</p>
+              </div>
+            )}
+
+            {/* Use of Funds */}
+            {company.use_of_funds && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Use of Funds</h3>
+                <p className="text-gray-700">{company.use_of_funds}</p>
+              </div>
+            )}
+
+            {/* Key Risks */}
+            {company.key_risks && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Key Risks</h3>
+                <p className="text-gray-700">{company.key_risks}</p>
+              </div>
+            )}
+
+            {/* Notes */}
+            {deal.notes && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Notes</h3>
+                <p className="text-gray-700">{deal.notes}</p>
               </div>
             )}
           </div>
@@ -404,51 +368,34 @@ export default function DealDetailPage() {
             <p className="text-gray-600">Detailed AI analysis coming soon</p>
           </div>
         )}
-
-        {activeTab === 'diligence' && (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">Due diligence tools coming soon</p>
-          </div>
-        )}
       </div>
 
-      {/* Creator Info Sidebar */}
+      {/* Creator Info */}
       {deal.creator && (
-        <div className="max-w-6xl mx-auto mb-8">
+        <div className="max-w-6xl mx-auto px-8 mb-8">
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <h3 className="font-bold text-gray-900 mb-4">Deal Creator</h3>
             <div className="flex items-start justify-between">
-              <div className="flex items-start gap-4">
-                {deal.creator.avatar_url && (
-                  <img
-                    src={deal.creator.avatar_url}
-                    alt={deal.creator.full_name}
-                    className="h-16 w-16 rounded-full"
-                  />
+              <div>
+                <p className="font-semibold text-gray-900">
+                  {deal.creator.full_name || 'Unknown'}
+                </p>
+                {deal.creator.job_title && (
+                  <p className="text-sm text-gray-600">{deal.creator.job_title}</p>
                 )}
-                <div>
-                  <p className="font-semibold text-gray-900">
-                    {deal.creator.full_name}
-                  </p>
-                  {deal.creator.headline && (
-                    <p className="text-sm text-gray-600">{deal.creator.headline}</p>
-                  )}
-                  {deal.creator.company && (
-                    <p className="text-sm text-gray-600">{deal.creator.company}</p>
-                  )}
-                  {deal.creator.location && (
-                    <p className="text-sm text-gray-600">{deal.creator.location}</p>
-                  )}
-                </div>
+                {deal.creator.company_name && (
+                  <p className="text-sm text-gray-600">{deal.creator.company_name}</p>
+                )}
               </div>
 
-              <Link
-                href={`/profile/${deal.creator.id}`}
-                className="px-4 py-2 bg-blue-50 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-100"
-              >
-                View Profile
-              </Link>
+              {deal.creator.user_id && (
+                <Link
+                  href={`/profile/${deal.creator.user_id}`}
+                  className="px-4 py-2 bg-blue-50 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-100"
+                >
+                  View Profile
+                </Link>
+              )}
             </div>
           </div>
         </div>

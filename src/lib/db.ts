@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Use service role key to bypass RLS in API routes
-function getSupabase() {
+export function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -232,7 +232,7 @@ export async function createCompanyPage(data: {
     .replace(/^-|-$/g, '')
     + '-' + data.submissionId.slice(0, 8)
 
-  const { error } = await supabase
+  const { data: inserted, error } = await supabase
     .from('company_pages')
     .insert({
       user_id: data.userId,
@@ -258,7 +258,9 @@ export async function createCompanyPage(data: {
       founder_name: data.founderName || null,
       founder_title: data.founderTitle || null,
     })
+    .select('id')
+    .single()
 
   if (error) console.error('Failed to create company page:', error)
-  return slug
+  return { slug, id: inserted?.id as string | undefined }
 }

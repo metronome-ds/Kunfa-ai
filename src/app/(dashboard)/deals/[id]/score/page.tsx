@@ -25,13 +25,17 @@ export default async function ScorePage({ params }: ScorePageProps) {
     .select(
       `
       id,
-      company_name,
+      created_by,
       assigned_to,
-      overall_score,
-      scoring_dimensions,
-      ai_summary,
-      red_flags,
-      green_flags
+      ai_score,
+      stage,
+      company_pages!company_id (
+        id,
+        company_name,
+        slug,
+        overall_score,
+        industry
+      )
     `
     )
     .eq('id', dealId)
@@ -41,8 +45,10 @@ export default async function ScorePage({ params }: ScorePageProps) {
     notFound();
   }
 
-  // Check access
-  if (deal.assigned_to !== user.id) {
+  const company = deal.company_pages as any;
+
+  // Check access — allow creator, assignee, or admin
+  if (deal.assigned_to !== user.id && deal.created_by !== user.id) {
     const { data: userData } = await supabase
       .from('profiles')
       .select('role')
@@ -54,26 +60,10 @@ export default async function ScorePage({ params }: ScorePageProps) {
     }
   }
 
-  // Fetch documents for term sheet analyzer
-  const { data: documents } = await supabase
-    .from('deal_documents')
-    .select('id, document_type, file_name')
-    .eq('deal_id', dealId)
-    .eq('parse_status', 'completed');
+  const termSheetDoc: { id: string } | null = null;
 
-  const termSheetDoc = documents?.find((doc) => doc.document_type === 'term_sheet');
-
-  // Prepare scoring data if available
-  const scoringData = deal.overall_score
-    ? {
-        overall_score: deal.overall_score,
-        dimensions: deal.scoring_dimensions,
-        summary: deal.ai_summary,
-        red_flags: deal.red_flags || [],
-        green_flags: deal.green_flags || [],
-        confidence_level: 'high' as const,
-      }
-    : undefined;
+  // Scoring data not available from deals table — DealScorer will handle the "not scored" state
+  const scoringData = undefined;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -89,7 +79,7 @@ export default async function ScorePage({ params }: ScorePageProps) {
               Back to Deal
             </Link>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">{deal.company_name}</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{company?.company_name || 'Unknown Company'}</h1>
           <p className="text-gray-600 mt-1">AI-Powered Investment Analysis</p>
         </div>
       </div>
@@ -121,7 +111,7 @@ export default async function ScorePage({ params }: ScorePageProps) {
               <div className="bg-white rounded-lg p-6">
                 <TermSheetAnalyzer
                   dealId={dealId}
-                  documentId={termSheetDoc?.id}
+                  documentId={undefined}
                 />
               </div>
             </section>
