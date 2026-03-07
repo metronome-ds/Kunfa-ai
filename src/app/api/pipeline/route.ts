@@ -1,9 +1,9 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
 /**
  * GET /api/pipeline
- * List user's deals grouped by stage, joined with company_pages
+ * Returns investor's watchlist items AND deals, both joined with company_pages
  */
 export async function GET() {
   try {
@@ -18,12 +18,34 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Query deals joined with company_pages
-    const { data: deals, error } = await supabase
-      .from('deals')
-      .select(
-        `
+    // Fetch watchlist items joined with company_pages
+    const { data: watchlistItems, error: wlError } = await supabase
+      .from('watchlist_items')
+      .select(`
         id,
+        company_id,
+        created_at,
+        company_pages!company_id (
+          company_name,
+          slug,
+          industry,
+          overall_score,
+          one_liner
+        )
+      `)
+      .eq('investor_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (wlError) {
+      console.error('Error fetching watchlist:', wlError);
+    }
+
+    // Fetch deals joined with company_pages
+    const { data: deals, error: dealsError } = await supabase
+      .from('deals')
+      .select(`
+        id,
+        company_id,
         stage,
         ai_score,
         sector,
@@ -33,24 +55,36 @@ export async function GET() {
         notes,
         created_at,
         company_pages!company_id (
-          id,
           company_name,
           slug,
-          overall_score,
           industry,
-          raise_amount
+          overall_score,
+          one_liner
         )
-      `
-      )
+      `)
       .eq('created_by', user.id)
       .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching pipeline deals:', error);
+    if (dealsError) {
+      console.error('Error fetching pipeline deals:', dealsError);
       return NextResponse.json({ error: 'Failed to fetch pipeline deals' }, { status: 500 });
     }
 
-    // Group by stage into 5 columns
+    // Format watchlist
+    const watchlist = (watchlistItems || []).map((item) => {
+      const company = item.company_pages as any;
+      return {
+        id: item.id,
+        company_id: item.company_id,
+        company_name: company?.company_name || 'Unknown',
+        slug: company?.slug || null,
+        industry: company?.industry || null,
+        overall_score: company?.overall_score || null,
+        one_liner: company?.one_liner || null,
+      };
+    });
+
+    // Group deals by stage
     const grouped: Record<string, any[]> = {
       sourced: [],
       screening: [],
@@ -62,26 +96,33 @@ export async function GET() {
     deals?.forEach((deal) => {
       const stage = deal.stage;
       if (stage && stage in grouped) {
-        // Compute days_in_stage from stage_changed_at
         const stageChanged = deal.stage_changed_at ? new Date(deal.stage_changed_at) : new Date(deal.created_at);
         const daysInStage = Math.floor((Date.now() - stageChanged.getTime()) / (1000 * 60 * 60 * 24));
 
         const company = deal.company_pages as any;
         grouped[stage].push({
           id: deal.id,
+          company_id: deal.company_id,
           stage: deal.stage,
           company_name: company?.company_name || 'Unknown',
-          slug: company?.slug,
+          slug: company?.slug || null,
           ai_score: deal.ai_score || company?.overall_score || null,
           sector: deal.sector || company?.industry || null,
+          industry: company?.industry || null,
           raise_amount: deal.raise_amount || company?.raise_amount || null,
+          one_liner: company?.one_liner || null,
           days_in_stage: daysInStage,
+          stage_changed_at: deal.stage_changed_at,
           notes: deal.notes,
         });
       }
     });
 
-    return NextResponse.json({ data: grouped, total: deals?.length || 0 }, { status: 200 });
+    return NextResponse.json({
+      watchlist,
+      deals: grouped,
+      total: deals?.length || 0,
+    }, { status: 200 });
   } catch (error) {
     console.error('Unexpected error in GET /api/pipeline:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
