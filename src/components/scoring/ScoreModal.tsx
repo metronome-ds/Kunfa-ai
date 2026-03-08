@@ -117,6 +117,21 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   const [founderName, setFounderName] = useState('')
   const [founderTitle, setFounderTitle] = useState('')
   const [teamSize, setTeamSize] = useState('')
+  const [coFounders, setCoFounders] = useState<{ name: string; title: string; email: string; linkedin: string }[]>([])
+
+  const addCoFounder = () => {
+    if (coFounders.length < 4) {
+      setCoFounders([...coFounders, { name: '', title: '', email: '', linkedin: '' }])
+    }
+  }
+
+  const removeCoFounder = (index: number) => {
+    setCoFounders(coFounders.filter((_, i) => i !== index))
+  }
+
+  const updateCoFounder = (index: number, field: string, value: string) => {
+    setCoFounders(coFounders.map((cf, i) => i === index ? { ...cf, [field]: value } : cf))
+  }
 
   // Upload step
   const [disclaimerChecked, setDisclaimerChecked] = useState(false)
@@ -284,7 +299,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   // Validation
   const isAccountValid = email && password && password.length >= 6 && fullName
   const isCompanyValid = companyName && chosenSlug && slugStatus === 'available' && oneLiner && industry && companyStage && companyCountry
-  const isFounderValid = founderName && founderTitle
+  const isFounderValid = founderName && founderTitle && coFounders.every(cf => cf.name && cf.title && cf.email)
   const isUploadValid = !!pitchDeck && disclaimerChecked
 
   // Save company data to profile (called at end of company step)
@@ -387,6 +402,12 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
       setUploadProgress('')
 
+      // Build founding_team array: main founder first, then co-founders
+      const foundingTeam = [
+        { name: founderName, title: founderTitle, email, linkedin: linkedinUrl || '' },
+        ...coFounders.filter(cf => cf.name && cf.title && cf.email),
+      ]
+
       const response = await fetch('/api/score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -398,6 +419,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
           financialsUrl,
           financialsFilename,
           slug: chosenSlug,
+          foundingTeam,
         }),
       })
 
@@ -468,6 +490,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     setFounderName('')
     setFounderTitle('')
     setTeamSize('')
+    setCoFounders([])
     setDisclaimerChecked(false)
     setPitchDeck(null)
     setFinancials(null)
@@ -749,6 +772,83 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 placeholder="e.g. 5"
                 min="1"
                 className={INPUT_CLASS} />
+            </div>
+
+            {/* Co-Founders */}
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <label className="text-sm font-medium text-kunfa-navy">Co-Founders</label>
+                {coFounders.length < 4 && (
+                  <button
+                    type="button"
+                    onClick={addCoFounder}
+                    className="text-sm text-kunfa-green font-medium hover:text-kunfa-green-dark transition"
+                  >
+                    + Add Co-Founder
+                  </button>
+                )}
+              </div>
+
+              {coFounders.length === 0 && (
+                <p className="text-xs text-gray-400 mb-2">No co-founders added yet. Click above to add up to 4.</p>
+              )}
+
+              <div className="space-y-3">
+                {coFounders.map((cf, i) => (
+                  <div key={i} className="bg-gray-50 rounded-lg p-3 relative">
+                    <button
+                      type="button"
+                      onClick={() => removeCoFounder(i)}
+                      className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition"
+                      aria-label="Remove co-founder"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <div className="grid grid-cols-2 gap-3 pr-6">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Name *</label>
+                        <input
+                          type="text"
+                          value={cf.name}
+                          onChange={(e) => updateCoFounder(i, 'name', e.target.value)}
+                          placeholder="Jane Smith"
+                          className={INPUT_CLASS}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Title *</label>
+                        <input
+                          type="text"
+                          value={cf.title}
+                          onChange={(e) => updateCoFounder(i, 'title', e.target.value)}
+                          placeholder="CTO"
+                          className={INPUT_CLASS}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">Email *</label>
+                        <input
+                          type="email"
+                          value={cf.email}
+                          onChange={(e) => updateCoFounder(i, 'email', e.target.value)}
+                          placeholder="jane@company.com"
+                          className={INPUT_CLASS}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">LinkedIn</label>
+                        <input
+                          type="url"
+                          value={cf.linkedin}
+                          onChange={(e) => updateCoFounder(i, 'linkedin', e.target.value)}
+                          placeholder="linkedin.com/in/..."
+                          className={INPUT_CLASS}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <div className="flex gap-3">

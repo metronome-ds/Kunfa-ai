@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
       financialsFilename,
       slug: userSlug,
       companyPageId,
+      foundingTeam,
     } = body as {
       email: string
       linkedinUrl?: string
@@ -39,6 +40,7 @@ export async function POST(request: NextRequest) {
       financialsFilename?: string
       slug?: string
       companyPageId?: string
+      foundingTeam?: { name: string; title: string; email?: string; linkedin?: string }[]
     }
 
     if (!email || !pitchDeckUrl) {
@@ -217,6 +219,7 @@ export async function POST(request: NextRequest) {
               founderName: profile?.full_name || undefined,
               founderTitle: profile?.job_title || undefined,
               linkedinUrl: profile?.linkedin_url || linkedinUrl || undefined,
+              foundingTeam: foundingTeam || undefined,
               source: 'startup_submission',
             })
             slug = result.slug

@@ -258,6 +258,7 @@ export async function createCompanyPage(data: {
   founderName?: string
   founderTitle?: string
   linkedinUrl?: string
+  foundingTeam?: { name: string; title: string; email?: string; linkedin?: string }[]
 }) {
   const supabase = getSupabase()
 
@@ -298,6 +299,7 @@ export async function createCompanyPage(data: {
       founder_name: data.founderName || null,
       founder_title: data.founderTitle || null,
       linkedin_url: data.linkedinUrl || null,
+      founding_team: data.foundingTeam && data.foundingTeam.length > 0 ? data.foundingTeam : null,
     })
     .select('id')
     .single()

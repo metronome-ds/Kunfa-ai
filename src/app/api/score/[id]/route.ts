@@ -21,6 +21,7 @@ export async function GET(
       .single()
 
     if (error || !submission) {
+      console.error(`GET /api/score/${id}: submission not found`, error?.message)
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 })
     }
 
