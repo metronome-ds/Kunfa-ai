@@ -119,6 +119,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   const [teamSize, setTeamSize] = useState('')
 
   // Upload step
+  const [disclaimerChecked, setDisclaimerChecked] = useState(false)
   const [pitchDeck, setPitchDeck] = useState<File | null>(null)
   const [financials, setFinancials] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -284,7 +285,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   const isAccountValid = email && password && password.length >= 6 && fullName
   const isCompanyValid = companyName && chosenSlug && slugStatus === 'available' && oneLiner && industry && companyStage && companyCountry
   const isFounderValid = founderName && founderTitle
-  const isUploadValid = !!pitchDeck
+  const isUploadValid = !!pitchDeck && disclaimerChecked
 
   // Save company data to profile (called at end of company step)
   const handleSaveCompany = async () => {
@@ -467,6 +468,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     setFounderName('')
     setFounderTitle('')
     setTeamSize('')
+    setDisclaimerChecked(false)
     setPitchDeck(null)
     setFinancials(null)
     setScoreResult(null)
@@ -812,6 +814,18 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 </div>
               ))}
             </div>
+
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={disclaimerChecked}
+                onChange={(e) => setDisclaimerChecked(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-kunfa-green focus:ring-kunfa-green"
+              />
+              <span className="text-xs text-gray-500 leading-relaxed">
+                I confirm that all information provided is accurate and self-reported. This data is subject to due diligence by any interested investor.
+              </span>
+            </label>
 
             <button onClick={handleSubmit} disabled={!isUploadValid || isSubmitting}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${

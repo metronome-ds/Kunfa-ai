@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * GET /api/my-company
@@ -47,5 +47,56 @@ export async function GET() {
   } catch (error) {
     console.error('Error in GET /api/my-company:', error)
     return NextResponse.json({ company: null }, { status: 200 })
+  }
+}
+
+/**
+ * PATCH /api/my-company
+ * Updates editable fields on the user's company page.
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const body = await request.json()
+    const allowedFields = [
+      'company_name', 'one_liner', 'industry', 'stage', 'country',
+      'headquarters', 'website_url', 'raise_amount', 'team_size',
+      'founded_year', 'use_of_funds', 'traction', 'linkedin_url',
+    ]
+
+    const updates: Record<string, unknown> = {}
+    for (const field of allowedFields) {
+      if (field in body) {
+        updates[field] = body[field]
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+    }
+
+    const { data: company, error } = await supabase
+      .from('company_pages')
+      .update(updates)
+      .eq('user_id', user.id)
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (error) {
+      return NextResponse.json({ error: 'Failed to update company' }, { status: 500 })
+    }
+
+    return NextResponse.json({ company })
+  } catch (error) {
+    console.error('Error in PATCH /api/my-company:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { CompanyActions } from '@/components/company/CompanyActions'
 import { CompanyNav } from '@/components/company/CompanyNav'
 import { ReportBanner } from '@/components/company/ReportBanner'
+import { ScoreTooltip } from '@/components/ui/ScoreTooltip'
 
 interface TeamMember {
   name: string
@@ -126,8 +127,14 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
         {/* Header */}
         <div className="flex items-start gap-6">
           {/* Score badge */}
-          <div className={`w-20 h-20 rounded-2xl border-2 flex items-center justify-center flex-shrink-0 ${scoreColor}`}>
-            <span className="text-3xl font-bold">{company.overall_score ?? '—'}</span>
+          <div className="flex flex-col items-center flex-shrink-0 gap-1">
+            <div className={`w-20 h-20 rounded-2xl border-2 flex items-center justify-center ${scoreColor}`}>
+              <span className="text-3xl font-bold">{company.overall_score ?? '—'}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Kunfa Score</span>
+              <ScoreTooltip />
+            </div>
           </div>
 
           <div className="flex-1 min-w-0">

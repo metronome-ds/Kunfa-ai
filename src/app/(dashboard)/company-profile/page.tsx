@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ExternalLink, Copy, Check, FileText } from 'lucide-react'
+import { ExternalLink, Copy, Check, FileText, Pencil, RefreshCw, X } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import RescoringModal from '@/components/scoring/RescoringModal'
 
 interface TeamMember {
   name: string
@@ -40,6 +42,23 @@ interface CompanyData {
   created_at: string
 }
 
+const INDUSTRIES = [
+  'AI & Machine Learning', 'B2B SaaS', 'B2C', 'Biotech & Life Sciences',
+  'CleanTech & Energy', 'Consumer Hardware', 'Cybersecurity', 'DevTools & Infrastructure',
+  'E-commerce & Marketplace', 'EdTech', 'FinTech', 'Food & Beverage', 'Gaming',
+  'HealthTech', 'Logistics & Supply Chain', 'Media & Entertainment',
+  'PropTech & Real Estate', 'Social', 'Travel & Hospitality', 'Web3 & Crypto', 'Other',
+]
+
+const STAGES = [
+  { value: 'pre-seed', label: 'Pre-Seed' },
+  { value: 'seed', label: 'Seed' },
+  { value: 'series-a', label: 'Series A' },
+  { value: 'series-b', label: 'Series B' },
+  { value: 'series-c+', label: 'Series C+' },
+  { value: 'growth', label: 'Growth' },
+]
+
 function getScoreColor(score: number | null) {
   if (!score) return 'text-gray-400 bg-gray-800 border-gray-700'
   if (score >= 80) return 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30'
@@ -61,16 +80,47 @@ function daysSince(dateStr: string) {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
 }
 
+const INPUT_CLASS = 'w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent'
+const SELECT_CLASS = 'w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent'
+
 export default function CompanyProfilePage() {
   const [company, setCompany] = useState<CompanyData | null>(null)
   const [paid, setPaid] = useState(false)
   const [reportUrl, setReportUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
+  const [userEmail, setUserEmail] = useState('')
+
+  // Re-scoring modal
+  const [showRescore, setShowRescore] = useState(false)
+
+  // Edit mode
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [editForm, setEditForm] = useState({
+    company_name: '',
+    one_liner: '',
+    industry: '',
+    stage: '',
+    country: '',
+    headquarters: '',
+    website_url: '',
+    linkedin_url: '',
+    raise_amount: '',
+    team_size: '',
+    founded_year: '',
+    use_of_funds: '',
+    traction: '',
+  })
 
   useEffect(() => {
-    async function fetch() {
+    async function load() {
       try {
+        // Get user email for re-scoring
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user?.email) setUserEmail(user.email)
+
         const res = await window.fetch('/api/my-company')
         const data = await res.json()
         setCompany(data.company || null)
@@ -82,8 +132,72 @@ export default function CompanyProfilePage() {
         setLoading(false)
       }
     }
-    fetch()
+    load()
   }, [])
+
+  const startEditing = () => {
+    if (!company) return
+    setEditForm({
+      company_name: company.company_name || '',
+      one_liner: company.one_liner || '',
+      industry: company.industry || '',
+      stage: company.stage || '',
+      country: company.country || '',
+      headquarters: company.headquarters || '',
+      website_url: company.website_url || '',
+      linkedin_url: company.linkedin_url || '',
+      raise_amount: company.raise_amount ? String(company.raise_amount) : '',
+      team_size: company.team_size ? String(company.team_size) : '',
+      founded_year: company.founded_year ? String(company.founded_year) : '',
+      use_of_funds: company.use_of_funds || '',
+      traction: company.traction || '',
+    })
+    setEditing(true)
+    setSaveSuccess(false)
+  }
+
+  const cancelEditing = () => {
+    setEditing(false)
+    setSaveSuccess(false)
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    setSaveSuccess(false)
+    try {
+      const res = await fetch('/api/my-company', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company_name: editForm.company_name || undefined,
+          one_liner: editForm.one_liner || null,
+          industry: editForm.industry || null,
+          stage: editForm.stage || null,
+          country: editForm.country || null,
+          headquarters: editForm.headquarters || null,
+          website_url: editForm.website_url || null,
+          linkedin_url: editForm.linkedin_url || null,
+          raise_amount: editForm.raise_amount ? Number(editForm.raise_amount) : null,
+          team_size: editForm.team_size ? Number(editForm.team_size) : null,
+          founded_year: editForm.founded_year ? Number(editForm.founded_year) : null,
+          use_of_funds: editForm.use_of_funds || null,
+          traction: editForm.traction || null,
+        }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setCompany(data.company)
+        setEditing(false)
+        setSaveSuccess(true)
+        setTimeout(() => setSaveSuccess(false), 3000)
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const handleCopyLink = () => {
     if (!company?.slug) return
@@ -230,6 +344,29 @@ export default function CompanyProfilePage() {
             <ExternalLink className="w-3.5 h-3.5" />
           </Link>
           <button
+            onClick={() => setShowRescore(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            Update My Score
+          </button>
+          <button
+            onClick={editing ? cancelEditing : startEditing}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 text-gray-200 rounded-lg text-sm font-medium hover:bg-gray-600 transition"
+          >
+            {editing ? (
+              <>
+                <X className="w-3.5 h-3.5" />
+                Cancel Editing
+              </>
+            ) : (
+              <>
+                <Pencil className="w-3.5 h-3.5" />
+                Edit Profile
+              </>
+            )}
+          </button>
+          <button
             onClick={handleCopyLink}
             className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 text-gray-200 rounded-lg text-sm font-medium hover:bg-gray-600 transition"
           >
@@ -247,6 +384,119 @@ export default function CompanyProfilePage() {
           </button>
         </div>
       </div>
+
+      {/* Save success */}
+      {saveSuccess && (
+        <div className="rounded-xl p-3 mb-6 bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2">
+          <Check className="w-4 h-4 text-emerald-400" />
+          <p className="text-sm text-emerald-400">Profile updated successfully.</p>
+        </div>
+      )}
+
+      {/* Edit Mode Form */}
+      {editing && (
+        <div className="bg-gray-800/50 rounded-xl p-6 mb-6 border border-gray-700">
+          <h2 className="text-sm font-semibold text-white mb-4">Edit Profile</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Company Name</label>
+              <input type="text" value={editForm.company_name}
+                onChange={(e) => setEditForm(f => ({ ...f, company_name: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">One-Liner</label>
+              <input type="text" value={editForm.one_liner}
+                onChange={(e) => setEditForm(f => ({ ...f, one_liner: e.target.value }))}
+                maxLength={160}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Industry</label>
+              <select value={editForm.industry}
+                onChange={(e) => setEditForm(f => ({ ...f, industry: e.target.value }))}
+                className={SELECT_CLASS}>
+                <option value="">Select...</option>
+                {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Stage</label>
+              <select value={editForm.stage}
+                onChange={(e) => setEditForm(f => ({ ...f, stage: e.target.value }))}
+                className={SELECT_CLASS}>
+                <option value="">Select...</option>
+                {STAGES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Country / HQ</label>
+              <input type="text" value={editForm.country}
+                onChange={(e) => setEditForm(f => ({ ...f, country: e.target.value, headquarters: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Website</label>
+              <input type="url" value={editForm.website_url}
+                onChange={(e) => setEditForm(f => ({ ...f, website_url: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">LinkedIn URL</label>
+              <input type="url" value={editForm.linkedin_url}
+                onChange={(e) => setEditForm(f => ({ ...f, linkedin_url: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Raise Amount ($)</label>
+              <input type="number" value={editForm.raise_amount}
+                onChange={(e) => setEditForm(f => ({ ...f, raise_amount: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Team Size</label>
+              <input type="number" value={editForm.team_size}
+                onChange={(e) => setEditForm(f => ({ ...f, team_size: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs text-gray-400 mb-1">Founded Year</label>
+              <input type="number" value={editForm.founded_year}
+                onChange={(e) => setEditForm(f => ({ ...f, founded_year: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-gray-400 mb-1">Use of Funds</label>
+              <textarea value={editForm.use_of_funds}
+                onChange={(e) => setEditForm(f => ({ ...f, use_of_funds: e.target.value }))}
+                rows={2}
+                className={INPUT_CLASS} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs text-gray-400 mb-1">Traction</label>
+              <textarea value={editForm.traction}
+                onChange={(e) => setEditForm(f => ({ ...f, traction: e.target.value }))}
+                rows={2}
+                className={INPUT_CLASS} />
+            </div>
+          </div>
+          <div className="flex items-center gap-3 mt-4">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+            <button
+              onClick={cancelEditing}
+              className="px-6 py-2 bg-gray-700 text-gray-200 rounded-lg text-sm font-medium hover:bg-gray-600 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Report Status */}
       {company.submission_id && (
@@ -411,6 +661,18 @@ export default function CompanyProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Re-scoring Modal */}
+      {company && (
+        <RescoringModal
+          isOpen={showRescore}
+          onClose={() => setShowRescore(false)}
+          companyPageId={company.id}
+          companyName={company.company_name}
+          currentScore={company.overall_score}
+          email={userEmail}
+        />
+      )}
     </div>
   )
 }

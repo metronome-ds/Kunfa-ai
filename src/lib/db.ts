@@ -200,6 +200,37 @@ export async function updateReportUrl(id: string, reportUrl: string) {
     .eq('id', id)
 }
 
+// Update an existing company page with new score data (for re-scoring)
+export async function updateCompanyPageScore(companyPageId: string, data: {
+  submissionId: string
+  overallScore: number
+  description?: string
+  problemSummary?: string
+  solutionSummary?: string
+  businessModel?: string
+  traction?: string
+  useOfFunds?: string
+  keyRisks?: string
+}) {
+  const supabase = getSupabase()
+  const { error } = await supabase
+    .from('company_pages')
+    .update({
+      submission_id: data.submissionId,
+      overall_score: data.overallScore,
+      description: data.description || undefined,
+      problem_summary: data.problemSummary || undefined,
+      solution_summary: data.solutionSummary || undefined,
+      business_model: data.businessModel || undefined,
+      traction: data.traction || undefined,
+      use_of_funds: data.useOfFunds || undefined,
+      key_risks: data.keyRisks || undefined,
+    })
+    .eq('id', companyPageId)
+
+  if (error) console.error('Failed to update company page score:', error)
+}
+
 // Create a company page from a scored submission
 export async function createCompanyPage(data: {
   userId: string

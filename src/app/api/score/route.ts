@@ -8,6 +8,7 @@ import {
   findOrCreateUser,
   userHasSubmission,
   createCompanyPage,
+  updateCompanyPageScore,
   getProfileByUserId,
 } from '@/lib/db'
 import { getSupabase } from '@/lib/db'
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
       financialsUrl,
       financialsFilename,
       slug: userSlug,
+      companyPageId,
     } = body as {
       email: string
       linkedinUrl?: string
@@ -36,6 +38,7 @@ export async function POST(request: NextRequest) {
       financialsUrl?: string
       financialsFilename?: string
       slug?: string
+      companyPageId?: string
     }
 
     if (!email || !pitchDeckUrl) {
@@ -51,13 +54,15 @@ export async function POST(request: NextRequest) {
       try {
         userId = await findOrCreateUser(email)
 
-        // Check if user already has a submission (one per account)
-        const hasExisting = await userHasSubmission(userId)
-        if (hasExisting) {
-          return NextResponse.json(
-            { error: 'You already have a submission. Each account is limited to one submission. Use a different email to score another business.' },
-            { status: 409 },
-          )
+        // Check if user already has a submission (one per account, unless re-scoring)
+        if (!companyPageId) {
+          const hasExisting = await userHasSubmission(userId)
+          if (hasExisting) {
+            return NextResponse.json(
+              { error: 'You already have a submission. Each account is limited to one submission. Use a different email to score another business.' },
+              { status: 409 },
+            )
+          }
         }
       } catch (userErr) {
         console.error('User creation failed (continuing without user link):', userErr)
@@ -137,7 +142,7 @@ export async function POST(request: NextRequest) {
       try {
         await updateSubmissionScore(submissionId, fullResult as unknown as Record<string, unknown>)
 
-        // Create company page with AI-extracted profile + user profile data
+        // Create or update company page with AI-extracted profile + user profile data
         if (userId) {
           const cp = (fullResult as any)?.company_profile || {}
           let profile: Awaited<ReturnType<typeof getProfileByUserId>> = null
@@ -145,57 +150,92 @@ export async function POST(request: NextRequest) {
             profile = await getProfileByUserId(userId)
           } catch { /* continue without profile data */ }
 
-          const companyName = profile?.company_name ||
-            cp.company_name ||
-            email.split('@')[1]?.split('.')[0] ||
-            'Unnamed Company'
+          if (companyPageId) {
+            // Re-scoring: update existing company page with new score + AI analysis
+            await updateCompanyPageScore(companyPageId, {
+              submissionId,
+              overallScore: (fullResult as any)?.overall_score || 0,
+              description: (fullResult as any)?.description || undefined,
+              problemSummary: cp.problem_summary || undefined,
+              solutionSummary: cp.solution_summary || undefined,
+              businessModel: cp.business_model || undefined,
+              traction: cp.traction || undefined,
+              useOfFunds: cp.use_of_funds || undefined,
+              keyRisks: cp.key_risks || undefined,
+            })
 
-          // User's industry choice (from onboarding) takes precedence over AI extraction
-          const industry = profile?.industry || cp.industry || undefined
-
-          const result = await createCompanyPage({
-            userId,
-            submissionId,
-            companyName,
-            overallScore: (fullResult as any)?.overall_score || 0,
-            slug: userSlug || undefined,
-            description: (fullResult as any)?.description || undefined,
-            oneLiner: profile?.one_liner || undefined,
-            industry,
-            stage: profile?.company_stage || cp.stage || undefined,
-            raiseAmount: cp.raise_amount || undefined,
-            teamSize: profile?.team_size || cp.team_size || undefined,
-            foundedYear: cp.founded_year || undefined,
-            problemSummary: cp.problem_summary || undefined,
-            solutionSummary: cp.solution_summary || undefined,
-            businessModel: cp.business_model || undefined,
-            traction: cp.traction || undefined,
-            useOfFunds: cp.use_of_funds || undefined,
-            keyRisks: cp.key_risks || undefined,
-            country: profile?.company_country || undefined,
-            headquarters: profile?.company_country || undefined,
-            websiteUrl: profile?.company_website || undefined,
-            founderName: profile?.full_name || undefined,
-            founderTitle: profile?.job_title || undefined,
-            linkedinUrl: profile?.linkedin_url || linkedinUrl || undefined,
-            source: 'startup_submission',
-          })
-          slug = result.slug
-
-          // Auto-create deals record so company appears in Browse Deals
-          if (result.id) {
+            // Update deals record ai_score
             try {
               const supabase = getSupabase()
-              await supabase.from('deals').insert({
-                created_by: userId,
-                company_id: result.id,
-                stage: 'sourced',
-                ai_score: (fullResult as any)?.overall_score || null,
-                sector: industry || null,
-                raise_amount: cp.raise_amount || null,
-              })
-            } catch (dealErr) {
-              console.error('Failed to create deals record (continuing):', dealErr)
+              await supabase.from('deals')
+                .update({ ai_score: (fullResult as any)?.overall_score || null })
+                .eq('company_id', companyPageId)
+            } catch { /* ignore */ }
+
+            // Get slug from existing company page
+            try {
+              const supabase = getSupabase()
+              const { data: existing } = await supabase
+                .from('company_pages')
+                .select('slug')
+                .eq('id', companyPageId)
+                .single()
+              slug = existing?.slug
+            } catch { /* ignore */ }
+          } else {
+            // First scoring: create new company page
+            const companyName = profile?.company_name ||
+              cp.company_name ||
+              email.split('@')[1]?.split('.')[0] ||
+              'Unnamed Company'
+
+            // User's industry choice (from onboarding) takes precedence over AI extraction
+            const industry = profile?.industry || cp.industry || undefined
+
+            const result = await createCompanyPage({
+              userId,
+              submissionId,
+              companyName,
+              overallScore: (fullResult as any)?.overall_score || 0,
+              slug: userSlug || undefined,
+              description: (fullResult as any)?.description || undefined,
+              oneLiner: profile?.one_liner || undefined,
+              industry,
+              stage: profile?.company_stage || cp.stage || undefined,
+              raiseAmount: cp.raise_amount || undefined,
+              teamSize: profile?.team_size || cp.team_size || undefined,
+              foundedYear: cp.founded_year || undefined,
+              problemSummary: cp.problem_summary || undefined,
+              solutionSummary: cp.solution_summary || undefined,
+              businessModel: cp.business_model || undefined,
+              traction: cp.traction || undefined,
+              useOfFunds: cp.use_of_funds || undefined,
+              keyRisks: cp.key_risks || undefined,
+              country: profile?.company_country || undefined,
+              headquarters: profile?.company_country || undefined,
+              websiteUrl: profile?.company_website || undefined,
+              founderName: profile?.full_name || undefined,
+              founderTitle: profile?.job_title || undefined,
+              linkedinUrl: profile?.linkedin_url || linkedinUrl || undefined,
+              source: 'startup_submission',
+            })
+            slug = result.slug
+
+            // Auto-create deals record so company appears in Browse Deals
+            if (result.id) {
+              try {
+                const supabase = getSupabase()
+                await supabase.from('deals').insert({
+                  created_by: userId,
+                  company_id: result.id,
+                  stage: 'sourced',
+                  ai_score: (fullResult as any)?.overall_score || null,
+                  sector: industry || null,
+                  raise_amount: cp.raise_amount || null,
+                })
+              } catch (dealErr) {
+                console.error('Failed to create deals record (continuing):', dealErr)
+              }
             }
           }
         }

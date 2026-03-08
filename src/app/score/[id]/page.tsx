@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { ScoreTooltip } from '@/components/ui/ScoreTooltip'
 
 interface ScoreResult {
   overall_score: number
@@ -145,7 +146,10 @@ export default function ScoreResultsPage() {
                 </div>
               </div>
 
-              <h2 className="text-xl font-bold text-gray-900 mb-1">Your Kunfa Score</h2>
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <h2 className="text-xl font-bold text-gray-900">Your Kunfa Score</h2>
+                <ScoreTooltip />
+              </div>
               <p className="text-sm text-gray-500">
                 Top <span className="font-semibold text-[#10B981]">{result.percentile}%</span> of submissions
               </p>
