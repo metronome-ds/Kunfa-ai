@@ -51,11 +51,11 @@ const PIPELINE_STAGES = [
 ] as const;
 
 function getScoreBadgeColor(score: number | null) {
-  if (!score) return 'bg-gray-700 text-gray-400';
-  if (score >= 80) return 'bg-emerald-500/20 text-emerald-400';
-  if (score >= 60) return 'bg-blue-500/20 text-blue-400';
-  if (score >= 40) return 'bg-yellow-500/20 text-yellow-400';
-  return 'bg-red-500/20 text-red-400';
+  if (!score) return 'bg-gray-100 text-gray-500';
+  if (score >= 80) return 'bg-emerald-100 text-emerald-700';
+  if (score >= 60) return 'bg-blue-100 text-blue-700';
+  if (score >= 40) return 'bg-yellow-100 text-yellow-700';
+  return 'bg-red-100 text-red-700';
 }
 
 function truncate(text: string | null, max: number) {
@@ -121,11 +121,9 @@ export default function PipelinePage() {
     if (!dragItem) return;
 
     if (dragItem.type === 'watchlist') {
-      // Watchlist → Pipeline: create deal, then optionally set stage
       const { card } = dragItem;
       setDragItem(null);
 
-      // Optimistic: add to target stage
       const optimisticDeal: DealCard = {
         id: 'temp-' + card.company_id,
         company_id: card.company_id,
@@ -147,7 +145,6 @@ export default function PipelinePage() {
       }));
 
       try {
-        // Create the deal
         const createRes = await fetch('/api/pipeline/move-to-pipeline', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -162,7 +159,6 @@ export default function PipelinePage() {
         const createData = await createRes.json();
         const dealId = createData.data?.id;
 
-        // If target stage is not 'sourced', update the stage
         if (toStage !== 'sourced' && dealId) {
           await fetch(`/api/pipeline/${dealId}`, {
             method: 'PUT',
@@ -171,19 +167,16 @@ export default function PipelinePage() {
           });
         }
 
-        // Refresh to get real data
         fetchPipeline();
       } catch {
         fetchPipeline();
       }
     } else {
-      // Deal → Deal: move between pipeline columns
       const { card, fromStage } = dragItem;
       setDragItem(null);
 
       if (fromStage === toStage) return;
 
-      // Optimistic update
       setDeals((prev) => {
         const newDeals = { ...prev };
         newDeals[fromStage as keyof PipelineStages] = prev[fromStage as keyof PipelineStages].filter(
@@ -212,7 +205,6 @@ export default function PipelinePage() {
   const handleDropOnWatchlist = (e: DragEvent) => {
     e.preventDefault();
     setDragOverColumn(null);
-    // Can't drop deals back into watchlist
     setDragItem(null);
   };
 
@@ -222,16 +214,16 @@ export default function PipelinePage() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-white">Deal Pipeline</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Deal Pipeline</h1>
         </div>
         <div className="grid grid-cols-6 gap-3">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-gray-800/50 rounded-xl p-3 min-h-[400px]">
-              <div className="h-6 bg-gray-700 rounded w-20 mb-4 animate-pulse" />
+            <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 min-h-[400px]">
+              <div className="h-6 bg-gray-200 rounded w-20 mb-4 animate-pulse" />
               {[1, 2].map((j) => (
-                <div key={j} className="bg-gray-700/50 rounded-lg p-3 mb-2 animate-pulse">
-                  <div className="h-4 bg-gray-600 rounded w-3/4 mb-2" />
-                  <div className="h-3 bg-gray-600 rounded w-1/2" />
+                <div key={j} className="bg-gray-50 rounded-lg p-3 mb-2 animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-gray-200 rounded w-1/2" />
                 </div>
               ))}
             </div>
@@ -246,8 +238,8 @@ export default function PipelinePage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-white">Deal Pipeline</h1>
-          <p className="text-gray-400 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-gray-900">Deal Pipeline</h1>
+          <p className="text-gray-500 text-sm mt-1">
             {watchlist.length} watchlisted &middot; {totalDeals} deal{totalDeals !== 1 ? 's' : ''} in pipeline
           </p>
         </div>
@@ -261,7 +253,7 @@ export default function PipelinePage() {
       </div>
 
       {error && (
-        <div className="bg-red-900/20 border border-red-800 text-red-400 px-4 py-3 rounded-lg mb-6">{error}</div>
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">{error}</div>
       )}
 
       {/* Kanban Board: 6 columns */}
@@ -272,13 +264,12 @@ export default function PipelinePage() {
           onDragLeave={handleDragLeave}
           onDrop={handleDropOnWatchlist}
           className={`rounded-xl p-3 transition-colors ${
-            dragOverColumn === 'watchlist' ? 'bg-amber-900/20 ring-2 ring-amber-500/50' : 'bg-gray-800/50'
+            dragOverColumn === 'watchlist' ? 'bg-amber-50 ring-2 ring-amber-300' : 'bg-gray-100'
           }`}
         >
-          {/* Column header */}
           <div className="flex items-center gap-2 mb-4 px-1">
-            <Bookmark className="w-3.5 h-3.5 text-amber-400" />
-            <h3 className="text-sm font-semibold text-white">Watchlist</h3>
+            <Bookmark className="w-3.5 h-3.5 text-amber-500" />
+            <h3 className="text-sm font-semibold text-gray-900">Watchlist</h3>
             <span className="text-xs text-gray-500 ml-auto">{watchlist.length}</span>
           </div>
 
@@ -289,11 +280,11 @@ export default function PipelinePage() {
                 draggable
                 onDragStart={() => handleDragStartWatchlist(item)}
                 onClick={() => item.slug && router.push(`/company/${item.slug}`)}
-                className="bg-gray-900 rounded-lg p-3 border border-gray-700 hover:border-amber-600/50 cursor-grab active:cursor-grabbing transition group"
+                className="bg-white rounded-lg p-3 border border-gray-200 hover:border-amber-300 cursor-grab active:cursor-grabbing transition group shadow-sm"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <h4 className="text-sm font-medium text-white truncate flex-1">{item.company_name}</h4>
-                  <GripVertical className="w-3.5 h-3.5 text-gray-600 group-hover:text-gray-400 flex-shrink-0 mt-0.5" />
+                  <h4 className="text-sm font-medium text-gray-900 truncate flex-1">{item.company_name}</h4>
+                  <GripVertical className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5" />
                 </div>
 
                 {item.overall_score !== null && (
@@ -304,7 +295,7 @@ export default function PipelinePage() {
 
                 {item.industry && (
                   <div className="mt-2">
-                    <span className="text-[10px] text-gray-400 bg-gray-800 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
                       {item.industry}
                     </span>
                   </div>
@@ -323,7 +314,7 @@ export default function PipelinePage() {
                 <p className="text-gray-500 text-xs mb-3">No companies watchlisted yet.</p>
                 <Link
                   href="/deals"
-                  className="text-blue-400 text-xs hover:text-blue-300 underline"
+                  className="text-blue-600 text-xs hover:text-blue-800 underline"
                 >
                   Browse companies
                 </Link>
@@ -344,17 +335,15 @@ export default function PipelinePage() {
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDropOnPipelineStage(e, stage.key)}
               className={`rounded-xl p-3 transition-colors ${
-                isDragOver ? 'bg-blue-900/30 ring-2 ring-blue-500/50' : 'bg-gray-800/50'
+                isDragOver ? 'bg-blue-50 ring-2 ring-blue-300' : 'bg-gray-100'
               }`}
             >
-              {/* Column header */}
               <div className="flex items-center gap-2 mb-4 px-1">
                 <div className={`w-2.5 h-2.5 rounded-full ${stage.color}`} />
-                <h3 className="text-sm font-semibold text-white">{stage.label}</h3>
+                <h3 className="text-sm font-semibold text-gray-900">{stage.label}</h3>
                 <span className="text-xs text-gray-500 ml-auto">{cards.length}</span>
               </div>
 
-              {/* Cards */}
               <div className="space-y-2">
                 {cards.map((deal) => (
                   <div
@@ -362,11 +351,11 @@ export default function PipelinePage() {
                     draggable
                     onDragStart={() => handleDragStartDeal(deal, stage.key)}
                     onClick={() => deal.slug && router.push(`/company/${deal.slug}`)}
-                    className="bg-gray-900 rounded-lg p-3 border border-gray-700 hover:border-gray-600 cursor-grab active:cursor-grabbing transition group"
+                    className="bg-white rounded-lg p-3 border border-gray-200 hover:border-gray-300 cursor-grab active:cursor-grabbing transition group shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <h4 className="text-sm font-medium text-white truncate flex-1">{deal.company_name}</h4>
-                      <GripVertical className="w-3.5 h-3.5 text-gray-600 group-hover:text-gray-400 flex-shrink-0 mt-0.5" />
+                      <h4 className="text-sm font-medium text-gray-900 truncate flex-1">{deal.company_name}</h4>
+                      <GripVertical className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5" />
                     </div>
 
                     {deal.ai_score !== null && (
@@ -377,7 +366,7 @@ export default function PipelinePage() {
 
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {(deal.industry || deal.sector) && (
-                        <span className="text-[10px] text-gray-400 bg-gray-800 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
                           {deal.industry || deal.sector}
                         </span>
                       )}
@@ -389,7 +378,7 @@ export default function PipelinePage() {
                       </p>
                     )}
 
-                    <p className="text-[10px] text-gray-600 mt-2">
+                    <p className="text-[10px] text-gray-400 mt-2">
                       {deal.days_in_stage}d in stage
                     </p>
                   </div>
@@ -397,7 +386,7 @@ export default function PipelinePage() {
 
                 {cards.length === 0 && (
                   <div className="text-center py-8 px-2">
-                    <p className="text-gray-600 text-xs">
+                    <p className="text-gray-500 text-xs">
                       {stage.key === 'sourced'
                         ? 'Drag from watchlist or browse companies'
                         : 'No deals'}
