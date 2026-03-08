@@ -17,6 +17,7 @@ export function ComingSoon({ title, description }: ComingSoonProps) {
       <p className="text-gray-500 text-center max-w-md">
         {description || 'This feature is currently under development and will be available soon.'}
       </p>
+      <p className="text-gray-400 text-sm mt-4">We&apos;ll notify you when this is ready.</p>
     </div>
   );
 }

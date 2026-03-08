@@ -505,21 +505,19 @@ export default function CompanyProfilePage() {
             ? 'bg-emerald-500/10 border-emerald-500/30'
             : 'bg-amber-500/10 border-amber-500/30'
         }`}>
-          {paid && reportUrl ? (
+          {paid ? (
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-white">Kunfa Readiness Report</h3>
                 <p className="text-xs text-gray-400 mt-0.5">Your full AI-powered investment analysis is ready.</p>
               </div>
-              <a
-                href={reportUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href={`/report/${company.submission_id}`}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition"
               >
                 View Report
                 <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+              </Link>
             </div>
           ) : (
             <div className="flex items-center justify-between">

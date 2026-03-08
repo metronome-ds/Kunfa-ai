@@ -66,7 +66,7 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
 
   if (state === 'loading' || state === 'hidden') return null
 
-  if (state === 'paid' && reportUrl) {
+  if (state === 'paid') {
     return (
       <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-xl p-6 border border-emerald-200 flex items-center justify-between">
         <div>
@@ -74,9 +74,7 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
           <p className="text-sm text-gray-600 mt-1">Your full AI-powered investment analysis is ready.</p>
         </div>
         <a
-          href={reportUrl}
-          target="_blank"
-          rel="noopener noreferrer"
+          href={`/report/${submissionId}`}
           className="bg-[#10B981] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#059669] transition flex-shrink-0"
         >
           View Your Readiness Report

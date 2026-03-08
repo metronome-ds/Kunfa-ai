@@ -4,7 +4,7 @@ export default function RewardsPage() {
   return (
     <ComingSoon
       title="Rewards Catalog"
-      description="Redeem your Kunfa points for premium features, extended analytics, featured placement, and more."
+      description="Earn and redeem Kunfa points. Complete your profile, get scored, and engage with the platform to earn rewards."
     />
   );
 }

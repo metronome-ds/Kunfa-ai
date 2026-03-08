@@ -5,7 +5,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   typescript: true,
 })
 
-export async function createCheckoutSession(submissionId: string, baseUrl: string) {
+export async function createCheckoutSession(submissionId: string, baseUrl: string, successPath?: string) {
   const priceId = process.env.STRIPE_PRICE_ID
 
   const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = priceId
@@ -28,7 +28,9 @@ export async function createCheckoutSession(submissionId: string, baseUrl: strin
     payment_method_types: ['card'],
     line_items: lineItems,
     mode: 'payment',
-    success_url: `${baseUrl}/report/${submissionId}?session_id={CHECKOUT_SESSION_ID}`,
+    success_url: successPath
+      ? `${baseUrl}${successPath}`
+      : `${baseUrl}/report/${submissionId}?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/score/${submissionId}`,
     metadata: {
       submission_id: submissionId,
