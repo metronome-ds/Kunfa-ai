@@ -220,7 +220,9 @@ export async function generateReport(
       React.createElement(PageHeader, null),
       React.createElement(Text, { style: styles.sectionTitle }, 'Executive Summary'),
       React.createElement(View, { style: { ...styles.badge, backgroundColor: '#ECFDF5' } },
-        React.createElement(Text, { style: { fontSize: 9, fontWeight: 'bold', color: green } }, result.investment_readiness)
+        React.createElement(Text, { style: { fontSize: 9, fontWeight: 'bold', color: green } },
+          result.overall_score >= 80 ? 'Strong' : result.overall_score >= 65 ? 'Almost Ready' : result.overall_score >= 50 ? 'Needs Work' : 'Early Stage'
+        )
       ),
       ...renderParagraphs(overviewParagraphs),
       React.createElement(View, { style: styles.divider }),
@@ -228,15 +230,16 @@ export async function generateReport(
       ...renderParagraphs(thesisParagraphs),
       React.createElement(View, { style: styles.divider }),
       React.createElement(Text, { style: styles.subsectionTitle }, 'Score Dashboard'),
-      ...(Object.entries(result.dimensions) as [string, { score: number }][]).map(([key, dim]) =>
-        ScoreBar({ label: dimensionNames[key], score: dim.score, maxScore: 25 })
-      ),
+      ScoreBar({ label: dimensionNames.team, score: result.team_score, maxScore: 25 }),
+      ScoreBar({ label: dimensionNames.market, score: result.market_score, maxScore: 25 }),
+      ScoreBar({ label: dimensionNames.product, score: result.product_score, maxScore: 25 }),
+      ScoreBar({ label: dimensionNames.financial, score: result.financial_score, maxScore: 25 }),
       React.createElement(View, { style: { marginTop: 6, padding: 10, backgroundColor: lightGray, borderRadius: 6 } },
         React.createElement(Text, { style: { fontSize: 11, fontWeight: 'bold', color: navy, marginBottom: 2 } },
           `Overall: ${result.overall_score}/100`
         ),
         React.createElement(Text, { style: { fontSize: 9, color: gray } },
-          `Top ${result.percentile}% of submissions | Sector: ${result.sector_benchmarks.sector}`
+          `Weights: ${result.stage_weights_applied || 'standard'} | Industry: ${result.company_profile?.industry || 'N/A'}`
         )
       ),
       React.createElement(PageFooter, { pageNum: 2 })
@@ -247,14 +250,17 @@ export async function generateReport(
       React.createElement(PageHeader, null),
       React.createElement(Text, { style: styles.sectionTitle }, 'Dimension Analysis'),
       ...(['team', 'market', 'product', 'financial'] as const).flatMap((dimKey) => {
-        const dim = result.dimensions[dimKey]
+        const scoreKey = `${dimKey}_score` as keyof ScoringResult
+        const gradeKey = `${dimKey}_grade` as keyof ScoringResult
+        const dimScore = (result[scoreKey] as number) || 0
+        const dimGrade = (result[gradeKey] as string) || 'N/A'
         const expanded = memo.dimensions[dimKey]
         const name = dimensionNames[dimKey]
         const paragraphs = splitIntoParagraphs(expanded.detailed_analysis)
         return [
           React.createElement(View, { key: `${dimKey}-header`, style: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 } },
             React.createElement(Text, { style: { fontSize: 12, fontWeight: 'bold', color: navy } }, name),
-            React.createElement(Text, { style: { fontSize: 11, fontWeight: 'bold', color: green } }, `${dim.score}/25 (${dim.letter_grade})`)
+            React.createElement(Text, { style: { fontSize: 11, fontWeight: 'bold', color: green } }, `${dimScore}/25 (${dimGrade})`)
           ),
           ...paragraphs.map((p, i) =>
             React.createElement(Text, { key: `${dimKey}-p-${i}`, style: styles.bodySmall }, p)

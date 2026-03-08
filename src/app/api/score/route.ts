@@ -110,10 +110,19 @@ export async function POST(request: NextRequest) {
 
     console.log(`Extracted text: pitchDeck=${pitchDeckText.length} chars, financials=${financialsText.length} chars`)
 
+    // --- Get company stage from profile for stage-adjusted scoring weights ---
+    let companyStage = ''
+    if (userId) {
+      try {
+        const profile = await getProfileByUserId(userId)
+        companyStage = profile?.company_stage || ''
+      } catch { /* continue with default weights */ }
+    }
+
     // --- Score with Claude ---
     let fullResult
     try {
-      fullResult = await scoreStartup(pitchDeckText, financialsText, linkedinUrl || '')
+      fullResult = await scoreStartup(pitchDeckText, financialsText, linkedinUrl || '', companyStage)
     } catch (aiErr) {
       console.error('Claude API error:', aiErr)
       return NextResponse.json(
@@ -142,7 +151,7 @@ export async function POST(request: NextRequest) {
             'Unnamed Company'
 
           // User's industry choice (from onboarding) takes precedence over AI extraction
-          const industry = profile?.industry || cp.industry || (fullResult as any)?.sector_benchmarks?.sector || undefined
+          const industry = profile?.industry || cp.industry || undefined
 
           const result = await createCompanyPage({
             userId,
@@ -150,7 +159,7 @@ export async function POST(request: NextRequest) {
             companyName,
             overallScore: (fullResult as any)?.overall_score || 0,
             slug: userSlug || undefined,
-            description: (fullResult as any)?.summary || undefined,
+            description: (fullResult as any)?.description || undefined,
             oneLiner: profile?.one_liner || undefined,
             industry,
             stage: profile?.company_stage || cp.stage || undefined,

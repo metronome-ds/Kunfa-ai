@@ -135,12 +135,14 @@ export async function updateSubmissionScore(
 ) {
   const a = analysis as {
     overall_score: number
-    dimensions: {
-      team: { score: number; letter_grade: string }
-      market: { score: number; letter_grade: string }
-      product: { score: number; letter_grade: string }
-      financial: { score: number; letter_grade: string }
-    }
+    team_score: number
+    team_grade: string
+    market_score: number
+    market_grade: string
+    product_score: number
+    product_grade: string
+    financial_score: number
+    financial_grade: string
   }
 
   const supabase = getSupabase()
@@ -148,14 +150,14 @@ export async function updateSubmissionScore(
     .from('submissions')
     .update({
       overall_score: a.overall_score,
-      team_score: a.dimensions.team.score,
-      team_grade: a.dimensions.team.letter_grade,
-      market_score: a.dimensions.market.score,
-      market_grade: a.dimensions.market.letter_grade,
-      product_score: a.dimensions.product.score,
-      product_grade: a.dimensions.product.letter_grade,
-      financial_score: a.dimensions.financial.score,
-      financial_grade: a.dimensions.financial.letter_grade,
+      team_score: a.team_score,
+      team_grade: a.team_grade,
+      market_score: a.market_score,
+      market_grade: a.market_grade,
+      product_score: a.product_score,
+      product_grade: a.product_grade,
+      financial_score: a.financial_score,
+      financial_grade: a.financial_grade,
       full_analysis: analysis,
     })
     .eq('id', id)

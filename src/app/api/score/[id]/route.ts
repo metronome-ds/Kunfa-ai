@@ -35,18 +35,43 @@ export async function GET(
     let teaser
     if (submission.full_analysis) {
       try {
-        teaser = extractTeaser(submission.full_analysis as ScoringResult)
+        const analysis = submission.full_analysis as Record<string, unknown>
+
+        // Normalize old dimensions-based format to flat format if needed
+        let normalized = analysis
+        if (typeof analysis.team_score !== 'number' && analysis.dimensions && typeof analysis.dimensions === 'object') {
+          const dims = analysis.dimensions as Record<string, Record<string, unknown>>
+          normalized = {
+            ...analysis,
+            team_score: dims.team?.score || 0,
+            team_grade: dims.team?.letter_grade || 'N/A',
+            team_summary: dims.team?.headline || '',
+            market_score: dims.market?.score || 0,
+            market_grade: dims.market?.letter_grade || 'N/A',
+            market_summary: dims.market?.headline || '',
+            product_score: dims.product?.score || 0,
+            product_grade: dims.product?.letter_grade || 'N/A',
+            product_summary: dims.product?.headline || '',
+            financial_score: dims.financial?.score || 0,
+            financial_grade: dims.financial?.letter_grade || 'N/A',
+            financial_summary: dims.financial?.headline || '',
+            description: analysis.summary || analysis.description || '',
+          }
+        }
+
+        teaser = extractTeaser(normalized as unknown as ScoringResult)
       } catch {
         // Fall back to manual construction
       }
     }
 
     if (!teaser) {
+      const score = submission.overall_score || 0
       teaser = {
-        overall_score: submission.overall_score || 0,
-        percentile: Math.min(99, Math.max(1, Math.round((submission.overall_score || 0) * 0.9))),
+        overall_score: score,
+        percentile: Math.min(99, Math.max(1, score)),
         summary: '',
-        investment_readiness: (submission.overall_score || 0) >= 70 ? 'Ready' : (submission.overall_score || 0) >= 50 ? 'Almost Ready' : 'Needs Work',
+        investment_readiness: score >= 80 ? 'Strong' : score >= 65 ? 'Almost Ready' : score >= 50 ? 'Needs Work' : 'Early Stage',
         dimensions: {
           team: { score: submission.team_score || 0, letter_grade: submission.team_grade || 'N/A', headline: '' },
           market: { score: submission.market_score || 0, letter_grade: submission.market_grade || 'N/A', headline: '' },

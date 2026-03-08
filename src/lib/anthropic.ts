@@ -20,25 +20,25 @@ export interface CompanyProfile {
 
 export interface ScoringResult {
   overall_score: number
-  percentile: number
-  summary: string
+  team_score: number
+  team_grade: string
+  team_summary: string
+  market_score: number
+  market_grade: string
+  market_summary: string
+  product_score: number
+  product_grade: string
+  product_summary: string
+  financial_score: number
+  financial_grade: string
+  financial_summary: string
+  description: string
   company_profile: CompanyProfile
-  dimensions: {
-    team: DimensionResult
-    market: DimensionResult
-    product: DimensionResult
-    financial: DimensionResult
-  }
-  sector_benchmarks: {
-    sector: string
-    avg_score: number
-    comparison: string
-  }
-  deck_recommendations: string[]
-  overall_recommendations: string[]
-  investment_readiness: string
+  stage_weights_applied: string
+  financials_analyzed: boolean
 }
 
+// Keep DimensionResult for expanded memo compatibility
 export interface DimensionResult {
   score: number
   letter_grade: string
@@ -47,6 +47,30 @@ export interface DimensionResult {
   strengths: string[]
   risks: string[]
   recommendations: string[]
+}
+
+interface StageWeights {
+  team: number
+  market: number
+  product: number
+  financial: number
+  label: string
+}
+
+function getStageWeights(stage: string): StageWeights {
+  const s = (stage || '').toLowerCase().trim()
+  if (
+    s.includes('series b') ||
+    s.includes('series c') ||
+    s.includes('growth')
+  ) {
+    return { team: 0.15, market: 0.20, product: 0.20, financial: 0.45, label: 'series_b_plus' }
+  }
+  if (s.includes('series a')) {
+    return { team: 0.25, market: 0.25, product: 0.20, financial: 0.30, label: 'series_a' }
+  }
+  // Default: Pre-Seed / Seed / unknown
+  return { team: 0.35, market: 0.25, product: 0.25, financial: 0.15, label: 'pre_seed_seed' }
 }
 
 const SYSTEM_PROMPT = `You are Kunfa AI, a venture capital analysis engine that outputs ONLY valid JSON.
@@ -63,33 +87,103 @@ function buildUserPrompt(
   pitchDeckText: string,
   financialsText: string,
   linkedinUrl: string,
+  weights: StageWeights,
+  hasFinancials: boolean,
 ): string {
-  return `Analyze these startup materials and return a JSON investment memo.
+  const weightsPercent = {
+    team: Math.round(weights.team * 100),
+    market: Math.round(weights.market * 100),
+    product: Math.round(weights.product * 100),
+    financial: Math.round(weights.financial * 100),
+  }
+
+  const financialsSection = hasFinancials
+    ? `- Financial Data (separately provided):
+${financialsText}
+
+NOTE: The above financial data has been provided separately. Use this to give a more informed Financial Health & Traction score.`
+    : `NOTE: No separate financial data was provided. Score Financial Health based solely on what's available in the pitch deck. Note this limitation in your analysis.`
+
+  return `Analyze these startup materials and return a JSON investment scoring report.
 
 ## Documents Provided:
 - Pitch Deck Content:
 ${pitchDeckText || '[No pitch deck text could be extracted]'}
 
-- Financials Content:
-${financialsText || '[No financials text could be extracted]'}
+${financialsSection}
 
-- LinkedIn Profile: ${linkedinUrl}
+- LinkedIn Profile: ${linkedinUrl || '[Not provided]'}
 
-## Score across 4 dimensions (each 0-25, totaling 0-100):
-1. Team & Founders (0-25): founder experience, team completeness, domain expertise, track record
-2. Market Opportunity & TAM (0-25): market size, growth rate, timing, competitive landscape
-3. Product/Tech Differentiation (0-25): uniqueness, IP/moat, PMF evidence, scalability
-4. Financial Health & Projections (0-25): revenue model, unit economics, burn rate, runway
+## Stage-Adjusted Scoring Weights (${weights.label}):
+- Team & Founders: ${weightsPercent.team}%
+- Market Opportunity: ${weightsPercent.market}%
+- Product & Technology: ${weightsPercent.product}%
+- Financial Health & Traction: ${weightsPercent.financial}%
+
+## Scoring Rubric — score each category 0-25:
+
+### Team & Founders (raw score 0-25):
+- Founder background, domain expertise, relevant experience
+- Complementary skill sets across co-founders
+- Previous exits or notable company experience
+- Advisory board strength and key hires
+- Full-time commitment and skin in the game
+
+### Market Opportunity (raw score 0-25):
+- TAM/SAM/SOM sizing with supporting logic
+- Market timing and tailwinds
+- Competitive landscape awareness and differentiation
+- Defensibility and moat potential
+- Regulatory environment and barriers to entry
+
+### Product & Technology (raw score 0-25):
+- Problem clarity and severity
+- Solution differentiation vs alternatives
+- Current product stage (idea → MVP → live users → scaling)
+- Technical architecture and IP considerations
+- User feedback and validation signals
+
+### Financial Health & Traction (raw score 0-25):
+- Revenue or pre-revenue traction signals
+- Growth rate (MoM or YoY)
+- Unit economics (CAC, LTV, margins) if available
+- Burn rate and runway
+- Fundraising history and use of funds clarity
+
+## Overall Score Calculation:
+Compute the weighted overall score (0-100) using this formula:
+overall_score = round(
+  (team_raw/25 * ${weightsPercent.team}) +
+  (market_raw/25 * ${weightsPercent.market}) +
+  (product_raw/25 * ${weightsPercent.product}) +
+  (financial_raw/25 * ${weightsPercent.financial})
+)
+
+## Grade Mapping (apply per category based on raw score 0-25):
+23-25 = A+    20-22 = A-    18-19 = B+    16-17 = B
+14-15 = B-    12-13 = C+    10-11 = C     8-9 = C-
+6-7 = D       0-5 = F
 
 ## Required JSON structure (respond with ONLY this JSON, nothing else):
 {
-  "overall_score": 0,
-  "percentile": 0,
-  "summary": "2-3 sentence executive summary",
+  "overall_score": 78,
+  "team_score": 22,
+  "team_grade": "A-",
+  "team_summary": "One sentence summary of team assessment",
+  "market_score": 20,
+  "market_grade": "A-",
+  "market_summary": "One sentence summary of market assessment",
+  "product_score": 18,
+  "product_grade": "B+",
+  "product_summary": "One sentence summary of product assessment",
+  "financial_score": 15,
+  "financial_grade": "B-",
+  "financial_summary": "One sentence summary of financial assessment",
+  "description": "2-3 sentence overall investment assessment",
   "company_profile": {
     "company_name": "the company name extracted from the pitch deck",
     "industry": "the sector or industry (e.g. FinTech, HealthTech, SaaS, E-commerce)",
-    "stage": "Pre-seed, Seed, Series A, Series B, or Growth",
+    "stage": "Pre-Seed, Seed, Series A, Series B, or Growth",
     "team_size": 5,
     "founded_year": 2023,
     "problem_summary": "1-2 sentence description of the problem being solved",
@@ -99,53 +193,15 @@ ${financialsText || '[No financials text could be extracted]'}
     "use_of_funds": "1-2 sentence description of how the raise will be used",
     "key_risks": "1-2 sentence summary of the top investment risks"
   },
-  "dimensions": {
-    "team": {
-      "score": 0,
-      "letter_grade": "B+",
-      "headline": "one line summary",
-      "analysis": "3-5 paragraph detailed analysis",
-      "strengths": ["strength1", "strength2"],
-      "risks": ["risk1", "risk2"],
-      "recommendations": ["rec1", "rec2"]
-    },
-    "market": {
-      "score": 0,
-      "letter_grade": "B",
-      "headline": "one line",
-      "analysis": "detailed",
-      "strengths": ["s1"],
-      "risks": ["r1"],
-      "recommendations": ["r1"]
-    },
-    "product": {
-      "score": 0,
-      "letter_grade": "B",
-      "headline": "one line",
-      "analysis": "detailed",
-      "strengths": ["s1"],
-      "risks": ["r1"],
-      "recommendations": ["r1"]
-    },
-    "financial": {
-      "score": 0,
-      "letter_grade": "B-",
-      "headline": "one line",
-      "analysis": "detailed",
-      "strengths": ["s1"],
-      "risks": ["r1"],
-      "recommendations": ["r1"]
-    }
-  },
-  "sector_benchmarks": {
-    "sector": "identified sector",
-    "avg_score": 65,
-    "comparison": "comparison text"
-  },
-  "deck_recommendations": ["improvement 1", "improvement 2"],
-  "overall_recommendations": ["strategic rec 1", "strategic rec 2"],
-  "investment_readiness": "Almost Ready"
-}`
+  "stage_weights_applied": "${weights.label}",
+  "financials_analyzed": ${hasFinancials}
+}
+
+IMPORTANT:
+- The overall_score MUST be computed using the stage-adjusted weights shown above, NOT by simply summing the raw scores.
+- Each raw score must be between 0 and 25.
+- Assign grades strictly according to the grade mapping above.
+- Be rigorous and calibrated — most startups should score 50-75 overall. Only exceptional companies score above 85.`
 }
 
 /**
@@ -192,6 +248,8 @@ async function callClaude(
   pitchDeckText: string,
   financialsText: string,
   linkedinUrl: string,
+  weights: StageWeights,
+  hasFinancials: boolean,
 ): Promise<string> {
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -200,7 +258,7 @@ async function callClaude(
     messages: [
       {
         role: 'user',
-        content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl),
+        content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials),
       },
     ],
   })
@@ -217,11 +275,15 @@ export async function scoreStartup(
   pitchDeckText: string,
   financialsText: string,
   linkedinUrl: string,
+  companyStage: string,
 ): Promise<ScoringResult> {
+  const weights = getStageWeights(companyStage)
+  const hasFinancials = !!financialsText && financialsText.trim().length > 0
+
   // --- Attempt 1 ---
   let rawResponse: string
   try {
-    rawResponse = await callClaude(pitchDeckText, financialsText, linkedinUrl)
+    rawResponse = await callClaude(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials)
   } catch (apiErr) {
     console.error('Claude API call failed:', apiErr)
     throw new Error(`Claude API call failed: ${(apiErr as Error).message}`)
@@ -244,7 +306,7 @@ export async function scoreStartup(
       messages: [
         {
           role: 'user',
-          content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl),
+          content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials),
         },
         {
           role: 'assistant',
@@ -271,32 +333,44 @@ export async function scoreStartup(
   }
 }
 
+/**
+ * Extract a teaser from a ScoringResult for quick display.
+ * Maps from the flat format to the nested teaser format the UI expects.
+ */
 export function extractTeaser(result: ScoringResult) {
+  const score = result.overall_score || 0
+
+  // Determine investment readiness from overall score
+  let investmentReadiness = 'Early Stage'
+  if (score >= 80) investmentReadiness = 'Strong'
+  else if (score >= 65) investmentReadiness = 'Almost Ready'
+  else if (score >= 50) investmentReadiness = 'Needs Work'
+
   return {
-    overall_score: result.overall_score,
-    percentile: result.percentile,
-    summary: result.summary,
-    investment_readiness: result.investment_readiness,
+    overall_score: score,
+    percentile: Math.min(99, Math.max(1, score)),
+    summary: result.description || '',
+    investment_readiness: investmentReadiness,
     dimensions: {
       team: {
-        score: result.dimensions.team.score,
-        letter_grade: result.dimensions.team.letter_grade,
-        headline: result.dimensions.team.headline,
+        score: result.team_score || 0,
+        letter_grade: result.team_grade || 'N/A',
+        headline: result.team_summary || '',
       },
       market: {
-        score: result.dimensions.market.score,
-        letter_grade: result.dimensions.market.letter_grade,
-        headline: result.dimensions.market.headline,
+        score: result.market_score || 0,
+        letter_grade: result.market_grade || 'N/A',
+        headline: result.market_summary || '',
       },
       product: {
-        score: result.dimensions.product.score,
-        letter_grade: result.dimensions.product.letter_grade,
-        headline: result.dimensions.product.headline,
+        score: result.product_score || 0,
+        letter_grade: result.product_grade || 'N/A',
+        headline: result.product_summary || '',
       },
       financial: {
-        score: result.dimensions.financial.score,
-        letter_grade: result.dimensions.financial.letter_grade,
-        headline: result.dimensions.financial.headline,
+        score: result.financial_score || 0,
+        letter_grade: result.financial_grade || 'N/A',
+        headline: result.financial_summary || '',
       },
     },
   }

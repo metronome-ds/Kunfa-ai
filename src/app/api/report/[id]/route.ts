@@ -37,22 +37,34 @@ export async function GET(
       return NextResponse.json({ error: 'No analysis data available' }, { status: 500 })
     }
 
-    // Validate analysis has required structure
-    const analysis = submission.full_analysis as Record<string, unknown>
-    if (
-      typeof analysis.overall_score !== 'number' ||
-      !analysis.dimensions ||
-      typeof analysis.dimensions !== 'object'
-    ) {
-      console.error('Malformed full_analysis for submission', id, JSON.stringify(analysis).slice(0, 500))
+    // Validate and normalize analysis to flat format
+    const rawAnalysis = submission.full_analysis as Record<string, unknown>
+    if (typeof rawAnalysis.overall_score !== 'number') {
+      console.error('Malformed full_analysis for submission', id, JSON.stringify(rawAnalysis).slice(0, 500))
       return NextResponse.json({ error: 'Analysis data is incomplete — please re-score' }, { status: 500 })
     }
 
-    const dims = analysis.dimensions as Record<string, unknown>
-    for (const key of ['team', 'market', 'product', 'financial']) {
-      if (!dims[key] || typeof dims[key] !== 'object') {
-        console.error(`Missing dimension "${key}" in full_analysis for submission`, id)
-        return NextResponse.json({ error: `Analysis data missing ${key} dimension — please re-score` }, { status: 500 })
+    // Normalize: convert old dimensions-based format to flat format if needed
+    let analysis = rawAnalysis
+    if (typeof rawAnalysis.team_score !== 'number' && rawAnalysis.dimensions && typeof rawAnalysis.dimensions === 'object') {
+      const dims = rawAnalysis.dimensions as Record<string, Record<string, unknown>>
+      analysis = {
+        ...rawAnalysis,
+        team_score: dims.team?.score || 0,
+        team_grade: dims.team?.letter_grade || 'N/A',
+        team_summary: dims.team?.headline || '',
+        market_score: dims.market?.score || 0,
+        market_grade: dims.market?.letter_grade || 'N/A',
+        market_summary: dims.market?.headline || '',
+        product_score: dims.product?.score || 0,
+        product_grade: dims.product?.letter_grade || 'N/A',
+        product_summary: dims.product?.headline || '',
+        financial_score: dims.financial?.score || 0,
+        financial_grade: dims.financial?.letter_grade || 'N/A',
+        financial_summary: dims.financial?.headline || '',
+        description: rawAnalysis.summary || rawAnalysis.description || '',
+        stage_weights_applied: 'legacy',
+        financials_analyzed: false,
       }
     }
 
