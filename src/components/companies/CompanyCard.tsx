@@ -1,6 +1,6 @@
 'use client';
 
-import { Bookmark, BookmarkCheck } from 'lucide-react';
+import { Bookmark } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 
@@ -62,22 +62,28 @@ export function CompanyCard({
   const handleWatchlistClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+
+    const wasWatchlisted = watchlisted;
+    setWatchlisted(!wasWatchlisted); // optimistic
+    onWatchlistToggle?.(company.id, !wasWatchlisted);
     setIsLoading(true);
 
     try {
-      const method = watchlisted ? 'DELETE' : 'POST';
+      const method = wasWatchlisted ? 'DELETE' : 'POST';
       const response = await fetch('/api/watchlist', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId: company.id }),
       });
 
-      if (response.ok) {
-        setWatchlisted(!watchlisted);
-        onWatchlistToggle?.(company.id, !watchlisted);
+      if (!response.ok) {
+        setWatchlisted(wasWatchlisted); // revert on failure
+        onWatchlistToggle?.(company.id, wasWatchlisted);
       }
     } catch (error) {
       console.error('Error toggling watchlist:', error);
+      setWatchlisted(wasWatchlisted); // revert on error
+      onWatchlistToggle?.(company.id, wasWatchlisted);
     } finally {
       setIsLoading(false);
     }
@@ -106,11 +112,13 @@ export function CompanyCard({
               <button
                 onClick={handleWatchlistClick}
                 disabled={isLoading}
-                className="ml-2 p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+                className={`ml-2 p-2 rounded-lg transition-colors disabled:opacity-50 ${
+                  watchlisted ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-100'
+                }`}
                 title={watchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
               >
                 {watchlisted ? (
-                  <BookmarkCheck className="h-5 w-5 text-emerald-600 fill-emerald-600" />
+                  <Bookmark className="h-5 w-5 text-red-500 fill-red-500" />
                 ) : (
                   <Bookmark className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                 )}

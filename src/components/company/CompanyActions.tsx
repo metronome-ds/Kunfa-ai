@@ -28,7 +28,7 @@ export function CompanyActions({ companyId }: CompanyActionsProps) {
       // Check if user is an investor
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('id, role')
         .eq('user_id', user.id)
         .single();
 
@@ -39,11 +39,11 @@ export function CompanyActions({ companyId }: CompanyActionsProps) {
 
       setIsInvestor(true);
 
-      // Check watchlist status
+      // Look up profile id (investor_id in watchlist_items is profiles.id, not auth user id)
       const { data: watchlistItem } = await supabase
         .from('watchlist_items')
         .select('id')
-        .eq('investor_id', user.id)
+        .eq('investor_id', profile.id)
         .eq('company_id', companyId)
         .single();
 
@@ -67,17 +67,20 @@ export function CompanyActions({ companyId }: CompanyActionsProps) {
   if (loading || !isInvestor) return null;
 
   const toggleWatchlist = async () => {
+    const wasWatchlisted = isWatchlisted;
+    setIsWatchlisted(!wasWatchlisted); // optimistic
     setWatchlistLoading(true);
     try {
-      const method = isWatchlisted ? 'DELETE' : 'POST';
+      const method = wasWatchlisted ? 'DELETE' : 'POST';
       const res = await fetch('/api/watchlist', {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId }),
       });
-      if (res.ok) setIsWatchlisted(!isWatchlisted);
+      if (!res.ok) setIsWatchlisted(wasWatchlisted); // revert on failure
     } catch (err) {
       console.error('Watchlist toggle error:', err);
+      setIsWatchlisted(wasWatchlisted); // revert on error
     } finally {
       setWatchlistLoading(false);
     }

@@ -18,6 +18,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Look up profile id (investor_id in watchlist_items is profiles.id, not auth.uid())
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    const profileId = profile?.id;
+
     // Fetch watchlist items joined with company_pages
     const { data: watchlistItems, error: wlError } = await supabase
       .from('watchlist_items')
@@ -33,7 +42,7 @@ export async function GET() {
           one_liner
         )
       `)
-      .eq('investor_id', user.id)
+      .eq('investor_id', profileId || '')
       .order('created_at', { ascending: false });
 
     if (wlError) {

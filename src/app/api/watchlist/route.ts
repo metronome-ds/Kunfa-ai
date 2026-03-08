@@ -1,6 +1,16 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 
+/** Look up profiles.id from auth user id */
+async function getProfileId(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, userId: string) {
+  const { data } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('user_id', userId)
+    .single();
+  return data?.id as string | undefined;
+}
+
 /**
  * GET /api/watchlist
  * List investor's watchlisted companies
@@ -16,6 +26,11 @@ export async function GET() {
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const profileId = await getProfileId(supabase, user.id);
+    if (!profileId) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
     const { data, error } = await supabase
@@ -34,7 +49,7 @@ export async function GET() {
           country
         )
       `)
-      .eq('investor_id', user.id)
+      .eq('investor_id', profileId)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -66,6 +81,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const profileId = await getProfileId(supabase, user.id);
+    if (!profileId) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    }
+
     const { companyId } = await request.json();
     if (!companyId) {
       return NextResponse.json({ error: 'companyId is required' }, { status: 400 });
@@ -73,7 +93,7 @@ export async function POST(request: NextRequest) {
 
     const { data, error } = await supabase
       .from('watchlist_items')
-      .insert({ investor_id: user.id, company_id: companyId })
+      .insert({ investor_id: profileId, company_id: companyId })
       .select()
       .single();
 
@@ -109,6 +129,11 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const profileId = await getProfileId(supabase, user.id);
+    if (!profileId) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    }
+
     const { companyId } = await request.json();
     if (!companyId) {
       return NextResponse.json({ error: 'companyId is required' }, { status: 400 });
@@ -117,7 +142,7 @@ export async function DELETE(request: NextRequest) {
     const { error } = await supabase
       .from('watchlist_items')
       .delete()
-      .eq('investor_id', user.id)
+      .eq('investor_id', profileId)
       .eq('company_id', companyId);
 
     if (error) {
