@@ -9,13 +9,7 @@ import {
   ChevronDown,
   Compass,
   TrendingUp,
-  Zap,
-  Calculator,
   Users,
-  BarChart3,
-  Brain,
-  FileText,
-  PieChart,
   Building2,
   FolderOpen,
   Handshake,
@@ -24,6 +18,7 @@ import {
   LayoutDashboard,
   Landmark,
   PlusCircle,
+  Bookmark,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -33,7 +28,7 @@ interface NavItem {
   href?: string;
 }
 
-// Investor navigation sections
+// Investor navigation — clean and focused
 const investorNavSections: Record<string, NavItem[]> = {
   OVERVIEW: [
     {
@@ -47,16 +42,6 @@ const investorNavSections: Record<string, NavItem[]> = {
       label: 'Browse Companies',
       icon: <Compass className="h-5 w-5" />,
       href: '/deals',
-    },
-    {
-      label: 'People',
-      icon: <Users className="h-5 w-5" />,
-      href: '/people',
-    },
-    {
-      label: 'Services',
-      icon: <PieChart className="h-5 w-5" />,
-      href: '/services',
     },
   ],
   'DEAL FLOW': [
@@ -72,52 +57,8 @@ const investorNavSections: Record<string, NavItem[]> = {
     },
     {
       label: 'Saved Deals',
-      icon: <BarChart3 className="h-5 w-5" />,
+      icon: <Bookmark className="h-5 w-5" />,
       href: '/saved-deals',
-    },
-    {
-      label: 'Portfolio',
-      icon: <PieChart className="h-5 w-5" />,
-      href: '/portfolio',
-    },
-    {
-      label: 'My Deals',
-      icon: <Brain className="h-5 w-5" />,
-      href: '/deals/my-deals',
-    },
-  ],
-  'AI TOOLS': [
-    {
-      label: 'Deal Scorer',
-      icon: <Brain className="h-5 w-5" />,
-      href: '/deals',
-    },
-    {
-      label: 'Company Briefs',
-      icon: <FileText className="h-5 w-5" />,
-      href: '/deals',
-    },
-    {
-      label: 'Term Sheet',
-      icon: <FileText className="h-5 w-5" />,
-      href: '/deals',
-    },
-  ],
-  FINANCIAL: [
-    {
-      label: 'LBO Calc',
-      icon: <Calculator className="h-5 w-5" />,
-      href: '/calculators/lbo',
-    },
-    {
-      label: 'Valuation',
-      icon: <Calculator className="h-5 w-5" />,
-      href: '/calculators/valuation',
-    },
-    {
-      label: 'DD Checklist',
-      icon: <BarChart3 className="h-5 w-5" />,
-      href: '/calculators/dd-checklist',
     },
   ],
 };
@@ -127,11 +68,6 @@ const investorBottomSections: NavItem[] = [
     label: 'Settings',
     icon: <Settings className="h-5 w-5" />,
     href: '/settings',
-  },
-  {
-    label: 'Team',
-    icon: <Users className="h-5 w-5" />,
-    href: '/team',
   },
 ];
 
@@ -258,7 +194,7 @@ export function Sidebar() {
         }
       } catch (err) {
         console.error('Error loading user role:', err);
-        setUserRole('investor'); // Default fallback
+        setUserRole('investor');
       } finally {
         setLoading(false);
       }
@@ -272,7 +208,6 @@ export function Sidebar() {
     window.location.href = '/login';
   };
 
-  // Determine which nav to show based on role
   const isStartup = userRole === 'founder' || userRole === 'startup';
   const navigationSections = isStartup ? startupNavSections : investorNavSections;
   const bottomSections = isStartup ? startupBottomSections : investorBottomSections;
@@ -280,7 +215,7 @@ export function Sidebar() {
 
   return (
     <div className="fixed left-0 top-0 h-screen w-64 bg-gray-900 border-r border-gray-800 flex flex-col overflow-hidden">
-      {/* Logo and Branding */}
+      {/* Logo */}
       <div className="p-6 border-b border-gray-800">
         <div className="flex items-baseline gap-2">
           <Link href="/dashboard" className="flex items-baseline gap-2 hover:opacity-80 transition-opacity">
@@ -293,7 +228,7 @@ export function Sidebar() {
         <p className="text-xs text-gray-400 mt-1">{tagline}</p>
       </div>
 
-      {/* Navigation Sections */}
+      {/* Navigation */}
       <div className="flex-1 overflow-y-auto px-3 py-4 space-y-2">
         {loading ? (
           <div className="flex items-center justify-center py-8">
@@ -306,9 +241,8 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* Bottom Navigation and User Section */}
+      {/* Bottom */}
       <div className="border-t border-gray-800 p-3 space-y-3">
-        {/* Bottom Navigation Items */}
         <div className="space-y-1">
           {bottomSections.map((item) => {
             const isActive =
@@ -331,7 +265,6 @@ export function Sidebar() {
           })}
         </div>
 
-        {/* Sign Out Button */}
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-300 hover:bg-red-600/10 hover:text-red-400 transition-all"

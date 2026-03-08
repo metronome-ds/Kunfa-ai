@@ -202,14 +202,35 @@ export default function AddCompanyPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Sector</label>
-              <input
-                type="text"
+              <label className="block text-sm font-medium text-gray-300 mb-1">Industry</label>
+              <select
                 value={form.sector}
                 onChange={(e) => updateField('sector', e.target.value)}
-                className="w-full px-4 py-2.5 bg-gray-800 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g. FinTech"
-              />
+                className="w-full px-4 py-2.5 bg-gray-800 border border-gray-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select industry</option>
+                <option value="FinTech">FinTech</option>
+                <option value="HealthTech">HealthTech</option>
+                <option value="EdTech">EdTech</option>
+                <option value="E-Commerce">E-Commerce</option>
+                <option value="SaaS">SaaS</option>
+                <option value="AI / ML">AI / ML</option>
+                <option value="CleanTech">CleanTech</option>
+                <option value="AgriTech">AgriTech</option>
+                <option value="PropTech">PropTech</option>
+                <option value="InsurTech">InsurTech</option>
+                <option value="Logistics">Logistics</option>
+                <option value="Media & Entertainment">Media & Entertainment</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+                <option value="Biotech">Biotech</option>
+                <option value="Gaming">Gaming</option>
+                <option value="Social Impact">Social Impact</option>
+                <option value="Mobility">Mobility</option>
+                <option value="FoodTech">FoodTech</option>
+                <option value="LegalTech">LegalTech</option>
+                <option value="HRTech">HRTech</option>
+                <option value="Other">Other</option>
+              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-1">Stage</label>

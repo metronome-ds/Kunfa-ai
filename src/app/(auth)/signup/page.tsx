@@ -95,7 +95,7 @@ function SignupContent() {
     if (role === 'startup') {
       window.location.href = '/'
     } else {
-      window.location.href = '/dashboard'
+      window.location.href = '/onboarding'
     }
   }
 

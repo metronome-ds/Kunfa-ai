@@ -3,349 +3,421 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { CheckCircle, ArrowRight, Briefcase, TrendingUp, Zap } from 'lucide-react';
+import { CheckCircle, ArrowRight, User, Target, FileText } from 'lucide-react';
 
-type Role = 'founder' | 'startup' | 'investor' | 'service_provider';
+const STAGES = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C+', 'Growth'];
 
-const ROLES = [
-  {
-    id: 'founder' as Role,
-    title: 'Founder',
-    description: 'Fundraising & company building',
-    icon: Briefcase,
-  },
-  {
-    id: 'investor' as Role,
-    title: 'Investor',
-    description: 'Discover deals, research & portfolio',
-    icon: TrendingUp,
-  },
-  {
-    id: 'service_provider' as Role,
-    title: 'Service Provider',
-    description: 'Offer professional services',
-    icon: Zap,
-  },
+const SECTORS = [
+  'FinTech', 'HealthTech', 'EdTech', 'E-Commerce', 'SaaS', 'AI / ML',
+  'CleanTech', 'AgriTech', 'PropTech', 'InsurTech', 'Logistics',
+  'Media & Entertainment', 'Cybersecurity', 'Biotech', 'Gaming',
+  'Social Impact', 'Mobility', 'FoodTech', 'LegalTech', 'HRTech',
 ];
 
-const INTERESTS = [
-  'AI/ML',
-  'FinTech',
-  'HealthTech',
-  'CleanTech',
-  'SaaS',
-  'B2B',
-  'B2C',
-  'EdTech',
-  'BioTech',
-  'Real Estate',
-  'E-Commerce',
-  'Crypto/Web3',
-  'IoT',
-  'Cybersecurity',
-  'Consumer',
-  'Enterprise',
+const REGIONS = [
+  'North America', 'Europe', 'MENA', 'Sub-Saharan Africa',
+  'South Asia', 'Southeast Asia', 'East Asia', 'Latin America',
+  'Australia / NZ', 'Global',
 ];
 
-const MATCHED_TOOLS: Record<string, string[]> = {
-  founder: [
-    'List a Deal',
-    'AI Company Briefs',
-    'Valuation Calculator',
-    'Deal Pipeline',
-  ],
-  startup: [
-    'List a Deal',
-    'AI Company Briefs',
-    'Valuation Calculator',
-    'Deal Pipeline',
-  ],
-  investor: [
-    'Deal Marketplace',
-    'AI Deal Scorer',
-    'Portfolio Tracker',
-    'Pipeline',
-  ],
-  service_provider: [
-    'Services Marketplace',
-    'People Directory',
-  ],
-};
+const STEP_CONFIG = [
+  { label: 'About You', icon: User },
+  { label: 'Investment Focus', icon: Target },
+  { label: 'Thesis', icon: FileText },
+];
 
-export default function OnboardingPage() {
+export default function InvestorOnboardingPage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    role: null as Role | null,
-    interests: [] as string[],
-  });
+
+  // Step 1: About You
+  const [fullName, setFullName] = useState('');
+  const [fundName, setFundName] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+
+  // Step 2: Investment Focus
+  const [aum, setAum] = useState('');
+  const [ticketMin, setTicketMin] = useState('');
+  const [ticketMax, setTicketMax] = useState('');
+  const [stageFocus, setStageFocus] = useState<string[]>([]);
+  const [sectorInterests, setSectorInterests] = useState<string[]>([]);
+  const [geoFocus, setGeoFocus] = useState<string[]>([]);
+
+  // Step 3: Investment Thesis
+  const [investmentThesis, setInvestmentThesis] = useState('');
 
   useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         router.push('/login');
-      } else {
-        setUser(user);
-      }
-      setIsLoading(false);
-    };
-
-    getUser();
-  }, [router]);
-
-  const toggleInterest = (interest: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      interests: prev.interests.includes(interest)
-        ? prev.interests.filter((i) => i !== interest)
-        : [...prev.interests, interest],
-    }));
-  };
-
-  const handleSubmit = async () => {
-    if (!formData.role) {
-      alert('Please select a role');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch('/api/users/onboarding', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          role: formData.role,
-          interests: formData.interests,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('Failed to complete onboarding:', error);
-        alert('Failed to save profile. Please try again.');
-        setIsSubmitting(false);
         return;
       }
 
-      router.push('/dashboard');
-    } catch (error) {
-      console.error('Error:', error);
-      alert('An error occurred. Please try again.');
+      // Pre-fill name from profile if available
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name, fund_name, job_title, linkedin_url, onboarding_completed')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile?.onboarding_completed) {
+        router.push('/deals');
+        return;
+      }
+
+      if (profile?.full_name) setFullName(profile.full_name);
+      if (profile?.fund_name) setFundName(profile.fund_name);
+      if (profile?.job_title) setJobTitle(profile.job_title);
+      if (profile?.linkedin_url) setLinkedinUrl(profile.linkedin_url);
+
+      setIsLoading(false);
+    };
+    checkAuth();
+  }, [router]);
+
+  function toggleItem(list: string[], item: string, setter: (v: string[]) => void) {
+    setter(list.includes(item) ? list.filter((i) => i !== item) : [...list, item]);
+  }
+
+  async function handleSubmit() {
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const res = await fetch('/api/users/onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: 'investor',
+          full_name: fullName,
+          fund_name: fundName || null,
+          job_title: jobTitle || null,
+          linkedin_url: linkedinUrl || null,
+          aum: aum ? Number(aum) : null,
+          ticket_size_min: ticketMin ? Number(ticketMin) : null,
+          ticket_size_max: ticketMax ? Number(ticketMax) : null,
+          stage_focus: stageFocus.length > 0 ? stageFocus : null,
+          sector_interests: sectorInterests.length > 0 ? sectorInterests : null,
+          geo_focus: geoFocus.length > 0 ? geoFocus : null,
+          investment_thesis: investmentThesis || null,
+        }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to save profile');
+      }
+
+      router.push('/deals');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
       setIsSubmitting(false);
     }
-  };
+  }
+
+  function handleNext() {
+    if (step === 1 && !fullName.trim()) {
+      setError('Full name is required');
+      return;
+    }
+    setError('');
+    setStep(step + 1);
+  }
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
-          <p className="text-white">Loading...</p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 px-4 py-12">
-      <div className="max-w-3xl mx-auto">
-        {/* Logo */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold text-white">Kunfa AI</h1>
-          <p className="text-gray-400 mt-1">Deal Flow Intelligence</p>
+    <div className="min-h-screen px-4 py-12 flex items-center justify-center">
+      <div className="w-full max-w-2xl">
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-baseline gap-2 mb-4">
+            <h1 className="text-3xl font-bold text-white">Kunfa</h1>
+            <span className="text-sm font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+              AI
+            </span>
+          </div>
+          <p className="text-gray-400">Set up your investor profile</p>
         </div>
 
         {/* Progress Steps */}
-        <div className="flex justify-center items-center gap-8 mb-12">
-          {[1, 2, 3].map((s) => (
-            <div key={s} className="flex items-center gap-3">
-              <div
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-all ${
-                  step >= s
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-400'
-                }`}
-              >
-                {step > s ? <CheckCircle size={20} /> : s}
+        <div className="flex justify-center items-center gap-4 mb-10">
+          {STEP_CONFIG.map((s, i) => {
+            const stepNum = i + 1;
+            const isActive = step >= stepNum;
+            const isDone = step > stepNum;
+            return (
+              <div key={s.label} className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <div
+                    className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+                      isActive ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400'
+                    }`}
+                  >
+                    {isDone ? <CheckCircle className="w-5 h-5" /> : stepNum}
+                  </div>
+                  <span className={`text-sm hidden sm:inline ${isActive ? 'text-white' : 'text-gray-500'}`}>
+                    {s.label}
+                  </span>
+                </div>
+                {i < 2 && (
+                  <div className={`h-0.5 w-10 ${step > stepNum ? 'bg-blue-600' : 'bg-gray-700'}`} />
+                )}
               </div>
-              {s < 3 && (
-                <div
-                  className={`h-1 w-12 transition-all ${
-                    step > s ? 'bg-blue-600' : 'bg-gray-700'
-                  }`}
-                ></div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Form Card */}
-        <div className="bg-gradient-to-br from-slate-800 to-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">
-          {/* Step 1: Role Selection */}
+        {/* Card */}
+        <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700">
+          {error && (
+            <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-6">
+              <p className="text-sm text-red-400">{error}</p>
+            </div>
+          )}
+
+          {/* Step 1: About You */}
           {step === 1 && (
-            <div className="space-y-6">
+            <div className="space-y-5">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  What best describes you?
-                </h2>
-                <p className="text-gray-400">Choose the role that fits you best</p>
+                <h2 className="text-xl font-bold text-white mb-1">About You</h2>
+                <p className="text-gray-400 text-sm">Tell us a bit about yourself</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-                {ROLES.map((roleOption) => {
-                  const Icon = roleOption.icon;
-                  const isSelected = formData.role === roleOption.id;
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Full Name *</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="John Smith"
+                />
+              </div>
 
-                  return (
-                    <button
-                      key={roleOption.id}
-                      onClick={() =>
-                        setFormData({ ...formData, role: roleOption.id })
-                      }
-                      className={`p-6 rounded-xl border-2 transition-all text-left ${
-                        isSelected
-                          ? 'border-blue-500 bg-blue-500/10'
-                          : 'border-gray-600 bg-gray-700/30 hover:border-gray-500'
-                      }`}
-                    >
-                      <Icon
-                        size={32}
-                        className={`mb-3 ${
-                          isSelected ? 'text-blue-400' : 'text-gray-400'
-                        }`}
-                      />
-                      <h3 className="font-semibold text-white mb-1">
-                        {roleOption.title}
-                      </h3>
-                      <p className="text-sm text-gray-400">
-                        {roleOption.description}
-                      </p>
-                    </button>
-                  );
-                })}
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Fund / Firm Name</label>
+                <input
+                  type="text"
+                  value={fundName}
+                  onChange={(e) => setFundName(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Acme Ventures"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">Job Title</label>
+                <input
+                  type="text"
+                  value={jobTitle}
+                  onChange={(e) => setJobTitle(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Partner, Analyst, etc."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-1">LinkedIn URL</label>
+                <input
+                  type="url"
+                  value={linkedinUrl}
+                  onChange={(e) => setLinkedinUrl(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="https://linkedin.com/in/yourprofile"
+                />
               </div>
             </div>
           )}
 
-          {/* Step 2: Interests Selection */}
+          {/* Step 2: Investment Focus */}
           {step === 2 && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  What are your interests?
-                </h2>
-                <p className="text-gray-400">Select all that apply</p>
+                <h2 className="text-xl font-bold text-white mb-1">Investment Focus</h2>
+                <p className="text-gray-400 text-sm">Help us match you with the right deals</p>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-8">
-                {INTERESTS.map((interest) => {
-                  const isSelected = formData.interests.includes(interest);
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">AUM (USD)</label>
+                  <input
+                    type="number"
+                    value={aum}
+                    onChange={(e) => setAum(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g. 50000000"
+                  />
+                </div>
+                <div />
+              </div>
 
-                  return (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Min Check Size (USD)</label>
+                  <input
+                    type="number"
+                    value={ticketMin}
+                    onChange={(e) => setTicketMin(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g. 100000"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-1">Max Check Size (USD)</label>
+                  <input
+                    type="number"
+                    value={ticketMax}
+                    onChange={(e) => setTicketMax(e.target.value)}
+                    className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g. 2000000"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Stage Focus</label>
+                <div className="flex flex-wrap gap-2">
+                  {STAGES.map((stage) => (
                     <button
-                      key={interest}
-                      onClick={() => toggleInterest(interest)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all text-sm ${
-                        isSelected
+                      key={stage}
+                      type="button"
+                      onClick={() => toggleItem(stageFocus, stage, setStageFocus)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                        stageFocus.includes(stage)
                           ? 'bg-blue-600 text-white'
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
-                      {interest}
+                      {stage}
                     </button>
-                  );
-                })}
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Sector Interests</label>
+                <div className="flex flex-wrap gap-2">
+                  {SECTORS.map((sector) => (
+                    <button
+                      key={sector}
+                      type="button"
+                      onClick={() => toggleItem(sectorInterests, sector, setSectorInterests)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                        sectorInterests.includes(sector)
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      {sector}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">Geographic Focus</label>
+                <div className="flex flex-wrap gap-2">
+                  {REGIONS.map((region) => (
+                    <button
+                      key={region}
+                      type="button"
+                      onClick={() => toggleItem(geoFocus, region, setGeoFocus)}
+                      className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                        geoFocus.includes(region)
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                      }`}
+                    >
+                      {region}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
-          {/* Step 3: Summary */}
+          {/* Step 3: Investment Thesis */}
           {step === 3 && (
-            <div className="space-y-6 text-center">
+            <div className="space-y-5">
               <div>
-                <CheckCircle size={64} className="mx-auto text-green-500 mb-4" />
-                <h2 className="text-2xl font-bold text-white mb-2">
-                  You're all set!
-                </h2>
-                <p className="text-gray-400 mb-6">
-                  Here are the tools available to you
-                </p>
+                <h2 className="text-xl font-bold text-white mb-1">Investment Thesis</h2>
+                <p className="text-gray-400 text-sm">Optional — describe your investment approach</p>
               </div>
 
-              {formData.role && (
-                <div className="bg-gray-700/50 rounded-xl p-6 text-left">
-                  <h3 className="text-lg font-semibold text-white mb-4">
-                    Your Matched Tools
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {MATCHED_TOOLS[formData.role].map((tool) => (
-                      <div
-                        key={tool}
-                        className="flex items-center gap-3 p-3 bg-gray-600/50 rounded-lg"
-                      >
-                        <div className="w-2 h-2 rounded-full bg-blue-400"></div>
-                        <span className="text-gray-200">{tool}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+              <div>
+                <textarea
+                  value={investmentThesis}
+                  onChange={(e) => setInvestmentThesis(e.target.value)}
+                  rows={6}
+                  className="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  placeholder="We invest in early-stage B2B SaaS companies in emerging markets that leverage AI to solve industry-specific problems..."
+                />
+                <p className="text-xs text-gray-500 mt-1">This helps founders understand your focus areas</p>
+              </div>
             </div>
           )}
 
           {/* Navigation */}
-          <div className="flex gap-4 mt-8 pt-8 border-t border-gray-600">
+          <div className="flex gap-3 mt-8 pt-6 border-t border-gray-700">
             {step > 1 && (
               <button
                 type="button"
-                onClick={() => setStep(step - 1)}
-                className="flex-1 rounded-lg bg-gray-700 hover:bg-gray-600 px-6 py-3 font-semibold text-white transition-all"
+                onClick={() => { setError(''); setStep(step - 1); }}
+                className="px-6 py-2.5 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition"
               >
                 Back
               </button>
             )}
+            <div className="flex-1" />
             {step < 3 && (
               <button
                 type="button"
-                onClick={() => {
-                  if (step === 1 && !formData.role) {
-                    alert('Please select a role');
-                    return;
-                  }
-                  setStep(step + 1);
-                }}
-                className="flex-1 rounded-lg bg-blue-600 hover:bg-blue-700 px-6 py-3 font-semibold text-white transition-all flex items-center justify-center gap-2"
+                onClick={handleNext}
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2"
               >
-                Next <ArrowRight size={18} />
+                Next <ArrowRight className="w-4 h-4" />
               </button>
             )}
             {step === 3 && (
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="flex-1 rounded-lg bg-green-600 hover:bg-green-700 disabled:opacity-50 px-6 py-3 font-semibold text-white transition-all flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Creating account...
-                  </>
-                ) : (
-                  <>
-                    Go to Dashboard <ArrowRight size={18} />
-                  </>
-                )}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 bg-gray-700 text-gray-300 rounded-lg font-medium hover:bg-gray-600 transition disabled:opacity-50"
+                >
+                  Skip & Finish
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2 disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      Complete Setup <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
             )}
           </div>
         </div>

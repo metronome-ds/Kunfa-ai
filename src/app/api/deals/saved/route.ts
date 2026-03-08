@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
           company_name,
           slug,
           description,
+          one_liner,
           overall_score,
           industry,
           stage,
