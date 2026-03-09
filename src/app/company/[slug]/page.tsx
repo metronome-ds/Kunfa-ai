@@ -206,9 +206,31 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
               </div>
             )}
 
-            {/* Action row: investor actions (pitch deck button is inside CompanyActions, auth-gated) */}
+            {/* Action row: investor actions + edit (auth-gated) */}
             <div className="flex flex-wrap items-center gap-3 mt-4">
-              <CompanyActions companyId={company.id} hasPitchDeck={!!company.pdf_url} />
+              <CompanyActions
+                companyId={company.id}
+                hasPitchDeck={!!company.pdf_url}
+                company={{
+                  id: company.id,
+                  company_name: company.company_name,
+                  one_liner: company.one_liner,
+                  description: company.description,
+                  industry: company.industry,
+                  stage: company.stage,
+                  country: company.country,
+                  headquarters: company.headquarters,
+                  website_url: company.website_url,
+                  linkedin_url: company.linkedin_url,
+                  raise_amount: company.raise_amount,
+                  team_size: company.team_size,
+                  founded_year: company.founded_year,
+                  founder_name: company.founder_name,
+                  founder_title: company.founder_title,
+                  added_by: company.added_by,
+                  user_id: company.user_id,
+                }}
+              />
             </div>
           </div>
         </div>
