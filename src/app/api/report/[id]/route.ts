@@ -27,9 +27,22 @@ export async function GET(
       return NextResponse.json({ error: 'Payment required' }, { status: 403 })
     }
 
-    // If report already generated, redirect to it
+    // If report already generated, fetch and stream it (don't expose raw blob URL)
     if (submission.report_url) {
-      return NextResponse.redirect(submission.report_url)
+      try {
+        const blobRes = await fetch(submission.report_url)
+        if (blobRes.ok && blobRes.body) {
+          return new NextResponse(blobRes.body, {
+            headers: {
+              'Content-Type': 'application/pdf',
+              'Content-Disposition': `inline; filename="kunfa-readiness-report-${id}.pdf"`,
+              'Cache-Control': 'private, no-store',
+            },
+          })
+        }
+      } catch {
+        // Fall through to regenerate if fetch fails
+      }
     }
 
     // Generate PDF

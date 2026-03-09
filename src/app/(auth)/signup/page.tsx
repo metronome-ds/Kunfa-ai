@@ -27,6 +27,7 @@ function SignupContent() {
   const [success, setSuccess] = useState(false)
   const [showRoleSelection, setShowRoleSelection] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
+  const [tosAgreed, setTosAgreed] = useState(false)
 
   useEffect(() => {
     if (searchParams.get('step') === 'role') {
@@ -234,11 +235,26 @@ function SignupContent() {
                 placeholder="Min 6 characters" />
             </div>
 
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={tosAgreed}
+                onChange={(e) => setTosAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#10B981] focus:ring-[#10B981]"
+              />
+              <span className="text-xs text-gray-400 leading-relaxed">
+                I agree to the{' '}
+                <Link href="/terms" target="_blank" className="text-[#10B981] hover:underline">Terms of Service</Link>
+                {' '}and{' '}
+                <Link href="/privacy" target="_blank" className="text-[#10B981] hover:underline">Privacy Policy</Link>
+              </span>
+            </label>
+
             {error && (
               <div className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3">{error}</div>
             )}
 
-            <button type="submit" disabled={loading}
+            <button type="submit" disabled={loading || !tosAgreed}
               className="w-full py-3 bg-[#10B981] text-white rounded-lg font-semibold hover:bg-[#059669] transition disabled:opacity-50">
               {loading ? 'Creating account...' : 'Create Account'}
             </button>

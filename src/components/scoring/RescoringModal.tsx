@@ -213,7 +213,11 @@ export default function RescoringModal({
                 className="mt-0.5 h-4 w-4 rounded border-gray-300 text-kunfa-green focus:ring-kunfa-green"
               />
               <span className="text-xs text-gray-500 leading-relaxed">
-                I confirm that all information provided is accurate and self-reported. This data is subject to due diligence by any interested investor.
+                I confirm that all information provided is accurate and self-reported. I agree to the{' '}
+                <a href="/terms" target="_blank" className="text-kunfa-green hover:underline">Terms of Service</a>
+                {' '}and{' '}
+                <a href="/privacy" target="_blank" className="text-kunfa-green hover:underline">Privacy Policy</a>.
+                This data is subject to due diligence by any interested investor.
               </span>
             </label>
 

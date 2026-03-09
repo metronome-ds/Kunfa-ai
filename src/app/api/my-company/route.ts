@@ -29,7 +29,7 @@ export async function GET() {
 
     // Check submission payment status if submission exists
     let paid = false
-    let reportUrl: string | null = null
+    let hasReport = false
     if (company.submission_id) {
       const { data: submission } = await supabase
         .from('submissions')
@@ -39,11 +39,16 @@ export async function GET() {
 
       if (submission) {
         paid = !!submission.paid
-        reportUrl = submission.report_url || null
+        hasReport = !!submission.report_url
       }
     }
 
-    return NextResponse.json({ company, paid, reportUrl })
+    // Strip raw blob URLs from client response — use /api/documents/[id] proxy instead
+    const { pdf_url, financials_url, ...safeCompany } = company
+    const hasPitchDeck = !!(pdf_url || company.submission_id)
+    const hasFinancials = !!financials_url
+
+    return NextResponse.json({ company: safeCompany, paid, hasReport, hasPitchDeck, hasFinancials })
   } catch (error) {
     console.error('Error in GET /api/my-company:', error)
     return NextResponse.json({ company: null }, { status: 200 })

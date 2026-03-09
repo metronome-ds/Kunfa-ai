@@ -16,10 +16,52 @@ import { v4 as uuid } from 'uuid'
 
 export const maxDuration = 120
 
+// --- IP-based rate limiting (in-memory, resets on cold start) ---
+const ipRateMap = new Map<string, { count: number; windowStart: number }>()
+const IP_LIMIT = 10
+const IP_WINDOW_MS = 60 * 60 * 1000 // 1 hour
+
+function checkIpRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const entry = ipRateMap.get(ip)
+  if (!entry || now - entry.windowStart > IP_WINDOW_MS) {
+    ipRateMap.set(ip, { count: 1, windowStart: now })
+    return true
+  }
+  if (entry.count >= IP_LIMIT) return false
+  entry.count++
+  return true
+}
+
+// --- User-based rate limiting via submissions table ---
+async function checkUserRateLimit(userId: string): Promise<boolean> {
+  try {
+    const supabase = getSupabase()
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { count } = await supabase
+      .from('submissions')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('created_at', oneHourAgo)
+    return (count ?? 0) < 3
+  } catch {
+    return true // allow on error
+  }
+}
+
 export async function POST(request: NextRequest) {
   const submissionId = uuid()
 
   try {
+    // --- IP rate limit check ---
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+    if (!checkIpRateLimit(ip)) {
+      return NextResponse.json(
+        { error: "You've reached the scoring limit. Please try again in an hour." },
+        { status: 429 },
+      )
+    }
+
     const body = await request.json()
     const {
       email,
@@ -55,6 +97,15 @@ export async function POST(request: NextRequest) {
     if (isDatabaseConfigured()) {
       try {
         userId = await findOrCreateUser(email)
+
+        // --- User rate limit check (3 per hour) ---
+        const withinLimit = await checkUserRateLimit(userId)
+        if (!withinLimit) {
+          return NextResponse.json(
+            { error: "You've reached the scoring limit. Please try again in an hour." },
+            { status: 429 },
+          )
+        }
 
         // Check if user already has a submission (one per account, unless re-scoring)
         if (!companyPageId) {

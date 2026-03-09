@@ -9,7 +9,6 @@ interface ReportBannerProps {
 
 export function ReportBanner({ submissionId }: ReportBannerProps) {
   const [state, setState] = useState<'loading' | 'paid' | 'unpaid' | 'hidden'>('loading')
-  const [reportUrl, setReportUrl] = useState<string | null>(null)
   const [unlocking, setUnlocking] = useState(false)
 
   useEffect(() => {
@@ -25,9 +24,10 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
         { auth: { autoRefreshToken: false, persistSession: false } }
       )
 
+      // Only query payment status, NOT the raw report_url
       const { data } = await supabase
         .from('submissions')
-        .select('paid, report_url')
+        .select('paid')
         .eq('id', submissionId)
         .single()
 
@@ -36,9 +36,8 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
         return
       }
 
-      if (data.paid && data.report_url) {
+      if (data.paid) {
         setState('paid')
-        setReportUrl(data.report_url)
       } else {
         setState('unpaid')
       }

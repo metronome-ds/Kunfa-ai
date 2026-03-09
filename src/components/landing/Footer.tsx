@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function Footer() {
   return (
     <footer id="about" className="bg-kunfa-navy py-12 border-t border-gray-800">
@@ -30,6 +32,20 @@ export default function Footer() {
           >
             Contact
           </a>
+          <span className="text-gray-700">|</span>
+          <Link
+            href="/terms"
+            className="text-gray-400 hover:text-white text-sm transition-colors"
+          >
+            Terms
+          </Link>
+          <span className="text-gray-700">|</span>
+          <Link
+            href="/privacy"
+            className="text-gray-400 hover:text-white text-sm transition-colors"
+          >
+            Privacy
+          </Link>
         </div>
         <p className="text-gray-600 text-xs mt-8">
           &copy; {new Date().getFullYear()} Kunfa.AI. All rights reserved.

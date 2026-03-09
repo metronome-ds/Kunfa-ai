@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { CompanyActions } from '@/components/company/CompanyActions'
 import { CompanyNav } from '@/components/company/CompanyNav'
 import { ReportBanner } from '@/components/company/ReportBanner'
@@ -356,6 +357,17 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 mt-16 py-8">
+        <div className="max-w-4xl mx-auto px-6 flex items-center justify-between text-xs text-gray-400">
+          <span>&copy; {new Date().getFullYear()} Kunfa.AI</span>
+          <div className="flex items-center gap-4">
+            <Link href="/terms" className="hover:text-gray-600 transition">Terms</Link>
+            <Link href="/privacy" className="hover:text-gray-600 transition">Privacy</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
