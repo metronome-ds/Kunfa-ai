@@ -74,8 +74,8 @@ function daysSince(dateStr: string) {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
 }
 
-const INPUT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent'
-const SELECT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent'
+const INPUT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE] focus:border-transparent'
+const SELECT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0168FE] focus:border-transparent'
 
 export default function CompanyProfilePage() {
   const [company, setCompany] = useState<CompanyData | null>(null)
@@ -231,7 +231,7 @@ export default function CompanyProfilePage() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg font-semibold text-sm hover:bg-emerald-700 transition"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition"
           >
             Get Your Kunfa Score
           </Link>
@@ -333,7 +333,7 @@ export default function CompanyProfilePage() {
             <Link
               href={`/company/${company.slug}`}
               target="_blank"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
             >
               View Public Profile
               <ExternalLink className="w-3.5 h-3.5" />
@@ -367,7 +367,7 @@ export default function CompanyProfilePage() {
             >
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <Check className="w-3.5 h-3.5 text-[#0168FE]" />
                   Copied!
                 </>
               ) : (
@@ -383,9 +383,9 @@ export default function CompanyProfilePage() {
 
       {/* Save success */}
       {saveSuccess && (
-        <div className="rounded-xl p-3 mb-6 bg-emerald-50 border border-emerald-200 flex items-center gap-2">
-          <Check className="w-4 h-4 text-emerald-600" />
-          <p className="text-sm text-emerald-700">Profile updated successfully.</p>
+        <div className="rounded-xl p-3 mb-6 bg-green-50 border border-green-200 flex items-center gap-2">
+          <Check className="w-4 h-4 text-[#0168FE]" />
+          <p className="text-sm text-green-700">Profile updated successfully.</p>
         </div>
       )}
 
@@ -480,7 +480,7 @@ export default function CompanyProfilePage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition disabled:opacity-50"
+              className="px-6 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
@@ -498,7 +498,7 @@ export default function CompanyProfilePage() {
       {company.submission_id && (
         <div className={`rounded-xl p-4 mb-6 border ${
           paid
-            ? 'bg-emerald-50 border-emerald-200'
+            ? 'bg-blue-50 border-blue-200'
             : 'bg-amber-50 border-amber-200'
         }`}>
           {paid ? (
@@ -509,7 +509,7 @@ export default function CompanyProfilePage() {
               </div>
               <Link
                 href={`/report/${company.submission_id}`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
               >
                 View Report
                 <ExternalLink className="w-3.5 h-3.5" />

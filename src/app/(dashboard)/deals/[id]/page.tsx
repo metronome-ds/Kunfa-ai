@@ -194,7 +194,7 @@ export default function DealDetailPage() {
                 {company.slug && (
                   <Link
                     href={`/company/${company.slug}`}
-                    className="flex items-center gap-2 text-emerald-600 hover:text-emerald-700"
+                    className="flex items-center gap-2 text-[#0168FE] hover:text-[#0050CC]"
                   >
                     <ExternalLink className="h-4 w-4" />
                     View Full Profile

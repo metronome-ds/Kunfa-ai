@@ -55,7 +55,7 @@ export function MarketPulse({
       </div>
 
       {averageScore !== null && (
-        <div className="flex items-center justify-between p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-100">
+        <div className="flex items-center justify-between p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <Zap className="h-5 w-5 text-green-600" />

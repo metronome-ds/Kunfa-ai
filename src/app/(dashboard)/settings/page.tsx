@@ -6,8 +6,8 @@ import { supabase } from '@/lib/supabase';
 import { Save, LogOut, Check } from 'lucide-react';
 import { STAGES, INDUSTRIES } from '@/lib/constants';
 
-const INPUT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all';
-const SELECT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all';
+const INPUT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#0168FE] focus:ring-2 focus:ring-[#0168FE]/20 outline-none transition-all';
+const SELECT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#0168FE] focus:ring-2 focus:ring-[#0168FE]/20 outline-none transition-all';
 const DISABLED_CLASS = 'w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed';
 
 export default function SettingsPage() {
@@ -151,7 +151,7 @@ export default function SettingsPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mb-4" />
+          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[#0168FE] mb-4" />
           <p className="text-gray-500 text-sm">Loading settings...</p>
         </div>
       </div>
@@ -167,9 +167,9 @@ export default function SettingsPage() {
 
       {/* Success Banner */}
       {saveSuccess && (
-        <div className="mb-6 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg p-3">
-          <Check className="w-4 h-4 text-emerald-600" />
-          <p className="text-sm text-emerald-700">Settings saved successfully.</p>
+        <div className="mb-6 flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg p-3">
+          <Check className="w-4 h-4 text-green-600" />
+          <p className="text-sm text-green-700">Settings saved successfully.</p>
         </div>
       )}
 
@@ -285,7 +285,7 @@ export default function SettingsPage() {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="inline-flex items-center gap-2 bg-[#10B981] hover:bg-[#059669] disabled:opacity-50 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition"
+          className="inline-flex items-center gap-2 bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition"
         >
           <Save className="w-4 h-4" />
           {isSaving ? 'Saving...' : 'Save Changes'}

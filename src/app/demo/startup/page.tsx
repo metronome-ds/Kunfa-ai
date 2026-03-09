@@ -52,7 +52,7 @@ export default function DemoPage() {
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 m-4 mb-0">
             <p className="text-xs text-yellow-700">
               <strong>Demo Mode:</strong> This is a sample score for a fictional startup &quot;TechFlow AI&quot;.
-              <a href="/" className="text-kunfa-green font-semibold ml-1 hover:underline">Get your real score &rarr;</a>
+              <a href="/" className="text-kunfa font-semibold ml-1 hover:underline">Get your real score &rarr;</a>
             </p>
           </div>
         </div>

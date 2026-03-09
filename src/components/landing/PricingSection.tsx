@@ -16,8 +16,8 @@ const plans = [
       'Stage-adjusted analysis',
     ],
     buttonText: 'Get Your Score',
-    buttonStyle: 'bg-kunfa-green hover:bg-kunfa-green-dark text-white',
-    cardStyle: 'bg-white border-2 border-kunfa-green',
+    buttonStyle: 'bg-kunfa hover:bg-kunfa-dark text-white',
+    cardStyle: 'bg-white border-2 border-kunfa',
     popular: false,
     action: 'score',
   },
@@ -90,7 +90,7 @@ export default function PricingSection({ onApplyNow }: PricingSectionProps) {
               <ul className="space-y-3 mb-8 flex-1 text-left">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-kunfa-green shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-kunfa shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     <span className="text-sm text-gray-600">{feature}</span>

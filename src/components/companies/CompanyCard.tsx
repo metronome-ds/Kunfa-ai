@@ -91,7 +91,7 @@ export function CompanyCard({
 
   return (
     <Link href={`/company/${company.slug}`}>
-      <div className="h-full bg-white rounded-xl border border-gray-200 hover:border-emerald-400 hover:shadow-lg transition-all duration-200 overflow-hidden cursor-pointer">
+      <div className="h-full bg-white rounded-xl border border-gray-200 hover:border-[#0168FE]/60 hover:shadow-lg transition-all duration-200 overflow-hidden cursor-pointer">
         <div className="p-6">
           {/* Header: badges + watchlist */}
           <div className="flex items-start justify-between mb-3">
@@ -166,7 +166,7 @@ export function CompanyCard({
 
           {/* View Profile link */}
           <div className="pt-3">
-            <span className="text-sm text-emerald-600 font-medium hover:underline">
+            <span className="text-sm text-[#0168FE] font-medium hover:underline">
               View Profile &rarr;
             </span>
           </div>

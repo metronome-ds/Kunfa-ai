@@ -251,7 +251,7 @@ export default function SavedDealsPage() {
                       {company.slug && (
                         <Link
                           href={`/company/${company.slug}`}
-                          className="flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                          className="flex items-center gap-1 text-sm text-[#0168FE] hover:text-[#0050CC] font-medium"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                           View Profile

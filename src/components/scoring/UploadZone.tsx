@@ -39,7 +39,7 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
 
   return (
     <div
-      className={`upload-zone ${isDragOver ? 'dragover' : ''} ${file ? 'border-kunfa-green bg-emerald-50' : ''}`}
+      className={`upload-zone ${isDragOver ? 'dragover' : ''} ${file ? 'border-kunfa bg-blue-50' : ''}`}
       onClick={() => inputRef.current?.click()}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -55,7 +55,7 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
 
       {file ? (
         <div className="flex items-center justify-center gap-3">
-          <svg className="w-5 h-5 text-kunfa-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-kunfa" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
           <span className="text-sm font-medium text-kunfa-navy truncate max-w-[200px]">{file.name}</span>
@@ -84,7 +84,7 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
       <div className="mt-2">
         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
           required
-            ? 'bg-emerald-100 text-emerald-700'
+            ? 'bg-blue-100 text-[#0168FE]'
             : 'bg-gray-100 text-gray-500'
         }`}>
           {required ? 'REQUIRED' : 'OPTIONAL'}

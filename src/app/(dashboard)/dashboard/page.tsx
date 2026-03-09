@@ -403,7 +403,7 @@ export default function DashboardPage() {
                   <Link
                     href={`/company/${company.slug}`}
                     target="_blank"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#10B981] text-white rounded-lg text-sm font-medium hover:bg-[#059669] transition"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
                   >
                     View Public Profile
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -423,8 +423,8 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
-                    <Star className="w-5 h-5 text-emerald-600" />
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Star className="w-5 h-5 text-[#0168FE]" />
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 font-medium">Kunfa Score</p>
@@ -480,7 +480,7 @@ export default function DashboardPage() {
                     </div>
                     <Link
                       href={`/report/${company.submission_id}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#10B981] text-white rounded-lg text-sm font-medium hover:bg-[#059669] transition"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
                     >
                       View Report
                     </Link>
@@ -533,7 +533,7 @@ export default function DashboardPage() {
             </p>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#10B981] text-white rounded-lg font-semibold text-sm hover:bg-[#059669] transition"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition"
             >
               Get Your Kunfa Score
             </Link>

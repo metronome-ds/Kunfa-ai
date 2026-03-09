@@ -75,7 +75,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold text-gray-900">Filters</h3>
           {activeFilterCount > 0 && (
-            <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
+            <span className="px-2 py-1 bg-blue-100 text-[#0168FE] text-xs font-semibold rounded-full">
               {activeFilterCount}
             </span>
           )}
@@ -95,7 +95,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
           <select
             value={filters.sort}
             onChange={(e) => updateFilter({ sort: e.target.value as CompanyFilterState['sort'] })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#0168FE]"
           >
             <option value="newest">Newest</option>
             <option value="score">Highest Score</option>
@@ -132,7 +132,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
                   type="checkbox"
                   checked={filters.industries.includes(industry)}
                   onChange={() => toggleIndustry(industry)}
-                  className="w-4 h-4 text-emerald-600 rounded border-gray-300 cursor-pointer"
+                  className="w-4 h-4 text-[#0168FE] rounded border-gray-300 cursor-pointer"
                 />
                 <span className="text-sm text-gray-700">{industry}</span>
               </label>
@@ -158,7 +158,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
                   type="checkbox"
                   checked={filters.stages.includes(stage)}
                   onChange={() => toggleStage(stage)}
-                  className="w-4 h-4 text-emerald-600 rounded border-gray-300 cursor-pointer"
+                  className="w-4 h-4 text-[#0168FE] rounded border-gray-300 cursor-pointer"
                 />
                 <span className="text-sm text-gray-700">{stage}</span>
               </label>

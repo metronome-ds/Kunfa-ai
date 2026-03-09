@@ -12,8 +12,8 @@ export default function Hero({ onApplyNow }: HeroProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Badge */}
         <div className="mb-8">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-emerald-50 text-emerald-700">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium bg-blue-50 text-[#0168FE]">
+            <span className="w-2 h-2 bg-[#0168FE] rounded-full animate-pulse" />
             Now live in the GCC
           </span>
         </div>
@@ -34,7 +34,7 @@ export default function Hero({ onApplyNow }: HeroProps) {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
             onClick={onApplyNow}
-            className="bg-kunfa-green hover:bg-kunfa-green-dark text-white font-semibold px-8 py-3.5 rounded-lg text-base transition-colors shadow-sm"
+            className="bg-kunfa hover:bg-kunfa-dark text-white font-semibold px-8 py-3.5 rounded-lg text-base transition-colors shadow-sm"
           >
             Get Your Kunfa Score
           </button>

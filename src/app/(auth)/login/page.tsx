@@ -1,167 +1,75 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import Link from "next/link";
-import { LogIn, UserPlus } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-import KunfaLogo from "@/components/common/KunfaLogo";
+import { useState } from 'react'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+import KunfaLogo from '@/components/common/KunfaLogo'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setSuccess(null);
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
 
     try {
-      if (mode === "signup") {
-        // Create account
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            // Skip email confirmation for now
-            emailRedirectTo: undefined,
-          },
-        });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-        if (error) {
-          setError(error.message);
-          setIsLoading(false);
-          return;
-        }
-
-        if (data.user) {
-          // Create user profile
-          await supabase.from("profiles").insert({
-            user_id: data.user.id,
-            email: data.user.email || "",
-            onboarding_completed: false,
-          });
-
-          // If email confirmation is required, show message
-          if (!data.session) {
-            setSuccess(
-              "Account created! Check your email to confirm, or sign in directly."
-            );
-            setMode("signin");
-            setIsLoading(false);
-            return;
-          }
-
-          // Session exists — go to onboarding
-          window.location.href = "/onboarding";
-          return;
-        }
-      } else {
-        // Sign in
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) {
-          setError(error.message);
-          setIsLoading(false);
-          return;
-        }
-
-        if (data.user) {
-          // Check onboarding status
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("onboarding_completed")
-            .eq("user_id", data.user.id)
-            .single();
-
-          if (profile?.onboarding_completed) {
-            window.location.href = "/dashboard";
-          } else {
-            window.location.href = "/onboarding";
-          }
-          return;
-        }
+      if (error) {
+        setError(error.message)
+        setIsLoading(false)
+        return
       }
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
+
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('user_id', data.user.id)
+          .single()
+
+        if (profile?.onboarding_completed) {
+          window.location.href = '/dashboard'
+        } else {
+          window.location.href = '/onboarding'
+        }
+        return
+      }
+    } catch {
+      setError('Something went wrong. Please try again.')
     }
 
-    setIsLoading(false);
-  };
+    setIsLoading(false)
+  }
 
   return (
-    <div className="w-full max-w-md">
-      <div className="rounded-xl bg-white shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-8 text-center">
-          <div className="mb-2"><KunfaLogo height={32} inverted /></div>
-          <p className="text-blue-100 font-semibold text-sm">
-            Source. Analyze. Invest.
-          </p>
-          <p className="text-blue-50 text-xs mt-2">
-            AI-powered deal flow intelligence for founders and investors
-          </p>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-block mb-6">
+            <KunfaLogo height={32} />
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
+          <p className="text-gray-600 mt-2">Sign in to your account</p>
         </div>
 
-        {/* Content */}
-        <div className="px-8 py-8">
+        <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-lg">
           {error && (
             <div className="mb-4 rounded-lg bg-red-50 p-3 border border-red-200">
               <p className="text-red-700 text-sm">{error}</p>
             </div>
           )}
 
-          {success && (
-            <div className="mb-4 rounded-lg bg-green-50 p-3 border border-green-200">
-              <p className="text-green-700 text-sm">{success}</p>
-            </div>
-          )}
-
-          {/* Tab Toggle */}
-          <div className="flex rounded-lg bg-gray-100 p-1 mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("signin");
-                setError(null);
-              }}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                mode === "signin"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("signup");
-                setError(null);
-              }}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                mode === "signup"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Create Account
-            </button>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                 Email Address
               </label>
               <input
@@ -171,15 +79,12 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-[#0168FE] focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 transition-all"
               />
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
               <input
@@ -187,49 +92,34 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 required
                 minLength={6}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-[#0168FE] focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 transition-all"
               />
-              {mode === "signup" && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Minimum 6 characters
-                </p>
-              )}
             </div>
 
             <button
               type="submit"
               disabled={isLoading || !email || !password}
-              className="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-white font-semibold transition-all duration-200"
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-white font-semibold transition-all"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : mode === "signin" ? (
-                <>
-                  <LogIn size={18} /> Sign In
-                </>
               ) : (
-                <>
-                  <UserPlus size={18} /> Create Account
-                </>
+                'Sign In'
               )}
             </button>
           </form>
 
           <p className="text-center text-gray-600 text-sm mt-6">
-            By signing in, you agree to our{" "}
-            <Link href="/terms" className="text-blue-600 hover:underline">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="text-blue-600 hover:underline">
-              Privacy Policy
+            Don&apos;t have an account?{' '}
+            <Link href="/signup" className="text-[#0168FE] font-medium hover:underline">
+              Create one
             </Link>
           </p>
         </div>
       </div>
     </div>
-  );
+  )
 }

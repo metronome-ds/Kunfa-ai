@@ -166,8 +166,8 @@ export default function BrowseCompaniesPage() {
           ) : companies.length === 0 ? (
             /* Empty state */
             <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center h-20 w-20 bg-emerald-50 rounded-full mb-6">
-                <Rocket className="h-10 w-10 text-emerald-500" />
+              <div className="inline-flex items-center justify-center h-20 w-20 bg-blue-50 rounded-full mb-6">
+                <Rocket className="h-10 w-10 text-[#0168FE]" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 No companies yet
@@ -219,7 +219,7 @@ export default function BrowseCompaniesPage() {
                           onClick={() => fetchCompanies(pageNum)}
                           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                             pagination.page === pageNum
-                              ? 'bg-emerald-600 text-white'
+                              ? 'bg-[#0168FE] text-white'
                               : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
                           }`}
                         >

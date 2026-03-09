@@ -57,7 +57,7 @@ function CityClockDisplay({ city }: { city: CityTime }) {
       <span>{city.flag}</span>
       <span className="text-gray-300">{city.city}</span>
       <span className="text-white font-medium">{time}</span>
-      <span className={`w-1.5 h-1.5 rounded-full ${city.open ? 'bg-kunfa-green' : 'bg-kunfa-red'}`} />
+      <span className={`w-1.5 h-1.5 rounded-full ${city.open ? 'bg-kunfa' : 'bg-kunfa-red'}`} />
     </span>
   )
 }

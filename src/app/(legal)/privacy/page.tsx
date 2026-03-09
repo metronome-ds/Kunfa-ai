@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <nav className="border-b border-gray-200 bg-white">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#10B981] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#0168FE] flex items-center justify-center">
               <span className="text-white font-bold text-lg">K</span>
             </div>
             <span className="font-bold text-lg text-gray-900">Kunfa.AI</span>
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
               <li><strong>Anonymized data:</strong> Aggregated, anonymized analytics data may be retained indefinitely for platform improvement.</li>
             </ul>
             <p className="mt-3">
-              To request deletion of your account and associated data, contact us at <a href="mailto:hello@vitality.capital" className="text-[#10B981] hover:underline">hello@vitality.capital</a>.
+              To request deletion of your account and associated data, contact us at <a href="mailto:hello@vitality.capital" className="text-[#0168FE] hover:underline">hello@vitality.capital</a>.
             </p>
           </section>
 
@@ -175,7 +175,7 @@ export default function PrivacyPage() {
               <li><strong>Objection:</strong> Object to certain processing of your personal data.</li>
             </ul>
             <p className="mt-3">
-              To exercise any of these rights, please contact us at <a href="mailto:hello@vitality.capital" className="text-[#10B981] hover:underline">hello@vitality.capital</a>. We will respond to your request within 30 days.
+              To exercise any of these rights, please contact us at <a href="mailto:hello@vitality.capital" className="text-[#0168FE] hover:underline">hello@vitality.capital</a>. We will respond to your request within 30 days.
             </p>
           </section>
 
@@ -215,7 +215,7 @@ export default function PrivacyPage() {
             <p className="mt-2">
               <strong>Metronome FZ-LLC</strong><br />
               Dubai, United Arab Emirates<br />
-              Email: <a href="mailto:hello@vitality.capital" className="text-[#10B981] hover:underline">hello@vitality.capital</a>
+              Email: <a href="mailto:hello@vitality.capital" className="text-[#0168FE] hover:underline">hello@vitality.capital</a>
             </p>
           </section>
         </div>

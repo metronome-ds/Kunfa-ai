@@ -72,10 +72,10 @@ export default function VoiceRecorder({ onRecordingComplete, recording }: VoiceR
   }
 
   return (
-    <div className={`upload-zone ${isRecording ? 'border-red-400 bg-red-50' : recording ? 'border-kunfa-green bg-emerald-50' : ''}`}>
+    <div className={`upload-zone ${isRecording ? 'border-red-400 bg-red-50' : recording ? 'border-kunfa bg-blue-50' : ''}`}>
       {recording ? (
         <div className="flex items-center justify-center gap-3">
-          <svg className="w-5 h-5 text-kunfa-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-5 h-5 text-kunfa" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
           <span className="text-sm font-medium text-kunfa-navy">Voice note recorded ({formatTime(seconds)})</span>

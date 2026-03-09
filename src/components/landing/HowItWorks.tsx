@@ -4,7 +4,7 @@ const steps = [
     title: 'Upload Your Deck',
     description: 'Submit your pitch deck and optional financials. Our system supports PDF, PPT, and Keynote formats.',
     icon: (
-      <svg className="w-7 h-7 text-kunfa-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-7 h-7 text-kunfa" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
       </svg>
     ),
@@ -14,7 +14,7 @@ const steps = [
     title: 'Get AI-Scored',
     description: 'Our AI analyzes your team, market, product, traction, and financials across 6 dimensions with stage-adjusted weights.',
     icon: (
-      <svg className="w-7 h-7 text-kunfa-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-7 h-7 text-kunfa" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
       </svg>
     ),
@@ -24,7 +24,7 @@ const steps = [
     title: 'Connect with Investors',
     description: 'Your company profile goes live in our marketplace. Verified investors discover, watchlist, and add you to their pipeline.',
     icon: (
-      <svg className="w-7 h-7 text-kunfa-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-7 h-7 text-kunfa" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
       </svg>
     ),
@@ -53,10 +53,10 @@ export default function HowItWorks() {
               )}
 
               <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center relative">
-                <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-5">
+                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-5">
                   {step.icon}
                 </div>
-                <span className="text-xs font-bold text-kunfa-green tracking-widest uppercase mb-2 block">
+                <span className="text-xs font-bold text-kunfa tracking-widest uppercase mb-2 block">
                   Step {step.number}
                 </span>
                 <h3 className="text-lg font-bold text-kunfa-navy mb-3">{step.title}</h3>

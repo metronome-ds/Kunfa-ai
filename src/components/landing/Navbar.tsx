@@ -27,7 +27,7 @@ export default function Navbar({ onApplyNow }: NavbarProps) {
             <Link href="/login" className="text-gray-600 hover:text-kunfa-navy text-sm font-medium transition-colors">Sign In</Link>
             <button
               onClick={onApplyNow}
-              className="bg-kunfa-green hover:bg-kunfa-green-dark text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
+              className="bg-kunfa hover:bg-kunfa-dark text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
             >
               Get Your Score
             </button>
@@ -58,7 +58,7 @@ export default function Navbar({ onApplyNow }: NavbarProps) {
               <Link href="/signup" className="text-gray-600 hover:text-kunfa-navy text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>Sign Up</Link>
               <button
                 onClick={() => { onApplyNow(); setMobileOpen(false) }}
-                className="bg-kunfa-green hover:bg-kunfa-green-dark text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors w-fit"
+                className="bg-kunfa hover:bg-kunfa-dark text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors w-fit"
               >
                 Get Your Score
               </button>

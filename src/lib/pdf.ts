@@ -10,7 +10,7 @@ import {
 import type { ScoringResult, ExpandedMemoContent } from './anthropic'
 
 // Color Scheme
-const green = '#10B981'
+const green = '#0168FE'
 const navy = '#0F172A'
 const gray = '#64748B'
 const lightGray = '#F8FAFC'

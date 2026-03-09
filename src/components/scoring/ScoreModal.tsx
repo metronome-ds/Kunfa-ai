@@ -32,8 +32,8 @@ interface ScoreResult {
 
 // STAGES and INDUSTRIES imported from @/lib/constants
 
-const INPUT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent'
-const SELECT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent'
+const INPUT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa focus:border-transparent'
+const SELECT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-kunfa focus:border-transparent'
 
 function generateSlug(name: string): string {
   return name
@@ -490,11 +490,11 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               return (
                 <div key={s.key} className="flex items-center gap-2">
                   {i > 0 && (
-                    <div className={`w-8 h-0.5 ${isActive ? 'bg-kunfa-green' : 'bg-gray-200'}`} />
+                    <div className={`w-8 h-0.5 ${isActive ? 'bg-kunfa' : 'bg-gray-200'}`} />
                   )}
                   <div className="flex items-center gap-1.5">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                      isActive ? 'bg-kunfa-green text-white' : 'bg-gray-200 text-gray-500'
+                      isActive ? 'bg-kunfa text-white' : 'bg-gray-200 text-gray-500'
                     }`}>
                       {i + 1}
                     </div>
@@ -516,7 +516,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
         {initialLoading && (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-kunfa-green" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-kunfa" />
           </div>
         )}
 
@@ -558,14 +558,14 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
             <button onClick={handleAuth} disabled={authLoading || !isAccountValid}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
-                isAccountValid ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                isAccountValid ? 'bg-kunfa hover:bg-kunfa-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}>
               {authLoading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
             </button>
 
             <p className="text-center text-xs text-gray-500">
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
-              <button onClick={() => { setIsLogin(!isLogin); setAuthError('') }} className="text-kunfa-green font-medium hover:underline">
+              <button onClick={() => { setIsLogin(!isLogin); setAuthError('') }} className="text-kunfa font-medium hover:underline">
                 {isLogin ? 'Sign up' : 'Sign in'}
               </button>
             </p>
@@ -596,12 +596,12 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                     value={chosenSlug}
                     onChange={(e) => handleSlugChange(e.target.value)}
                     placeholder="your-company"
-                    className="w-full border border-gray-300 rounded-r-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent pr-10"
+                    className="w-full border border-gray-300 rounded-r-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa focus:border-transparent pr-10"
                   />
                   {/* Status indicator */}
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     {slugStatus === 'checking' && <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />}
-                    {slugStatus === 'available' && <Check className="h-4 w-4 text-emerald-500" />}
+                    {slugStatus === 'available' && <Check className="h-4 w-4 text-[#0168FE]" />}
                     {slugStatus === 'taken' && <X className="h-4 w-4 text-red-500" />}
                     {slugStatus === 'invalid' && <X className="h-4 w-4 text-red-500" />}
                   </div>
@@ -614,7 +614,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 <p className="text-xs text-red-500 mt-1">3-40 characters, lowercase letters, numbers, and hyphens only.</p>
               )}
               {slugStatus === 'available' && (
-                <p className="text-xs text-emerald-600 mt-1">This URL is available!</p>
+                <p className="text-xs text-[#0168FE] mt-1">This URL is available!</p>
               )}
             </div>
 
@@ -679,7 +679,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
             <button onClick={handleSaveCompany} disabled={!isCompanyValid || authLoading}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
-                isCompanyValid ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                isCompanyValid ? 'bg-kunfa hover:bg-kunfa-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}>
               {authLoading ? 'Saving...' : 'Continue'}
             </button>
@@ -720,7 +720,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                   <button
                     type="button"
                     onClick={addCoFounder}
-                    className="text-sm text-kunfa-green font-medium hover:text-kunfa-green-dark transition"
+                    className="text-sm text-kunfa font-medium hover:text-kunfa-dark transition"
                   >
                     + Add Co-Founder
                   </button>
@@ -796,7 +796,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               </button>
               <button onClick={handleSaveFounder} disabled={!isFounderValid || authLoading}
                 className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-all ${
-                  isFounderValid ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  isFounderValid ? 'bg-kunfa hover:bg-kunfa-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                 }`}>
                 {authLoading ? 'Saving...' : 'Continue'}
               </button>
@@ -838,7 +838,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-1.5">
                   <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                    item.done ? 'bg-kunfa-green' : 'bg-gray-200'
+                    item.done ? 'bg-kunfa' : 'bg-gray-200'
                   }`}>
                     {item.done && (
                       <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -858,13 +858,13 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 type="checkbox"
                 checked={disclaimerChecked}
                 onChange={(e) => setDisclaimerChecked(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-kunfa-green focus:ring-kunfa-green"
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-kunfa focus:ring-kunfa"
               />
               <span className="text-xs text-gray-500 leading-relaxed">
                 I confirm that all information provided is accurate and self-reported. I agree to the{' '}
-                <a href="/terms" target="_blank" className="text-kunfa-green hover:underline">Terms of Service</a>
+                <a href="/terms" target="_blank" className="text-kunfa hover:underline">Terms of Service</a>
                 {' '}and{' '}
-                <a href="/privacy" target="_blank" className="text-kunfa-green hover:underline">Privacy Policy</a>.
+                <a href="/privacy" target="_blank" className="text-kunfa hover:underline">Privacy Policy</a>.
                 This data is subject to due diligence by any interested investor.
               </span>
             </label>
@@ -872,7 +872,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             <button onClick={handleSubmit} disabled={!isUploadValid || isSubmitting}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
                 isUploadValid
-                  ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white cursor-pointer'
+                  ? 'bg-kunfa hover:bg-kunfa-dark text-white cursor-pointer'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}>
               GENERATE SCORE

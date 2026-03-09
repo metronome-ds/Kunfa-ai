@@ -210,13 +210,13 @@ export default function RescoringModal({
                 type="checkbox"
                 checked={disclaimerChecked}
                 onChange={(e) => setDisclaimerChecked(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-kunfa-green focus:ring-kunfa-green"
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-kunfa focus:ring-kunfa"
               />
               <span className="text-xs text-gray-500 leading-relaxed">
                 I confirm that all information provided is accurate and self-reported. I agree to the{' '}
-                <a href="/terms" target="_blank" className="text-kunfa-green hover:underline">Terms of Service</a>
+                <a href="/terms" target="_blank" className="text-kunfa hover:underline">Terms of Service</a>
                 {' '}and{' '}
-                <a href="/privacy" target="_blank" className="text-kunfa-green hover:underline">Privacy Policy</a>.
+                <a href="/privacy" target="_blank" className="text-kunfa hover:underline">Privacy Policy</a>.
                 This data is subject to due diligence by any interested investor.
               </span>
             </label>
@@ -226,7 +226,7 @@ export default function RescoringModal({
               disabled={!isUploadValid || isSubmitting}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
                 isUploadValid
-                  ? 'bg-kunfa-green hover:bg-kunfa-green-dark text-white cursor-pointer'
+                  ? 'bg-kunfa hover:bg-kunfa-dark text-white cursor-pointer'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
             >
@@ -311,7 +311,7 @@ export default function RescoringModal({
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => window.location.href = `/score/${submissionId}`}
-                className="w-full py-3 rounded-lg font-semibold text-sm bg-kunfa-green hover:bg-kunfa-green-dark text-white transition"
+                className="w-full py-3 rounded-lg font-semibold text-sm bg-kunfa hover:bg-kunfa-dark text-white transition"
               >
                 View Full Score Details
               </button>

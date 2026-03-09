@@ -13,7 +13,7 @@ const pipelineStages = [
   { label: 'Sourcing', count: 12, color: 'bg-blue-500' },
   { label: 'Screening', count: 5, color: 'bg-purple-500' },
   { label: 'Diligence', count: 3, color: 'bg-amber-500' },
-  { label: 'Close', count: 1, color: 'bg-emerald-500' },
+  { label: 'Close', count: 1, color: 'bg-green-500' },
 ]
 
 export default function InvestorSection() {
@@ -46,8 +46,8 @@ export default function InvestorSection() {
               ].map((deal) => (
                 <div key={deal.name} className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
-                      <span className="text-xs font-bold text-emerald-700">{deal.score}</span>
+                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                      <span className="text-xs font-bold text-[#0168FE]">{deal.score}</span>
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{deal.name}</p>

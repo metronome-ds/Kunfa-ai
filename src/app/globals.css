@@ -26,8 +26,11 @@
   --color-accent: var(--primary-accent);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-kunfa-green: #10B981;
-  --color-kunfa-green-dark: #059669;
+  --color-kunfa: #0168FE;
+  --color-kunfa-light: #3386FE;
+  --color-kunfa-dark: #0050CC;
+  --color-kunfa-green: #0168FE;
+  --color-kunfa-green-dark: #0050CC;
   --color-kunfa-navy: #0F172A;
   --color-kunfa-card-dark: #1E293B;
   --color-kunfa-text-primary: #0F172A;
@@ -70,7 +73,7 @@ select {
 
 /* ===== Landing Page Component Classes ===== */
 .btn-primary {
-  background-color: #10B981;
+  background-color: #0168FE;
   color: white;
   font-weight: 600;
   padding: 0.75rem 1.5rem;
@@ -78,7 +81,7 @@ select {
   transition: all 0.2s;
 }
 .btn-primary:hover {
-  background-color: #059669;
+  background-color: #0050CC;
 }
 .btn-outline {
   border: 1px solid #d1d5db;
@@ -98,11 +101,11 @@ select {
   border-radius: 9999px;
   font-size: 0.875rem;
   font-weight: 500;
-  background-color: #ecfdf5;
-  color: #047857;
+  background-color: #eff6ff;
+  color: #0168FE;
 }
 .text-gradient-green {
-  background: linear-gradient(to right, #34d399, #059669);
+  background: linear-gradient(to right, #3386FE, #0050CC);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -125,12 +128,12 @@ select {
 
 /* Glow effect for score card */
 .card-glow {
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3), 0 0 30px rgba(16, 185, 129, 0.1);
+  box-shadow: 0 0 15px rgba(1, 104, 254, 0.3), 0 0 30px rgba(1, 104, 254, 0.1);
   animation: glow 2s ease-in-out infinite alternate;
 }
 @keyframes glow {
-  0% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.1); }
-  100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.2); }
+  0% { box-shadow: 0 0 10px rgba(1, 104, 254, 0.3), 0 0 20px rgba(1, 104, 254, 0.1); }
+  100% { box-shadow: 0 0 15px rgba(1, 104, 254, 0.5), 0 0 30px rgba(1, 104, 254, 0.2); }
 }
 
 /* Pulse animation for LIVE badge */
@@ -152,7 +155,7 @@ select {
 /* Score circle */
 .score-circle {
   background: conic-gradient(
-    #10B981 calc(var(--score) * 1%),
+    #0168FE calc(var(--score) * 1%),
     #e5e7eb calc(var(--score) * 1%)
   );
 }
@@ -168,8 +171,8 @@ select {
 }
 .upload-zone:hover,
 .upload-zone.dragover {
-  border-color: #10B981;
-  background-color: #ecfdf5;
+  border-color: #0168FE;
+  background-color: #eff6ff;
 }
 
 /* Modal backdrop */

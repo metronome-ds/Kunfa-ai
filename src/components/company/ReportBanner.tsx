@@ -67,14 +67,14 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
 
   if (state === 'paid') {
     return (
-      <div className="bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-xl p-6 border border-emerald-200 flex items-center justify-between">
+      <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200 flex items-center justify-between">
         <div>
           <h3 className="text-lg font-bold text-gray-900">Your Kunfa Readiness Report</h3>
           <p className="text-sm text-gray-600 mt-1">Your full AI-powered investment analysis is ready.</p>
         </div>
         <a
           href={`/report/${submissionId}`}
-          className="bg-[#10B981] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#059669] transition flex-shrink-0"
+          className="bg-[#0168FE] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition flex-shrink-0"
         >
           View Your Readiness Report
         </a>
@@ -83,7 +83,7 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
   }
 
   return (
-    <div className="bg-gradient-to-r from-emerald-50 to-blue-50 rounded-xl p-6 border border-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div>
         <h3 className="text-lg font-bold text-gray-900">Unlock Your Full Kunfa Readiness Report</h3>
         <p className="text-sm text-gray-600 mt-1">Detailed analysis, sector benchmarks, and actionable recommendations — $59</p>
@@ -91,7 +91,7 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
       <button
         onClick={handleCheckout}
         disabled={unlocking}
-        className="bg-[#10B981] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#059669] transition flex-shrink-0 disabled:opacity-50 shadow-md"
+        className="bg-[#0168FE] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition flex-shrink-0 disabled:opacity-50 shadow-md"
       >
         {unlocking ? 'Redirecting...' : 'Unlock Report — $59'}
       </button>

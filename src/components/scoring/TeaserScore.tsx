@@ -22,14 +22,14 @@ interface TeaserScoreProps {
 }
 
 function getScoreColor(score: number): string {
-  if (score >= 80) return 'text-kunfa-green'
+  if (score >= 80) return 'text-kunfa'
   if (score >= 60) return 'text-kunfa-yellow'
   if (score >= 40) return 'text-kunfa-orange'
   return 'text-kunfa-red'
 }
 
 function getGradeColor(grade: string): string {
-  if (grade.startsWith('A')) return 'bg-emerald-100 text-emerald-700'
+  if (grade.startsWith('A')) return 'bg-green-100 text-green-700'
   if (grade.startsWith('B')) return 'bg-blue-100 text-blue-700'
   if (grade.startsWith('C')) return 'bg-yellow-100 text-yellow-700'
   return 'bg-red-100 text-red-700'
@@ -37,7 +37,7 @@ function getGradeColor(grade: string): string {
 
 function getReadinessColor(readiness: string): string {
   switch (readiness) {
-    case 'Ready': return 'bg-emerald-100 text-emerald-700'
+    case 'Ready': return 'bg-green-100 text-green-700'
     case 'Almost Ready': return 'bg-blue-100 text-blue-700'
     case 'Needs Work': return 'bg-yellow-100 text-yellow-700'
     default: return 'bg-gray-100 text-gray-600'
@@ -81,7 +81,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
             <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" strokeWidth="8" />
             <circle
               cx="60" cy="60" r="54" fill="none"
-              stroke="#10B981" strokeWidth="8"
+              stroke="#0168FE" strokeWidth="8"
               strokeLinecap="round"
               strokeDasharray={`${(result.overall_score / 100) * 339.292} 339.292`}
             />
@@ -95,7 +95,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
         </div>
         <h3 className="text-xl font-bold text-kunfa-navy mb-1">Your Kunfa Score</h3>
         <p className="text-sm text-kunfa-text-secondary">
-          Top <span className="font-semibold text-kunfa-green">{result.percentile}%</span> of submissions
+          Top <span className="font-semibold text-kunfa">{result.percentile}%</span> of submissions
         </p>
         <span className={`inline-block mt-2 text-xs font-semibold px-3 py-1 rounded-full ${getReadinessColor(result.investment_readiness)}`}>
           {result.investment_readiness}

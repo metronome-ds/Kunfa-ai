@@ -170,8 +170,8 @@ export function CompanyActions({ companyId, hasPitchDeck = false }: CompanyActio
             disabled={pipelineLoading || inPipeline}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
               inPipeline
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                ? 'bg-blue-50 text-[#0168FE] border border-blue-200'
+                : 'bg-[#0168FE] text-white hover:bg-[#0050CC]'
             }`}
           >
             {inPipeline ? (

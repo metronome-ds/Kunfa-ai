@@ -59,7 +59,7 @@ export default function ProcessingAnimation({ onComplete }: ProcessingAnimationP
       <div className="relative w-24 h-24 mx-auto mb-8">
         <div className="absolute inset-0 rounded-full border-4 border-gray-200" />
         <div
-          className="absolute inset-0 rounded-full border-4 border-kunfa-green border-t-transparent animate-spin"
+          className="absolute inset-0 rounded-full border-4 border-kunfa border-t-transparent animate-spin"
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-lg font-bold text-kunfa-navy">{progress}%</span>
@@ -76,12 +76,12 @@ export default function ProcessingAnimation({ onComplete }: ProcessingAnimationP
             }`}
           >
             {i < currentStep ? (
-              <svg className="w-5 h-5 text-kunfa-green shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-kunfa shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             ) : i === currentStep ? (
               <div className="w-5 h-5 shrink-0 flex items-center justify-center">
-                <div className="w-3 h-3 bg-kunfa-green rounded-full animate-pulse" />
+                <div className="w-3 h-3 bg-kunfa rounded-full animate-pulse" />
               </div>
             ) : (
               <div className="w-5 h-5 shrink-0 flex items-center justify-center">
