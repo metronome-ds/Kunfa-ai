@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { normalizeStage } from './constants'
 
 // Use service role key to bypass RLS in API routes
 export function getSupabase() {
@@ -288,7 +289,7 @@ export async function createCompanyPage(data: {
       description: data.description || null,
       one_liner: data.oneLiner || null,
       industry: data.industry || null,
-      stage: data.stage || null,
+      stage: data.stage ? normalizeStage(data.stage) : null,
       raise_amount: data.raiseAmount || null,
       team_size: data.teamSize || null,
       founded_year: data.foundedYear || null,

@@ -13,6 +13,7 @@ import {
 } from '@/lib/db'
 import { getSupabase } from '@/lib/db'
 import { v4 as uuid } from 'uuid'
+import { normalizeStage } from '@/lib/constants'
 
 export const maxDuration = 120
 
@@ -256,7 +257,7 @@ export async function POST(request: NextRequest) {
               description: (fullResult as any)?.description || undefined,
               oneLiner: profile?.one_liner || undefined,
               industry,
-              stage: profile?.company_stage || cp.stage || undefined,
+              stage: normalizeStage(profile?.company_stage || cp.stage || ''),
               raiseAmount: cp.raise_amount || undefined,
               teamSize: profile?.team_size || cp.team_size || undefined,
               foundedYear: cp.founded_year || undefined,

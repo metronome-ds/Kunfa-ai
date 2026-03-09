@@ -4,23 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Save, LogOut, Check } from 'lucide-react';
-
-const INDUSTRIES = [
-  'AI & Machine Learning', 'B2B SaaS', 'B2C', 'Biotech & Life Sciences',
-  'CleanTech & Energy', 'Consumer Hardware', 'Cybersecurity', 'DevTools & Infrastructure',
-  'E-commerce & Marketplace', 'EdTech', 'FinTech', 'Food & Beverage', 'Gaming',
-  'HealthTech', 'Logistics & Supply Chain', 'Media & Entertainment',
-  'PropTech & Real Estate', 'Social', 'Travel & Hospitality', 'Web3 & Crypto', 'Other',
-];
-
-const STAGES = [
-  { value: 'pre-seed', label: 'Pre-Seed' },
-  { value: 'seed', label: 'Seed' },
-  { value: 'series-a', label: 'Series A' },
-  { value: 'series-b', label: 'Series B' },
-  { value: 'series-c+', label: 'Series C+' },
-  { value: 'growth', label: 'Growth' },
-];
+import { STAGES, INDUSTRIES } from '@/lib/constants';
 
 const INPUT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all';
 const SELECT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all';
@@ -240,7 +224,7 @@ export default function SettingsPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Stage</label>
               <select value={companyStage} onChange={(e) => setCompanyStage(e.target.value)} className={SELECT_CLASS}>
                 <option value="">Select...</option>
-                {STAGES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>

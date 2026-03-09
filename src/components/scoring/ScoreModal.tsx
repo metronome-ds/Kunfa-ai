@@ -8,6 +8,7 @@ import UploadZone from './UploadZone'
 import ProcessingAnimation from './ProcessingAnimation'
 import TeaserScore from './TeaserScore'
 import { Check, X, Loader2 } from 'lucide-react'
+import { STAGES, INDUSTRIES } from '@/lib/constants'
 
 interface ScoreModalProps {
   isOpen: boolean
@@ -29,38 +30,7 @@ interface ScoreResult {
   }
 }
 
-const INDUSTRIES = [
-  'AI & Machine Learning',
-  'B2B SaaS',
-  'B2C',
-  'Biotech & Life Sciences',
-  'CleanTech & Energy',
-  'Consumer Hardware',
-  'Cybersecurity',
-  'DevTools & Infrastructure',
-  'E-commerce & Marketplace',
-  'EdTech',
-  'FinTech',
-  'Food & Beverage',
-  'Gaming',
-  'HealthTech',
-  'Logistics & Supply Chain',
-  'Media & Entertainment',
-  'PropTech & Real Estate',
-  'Social',
-  'Travel & Hospitality',
-  'Web3 & Crypto',
-  'Other',
-] as const
-
-const STAGES = [
-  { value: 'pre-seed', label: 'Pre-Seed' },
-  { value: 'seed', label: 'Seed' },
-  { value: 'series-a', label: 'Series A' },
-  { value: 'series-b', label: 'Series B' },
-  { value: 'series-c+', label: 'Series C+' },
-  { value: 'growth', label: 'Growth' },
-] as const
+// STAGES and INDUSTRIES imported from @/lib/constants
 
 const INPUT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent'
 const SELECT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-kunfa-green focus:border-transparent'
@@ -718,7 +688,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               >
                 <option value="">Select stage...</option>
                 {STAGES.map((s) => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>

@@ -1,5 +1,6 @@
 import { createServerSupabaseClient, getServerUser } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { normalizeStage } from '@/lib/constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -59,7 +60,7 @@ export async function POST(request: NextRequest) {
     if (company_country !== undefined) profileData.company_country = company_country;
     if (company_website !== undefined) profileData.company_website = company_website;
     if (industry !== undefined) profileData.industry = industry;
-    if (company_stage !== undefined) profileData.company_stage = company_stage;
+    if (company_stage !== undefined) profileData.company_stage = normalizeStage(company_stage);
     if (raise_amount !== undefined) profileData.raise_amount = raise_amount;
     if (linkedin_url !== undefined) profileData.linkedin_url = linkedin_url;
     if (team_size !== undefined) profileData.team_size = team_size;

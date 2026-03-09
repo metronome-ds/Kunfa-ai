@@ -2,8 +2,12 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kunfa AI",
-  description: "AI-powered deal flow intelligence for founders and investors",
+  title: "Kunfa.AI",
+  description: "AI-powered venture intelligence for founders and investors in the GCC",
+  icons: {
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export const viewport: Viewport = {

@@ -3,39 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Input } from '@/components/common/Input';
 import { X } from 'lucide-react';
-
-const BROWSE_INDUSTRIES = [
-  'AI & Machine Learning',
-  'B2B SaaS',
-  'B2C',
-  'Biotech & Life Sciences',
-  'CleanTech & Energy',
-  'Consumer Hardware',
-  'Cybersecurity',
-  'DevTools & Infrastructure',
-  'E-commerce & Marketplace',
-  'EdTech',
-  'FinTech',
-  'Food & Beverage',
-  'Gaming',
-  'HealthTech',
-  'Logistics & Supply Chain',
-  'Media & Entertainment',
-  'PropTech & Real Estate',
-  'Social',
-  'Travel & Hospitality',
-  'Web3 & Crypto',
-  'Other',
-] as const;
-
-const BROWSE_STAGES = [
-  { value: 'pre-seed', label: 'Pre-Seed' },
-  { value: 'seed', label: 'Seed' },
-  { value: 'series-a', label: 'Series A' },
-  { value: 'series-b', label: 'Series B' },
-  { value: 'series-c+', label: 'Series C+' },
-  { value: 'growth', label: 'Growth' },
-] as const;
+import { STAGES, INDUSTRIES } from '@/lib/constants';
 
 export interface CompanyFilterState {
   search: string;
@@ -158,7 +126,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
 
         {expandedSections.industry && (
           <div className="space-y-2 max-h-64 overflow-y-auto">
-            {BROWSE_INDUSTRIES.map((industry) => (
+            {INDUSTRIES.map((industry) => (
               <label key={industry} className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -184,15 +152,15 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
 
         {expandedSections.stage && (
           <div className="space-y-2">
-            {BROWSE_STAGES.map((stage) => (
-              <label key={stage.value} className="flex items-center gap-3 cursor-pointer">
+            {STAGES.map((stage) => (
+              <label key={stage} className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={filters.stages.includes(stage.value)}
-                  onChange={() => toggleStage(stage.value)}
+                  checked={filters.stages.includes(stage)}
+                  onChange={() => toggleStage(stage)}
                   className="w-4 h-4 text-emerald-600 rounded border-gray-300 cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">{stage.label}</span>
+                <span className="text-sm text-gray-700">{stage}</span>
               </label>
             ))}
           </div>

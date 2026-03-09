@@ -1,12 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import TickerBar from '@/components/landing/TickerBar'
 import Navbar from '@/components/landing/Navbar'
 import Hero from '@/components/landing/Hero'
-import InvestorSection from '@/components/landing/InvestorSection'
+import HowItWorks from '@/components/landing/HowItWorks'
 import StartupSection from '@/components/landing/StartupSection'
-import DebtProviderSection from '@/components/landing/DebtProviderSection'
+import InvestorSection from '@/components/landing/InvestorSection'
 import PricingSection from '@/components/landing/PricingSection'
 import Footer from '@/components/landing/Footer'
 import ScoreModal from '@/components/scoring/ScoreModal'
@@ -18,13 +17,12 @@ export default function Home() {
   const closeModal = () => setIsModalOpen(false)
 
   return (
-    <main className="min-h-screen">
-      <TickerBar />
+    <main className="min-h-screen bg-white">
       <Navbar onApplyNow={openModal} />
       <Hero onApplyNow={openModal} />
-      <InvestorSection />
+      <HowItWorks />
       <StartupSection onApplyNow={openModal} />
-      <DebtProviderSection />
+      <InvestorSection />
       <PricingSection onApplyNow={openModal} />
       <Footer />
       <ScoreModal isOpen={isModalOpen} onClose={closeModal} />

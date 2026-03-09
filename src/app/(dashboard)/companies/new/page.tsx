@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { upload } from '@vercel/blob/client'
 import { FileUp, PenLine } from 'lucide-react'
+import { STAGES, INDUSTRIES } from '@/lib/constants'
 
 type Tab = 'pdf' | 'manual'
 
@@ -209,27 +210,7 @@ export default function AddCompanyPage() {
                 className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select industry</option>
-                <option value="FinTech">FinTech</option>
-                <option value="HealthTech">HealthTech</option>
-                <option value="EdTech">EdTech</option>
-                <option value="E-Commerce">E-Commerce</option>
-                <option value="SaaS">SaaS</option>
-                <option value="AI / ML">AI / ML</option>
-                <option value="CleanTech">CleanTech</option>
-                <option value="AgriTech">AgriTech</option>
-                <option value="PropTech">PropTech</option>
-                <option value="InsurTech">InsurTech</option>
-                <option value="Logistics">Logistics</option>
-                <option value="Media & Entertainment">Media & Entertainment</option>
-                <option value="Cybersecurity">Cybersecurity</option>
-                <option value="Biotech">Biotech</option>
-                <option value="Gaming">Gaming</option>
-                <option value="Social Impact">Social Impact</option>
-                <option value="Mobility">Mobility</option>
-                <option value="FoodTech">FoodTech</option>
-                <option value="LegalTech">LegalTech</option>
-                <option value="HRTech">HRTech</option>
-                <option value="Other">Other</option>
+                {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
               </select>
             </div>
             <div>
@@ -240,12 +221,7 @@ export default function AddCompanyPage() {
                 className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">Select stage</option>
-                <option value="Pre-seed">Pre-seed</option>
-                <option value="Seed">Seed</option>
-                <option value="Series A">Series A</option>
-                <option value="Series B">Series B</option>
-                <option value="Series C+">Series C+</option>
-                <option value="Growth">Growth</option>
+                {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
           </div>

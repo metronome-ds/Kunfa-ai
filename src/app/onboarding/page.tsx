@@ -4,15 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { CheckCircle, ArrowRight, User, Target, FileText } from 'lucide-react';
+import { STAGES, INDUSTRIES } from '@/lib/constants';
 
-const STAGES = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C+', 'Growth'];
-
-const SECTORS = [
-  'FinTech', 'HealthTech', 'EdTech', 'E-Commerce', 'SaaS', 'AI / ML',
-  'CleanTech', 'AgriTech', 'PropTech', 'InsurTech', 'Logistics',
-  'Media & Entertainment', 'Cybersecurity', 'Biotech', 'Gaming',
-  'Social Impact', 'Mobility', 'FoodTech', 'LegalTech', 'HRTech',
-];
+const SECTORS = INDUSTRIES.filter(i => i !== 'Other');
 
 const REGIONS = [
   'North America', 'Europe', 'MENA', 'Sub-Saharan Africa',

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ExternalLink, Copy, Check, FileText, Pencil, RefreshCw, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import RescoringModal from '@/components/scoring/RescoringModal'
+import { STAGES, INDUSTRIES } from '@/lib/constants'
 
 interface TeamMember {
   name: string
@@ -42,22 +43,7 @@ interface CompanyData {
   created_at: string
 }
 
-const INDUSTRIES = [
-  'AI & Machine Learning', 'B2B SaaS', 'B2C', 'Biotech & Life Sciences',
-  'CleanTech & Energy', 'Consumer Hardware', 'Cybersecurity', 'DevTools & Infrastructure',
-  'E-commerce & Marketplace', 'EdTech', 'FinTech', 'Food & Beverage', 'Gaming',
-  'HealthTech', 'Logistics & Supply Chain', 'Media & Entertainment',
-  'PropTech & Real Estate', 'Social', 'Travel & Hospitality', 'Web3 & Crypto', 'Other',
-]
-
-const STAGES = [
-  { value: 'pre-seed', label: 'Pre-Seed' },
-  { value: 'seed', label: 'Seed' },
-  { value: 'series-a', label: 'Series A' },
-  { value: 'series-b', label: 'Series B' },
-  { value: 'series-c+', label: 'Series C+' },
-  { value: 'growth', label: 'Growth' },
-]
+// STAGES and INDUSTRIES imported from @/lib/constants
 
 function getScoreColor(score: number | null) {
   if (!score) return 'text-gray-400'
@@ -436,7 +422,7 @@ export default function CompanyProfilePage() {
                 onChange={(e) => setEditForm(f => ({ ...f, stage: e.target.value }))}
                 className={SELECT_CLASS}>
                 <option value="">Select...</option>
-                {STAGES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
+                {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
