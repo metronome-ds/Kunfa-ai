@@ -3,14 +3,17 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUser } from '@/lib/supabase';
 import { supabase } from '@/lib/supabase';
-import { Heart, HeartOff, Plus, Check } from 'lucide-react';
+import { Heart, HeartOff, Plus, Check, FileText } from 'lucide-react';
 
 interface CompanyActionsProps {
   companyId: string;
+  hasPitchDeck?: boolean;
 }
 
-export function CompanyActions({ companyId }: CompanyActionsProps) {
+export function CompanyActions({ companyId, hasPitchDeck = false }: CompanyActionsProps) {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInvestor, setIsInvestor] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
   const [isWatchlisted, setIsWatchlisted] = useState(false);
   const [inPipeline, setInPipeline] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -25,12 +28,26 @@ export function CompanyActions({ companyId }: CompanyActionsProps) {
         return;
       }
 
-      // Check if user is an investor
+      setIsAuthenticated(true);
+
+      // Check if user is an investor or the company owner
       const { data: profile } = await supabase
         .from('profiles')
         .select('id, role')
         .eq('user_id', user.id)
         .single();
+
+      // Check if this user owns this company page
+      const { data: ownedCompany } = await supabase
+        .from('company_pages')
+        .select('id')
+        .eq('id', companyId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (ownedCompany) {
+        setIsOwner(true);
+      }
 
       if (profile?.role !== 'investor') {
         setLoading(false);
@@ -64,7 +81,10 @@ export function CompanyActions({ companyId }: CompanyActionsProps) {
     checkAuth();
   }, [companyId]);
 
-  if (loading || !isInvestor) return null;
+  if (loading) return null;
+
+  // Unauthenticated users see nothing
+  if (!isAuthenticated) return null;
 
   const toggleWatchlist = async () => {
     const wasWatchlisted = isWatchlisted;
@@ -102,51 +122,72 @@ export function CompanyActions({ companyId }: CompanyActionsProps) {
     }
   };
 
-  return (
-    <div className="flex items-center gap-3">
-      <button
-        onClick={toggleWatchlist}
-        disabled={watchlistLoading}
-        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
-          isWatchlisted
-            ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100'
-            : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-        }`}
-      >
-        {isWatchlisted ? (
-          <>
-            <Heart className="h-4 w-4 fill-rose-500 text-rose-500" />
-            Watchlisted
-          </>
-        ) : (
-          <>
-            <HeartOff className="h-4 w-4" />
-            Add to Watchlist
-          </>
-        )}
-      </button>
+  // Show pitch deck button for owners and investors (proxied, auth-gated)
+  const showPitchDeck = hasPitchDeck && (isOwner || isInvestor);
 
-      <button
-        onClick={addToPipeline}
-        disabled={pipelineLoading || inPipeline}
-        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
-          inPipeline
-            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-            : 'bg-emerald-600 text-white hover:bg-emerald-700'
-        }`}
-      >
-        {inPipeline ? (
-          <>
-            <Check className="h-4 w-4" />
-            In Pipeline
-          </>
-        ) : (
-          <>
-            <Plus className="h-4 w-4" />
-            Add to Pipeline
-          </>
-        )}
-      </button>
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      {/* Pitch deck button — proxied through /api/documents/[id] */}
+      {showPitchDeck && (
+        <a
+          href={`/api/documents/${companyId}?type=pitch_deck`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"
+        >
+          <FileText className="w-4 h-4 text-gray-500" />
+          View Pitch Deck
+        </a>
+      )}
+
+      {/* Investor-only actions */}
+      {isInvestor && (
+        <>
+          <button
+            onClick={toggleWatchlist}
+            disabled={watchlistLoading}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
+              isWatchlisted
+                ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            {isWatchlisted ? (
+              <>
+                <Heart className="h-4 w-4 fill-rose-500 text-rose-500" />
+                Watchlisted
+              </>
+            ) : (
+              <>
+                <HeartOff className="h-4 w-4" />
+                Add to Watchlist
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={addToPipeline}
+            disabled={pipelineLoading || inPipeline}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
+              inPipeline
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-emerald-600 text-white hover:bg-emerald-700'
+            }`}
+          >
+            {inPipeline ? (
+              <>
+                <Check className="h-4 w-4" />
+                In Pipeline
+              </>
+            ) : (
+              <>
+                <Plus className="h-4 w-4" />
+                Add to Pipeline
+              </>
+            )}
+          </button>
+        </>
+      )}
     </div>
   );
 }

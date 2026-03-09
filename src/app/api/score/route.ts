@@ -215,6 +215,8 @@ export async function POST(request: NextRequest) {
               traction: cp.traction || undefined,
               useOfFunds: cp.use_of_funds || undefined,
               keyRisks: cp.key_risks || undefined,
+              pdfUrl: pitchDeckUrl || undefined,
+              financialsUrl: financialsUrl || undefined,
             })
 
             // Update deals record ai_score
@@ -271,6 +273,8 @@ export async function POST(request: NextRequest) {
               founderTitle: profile?.job_title || undefined,
               linkedinUrl: profile?.linkedin_url || linkedinUrl || undefined,
               foundingTeam: foundingTeam || undefined,
+              pdfUrl: pitchDeckUrl || undefined,
+              financialsUrl: financialsUrl || undefined,
               source: 'startup_submission',
             })
             slug = result.slug

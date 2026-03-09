@@ -211,6 +211,8 @@ export async function updateCompanyPageScore(companyPageId: string, data: {
   traction?: string
   useOfFunds?: string
   keyRisks?: string
+  pdfUrl?: string
+  financialsUrl?: string
 }) {
   const supabase = getSupabase()
   const { error } = await supabase
@@ -225,6 +227,8 @@ export async function updateCompanyPageScore(companyPageId: string, data: {
       traction: data.traction || undefined,
       use_of_funds: data.useOfFunds || undefined,
       key_risks: data.keyRisks || undefined,
+      pdf_url: data.pdfUrl || undefined,
+      financials_url: data.financialsUrl || undefined,
     })
     .eq('id', companyPageId)
 
@@ -259,6 +263,8 @@ export async function createCompanyPage(data: {
   founderTitle?: string
   linkedinUrl?: string
   foundingTeam?: { name: string; title: string; email?: string; linkedin?: string }[]
+  pdfUrl?: string
+  financialsUrl?: string
 }) {
   const supabase = getSupabase()
 
@@ -300,6 +306,8 @@ export async function createCompanyPage(data: {
       founder_title: data.founderTitle || null,
       linkedin_url: data.linkedinUrl || null,
       founding_team: data.foundingTeam && data.foundingTeam.length > 0 ? data.foundingTeam : null,
+      pdf_url: data.pdfUrl || null,
+      financials_url: data.financialsUrl || null,
     })
     .select('id')
     .single()
