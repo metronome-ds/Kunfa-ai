@@ -1,20 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { upload } from '@vercel/blob/client'
 import { FileUp, PenLine } from 'lucide-react'
 import { STAGES, INDUSTRIES } from '@/lib/constants'
+import { createBrowserClient } from '@supabase/ssr'
 
 type Tab = 'pdf' | 'manual'
+type Status = 'idle' | 'extracting' | 'submitting' | 'scoring' | 'done'
 
 export default function AddCompanyPage() {
   const router = useRouter()
   const [tab, setTab] = useState<Tab>('pdf')
-  const [loading, setLoading] = useState(false)
-  const [extracting, setExtracting] = useState(false)
+  const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState('')
   const [pdfFile, setPdfFile] = useState<File | null>(null)
+  const [blobUrl, setBlobUrl] = useState<string | null>(null)
+  const [userEmail, setUserEmail] = useState('')
 
   const [form, setForm] = useState({
     company_name: '',
@@ -26,13 +29,24 @@ export default function AddCompanyPage() {
     founded_year: '',
   })
 
+  // Get current user email for scoring
+  useEffect(() => {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    )
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setUserEmail(data.user.email)
+    })
+  }, [])
+
   function updateField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
   async function handlePdfUpload(file: File) {
     setPdfFile(file)
-    setExtracting(true)
+    setStatus('extracting')
     setError('')
 
     try {
@@ -41,6 +55,7 @@ export default function AddCompanyPage() {
         access: 'public',
         handleUploadUrl: '/api/upload',
       })
+      setBlobUrl(blob.url)
 
       // Extract details via AI
       const res = await fetch('/api/companies/extract', {
@@ -67,7 +82,7 @@ export default function AddCompanyPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to extract PDF data')
     } finally {
-      setExtracting(false)
+      setStatus('idle')
     }
   }
 
@@ -78,10 +93,11 @@ export default function AddCompanyPage() {
       return
     }
 
-    setLoading(true)
+    setStatus('submitting')
     setError('')
 
     try {
+      // 1. Create company + deal
       const res = await fetch('/api/companies', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -93,6 +109,7 @@ export default function AddCompanyPage() {
           description: form.description || null,
           team_size: form.team_size ? Number(form.team_size) : null,
           founded_year: form.founded_year ? Number(form.founded_year) : null,
+          pdf_url: blobUrl || null,
         }),
       })
 
@@ -101,13 +118,38 @@ export default function AddCompanyPage() {
         throw new Error(data.error || 'Failed to create company')
       }
 
-      router.push('/pipeline')
+      const { companyPageId, slug } = await res.json()
+
+      // 2. If we have a PDF, trigger AI scoring
+      if (blobUrl && pdfFile && userEmail) {
+        setStatus('scoring')
+
+        const scoreRes = await fetch('/api/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: userEmail,
+            pitchDeckUrl: blobUrl,
+            pitchDeckFilename: pdfFile.name,
+            companyPageId,
+          }),
+        })
+
+        if (!scoreRes.ok) {
+          // Scoring failed — still redirect, company was created
+          console.error('Scoring failed:', await scoreRes.text())
+        }
+      }
+
+      // 3. Redirect to company profile
+      router.push(`/company/${slug}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
-    } finally {
-      setLoading(false)
+      setStatus('idle')
     }
   }
+
+  const isProcessing = status === 'extracting' || status === 'submitting' || status === 'scoring'
 
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
@@ -119,7 +161,7 @@ export default function AddCompanyPage() {
           onClick={() => setTab('pdf')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
             tab === 'pdf'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#0168FE] text-white'
               : 'bg-gray-100 text-gray-500 hover:text-gray-900 border border-gray-200'
           }`}
         >
@@ -130,7 +172,7 @@ export default function AddCompanyPage() {
           onClick={() => setTab('manual')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
             tab === 'manual'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#0168FE] text-white'
               : 'bg-gray-100 text-gray-500 hover:text-gray-900 border border-gray-200'
           }`}
         >
@@ -145,16 +187,25 @@ export default function AddCompanyPage() {
         </div>
       )}
 
+      {/* Scoring Progress */}
+      {status === 'scoring' && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6 text-center">
+          <div className="w-10 h-10 border-3 border-[#0168FE] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm font-medium text-gray-900">AI is scoring this company...</p>
+          <p className="text-xs text-gray-500 mt-1">Analyzing pitch deck and generating insights</p>
+        </div>
+      )}
+
       {/* PDF Upload Tab */}
-      {tab === 'pdf' && !form.company_name && (
+      {tab === 'pdf' && !form.company_name && status !== 'scoring' && (
         <div className="mb-6">
           <label
             htmlFor="pdf-upload"
-            className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-xl hover:border-blue-500 transition cursor-pointer bg-gray-50"
+            className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-xl hover:border-[#0168FE] transition cursor-pointer bg-gray-50"
           >
-            {extracting ? (
+            {status === 'extracting' ? (
               <>
-                <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mb-3" />
+                <div className="w-8 h-8 border-2 border-[#0168FE] border-t-transparent rounded-full animate-spin mb-3" />
                 <p className="text-sm text-gray-600">Extracting details from PDF...</p>
               </>
             ) : (
@@ -181,11 +232,13 @@ export default function AddCompanyPage() {
       )}
 
       {/* Form (shown in manual tab or after PDF extraction) */}
-      {(tab === 'manual' || form.company_name) && (
+      {(tab === 'manual' || form.company_name) && status !== 'scoring' && (
         <form onSubmit={handleSubmit} className="space-y-4">
           {tab === 'pdf' && form.company_name && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-              <p className="text-sm text-blue-700">Fields extracted from PDF. Review and edit as needed.</p>
+              <p className="text-sm text-[#0168FE]">
+                Fields extracted from PDF. Review and edit as needed.
+              </p>
             </div>
           )}
 
@@ -196,7 +249,7 @@ export default function AddCompanyPage() {
               value={form.company_name}
               onChange={(e) => updateField('company_name', e.target.value)}
               required
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
               placeholder="Acme Corp"
             />
           </div>
@@ -207,7 +260,7 @@ export default function AddCompanyPage() {
               <select
                 value={form.sector}
                 onChange={(e) => updateField('sector', e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
               >
                 <option value="">Select industry</option>
                 {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
@@ -218,7 +271,7 @@ export default function AddCompanyPage() {
               <select
                 value={form.stage}
                 onChange={(e) => updateField('stage', e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
               >
                 <option value="">Select stage</option>
                 {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -233,7 +286,7 @@ export default function AddCompanyPage() {
                 type="number"
                 value={form.raise_amount}
                 onChange={(e) => updateField('raise_amount', e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
                 placeholder="e.g. 2000000"
               />
             </div>
@@ -243,7 +296,7 @@ export default function AddCompanyPage() {
                 type="number"
                 value={form.team_size}
                 onChange={(e) => updateField('team_size', e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
                 placeholder="e.g. 12"
               />
             </div>
@@ -255,7 +308,7 @@ export default function AddCompanyPage() {
               type="number"
               value={form.founded_year}
               onChange={(e) => updateField('founded_year', e.target.value)}
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
               placeholder="e.g. 2023"
             />
           </div>
@@ -266,17 +319,21 @@ export default function AddCompanyPage() {
               value={form.description}
               onChange={(e) => updateField('description', e.target.value)}
               rows={3}
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] resize-none"
               placeholder="Brief company description..."
             />
           </div>
 
           <button
             type="submit"
-            disabled={loading || !form.company_name}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+            disabled={isProcessing || !form.company_name}
+            className="w-full py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition disabled:opacity-50"
           >
-            {loading ? 'Creating...' : 'Add to Pipeline'}
+            {status === 'submitting'
+              ? 'Creating...'
+              : blobUrl
+                ? 'Add & Score Company'
+                : 'Add to Pipeline'}
           </button>
         </form>
       )}

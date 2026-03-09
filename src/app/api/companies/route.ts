@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createServerSupabaseClient()
     const body = await request.json()
-    const { company_name, sector, stage, raise_amount, description, team_size, founded_year } = body
+    const { company_name, sector, stage, raise_amount, description, team_size, founded_year, pdf_url } = body
 
     if (!company_name) {
       return NextResponse.json({ error: 'Company name is required' }, { status: 400 })
@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
         description: description || null,
         team_size: team_size || null,
         founded_year: founded_year || null,
+        pdf_url: pdf_url || null,
         source: 'investor_added',
         added_by: user.id,
       })
