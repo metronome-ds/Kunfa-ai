@@ -27,11 +27,20 @@ interface DealData {
   assigned_to_name: string | null
 }
 
+interface TeamMember {
+  id: string
+  name: string
+  email: string
+  role: string
+  status: string
+}
+
 interface DealSlideoutProps {
   deal: DealData
   isOpen: boolean
   onClose: () => void
   onUpdated: () => void
+  teamMembers?: TeamMember[]
 }
 
 const DEAL_STAGES = [
@@ -58,7 +67,7 @@ function formatDealSize(val: string): string {
   return Number(num).toLocaleString()
 }
 
-export default function DealSlideout({ deal, isOpen, onClose, onUpdated }: DealSlideoutProps) {
+export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMembers = [] }: DealSlideoutProps) {
   const [form, setForm] = useState({
     stage: deal.stage,
     priority_flag: deal.priority_flag,
@@ -252,13 +261,26 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated }: DealS
           {/* Assigned To */}
           <div>
             <label className={labelClass}>Assigned To</label>
-            <input
-              type="text"
-              value={form.assigned_to_name}
-              onChange={e => updateField('assigned_to_name', e.target.value)}
-              className={inputClass}
-              placeholder="Team member name"
-            />
+            {teamMembers.length > 0 ? (
+              <select
+                value={form.assigned_to_name}
+                onChange={e => updateField('assigned_to_name', e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Unassigned</option>
+                {teamMembers.map(m => (
+                  <option key={m.id} value={m.name}>{m.name}{m.role === 'owner' ? ' (Owner)' : ''}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="text"
+                value={form.assigned_to_name}
+                onChange={e => updateField('assigned_to_name', e.target.value)}
+                className={inputClass}
+                placeholder="Team member name"
+              />
+            )}
           </div>
 
           {/* Next Action + Date */}

@@ -5,6 +5,16 @@ import { GripVertical, Bookmark, ArrowRight, Star, CalendarDays } from 'lucide-r
 import Link from 'next/link';
 import DealSlideout from '@/components/pipeline/DealSlideout';
 
+interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status: string;
+}
+
+type DealFilter = 'all' | 'mine' | 'unassigned';
+
 interface WatchlistCard {
   id: string;
   company_id: string;
@@ -104,6 +114,21 @@ export default function PipelinePage() {
   const [dragItem, setDragItem] = useState<DragItem | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const [selectedDeal, setSelectedDeal] = useState<DealCard | null>(null);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [dealFilter, setDealFilter] = useState<DealFilter>('all');
+  const [ownerName, setOwnerName] = useState('');
+
+  const fetchTeam = async () => {
+    try {
+      const res = await fetch('/api/team');
+      if (res.ok) {
+        const { data } = await res.json();
+        setTeamMembers(data || []);
+        const owner = (data || []).find((m: TeamMember) => m.role === 'owner');
+        if (owner) setOwnerName(owner.name);
+      }
+    } catch { /* ignore */ }
+  };
 
   const fetchPipeline = async () => {
     try {
@@ -129,6 +154,7 @@ export default function PipelinePage() {
 
   useEffect(() => {
     fetchPipeline();
+    fetchTeam();
   }, []);
 
   // --- Drag handlers ---
@@ -260,6 +286,17 @@ export default function PipelinePage() {
     setSelectedDeal(deal);
   };
 
+  // Apply filter to deals
+  function filterDeals(cards: DealCard[]): DealCard[] {
+    if (dealFilter === 'mine') {
+      return cards.filter(d => d.assigned_to_name === ownerName);
+    }
+    if (dealFilter === 'unassigned') {
+      return cards.filter(d => !d.assigned_to_name);
+    }
+    return cards;
+  }
+
   const totalDeals = Object.values(deals).reduce((sum, arr) => sum + arr.length, 0);
 
   if (isLoading) {
@@ -307,6 +344,28 @@ export default function PipelinePage() {
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">{error}</div>
       )}
+
+      {/* Filter Bar */}
+      <div className="flex items-center gap-1 mb-4">
+        <span className="text-xs font-medium text-gray-500 mr-2">Show:</span>
+        {([
+          { key: 'all', label: 'All deals' },
+          { key: 'mine', label: 'My deals' },
+          { key: 'unassigned', label: 'Unassigned' },
+        ] as const).map(f => (
+          <button
+            key={f.key}
+            onClick={() => setDealFilter(f.key)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+              dealFilter === f.key
+                ? 'bg-[#0168FE] text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
 
       {/* Kanban Board: 6 columns */}
       <div className="grid grid-cols-6 gap-3 min-h-[500px]">
@@ -376,7 +435,8 @@ export default function PipelinePage() {
 
         {/* Pipeline Stage Columns */}
         {PIPELINE_STAGES.map((stage) => {
-          const cards = deals[stage.key as keyof PipelineStages];
+          const allCards = deals[stage.key as keyof PipelineStages];
+          const cards = filterDeals(allCards);
           const isDragOver = dragOverColumn === stage.key;
 
           return (
@@ -392,7 +452,9 @@ export default function PipelinePage() {
               <div className="flex items-center gap-2 mb-4 px-1">
                 <div className={`w-2.5 h-2.5 rounded-full ${stage.color}`} />
                 <h3 className="text-sm font-semibold text-gray-900">{stage.label}</h3>
-                <span className="text-xs text-gray-500 ml-auto">{cards.length}</span>
+                <span className="text-xs text-gray-500 ml-auto">
+                  {cards.length}{dealFilter !== 'all' && cards.length !== allCards.length ? `/${allCards.length}` : ''}
+                </span>
               </div>
 
               <div className="space-y-2">
@@ -486,6 +548,7 @@ export default function PipelinePage() {
           isOpen={!!selectedDeal}
           onClose={() => setSelectedDeal(null)}
           onUpdated={fetchPipeline}
+          teamMembers={teamMembers}
         />
       )}
     </div>

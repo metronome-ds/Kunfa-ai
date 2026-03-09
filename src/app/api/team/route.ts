@@ -4,178 +4,195 @@ import { NextRequest, NextResponse } from 'next/server';
 /**
  * GET /api/team
  * List team members for current user's team
+ * team_id = current user's profiles.id
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createServerSupabaseClient();
 
-    // Get current user
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get current user's profile to find team_id
-    const { data: userProfile } = await supabase
+    // Get current user's profile
+    const { data: profile } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, full_name, email')
       .eq('user_id', user.id)
       .single();
 
-    if (!userProfile) {
-      return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 404 }
-      );
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
-    const teamId = user.id; // Default team is user's own ID
+    // team_id = profiles.id of the owner
+    const teamId = profile.id;
 
-    // Fetch team members with user details
-    const { data: teamMembers, error } = await supabase
+    // Fetch team members
+    const { data: members, error } = await supabase
       .from('team_members')
-      .select(
-        `
-        id,
-        user_id,
-        role,
-        status,
-        joined_at,
-        users!team_members_user_id_fkey(
-          id,
-          user_id,
-          full_name,
-          email,
-          avatar_url
-        )
-      `
-      )
+      .select('id, member_user_id, invited_email, invited_name, role, status, created_at')
       .eq('team_id', teamId)
-      .order('joined_at', { ascending: false });
+      .order('created_at', { ascending: true });
 
     if (error) {
       console.error('Error fetching team members:', error);
-      return NextResponse.json(
-        { error: 'Failed to fetch team members' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to fetch team members' }, { status: 500 });
     }
 
-    return NextResponse.json(
-      { data: teamMembers || [] },
-      { status: 200 }
-    );
+    // For accepted members with member_user_id, fetch their profile name
+    const acceptedUserIds = (members || [])
+      .filter(m => m.member_user_id)
+      .map(m => m.member_user_id);
+
+    let profileMap: Record<string, { full_name: string; email: string }> = {};
+    if (acceptedUserIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, email')
+        .in('user_id', acceptedUserIds);
+
+      if (profiles) {
+        for (const p of profiles) {
+          profileMap[p.user_id] = { full_name: p.full_name || '', email: p.email || '' };
+        }
+      }
+    }
+
+    // Format response: owner first, then members
+    const formatted = (members || []).map(m => ({
+      id: m.id,
+      name: m.member_user_id && profileMap[m.member_user_id]?.full_name
+        ? profileMap[m.member_user_id].full_name
+        : m.invited_name || '',
+      email: m.member_user_id && profileMap[m.member_user_id]?.email
+        ? profileMap[m.member_user_id].email
+        : m.invited_email,
+      role: m.role,
+      status: m.status,
+      member_user_id: m.member_user_id,
+      created_at: m.created_at,
+    }));
+
+    // Include the owner as a virtual entry at the top
+    const result = [
+      {
+        id: 'owner',
+        name: profile.full_name || 'You',
+        email: profile.email || user.email || '',
+        role: 'owner',
+        status: 'accepted',
+        member_user_id: user.id,
+        created_at: null,
+      },
+      ...formatted,
+    ];
+
+    return NextResponse.json({ data: result }, { status: 200 });
   } catch (error) {
     console.error('Unexpected error in GET /api/team:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 /**
  * POST /api/team
  * Invite a team member
- * Body: { email, role }
+ * Body: { name, email, role }
  */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createServerSupabaseClient();
 
-    // Get current user
     const {
       data: { user },
       error: authError,
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    const { email, role } = body;
+    const { name, email, role } = body;
 
-    // Validate required fields
-    if (!email || !role) {
+    if (!email || !name) {
       return NextResponse.json(
-        { error: 'Missing required fields: email, role' },
-        { status: 400 }
+        { error: 'Name and email are required' },
+        { status: 400 },
       );
     }
 
-    if (!['admin', 'member', 'viewer'].includes(role)) {
+    if (!['admin', 'member', 'viewer'].includes(role || '')) {
       return NextResponse.json(
         { error: 'Invalid role. Must be admin, member, or viewer' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    // Get current user's profile to find team_id
-    const { data: userProfile } = await supabase
+    // Get current user's profile.id for team_id
+    const { data: profile } = await supabase
       .from('profiles')
       .select('id')
       .eq('user_id', user.id)
       .single();
 
-    if (!userProfile) {
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    }
+
+    // Check if already invited
+    const { data: existing } = await supabase
+      .from('team_members')
+      .select('id')
+      .eq('team_id', profile.id)
+      .eq('invited_email', email)
+      .maybeSingle();
+
+    if (existing) {
       return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 404 }
+        { error: 'This email has already been invited to your team' },
+        { status: 409 },
       );
     }
 
-    const teamId = user.id;
-
-    // Check if user exists
-    const { data: existingUser } = await supabase
+    // Check if the invited email already has a profile (auto-link)
+    const { data: existingProfile } = await supabase
       .from('profiles')
-      .select('id, user_id')
+      .select('user_id')
       .eq('email', email)
-      .single();
+      .maybeSingle();
 
-    let userId = existingUser?.user_id;
-
-    // Create team member invitation
-    const { data: teamMember, error: inviteError } = await supabase
+    const { data: member, error: insertError } = await supabase
       .from('team_members')
       .insert({
-        team_id: teamId,
-        user_id: userId || null,
-        email: email,
-        role: role,
-        status: 'pending',
+        team_id: profile.id,
+        invited_email: email,
+        invited_name: name,
+        role: role || 'member',
+        status: existingProfile ? 'accepted' : 'pending',
+        member_user_id: existingProfile?.user_id || null,
+        invited_by: user.id,
       })
       .select()
       .single();
 
-    if (inviteError) {
-      console.error('Error creating team member invitation:', inviteError);
-      return NextResponse.json(
-        { error: 'Failed to invite team member' },
-        { status: 500 }
-      );
+    if (insertError) {
+      console.error('Error inviting team member:', insertError);
+      return NextResponse.json({ error: 'Failed to invite team member' }, { status: 500 });
     }
 
     return NextResponse.json(
-      { data: teamMember, message: 'Team member invited successfully' },
-      { status: 201 }
+      { data: member, message: `Invitation sent to ${email}` },
+      { status: 201 },
     );
   } catch (error) {
     console.error('Unexpected error in POST /api/team:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

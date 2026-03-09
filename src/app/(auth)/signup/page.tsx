@@ -66,6 +66,14 @@ function SignupContent() {
           user_id: data.user.id,
           email,
         })
+
+        // Auto-join: check if this email was invited to any team
+        await supabase
+          .from('team_members')
+          .update({ member_user_id: data.user.id, status: 'accepted', updated_at: new Date().toISOString() })
+          .eq('invited_email', email)
+          .eq('status', 'pending')
+
         setUserId(data.user.id)
         setShowRoleSelection(true)
       } else {

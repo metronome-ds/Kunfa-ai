@@ -66,6 +66,11 @@ const investorNavSections: Record<string, NavItem[]> = {
 
 const investorBottomSections: NavItem[] = [
   {
+    label: 'Team',
+    icon: <Users className="h-5 w-5" />,
+    href: '/team',
+  },
+  {
     label: 'Settings',
     icon: <Settings className="h-5 w-5" />,
     href: '/settings',
@@ -118,6 +123,11 @@ const startupNavSections: Record<string, NavItem[]> = {
 };
 
 const startupBottomSections: NavItem[] = [
+  {
+    label: 'Team',
+    icon: <Users className="h-5 w-5" />,
+    href: '/team',
+  },
   {
     label: 'Settings',
     icon: <Settings className="h-5 w-5" />,
