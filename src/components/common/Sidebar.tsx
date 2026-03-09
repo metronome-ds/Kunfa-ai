@@ -21,6 +21,7 @@ import {
   Bookmark,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import KunfaLogo from '@/components/common/KunfaLogo';
 
 interface NavItem {
   label: string;
@@ -217,15 +218,10 @@ export function Sidebar() {
     <div className="fixed left-0 top-0 h-screen w-64 bg-gray-900 border-r border-gray-800 flex flex-col overflow-hidden">
       {/* Logo */}
       <div className="p-6 border-b border-gray-800">
-        <div className="flex items-baseline gap-2">
-          <Link href="/dashboard" className="flex items-baseline gap-2 hover:opacity-80 transition-opacity">
-            <h1 className="text-2xl font-bold text-white">Kunfa</h1>
-            <span className="text-xs font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-              AI
-            </span>
-          </Link>
-        </div>
-        <p className="text-xs text-gray-400 mt-1">{tagline}</p>
+        <Link href="/dashboard" className="block hover:opacity-80 transition-opacity">
+          <KunfaLogo height={24} inverted />
+        </Link>
+        <p className="text-xs text-gray-400 mt-2">{tagline}</p>
       </div>
 
       {/* Navigation */}

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import KunfaLogo from '@/components/common/KunfaLogo'
 
 export default function Footer() {
   return (
@@ -6,11 +7,8 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center text-center">
           {/* Logo */}
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-kunfa-green rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">K</span>
-            </div>
-            <span className="text-white font-semibold text-lg">Kunfa.AI</span>
+          <div className="mb-4">
+            <KunfaLogo height={28} inverted />
           </div>
 
           {/* Company info */}
@@ -53,7 +51,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <p className="text-gray-600 text-xs">
-            &copy; {new Date().getFullYear()} Kunfa.AI. All rights reserved.
+            &copy; {new Date().getFullYear()} Kunfa. All rights reserved.
           </p>
         </div>
       </div>

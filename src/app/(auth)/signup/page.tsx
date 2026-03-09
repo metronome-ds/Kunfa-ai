@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Building2, TrendingUp } from 'lucide-react'
+import KunfaLogo from '@/components/common/KunfaLogo'
 
 export default function SignupPage() {
   return (
@@ -123,11 +124,8 @@ function SignupContent() {
       <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
         <div className="w-full max-w-lg">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-[#10B981] flex items-center justify-center">
-                <span className="text-white font-bold text-xl">K</span>
-              </div>
-              <span className="text-white font-bold text-xl">Kunfa.AI</span>
+            <div className="mb-6">
+              <KunfaLogo height={32} inverted />
             </div>
             <h1 className="text-2xl font-bold text-white">How will you use Kunfa?</h1>
             <p className="text-gray-400 mt-2">Choose your role to get started</p>
@@ -192,11 +190,8 @@ function SignupContent() {
     <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-[#10B981] flex items-center justify-center">
-              <span className="text-white font-bold text-xl">K</span>
-            </div>
-            <span className="text-white font-bold text-xl">Kunfa.AI</span>
+          <Link href="/" className="inline-block mb-6">
+            <KunfaLogo height={32} inverted />
           </Link>
           <h1 className="text-2xl font-bold text-white">Create your account</h1>
           <p className="text-gray-400 mt-2">Get your startup scored by AI</p>

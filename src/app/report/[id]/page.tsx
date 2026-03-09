@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import KunfaLogo from '@/components/common/KunfaLogo'
 
 type Status = 'loading' | 'verifying' | 'paid' | 'unpaid' | 'generating' | 'error'
 
@@ -133,11 +134,8 @@ export default function ReportPage() {
       {/* Nav */}
       <nav className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#10B981] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">K</span>
-            </div>
-            <span className="text-gray-900 font-semibold text-lg">Kunfa.AI</span>
+          <Link href="/">
+            <KunfaLogo height={28} />
           </Link>
           <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900 transition">
             Dashboard

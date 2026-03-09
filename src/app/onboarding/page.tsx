@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { CheckCircle, ArrowRight, User, Target, FileText } from 'lucide-react';
 import { STAGES, INDUSTRIES } from '@/lib/constants';
+import KunfaLogo from '@/components/common/KunfaLogo';
 
 const SECTORS = INDUSTRIES.filter(i => i !== 'Other');
 
@@ -136,11 +137,8 @@ export default function InvestorOnboardingPage() {
       <div className="w-full max-w-2xl">
         {/* Header */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-baseline gap-2 mb-4">
-            <h1 className="text-3xl font-bold text-white">Kunfa</h1>
-            <span className="text-sm font-semibold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-              AI
-            </span>
+          <div className="mb-4">
+            <KunfaLogo height={32} inverted />
           </div>
           <p className="text-gray-400">Set up your investor profile</p>
         </div>

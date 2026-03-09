@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
+import KunfaLogo from '@/components/common/KunfaLogo'
 
 export function CompanyNav() {
   const [userRole, setUserRole] = useState<string | null>(null)
@@ -32,11 +33,8 @@ export function CompanyNav() {
   return (
     <nav className="bg-white border-b border-gray-200 px-6 py-4">
       <div className="max-w-4xl mx-auto flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#10B981] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">K</span>
-          </div>
-          <span className="text-gray-900 font-semibold text-lg">Kunfa.AI</span>
+        <Link href="/">
+          <KunfaLogo height={28} />
         </Link>
 
         <div className="flex items-center gap-3">

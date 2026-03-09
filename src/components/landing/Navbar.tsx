@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import KunfaLogo from '@/components/common/KunfaLogo'
 
 interface NavbarProps {
   onApplyNow: () => void
@@ -15,11 +16,8 @@ export default function Navbar({ onApplyNow }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-kunfa-green rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">K</span>
-            </div>
-            <span className="text-kunfa-navy font-semibold text-lg">Kunfa.AI</span>
+          <Link href="/">
+            <KunfaLogo height={32} />
           </Link>
 
           {/* Desktop Nav */}

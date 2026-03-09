@@ -439,7 +439,7 @@ export const FEATURE_FLAGS = {
  * Platform configuration
  */
 export const PLATFORM_CONFIG = {
-  APP_NAME: 'Kunfa AI',
+  APP_NAME: 'Kunfa',
   VERSION: '0.1.0',
   ENVIRONMENT: process.env.NODE_ENV || 'development',
   MAX_CONCURRENT_SCORES: 5,

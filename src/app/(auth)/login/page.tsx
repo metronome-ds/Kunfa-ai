@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { LogIn, UserPlus } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import KunfaLogo from "@/components/common/KunfaLogo";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -100,7 +101,7 @@ export default function LoginPage() {
       <div className="rounded-xl bg-white shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-8 text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">Kunfa AI</h1>
+          <div className="mb-2"><KunfaLogo height={32} inverted /></div>
           <p className="text-blue-100 font-semibold text-sm">
             Source. Analyze. Invest.
           </p>
