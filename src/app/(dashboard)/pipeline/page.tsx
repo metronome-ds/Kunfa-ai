@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState, DragEvent } from 'react';
-import { useRouter } from 'next/navigation';
-import { GripVertical, Bookmark, ArrowRight } from 'lucide-react';
+import { GripVertical, Bookmark, ArrowRight, Star, CalendarDays } from 'lucide-react';
 import Link from 'next/link';
+import DealSlideout from '@/components/pipeline/DealSlideout';
 
 interface WatchlistCard {
   id: string;
@@ -24,10 +24,22 @@ interface DealCard {
   ai_score: number | null;
   sector: string | null;
   industry: string | null;
+  company_stage: string | null;
   raise_amount: number | null;
   one_liner: string | null;
+  description: string | null;
+  pdf_url: string | null;
   days_in_stage: number;
   notes: string | null;
+  priority_flag: boolean;
+  next_action: string | null;
+  next_action_date: string | null;
+  deal_size: number | null;
+  source: string | null;
+  thesis_fit: string | null;
+  contact_name: string | null;
+  contact_email: string | null;
+  assigned_to_name: string | null;
 }
 
 interface PipelineStages {
@@ -63,8 +75,22 @@ function truncate(text: string | null, max: number) {
   return text.length > max ? text.slice(0, max) + '...' : text;
 }
 
+function formatShortDate(dateStr: string | null) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 export default function PipelinePage() {
-  const router = useRouter();
   const [watchlist, setWatchlist] = useState<WatchlistCard[]>([]);
   const [deals, setDeals] = useState<PipelineStages>({
     sourced: [],
@@ -77,6 +103,7 @@ export default function PipelinePage() {
   const [error, setError] = useState<string | null>(null);
   const [dragItem, setDragItem] = useState<DragItem | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+  const [selectedDeal, setSelectedDeal] = useState<DealCard | null>(null);
 
   const fetchPipeline = async () => {
     try {
@@ -86,6 +113,13 @@ export default function PipelinePage() {
       setWatchlist(result.watchlist || []);
       setDeals(result.deals || { sourced: [], screening: [], due_diligence: [], term_sheet: [], closed: [] });
       setError(null);
+
+      // If a deal is selected, update it with fresh data
+      if (selectedDeal) {
+        const allDeals = Object.values(result.deals || {}).flat() as DealCard[];
+        const updated = allDeals.find(d => d.id === selectedDeal.id);
+        if (updated) setSelectedDeal(updated);
+      }
     } catch {
       setError('Failed to load pipeline');
     } finally {
@@ -133,10 +167,22 @@ export default function PipelinePage() {
         ai_score: card.overall_score,
         sector: card.industry,
         industry: card.industry,
+        company_stage: null,
         raise_amount: null,
         one_liner: card.one_liner,
+        description: null,
+        pdf_url: null,
         days_in_stage: 0,
         notes: null,
+        priority_flag: false,
+        next_action: null,
+        next_action_date: null,
+        deal_size: null,
+        source: null,
+        thesis_fit: null,
+        contact_name: null,
+        contact_email: null,
+        assigned_to_name: null,
       };
 
       setDeals((prev) => ({
@@ -208,6 +254,12 @@ export default function PipelinePage() {
     setDragItem(null);
   };
 
+  const handleDealClick = (deal: DealCard, e: React.MouseEvent) => {
+    // Don't open slideout if user is dragging
+    if ((e.target as HTMLElement).closest('[data-grip]')) return;
+    setSelectedDeal(deal);
+  };
+
   const totalDeals = Object.values(deals).reduce((sum, arr) => sum + arr.length, 0);
 
   if (isLoading) {
@@ -245,7 +297,7 @@ export default function PipelinePage() {
         </div>
         <Link
           href="/deals"
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+          className="flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
         >
           Browse Companies
           <ArrowRight className="w-4 h-4" />
@@ -279,12 +331,11 @@ export default function PipelinePage() {
                 key={item.id}
                 draggable
                 onDragStart={() => handleDragStartWatchlist(item)}
-                onClick={() => item.slug && router.push(`/company/${item.slug}`)}
                 className="bg-white rounded-lg p-3 border border-gray-200 hover:border-amber-300 cursor-grab active:cursor-grabbing transition group shadow-sm"
               >
                 <div className="flex items-start justify-between gap-2">
                   <h4 className="text-sm font-medium text-gray-900 truncate flex-1">{item.company_name}</h4>
-                  <GripVertical className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5" />
+                  <GripVertical data-grip className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5" />
                 </div>
 
                 {item.overall_score !== null && (
@@ -314,7 +365,7 @@ export default function PipelinePage() {
                 <p className="text-gray-500 text-xs mb-3">No companies watchlisted yet.</p>
                 <Link
                   href="/deals"
-                  className="text-blue-600 text-xs hover:text-blue-800 underline"
+                  className="text-[#0168FE] text-xs hover:text-[#0050CC] underline"
                 >
                   Browse companies
                 </Link>
@@ -350,12 +401,19 @@ export default function PipelinePage() {
                     key={deal.id}
                     draggable
                     onDragStart={() => handleDragStartDeal(deal, stage.key)}
-                    onClick={() => deal.slug && router.push(`/company/${deal.slug}`)}
-                    className="bg-white rounded-lg p-3 border border-gray-200 hover:border-gray-300 cursor-grab active:cursor-grabbing transition group shadow-sm"
+                    onClick={(e) => handleDealClick(deal, e)}
+                    className={`bg-white rounded-lg p-3 border hover:border-gray-300 cursor-pointer active:cursor-grabbing transition group shadow-sm ${
+                      selectedDeal?.id === deal.id ? 'border-[#0168FE] ring-1 ring-[#0168FE]/30' : 'border-gray-200'
+                    }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <h4 className="text-sm font-medium text-gray-900 truncate flex-1">{deal.company_name}</h4>
-                      <GripVertical className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5" />
+                      <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                        {deal.priority_flag && (
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
+                        )}
+                        <h4 className="text-sm font-medium text-gray-900 truncate">{deal.company_name}</h4>
+                      </div>
+                      <GripVertical data-grip className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5" />
                     </div>
 
                     {deal.ai_score !== null && (
@@ -378,9 +436,31 @@ export default function PipelinePage() {
                       </p>
                     )}
 
-                    <p className="text-[10px] text-gray-400 mt-2">
-                      {deal.days_in_stage}d in stage
-                    </p>
+                    {/* Next action + date */}
+                    {deal.next_action && (
+                      <div className="flex items-center gap-1 mt-2 text-[10px] text-gray-500">
+                        <CalendarDays className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">
+                          {truncate(deal.next_action, 30)}
+                          {deal.next_action_date && ` — ${formatShortDate(deal.next_action_date)}`}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Footer: days + assigned */}
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-[10px] text-gray-400">
+                        {deal.days_in_stage}d in stage
+                      </p>
+                      {deal.assigned_to_name && (
+                        <span
+                          className="w-5 h-5 rounded-full bg-gray-200 text-[8px] font-semibold text-gray-600 flex items-center justify-center flex-shrink-0"
+                          title={deal.assigned_to_name}
+                        >
+                          {getInitials(deal.assigned_to_name)}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))}
 
@@ -398,6 +478,16 @@ export default function PipelinePage() {
           );
         })}
       </div>
+
+      {/* Deal Slideout Panel */}
+      {selectedDeal && (
+        <DealSlideout
+          deal={selectedDeal}
+          isOpen={!!selectedDeal}
+          onClose={() => setSelectedDeal(null)}
+          onUpdated={fetchPipeline}
+        />
+      )}
     </div>
   );
 }

@@ -49,7 +49,7 @@ export async function GET() {
       console.error('Error fetching watchlist:', wlError);
     }
 
-    // Fetch deals joined with company_pages
+    // Fetch deals joined with company_pages (include all management fields)
     const { data: deals, error: dealsError } = await supabase
       .from('deals')
       .select(`
@@ -62,13 +62,25 @@ export async function GET() {
         days_in_stage,
         stage_changed_at,
         notes,
+        priority_flag,
+        next_action,
+        next_action_date,
+        deal_size,
+        source,
+        thesis_fit,
+        contact_name,
+        contact_email,
+        assigned_to_name,
         created_at,
         company_pages!company_id (
           company_name,
           slug,
           industry,
+          stage,
           overall_score,
-          one_liner
+          one_liner,
+          description,
+          pdf_url
         )
       `)
       .eq('created_by', user.id)
@@ -118,11 +130,23 @@ export async function GET() {
           ai_score: deal.ai_score || company?.overall_score || null,
           sector: deal.sector || company?.industry || null,
           industry: company?.industry || null,
+          company_stage: company?.stage || null,
           raise_amount: deal.raise_amount || company?.raise_amount || null,
           one_liner: company?.one_liner || null,
+          description: company?.description || null,
+          pdf_url: company?.pdf_url || null,
           days_in_stage: daysInStage,
           stage_changed_at: deal.stage_changed_at,
           notes: deal.notes,
+          priority_flag: deal.priority_flag || false,
+          next_action: deal.next_action || null,
+          next_action_date: deal.next_action_date || null,
+          deal_size: deal.deal_size || null,
+          source: deal.source || null,
+          thesis_fit: deal.thesis_fit || null,
+          contact_name: deal.contact_name || null,
+          contact_email: deal.contact_email || null,
+          assigned_to_name: deal.assigned_to_name || null,
         });
       }
     });
