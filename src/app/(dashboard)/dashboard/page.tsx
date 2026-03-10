@@ -3,28 +3,20 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
-import { StatsCard } from '@/components/dashboard/StatsCard';
-import { QuickActions } from '@/components/dashboard/QuickActions';
-import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import { TopDeals } from '@/components/dashboard/TopDeals';
-import { PipelineSummary } from '@/components/dashboard/PipelineSummary';
-import { MarketPulse } from '@/components/dashboard/MarketPulse';
-import { UserRole, PipelineStage } from '@/lib/types';
+import { UserRole } from '@/lib/types';
 import {
-  BarChart3,
-  Briefcase,
   TrendingUp,
+  Bookmark,
+  DollarSign,
   Brain,
-  FileUp,
-  Users,
-  Compass,
-  PieChart,
-  Eye,
   Star,
   Clock,
   ExternalLink,
   RefreshCw,
   CheckCircle,
+  PlusCircle,
+  Compass,
+  ArrowRight,
 } from 'lucide-react';
 
 interface UserProfile {
@@ -34,6 +26,7 @@ interface UserProfile {
   email: string;
   role: UserRole;
   avatar_url?: string;
+  fund_name?: string;
   company_name?: string;
   one_liner?: string;
   industry?: string;
@@ -65,47 +58,41 @@ interface CompanyData {
   created_at: string;
 }
 
-interface DealData {
+// ── Investor types ──
+
+interface InvestorStats {
+  pipelineDeals: number;
+  watchlisted: number;
+  totalPipelineValue: number;
+  avgKunfaScore: number | null;
+}
+
+interface StageCounts {
+  sourced: number;
+  screening: number;
+  due_diligence: number;
+  term_sheet: number;
+  closed: number;
+}
+
+interface TopDeal {
   id: string;
   company_name: string;
-  industry: string;
+  slug: string | null;
+  score: number | null;
   stage: string;
-  overall_score: number | null;
-  funding_amount_requested: number | null;
+  raise_amount: number | null;
+  days_in_stage: number;
 }
 
-function mapStageToPipeline(dbStage: string): PipelineStage {
-  switch (dbStage) {
-    case 'sourced': return 'sourcing';
-    case 'screening': return 'screening';
-    case 'due_diligence':
-    case 'ic_review': return 'diligence';
-    case 'term_sheet':
-    case 'closed': return 'close';
-    default: return 'sourcing';
-  }
-}
-
-function transformDeal(row: Record<string, unknown>): DealData {
-  const company = row.company_pages as Record<string, unknown> | null;
-  return {
-    id: row.id as string,
-    company_name: (company?.company_name as string) || (row.sector as string) || 'Unknown',
-    industry: (company?.industry as string) || (row.sector as string) || 'N/A',
-    stage: row.stage as string,
-    overall_score: (row.ai_score as number | null) ?? (company?.overall_score as number | null) ?? null,
-    funding_amount_requested: row.raise_amount as number | null,
-  };
-}
-
-interface ActivityData {
+interface ActivityItem {
   id: string;
-  title: string;
-  description: string;
-  icon: 'deal' | 'score' | 'document' | 'pipeline';
-  timestamp: string;
+  text: string;
+  time: string;
   href?: string;
 }
+
+// ── Helpers ──
 
 function getScoreColor(score: number | null) {
   if (!score) return 'text-gray-400';
@@ -123,199 +110,174 @@ function getScoreBg(score: number | null) {
   return 'bg-red-50 border-red-200';
 }
 
+function getScoreBadgeColor(score: number | null) {
+  if (!score) return 'bg-gray-100 text-gray-500';
+  if (score >= 80) return 'bg-emerald-100 text-emerald-700';
+  if (score >= 60) return 'bg-blue-100 text-blue-700';
+  if (score >= 40) return 'bg-yellow-100 text-yellow-700';
+  return 'bg-red-100 text-red-700';
+}
+
 function daysSince(dateStr: string) {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
 }
+
+function formatCompact(n: number | null): string {
+  if (!n) return '$0';
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
+function formatStageLabel(stage: string): string {
+  const map: Record<string, string> = {
+    sourced: 'Sourced',
+    screening: 'Screening',
+    due_diligence: 'Due Diligence',
+    term_sheet: 'Term Sheet',
+    closed: 'Closed',
+  };
+  return map[stage] || stage;
+}
+
+function timeAgo(dateStr: string): string {
+  const s = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  if (s < 604800) return `${Math.floor(s / 86400)}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
+const STAGE_COLORS: Record<string, string> = {
+  sourced: 'bg-gray-400',
+  screening: 'bg-blue-500',
+  due_diligence: 'bg-purple-500',
+  term_sheet: 'bg-amber-500',
+  closed: 'bg-emerald-500',
+};
+
+// ── Main Component ──
 
 export default function DashboardPage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStartup, setIsStartup] = useState(false);
 
-  // Startup-specific state
+  // Startup state
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [paid, setPaid] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
-  // Investor-specific state
-  const [stats, setStats] = useState({
-    activePipeline: 0,
-    savedDeals: 0,
-    portfolioValue: 0,
-    scoresGenerated: 0,
-  });
-  const [topDeals, setTopDeals] = useState<DealData[]>([]);
-  const [pipelineData, setPipelineData] = useState<Array<{ stage: PipelineStage; count: number }>>([]);
-  const [activity, setActivity] = useState<ActivityData[]>([]);
-  const [marketPulse, setMarketPulse] = useState({
-    newDealsThisWeek: 0,
-    topIndustry: 'N/A',
-    topIndustryCount: 0,
-    averageScore: null as number | null,
-  });
+  // Investor state
+  const [investorStats, setInvestorStats] = useState<InvestorStats>({ pipelineDeals: 0, watchlisted: 0, totalPipelineValue: 0, avgKunfaScore: null });
+  const [stageCounts, setStageCounts] = useState<StageCounts>({ sourced: 0, screening: 0, due_diligence: 0, term_sheet: 0, closed: 0 });
+  const [topDeals, setTopDeals] = useState<TopDeal[]>([]);
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
 
   useEffect(() => {
-    const loadDashboardData = async () => {
+    const load = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
+        const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user.id).single();
         if (profile) {
           setUserProfile(profile);
           const startup = profile.role === 'founder' || profile.role === 'startup';
           setIsStartup(startup);
-
           if (startup) {
-            loadStartupData(user.id);
+            loadStartupData();
           } else {
             loadInvestorData(user.id);
           }
         }
-      } catch (error) {
-        console.error('Failed to load dashboard data:', error);
+      } catch (err) {
+        console.error('Dashboard load error:', err);
       } finally {
         setIsLoading(false);
       }
     };
-
-    loadDashboardData();
+    load();
   }, []);
 
-  const loadStartupData = async (userId: string) => {
+  const loadStartupData = async () => {
     try {
       const res = await fetch('/api/my-company');
       const data = await res.json();
       setCompany(data.company || null);
       setPaid(!!data.paid);
-    } catch {
-      // ignore
-    }
+    } catch { /* ignore */ }
   };
 
   const loadInvestorData = async (userId: string) => {
     try {
-      const { count: savedCount } = await supabase
-        .from('watchlist_items')
-        .select('*', { count: 'exact' })
-        .eq('investor_id', userId);
+      // Fetch pipeline data
+      const pipelineRes = await fetch('/api/pipeline');
+      const pipelineData = pipelineRes.ok ? await pipelineRes.json() : { deals: {}, watchlist: [] };
+      const allDeals = pipelineData.deals || {};
+      const watchlistCount = (pipelineData.watchlist || []).length;
 
-      const { data: rawDeals } = await supabase
-        .from('deals')
-        .select(`
-          id, created_by, assigned_to, company_id, stage, ai_score, sector,
-          raise_amount, priority_flag, is_watchlisted, days_in_stage,
-          stage_changed_at, created_at, updated_at,
-          company_pages (id, company_name, slug, description, overall_score, industry, logo_url)
-        `)
-        .order('ai_score', { ascending: false, nullsFirst: false })
-        .limit(10);
+      // Compute stage counts + total value + scores
+      const counts: StageCounts = { sourced: 0, screening: 0, due_diligence: 0, term_sheet: 0, closed: 0 };
+      let totalValue = 0;
+      const scores: number[] = [];
+      const allDealsList: TopDeal[] = [];
 
-      const deals: DealData[] = (rawDeals || []).map(transformDeal);
-
-      const { data: allDeals } = await supabase
-        .from('deals')
-        .select('stage');
-
-      const pipelineCounts: Array<{ stage: PipelineStage; count: number }> = [
-        { stage: 'sourcing', count: allDeals?.filter((d) => d.stage === 'sourced').length || 0 },
-        { stage: 'screening', count: allDeals?.filter((d) => d.stage === 'screening').length || 0 },
-        { stage: 'diligence', count: allDeals?.filter((d) => d.stage === 'due_diligence' || d.stage === 'ic_review').length || 0 },
-        { stage: 'close', count: allDeals?.filter((d) => d.stage === 'term_sheet' || d.stage === 'closed').length || 0 },
-      ];
-
-      const { data: funds } = await supabase
-        .from('funds')
-        .select('committed')
-        .eq('owner_id', userId);
-      const totalPortfolio = funds?.reduce((sum, f) => sum + (Number(f.committed) || 0), 0) || 0;
-
-      setStats({
-        activePipeline: allDeals?.length || 0,
-        savedDeals: savedCount || 0,
-        portfolioValue: totalPortfolio,
-        scoresGenerated: deals.filter((d) => d.overall_score !== null).length,
-      });
-
-      setTopDeals(deals.slice(0, 4));
-      setPipelineData(pipelineCounts);
-
-      const { data: notifications } = await supabase
-        .from('notifications')
-        .select('id, title, body, type, link, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      const activityItems: ActivityData[] = (notifications || []).map((n) => ({
-        id: n.id,
-        title: n.title,
-        description: n.body || '',
-        icon: (n.type === 'score' ? 'score' : n.type === 'pipeline' ? 'pipeline' : n.type === 'document' ? 'document' : 'deal') as ActivityData['icon'],
-        timestamp: n.created_at,
-        href: n.link || undefined,
-      }));
-
-      if (activityItems.length === 0) {
-        activityItems.push(
-          { id: '1', title: 'Welcome to Kunfa', description: 'Your deal flow platform is ready', icon: 'deal', timestamp: new Date().toISOString() },
-        );
+      for (const [stage, deals] of Object.entries(allDeals) as [string, any[]][]) {
+        counts[stage as keyof StageCounts] = deals.length;
+        for (const d of deals) {
+          if (d.raise_amount) totalValue += Number(d.raise_amount);
+          if (d.ai_score) scores.push(d.ai_score);
+          allDealsList.push({
+            id: d.id,
+            company_name: d.company_name,
+            slug: d.slug,
+            score: d.ai_score,
+            stage,
+            raise_amount: d.raise_amount,
+            days_in_stage: d.days_in_stage || 0,
+          });
+        }
       }
 
-      setActivity(activityItems);
+      const totalDeals = Object.values(counts).reduce((a, b) => a + b, 0);
+      const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
 
-      const { count: recentCount } = await supabase
-        .from('deals')
-        .select('*', { count: 'exact' })
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+      setInvestorStats({ pipelineDeals: totalDeals, watchlisted: watchlistCount, totalPipelineValue: totalValue, avgKunfaScore: avgScore });
+      setStageCounts(counts);
 
-      const scores = deals.filter((d) => d.overall_score !== null).map((d) => d.overall_score!);
-      const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+      // Top 5 deals by score
+      const sorted = allDealsList.filter(d => d.score !== null).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 5);
+      setTopDeals(sorted);
 
-      const sectorCounts: Record<string, number> = {};
-      deals.forEach((d) => { if (d.industry) sectorCounts[d.industry] = (sectorCounts[d.industry] || 0) + 1; });
-      const topSector = Object.entries(sectorCounts).sort((a, b) => b[1] - a[1])[0];
+      // Recent activity: from deals (created_at, stage_changed_at) + notifications
+      const activityItems: ActivityItem[] = [];
 
-      setMarketPulse({
-        newDealsThisWeek: recentCount || 0,
-        topIndustry: topSector?.[0] || 'N/A',
-        topIndustryCount: topSector?.[1] || 0,
-        averageScore: avgScore,
-      });
-    } catch (error) {
-      console.error('Failed to load investor data:', error);
-    }
-  };
+      for (const deals of Object.values(allDeals) as any[][]) {
+        for (const d of deals) {
+          activityItems.push({
+            id: `deal-created-${d.id}`,
+            text: `Added ${d.company_name} to pipeline`,
+            time: d.created_at || d.stage_changed_at || new Date().toISOString(),
+            href: d.slug ? `/company/${d.slug}` : undefined,
+          });
+          if (d.stage_changed_at && d.stage !== 'sourced') {
+            activityItems.push({
+              id: `deal-stage-${d.id}`,
+              text: `Moved ${d.company_name} to ${formatStageLabel(d.stage)}`,
+              time: d.stage_changed_at,
+              href: d.slug ? `/company/${d.slug}` : undefined,
+            });
+          }
+        }
+      }
 
-  const investorQuickActions = [
-    { title: 'Browse Companies', description: 'Discover new investment opportunities', icon: Compass, href: '/deals', color: 'blue' as const },
-    { title: 'View Pipeline', description: 'Track deals through your pipeline', icon: TrendingUp, href: '/pipeline', color: 'purple' as const },
-    { title: 'Add Company', description: 'Add a company to your pipeline', icon: Briefcase, href: '/companies/new', color: 'green' as const },
-    { title: 'Saved Deals', description: 'View your watchlisted companies', icon: Star, href: '/saved-deals', color: 'indigo' as const },
-  ];
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'deal': return Briefcase;
-      case 'score': return Brain;
-      case 'document': return FileUp;
-      case 'pipeline': return TrendingUp;
-      default: return Clock;
-    }
-  };
-
-  const getActivityColor = (type: string): 'blue' | 'green' | 'purple' | 'orange' => {
-    switch (type) {
-      case 'deal': return 'blue';
-      case 'score': return 'purple';
-      case 'document': return 'green';
-      case 'pipeline': return 'orange';
-      default: return 'blue';
+      // Sort by time, take latest 10
+      activityItems.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+      setActivity(activityItems.slice(0, 10));
+    } catch (err) {
+      console.error('Failed to load investor data:', err);
     }
   };
 
@@ -323,7 +285,7 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4" />
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#0168FE] mb-4" />
           <p className="text-gray-600">Loading dashboard...</p>
         </div>
       </div>
@@ -333,20 +295,10 @@ export default function DashboardPage() {
   // ─── STARTUP DASHBOARD ───────────────────────────────────
   if (isStartup) {
     const scored = company?.created_at ? daysSince(company.created_at) : null;
-
-    // Profile completeness
     const profileFields = company ? [
-      company.company_name,
-      company.one_liner,
-      company.description,
-      company.industry,
-      company.stage,
-      company.website_url,
-      company.linkedin_url,
-      company.raise_amount,
-      company.team_size,
-      company.traction,
-      company.use_of_funds,
+      company.company_name, company.one_liner, company.description, company.industry,
+      company.stage, company.website_url, company.linkedin_url, company.raise_amount,
+      company.team_size, company.traction, company.use_of_funds,
     ] : [];
     const filledFields = profileFields.filter(Boolean).length;
     const totalFields = profileFields.length;
@@ -354,7 +306,6 @@ export default function DashboardPage() {
 
     return (
       <div className="p-8 max-w-4xl mx-auto">
-        {/* Welcome */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
             Welcome back{userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}!
@@ -367,54 +318,25 @@ export default function DashboardPage() {
             {/* Score + Company Card */}
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
               <div className="flex items-start gap-6">
-                {/* Score Badge */}
                 <div className={`w-24 h-24 rounded-2xl border-2 flex flex-col items-center justify-center flex-shrink-0 ${getScoreBg(company.overall_score)}`}>
-                  <span className={`text-4xl font-bold ${getScoreColor(company.overall_score)}`}>
-                    {company.overall_score ?? '—'}
-                  </span>
+                  <span className={`text-4xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
                   <span className="text-[10px] text-gray-400 mt-0.5">/ 100</span>
                 </div>
-
                 <div className="flex-1 min-w-0">
                   <h2 className="text-xl font-bold text-gray-900">{company.company_name}</h2>
-                  {company.one_liner && (
-                    <p className="text-gray-500 text-sm mt-1">{company.one_liner}</p>
-                  )}
+                  {company.one_liner && <p className="text-gray-500 text-sm mt-1">{company.one_liner}</p>}
                   <div className="flex flex-wrap items-center gap-2 mt-3">
-                    {company.industry && (
-                      <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
-                        {company.industry}
-                      </span>
-                    )}
-                    {company.stage && (
-                      <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">
-                        {company.stage}
-                      </span>
-                    )}
-                    {scored !== null && (
-                      <span className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
-                        Scored {scored}d ago
-                      </span>
-                    )}
+                    {company.industry && <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">{company.industry}</span>}
+                    {company.stage && <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">{company.stage}</span>}
+                    {scored !== null && <span className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">Scored {scored}d ago</span>}
                   </div>
                 </div>
-
-                {/* Actions */}
                 <div className="flex flex-col gap-2 flex-shrink-0">
-                  <Link
-                    href={`/company/${company.slug}`}
-                    target="_blank"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
-                  >
-                    View Public Profile
-                    <ExternalLink className="w-3.5 h-3.5" />
+                  <Link href={`/company/${company.slug}`} target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition">
+                    View Public Profile <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
-                  <Link
-                    href="/company-profile"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                    Manage Profile
+                  <Link href="/company-profile" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                    <RefreshCw className="w-3.5 h-3.5" /> Manage Profile
                   </Link>
                 </div>
               </div>
@@ -424,67 +346,37 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Star className="w-5 h-5 text-[#0168FE]" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium">Kunfa Score</p>
-                    <p className={`text-2xl font-bold ${getScoreColor(company.overall_score)}`}>
-                      {company.overall_score ?? '—'}
-                    </p>
-                  </div>
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><Star className="w-5 h-5 text-[#0168FE]" /></div>
+                  <div><p className="text-xs text-gray-500 font-medium">Kunfa Score</p><p className={`text-2xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</p></div>
                 </div>
               </div>
-
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <Clock className="w-5 h-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium">Days Since Scored</p>
-                    <p className="text-2xl font-bold text-gray-900">{scored ?? '—'}</p>
-                  </div>
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><Clock className="w-5 h-5 text-blue-600" /></div>
+                  <div><p className="text-xs text-gray-500 font-medium">Days Since Scored</p><p className="text-2xl font-bold text-gray-900">{scored ?? '—'}</p></div>
                 </div>
               </div>
-
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 font-medium">Profile Completeness</p>
-                    <p className="text-2xl font-bold text-gray-900">{completeness}%</p>
-                  </div>
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center"><CheckCircle className="w-5 h-5 text-purple-600" /></div>
+                  <div><p className="text-xs text-gray-500 font-medium">Profile Completeness</p><p className="text-2xl font-bold text-gray-900">{completeness}%</p></div>
                 </div>
-                {/* Progress bar */}
                 <div className="mt-3 w-full bg-gray-100 rounded-full h-1.5">
-                  <div
-                    className="bg-purple-500 h-1.5 rounded-full transition-all"
-                    style={{ width: `${completeness}%` }}
-                  />
+                  <div className="bg-purple-500 h-1.5 rounded-full transition-all" style={{ width: `${completeness}%` }} />
                 </div>
               </div>
             </div>
 
             {/* Report Status */}
             {company.submission_id && (
-              <div className={`rounded-xl p-5 mb-6 border ${
-                paid ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'
-              }`}>
+              <div className={`rounded-xl p-5 mb-6 border ${paid ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
                 {paid ? (
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-semibold text-gray-900">Kunfa Readiness Report</h3>
                       <p className="text-xs text-gray-600 mt-0.5">Your full AI-powered investment analysis is ready.</p>
                     </div>
-                    <Link
-                      href={`/report/${company.submission_id}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
-                    >
-                      View Report
-                    </Link>
+                    <Link href={`/report/${company.submission_id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition">View Report</Link>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">
@@ -496,16 +388,10 @@ export default function DashboardPage() {
                       onClick={async () => {
                         setCheckoutLoading(true);
                         try {
-                          const res = await fetch('/api/stripe/checkout', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ submissionId: company.submission_id }),
-                          });
+                          const res = await fetch('/api/stripe/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ submissionId: company.submission_id }) });
                           const data = await res.json();
                           if (data.url) window.location.href = data.url;
-                        } catch { /* ignore */ } finally {
-                          setCheckoutLoading(false);
-                        }
+                        } catch { /* ignore */ } finally { setCheckoutLoading(false); }
                       }}
                       disabled={checkoutLoading}
                       className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition disabled:opacity-50"
@@ -525,11 +411,7 @@ export default function DashboardPage() {
                 { label: 'Find Investors', href: '/investors', icon: '🔍' },
                 { label: 'Score Details', href: company.submission_id ? `/score/${company.submission_id}` : '#', icon: '📊' },
               ].map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 hover:border-gray-300 hover:shadow transition text-center"
-                >
+                <Link key={link.label} href={link.href} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 hover:border-gray-300 hover:shadow transition text-center">
                   <span className="text-2xl mb-2 block">{link.icon}</span>
                   <span className="text-sm font-medium text-gray-700">{link.label}</span>
                 </Link>
@@ -537,21 +419,11 @@ export default function DashboardPage() {
             </div>
           </>
         ) : (
-          /* No company page — CTA */
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <Star className="w-8 h-8 text-gray-400" />
-            </div>
+            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><Star className="w-8 h-8 text-gray-400" /></div>
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Get Your Kunfa Score</h2>
-            <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">
-              Upload your pitch deck to get your AI-powered investment readiness score and create your company profile.
-            </p>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition"
-            >
-              Get Your Kunfa Score
-            </Link>
+            <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">Upload your pitch deck to get your AI-powered investment readiness score and create your company profile.</p>
+            <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition">Get Your Kunfa Score</Link>
           </div>
         )}
       </div>
@@ -559,80 +431,191 @@ export default function DashboardPage() {
   }
 
   // ─── INVESTOR DASHBOARD ──────────────────────────────────
+  const totalStageDeals = Object.values(stageCounts).reduce((a, b) => a + b, 0);
+
   return (
-    <div className="p-8 max-w-7xl mx-auto">
-      {/* Welcome Banner */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">
-          Welcome back{userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}!
-        </h1>
-        <p className="text-gray-600 mt-2">
-          Manage your deal pipeline and discover new investment opportunities
-        </p>
-      </div>
-
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <StatsCard label="Active Pipeline" value={stats.activePipeline} icon={TrendingUp} color="blue" isLoading={isLoading} />
-        <StatsCard label="Saved Deals" value={stats.savedDeals} icon={BarChart3} color="green" isLoading={isLoading} />
-        <StatsCard label="Portfolio Value" value={stats.portfolioValue > 0 ? `$${(stats.portfolioValue / 1_000_000).toFixed(1)}M` : '$0'} icon={PieChart} color="purple" isLoading={isLoading} />
-        <StatsCard label="AI Scores Generated" value={stats.scoresGenerated} icon={Brain} color="indigo" isLoading={isLoading} />
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <QuickActions actions={investorQuickActions} isLoading={isLoading} />
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
-            <RecentActivity
-              items={activity.map((item) => ({
-                id: item.id,
-                icon: getActivityIcon(item.icon),
-                title: item.title,
-                description: item.description,
-                timestamp: item.timestamp,
-                href: item.href,
-                color: getActivityColor(item.icon),
-              }))}
-              isLoading={isLoading}
-              emptyMessage="No recent activity yet"
-            />
+    <div className="p-8 max-w-6xl mx-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-[#0168FE] flex items-center justify-center text-white text-lg font-bold">
+            {(userProfile?.full_name || 'U').charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              {userProfile?.fund_name || `${userProfile?.full_name || 'Investor'}'s Dashboard`}
+            </h1>
+            <p className="text-gray-500 text-sm mt-0.5">
+              Welcome back{userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}
+            </p>
           </div>
         </div>
-
-        <div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Market Pulse</h2>
-            <MarketPulse
-              newDealsThisWeek={marketPulse.newDealsThisWeek}
-              topIndustry={marketPulse.topIndustry}
-              topIndustryCount={marketPulse.topIndustryCount}
-              averageScore={marketPulse.averageScore}
-              isLoading={isLoading}
-            />
-          </div>
+        <div className="flex items-center gap-3">
+          <Link href="/companies/new" className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0168FE] text-white rounded-lg text-sm font-semibold hover:bg-[#0050CC] transition">
+            <PlusCircle className="w-4 h-4" /> Add Company
+          </Link>
+          <Link href="/deals" className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition">
+            <Compass className="w-4 h-4" /> Browse Companies
+          </Link>
         </div>
       </div>
 
-      {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Top Scored Deals</h2>
-            <TopDeals deals={topDeals} isLoading={isLoading} emptyMessage="No scored deals yet" />
+      {/* Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Pipeline Deals</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{investorStats.pipelineDeals}</p>
+            </div>
+            <div className="p-2.5 rounded-lg bg-blue-100"><TrendingUp className="w-5 h-5 text-blue-600" /></div>
           </div>
         </div>
-        <div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Pipeline Summary</h2>
-            <PipelineSummary counts={pipelineData} isLoading={isLoading} />
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Watchlisted</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{investorStats.watchlisted}</p>
+            </div>
+            <div className="p-2.5 rounded-lg bg-amber-100"><Bookmark className="w-5 h-5 text-amber-600" /></div>
           </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Total Pipeline Value</p>
+              <p className="text-3xl font-bold text-gray-900 mt-1">{formatCompact(investorStats.totalPipelineValue)}</p>
+            </div>
+            <div className="p-2.5 rounded-lg bg-emerald-100"><DollarSign className="w-5 h-5 text-emerald-600" /></div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-500">Avg Kunfa Score</p>
+              <p className={`text-3xl font-bold mt-1 ${getScoreColor(investorStats.avgKunfaScore)}`}>
+                {investorStats.avgKunfaScore ?? '—'}
+              </p>
+            </div>
+            <div className="p-2.5 rounded-lg bg-purple-100"><Brain className="w-5 h-5 text-purple-600" /></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stage Breakdown */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-8">
+        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Deal Stage Breakdown</h2>
+        {totalStageDeals > 0 ? (
+          <>
+            {/* Horizontal bar */}
+            <div className="flex h-8 rounded-lg overflow-hidden mb-4">
+              {(Object.entries(stageCounts) as [string, number][]).map(([stage, count]) => {
+                if (count === 0) return null;
+                const pct = (count / totalStageDeals) * 100;
+                return (
+                  <div
+                    key={stage}
+                    className={`${STAGE_COLORS[stage]} flex items-center justify-center text-white text-xs font-semibold transition-all`}
+                    style={{ width: `${pct}%` }}
+                    title={`${formatStageLabel(stage)}: ${count}`}
+                  >
+                    {pct > 8 ? count : ''}
+                  </div>
+                );
+              })}
+            </div>
+            {/* Legend */}
+            <div className="flex flex-wrap items-center gap-4">
+              {(Object.entries(stageCounts) as [string, number][]).map(([stage, count]) => (
+                <div key={stage} className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-sm ${STAGE_COLORS[stage]}`} />
+                  <span className="text-xs text-gray-600">{formatStageLabel(stage)}</span>
+                  <span className="text-xs font-semibold text-gray-900">{count}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-gray-400 py-4 text-center">No deals in pipeline yet. <Link href="/deals" className="text-[#0168FE] hover:underline">Browse companies</Link> to get started.</p>
+        )}
+      </div>
+
+      {/* Two-column: Top Deals + Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* Top Deals Table — 3 cols */}
+        <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Top Deals by Score</h2>
+            <Link href="/pipeline" className="text-xs text-[#0168FE] font-medium hover:underline flex items-center gap-1">
+              View Pipeline <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          {topDeals.length > 0 ? (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left text-xs font-medium text-gray-400 pb-3">Company</th>
+                  <th className="text-left text-xs font-medium text-gray-400 pb-3">Score</th>
+                  <th className="text-left text-xs font-medium text-gray-400 pb-3">Stage</th>
+                  <th className="text-right text-xs font-medium text-gray-400 pb-3">Raise</th>
+                  <th className="text-right text-xs font-medium text-gray-400 pb-3">Days</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topDeals.map(deal => (
+                  <tr key={deal.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition cursor-pointer" onClick={() => { if (deal.slug) window.location.href = `/company/${deal.slug}`; }}>
+                    <td className="py-3 pr-3">
+                      <span className="text-sm font-medium text-gray-900">{deal.company_name}</span>
+                    </td>
+                    <td className="py-3 pr-3">
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${getScoreBadgeColor(deal.score)}`}>
+                        {deal.score ?? '—'}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-3">
+                      <span className="text-xs text-gray-600">{formatStageLabel(deal.stage)}</span>
+                    </td>
+                    <td className="py-3 text-right">
+                      <span className="text-xs text-gray-600">{deal.raise_amount ? formatCompact(deal.raise_amount) : '—'}</span>
+                    </td>
+                    <td className="py-3 text-right">
+                      <span className="text-xs text-gray-400">{deal.days_in_stage}d</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-8">
+              <TrendingUp className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-400">No scored deals yet</p>
+            </div>
+          )}
+        </div>
+
+        {/* Recent Activity — 2 cols */}
+        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Recent Activity</h2>
+          {activity.length > 0 ? (
+            <div className="space-y-1">
+              {activity.map(item => (
+                <div key={item.id} className="py-2.5 border-b border-gray-50 last:border-0">
+                  {item.href ? (
+                    <Link href={item.href} className="text-sm text-gray-700 hover:text-[#0168FE] transition">{item.text}</Link>
+                  ) : (
+                    <p className="text-sm text-gray-700">{item.text}</p>
+                  )}
+                  <p className="text-xs text-gray-400 mt-0.5">{timeAgo(item.time)}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-400">No recent activity</p>
+              <Link href="/deals" className="text-xs text-[#0168FE] hover:underline mt-2 inline-block">Browse companies to get started</Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

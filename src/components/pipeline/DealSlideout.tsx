@@ -25,6 +25,11 @@ interface DealData {
   contact_name: string | null
   contact_email: string | null
   assigned_to_name: string | null
+  valuation_pre: number | null
+  valuation_post: number | null
+  lead_investor: string | null
+  co_investors: string | null
+  round_type: string | null
 }
 
 interface TeamMember {
@@ -53,6 +58,8 @@ const DEAL_STAGES = [
 
 const SOURCE_OPTIONS = ['Kunfa Platform', 'Referral', 'Conference', 'Cold Outreach', 'Other']
 
+const ROUND_TYPES = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C+', 'Growth', 'Bridge', 'Convertible Note']
+
 function getScoreBadgeColor(score: number | null) {
   if (!score) return 'bg-gray-100 text-gray-500'
   if (score >= 80) return 'bg-emerald-100 text-emerald-700'
@@ -61,7 +68,7 @@ function getScoreBadgeColor(score: number | null) {
   return 'bg-red-100 text-red-700'
 }
 
-function formatDealSize(val: string): string {
+function formatNumber(val: string): string {
   const num = val.replace(/[^0-9]/g, '')
   if (!num) return ''
   return Number(num).toLocaleString()
@@ -80,6 +87,11 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
     thesis_fit: deal.thesis_fit || '',
     contact_name: deal.contact_name || '',
     contact_email: deal.contact_email || '',
+    round_type: deal.round_type || '',
+    valuation_pre: deal.valuation_pre ? String(deal.valuation_pre) : '',
+    valuation_post: deal.valuation_post ? String(deal.valuation_post) : '',
+    lead_investor: deal.lead_investor || '',
+    co_investors: deal.co_investors || '',
   })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -99,6 +111,11 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
       thesis_fit: deal.thesis_fit || '',
       contact_name: deal.contact_name || '',
       contact_email: deal.contact_email || '',
+      round_type: deal.round_type || '',
+      valuation_pre: deal.valuation_pre ? String(deal.valuation_pre) : '',
+      valuation_post: deal.valuation_post ? String(deal.valuation_post) : '',
+      lead_investor: deal.lead_investor || '',
+      co_investors: deal.co_investors || '',
     })
     setSaved(false)
     setError('')
@@ -107,7 +124,18 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
   if (!isOpen) return null
 
   function updateField(field: string, value: unknown) {
-    setForm(prev => ({ ...prev, [field]: value }))
+    setForm(prev => {
+      const next = { ...prev, [field]: value }
+      // Auto-calculate post-money if pre-money and deal_size are set
+      if (field === 'valuation_pre' || field === 'deal_size') {
+        const pre = Number((field === 'valuation_pre' ? value : next.valuation_pre)?.toString().replace(/,/g, '')) || 0
+        const raise = Number((field === 'deal_size' ? value : next.deal_size)?.toString().replace(/,/g, '')) || 0
+        if (pre > 0 && raise > 0) {
+          next.valuation_post = String(pre + raise)
+        }
+      }
+      return next
+    })
     setSaved(false)
   }
 
@@ -132,6 +160,11 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
           thesis_fit: form.thesis_fit || null,
           contact_name: form.contact_name || null,
           contact_email: form.contact_email || null,
+          round_type: form.round_type || null,
+          valuation_pre: form.valuation_pre ? Number(form.valuation_pre.replace(/,/g, '')) : null,
+          valuation_post: form.valuation_post ? Number(form.valuation_post.replace(/,/g, '')) : null,
+          lead_investor: form.lead_investor || null,
+          co_investors: form.co_investors || null,
         }),
       })
 
@@ -312,7 +345,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
               <label className={labelClass}>Deal Size ($)</label>
               <input
                 type="text"
-                value={form.deal_size ? formatDealSize(form.deal_size) : ''}
+                value={form.deal_size ? formatNumber(form.deal_size) : ''}
                 onChange={e => updateField('deal_size', e.target.value.replace(/[^0-9]/g, ''))}
                 className={inputClass}
                 placeholder="e.g. 2,000,000"
@@ -330,6 +363,76 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
                   <option key={s} value={s}>{s}</option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          {/* ── Round Info ── */}
+          <div className="border-t border-gray-200 pt-5">
+            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Round Info</h3>
+
+            <div className="space-y-3">
+              {/* Round Type */}
+              <div>
+                <label className={labelClass}>Round Type</label>
+                <select
+                  value={form.round_type}
+                  onChange={e => updateField('round_type', e.target.value)}
+                  className={inputClass}
+                >
+                  <option value="">Select round</option>
+                  {ROUND_TYPES.map(r => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Valuations */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelClass}>Pre-Money ($)</label>
+                  <input
+                    type="text"
+                    value={form.valuation_pre ? formatNumber(form.valuation_pre) : ''}
+                    onChange={e => updateField('valuation_pre', e.target.value.replace(/[^0-9]/g, ''))}
+                    className={inputClass}
+                    placeholder="e.g. 10,000,000"
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Post-Money ($)</label>
+                  <input
+                    type="text"
+                    value={form.valuation_post ? formatNumber(form.valuation_post) : ''}
+                    onChange={e => updateField('valuation_post', e.target.value.replace(/[^0-9]/g, ''))}
+                    className={inputClass}
+                    placeholder="Auto or manual"
+                  />
+                </div>
+              </div>
+
+              {/* Lead Investor */}
+              <div>
+                <label className={labelClass}>Lead Investor</label>
+                <input
+                  type="text"
+                  value={form.lead_investor}
+                  onChange={e => updateField('lead_investor', e.target.value)}
+                  className={inputClass}
+                  placeholder="e.g. Sequoia Capital"
+                />
+              </div>
+
+              {/* Co-Investors */}
+              <div>
+                <label className={labelClass}>Co-Investors</label>
+                <textarea
+                  value={form.co_investors}
+                  onChange={e => updateField('co_investors', e.target.value)}
+                  rows={2}
+                  className={`${inputClass} resize-none`}
+                  placeholder="Comma-separated names"
+                />
+              </div>
             </div>
           </div>
 

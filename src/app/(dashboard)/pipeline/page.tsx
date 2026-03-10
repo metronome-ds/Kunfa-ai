@@ -50,6 +50,11 @@ interface DealCard {
   contact_name: string | null;
   contact_email: string | null;
   assigned_to_name: string | null;
+  valuation_pre: number | null;
+  valuation_post: number | null;
+  lead_investor: string | null;
+  co_investors: string | null;
+  round_type: string | null;
 }
 
 interface PipelineStages {
@@ -209,6 +214,11 @@ export default function PipelinePage() {
         contact_name: null,
         contact_email: null,
         assigned_to_name: null,
+        valuation_pre: null,
+        valuation_post: null,
+        lead_investor: null,
+        co_investors: null,
+        round_type: null,
       };
 
       setDeals((prev) => ({

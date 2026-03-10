@@ -71,6 +71,11 @@ export async function GET() {
         contact_name,
         contact_email,
         assigned_to_name,
+        valuation_pre,
+        valuation_post,
+        lead_investor,
+        co_investors,
+        round_type,
         created_at,
         company_pages!company_id (
           company_name,
@@ -147,6 +152,11 @@ export async function GET() {
           contact_name: deal.contact_name || null,
           contact_email: deal.contact_email || null,
           assigned_to_name: deal.assigned_to_name || null,
+          valuation_pre: deal.valuation_pre || null,
+          valuation_post: deal.valuation_post || null,
+          lead_investor: deal.lead_investor || null,
+          co_investors: deal.co_investors || null,
+          round_type: deal.round_type || null,
         });
       }
     });

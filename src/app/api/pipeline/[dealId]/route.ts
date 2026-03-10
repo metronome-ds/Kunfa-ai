@@ -12,6 +12,11 @@ const DEAL_FIELDS = [
   'contact_name',
   'contact_email',
   'assigned_to_name',
+  'valuation_pre',
+  'valuation_post',
+  'lead_investor',
+  'co_investors',
+  'round_type',
 ] as const;
 
 /**
@@ -49,7 +54,7 @@ export async function PUT(
     for (const field of DEAL_FIELDS) {
       if (field in body) {
         const val = body[field];
-        if (field === 'deal_size') {
+        if (field === 'deal_size' || field === 'valuation_pre' || field === 'valuation_post') {
           updateData[field] = val != null && val !== '' ? Number(val) : null;
         } else if (field === 'priority_flag') {
           updateData[field] = !!val;
