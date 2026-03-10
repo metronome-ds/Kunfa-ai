@@ -3,12 +3,103 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Save, LogOut, Check } from 'lucide-react';
+import { Save, LogOut, Check, Lock } from 'lucide-react';
 import { STAGES, INDUSTRIES } from '@/lib/constants';
 
 const INPUT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#0168FE] focus:ring-2 focus:ring-[#0168FE]/20 outline-none transition-all';
 const SELECT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#0168FE] focus:ring-2 focus:ring-[#0168FE]/20 outline-none transition-all';
 const DISABLED_CLASS = 'w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed';
+
+function ChangePasswordSection() {
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleChangePassword(e: React.FormEvent) {
+    e.preventDefault();
+    setError('');
+    setSuccess(false);
+
+    if (newPassword.length < 6) {
+      setError('Password must be at least 6 characters.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setSaving(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      setError(error.message);
+    } else {
+      setSuccess(true);
+      setNewPassword('');
+      setConfirmPassword('');
+      setTimeout(() => setSuccess(false), 3000);
+    }
+    setSaving(false);
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
+        <Lock className="w-5 h-5 text-gray-400" />
+        Change Password
+      </h2>
+
+      {success && (
+        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-4">
+          <Check className="w-4 h-4 text-emerald-600" />
+          <p className="text-sm text-emerald-700">Password updated successfully.</p>
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      <form onSubmit={handleChangePassword} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
+          <input
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Min 6 characters"
+            minLength={6}
+            className={INPUT_CLASS}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password</label>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Re-enter password"
+            minLength={6}
+            className={INPUT_CLASS}
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <button
+            type="submit"
+            disabled={saving || !newPassword || !confirmPassword}
+            className="inline-flex items-center gap-2 bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+          >
+            {saving ? 'Updating...' : 'Update Password'}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -279,6 +370,9 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      {/* Change Password */}
+      <ChangePasswordSection />
 
       {/* Actions */}
       <div className="flex items-center justify-between">
