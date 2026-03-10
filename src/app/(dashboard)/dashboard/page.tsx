@@ -135,6 +135,7 @@ export default function DashboardPage() {
   // Startup-specific state
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [paid, setPaid] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   // Investor-specific state
   const [stats, setStats] = useState({
@@ -491,12 +492,26 @@ export default function DashboardPage() {
                       <h3 className="text-sm font-semibold text-gray-900">Unlock Your Full Readiness Report</h3>
                       <p className="text-xs text-gray-600 mt-0.5">Detailed analysis, sector benchmarks, and actionable recommendations.</p>
                     </div>
-                    <Link
-                      href={`/report/${company.submission_id}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition"
+                    <button
+                      onClick={async () => {
+                        setCheckoutLoading(true);
+                        try {
+                          const res = await fetch('/api/stripe/checkout', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ submissionId: company.submission_id }),
+                          });
+                          const data = await res.json();
+                          if (data.url) window.location.href = data.url;
+                        } catch { /* ignore */ } finally {
+                          setCheckoutLoading(false);
+                        }
+                      }}
+                      disabled={checkoutLoading}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition disabled:opacity-50"
                     >
-                      Unlock Report — $59
-                    </Link>
+                      {checkoutLoading ? 'Redirecting...' : 'Unlock Report — $59'}
+                    </button>
                   </div>
                 )}
               </div>

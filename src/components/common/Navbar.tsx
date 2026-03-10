@@ -173,6 +173,8 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
         return '📊';
       case 'score_ready':
         return '⭐';
+      case 'report_ready':
+        return '📄';
       case 'data_room_view':
         return '👁️';
       case 'intro_request':

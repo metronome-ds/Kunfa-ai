@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
@@ -236,7 +237,9 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
         </div>
 
         {/* Report Banner */}
-        <ReportBanner submissionId={company.submission_id} />
+        <Suspense fallback={null}>
+          <ReportBanner submissionId={company.submission_id} />
+        </Suspense>
 
         {/* Overview */}
         {company.description && (

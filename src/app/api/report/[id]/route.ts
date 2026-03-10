@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSubmission, updateReportUrl } from '@/lib/db'
+import { getSubmission, updateReportUrl, getSupabase } from '@/lib/db'
 import { generateReport } from '@/lib/pdf'
 import { uploadFile } from '@/lib/upload'
 import { generateExpandedMemo } from '@/lib/anthropic'
@@ -104,6 +104,21 @@ export async function GET(
 
     // Save URL to database
     await updateReportUrl(id, reportUrl)
+
+    // Insert notification for the user
+    if (submission.user_id) {
+      const supabase = getSupabase()
+      await supabase.from('notifications').insert({
+        user_id: submission.user_id,
+        title: 'Your Kunfa Readiness Report is ready',
+        body: 'View your full AI-powered investment analysis.',
+        type: 'report_ready',
+        link: `/report/${id}`,
+        read: false,
+      }).then(({ error }) => {
+        if (error) console.error('Failed to insert report notification:', error)
+      })
+    }
 
     // Return PDF directly
     return new NextResponse(new Uint8Array(pdfBuffer), {

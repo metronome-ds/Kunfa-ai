@@ -25,8 +25,11 @@ export async function POST(request: NextRequest) {
     const successPath = company?.slug
       ? `/company/${company.slug}?paid=true`
       : `/report/${submissionId}?session_id={CHECKOUT_SESSION_ID}`
+    const cancelPath = company?.slug
+      ? `/company/${company.slug}`
+      : `/score/${submissionId}`
 
-    const session = await createCheckoutSession(submissionId, baseUrl, successPath)
+    const session = await createCheckoutSession(submissionId, baseUrl, successPath, cancelPath)
 
     return NextResponse.json({ url: session.url })
   } catch (error) {
