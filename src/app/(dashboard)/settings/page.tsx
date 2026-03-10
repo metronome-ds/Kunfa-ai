@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Save, LogOut, Check, Lock } from 'lucide-react';
+import { Save, LogOut, Check, Lock, AlertTriangle } from 'lucide-react';
 import { STAGES, INDUSTRIES } from '@/lib/constants';
 
 const INPUT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#0168FE] focus:ring-2 focus:ring-[#0168FE]/20 outline-none transition-all';
@@ -236,6 +236,29 @@ export default function SettingsPage() {
     router.push('/login');
   };
 
+  // Delete account state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== 'DELETE') return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch('/api/account', { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to delete account');
+      }
+      await supabase.auth.signOut();
+      router.push('/');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to delete account';
+      alert(message);
+      setIsDeleting(false);
+    }
+  };
+
   const isStartup = role === 'startup' || role === 'founder';
 
   if (isLoading) {
@@ -375,7 +398,7 @@ export default function SettingsPage() {
       <ChangePasswordSection />
 
       {/* Actions */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-10">
         <button
           onClick={handleSave}
           disabled={isSaving}
@@ -393,6 +416,76 @@ export default function SettingsPage() {
           Sign Out
         </button>
       </div>
+
+      {/* Danger Zone */}
+      <div className="rounded-xl border-2 border-red-300 p-6">
+        <h2 className="text-lg font-semibold text-red-600 mb-2 flex items-center gap-2">
+          <AlertTriangle className="w-5 h-5" />
+          Danger Zone
+        </h2>
+        <p className="text-sm text-gray-600 mb-4">
+          Permanently delete your account and all associated data. This action cannot be undone.
+        </p>
+        <button
+          onClick={() => setShowDeleteModal(true)}
+          className="inline-flex items-center gap-2 border-2 border-red-500 text-red-600 hover:bg-red-50 px-5 py-2.5 rounded-lg font-medium text-sm transition"
+        >
+          Delete My Account
+        </button>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100">
+                <AlertTriangle className="w-5 h-5 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Delete Account</h3>
+            </div>
+
+            <p className="text-sm text-gray-700 mb-3">
+              This will permanently delete your account and all associated data. This action cannot be undone.
+            </p>
+
+            <p className="text-sm text-gray-600 mb-4">
+              {isStartup
+                ? 'Your company profile, scores, and all uploaded documents will be permanently removed.'
+                : 'Your pipeline, watchlist, portfolio, team, and all deal data will be permanently removed.'}
+            </p>
+
+            <div className="mb-5">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Type <span className="font-bold text-red-600">DELETE</span> to confirm
+              </label>
+              <input
+                type="text"
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                placeholder="DELETE"
+                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3">
+              <button
+                onClick={() => { setShowDeleteModal(false); setDeleteConfirm(''); }}
+                className="px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirm !== 'DELETE' || isDeleting}
+                className="px-5 py-2.5 text-sm font-medium text-white bg-[#EF4444] hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete My Account'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
