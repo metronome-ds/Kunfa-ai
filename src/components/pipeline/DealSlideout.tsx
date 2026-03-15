@@ -75,6 +75,8 @@ function formatNumber(val: string): string {
 }
 
 export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMembers = [] }: DealSlideoutProps) {
+  const isWatchlistItem = deal.id.startsWith('temp-')
+
   const [form, setForm] = useState({
     stage: deal.stage,
     priority_flag: deal.priority_flag,
@@ -96,6 +98,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const [movingToPipeline, setMovingToPipeline] = useState(false)
 
   // Reset form when deal changes
   useEffect(() => {
@@ -122,6 +125,28 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
   }, [deal])
 
   if (!isOpen) return null
+
+  async function handleMoveToPipeline() {
+    setMovingToPipeline(true)
+    setError('')
+    try {
+      const res = await fetch('/api/pipeline/move-to-pipeline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ company_id: deal.company_id }),
+      })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to add to pipeline')
+      }
+      onUpdated()
+      onClose()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setMovingToPipeline(false)
+    }
+  }
 
   function updateField(field: string, value: unknown) {
     setForm(prev => {
@@ -262,239 +287,288 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
             </div>
           )}
 
-          {/* Stage + Priority row */}
-          <div className="flex items-end gap-3">
-            <div className="flex-1">
-              <label className={labelClass}>Stage</label>
-              <select
-                value={form.stage}
-                onChange={e => updateField('stage', e.target.value)}
-                className={inputClass}
-              >
-                {DEAL_STAGES.map(s => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
-                ))}
-              </select>
-            </div>
-            <button
-              type="button"
-              onClick={() => updateField('priority_flag', !form.priority_flag)}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition ${
-                form.priority_flag
-                  ? 'border-amber-300 bg-amber-50 text-amber-700'
-                  : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50'
-              }`}
-              title="Toggle priority"
-            >
-              <Star className={`w-4 h-4 ${form.priority_flag ? 'fill-amber-400 text-amber-400' : ''}`} />
-              {form.priority_flag ? 'Priority' : 'Flag'}
-            </button>
-          </div>
-
-          {/* Assigned To */}
-          <div>
-            <label className={labelClass}>Assigned To</label>
-            {teamMembers.length > 0 ? (
-              <select
-                value={form.assigned_to_name}
-                onChange={e => updateField('assigned_to_name', e.target.value)}
-                className={inputClass}
-              >
-                <option value="">Unassigned</option>
-                {teamMembers.map(m => (
-                  <option key={m.id} value={m.name}>{m.name}{m.role === 'owner' ? ' (Owner)' : ''}</option>
-                ))}
-              </select>
-            ) : (
-              <input
-                type="text"
-                value={form.assigned_to_name}
-                onChange={e => updateField('assigned_to_name', e.target.value)}
-                className={inputClass}
-                placeholder="Team member name"
-              />
-            )}
-          </div>
-
-          {/* Next Action + Date */}
-          <div className="grid grid-cols-5 gap-3">
-            <div className="col-span-3">
-              <label className={labelClass}>Next Action</label>
-              <input
-                type="text"
-                value={form.next_action}
-                onChange={e => updateField('next_action', e.target.value)}
-                className={inputClass}
-                placeholder="e.g. Schedule intro call"
-              />
-            </div>
-            <div className="col-span-2">
-              <label className={labelClass}>Date</label>
-              <input
-                type="date"
-                value={form.next_action_date}
-                onChange={e => updateField('next_action_date', e.target.value)}
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          {/* Deal Size + Source */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelClass}>Deal Size ($)</label>
-              <input
-                type="text"
-                value={form.deal_size ? formatNumber(form.deal_size) : ''}
-                onChange={e => updateField('deal_size', e.target.value.replace(/[^0-9]/g, ''))}
-                className={inputClass}
-                placeholder="e.g. 2,000,000"
-              />
-            </div>
-            <div>
-              <label className={labelClass}>Source</label>
-              <select
-                value={form.source}
-                onChange={e => updateField('source', e.target.value)}
-                className={inputClass}
-              >
-                <option value="">Select source</option>
-                {SOURCE_OPTIONS.map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* ── Round Info ── */}
-          <div className="border-t border-gray-200 pt-5">
-            <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Round Info</h3>
-
-            <div className="space-y-3">
-              {/* Round Type */}
-              <div>
-                <label className={labelClass}>Round Type</label>
-                <select
-                  value={form.round_type}
-                  onChange={e => updateField('round_type', e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="">Select round</option>
-                  {ROUND_TYPES.map(r => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
+          {isWatchlistItem ? (
+            /* Watchlist item — read-only info + Move to Pipeline CTA */
+            <div className="space-y-5">
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <p className="text-sm text-amber-800 font-medium mb-1">Watchlisted Company</p>
+                <p className="text-xs text-amber-700">
+                  This company is on your watchlist. Add it to your pipeline to start tracking deal progress, assign team members, and manage the investment process.
+                </p>
               </div>
 
-              {/* Valuations */}
+              {deal.one_liner && (
+                <div>
+                  <label className={labelClass}>About</label>
+                  <p className="text-sm text-gray-700">{deal.one_liner}</p>
+                </div>
+              )}
+
+              {(deal.industry || deal.company_stage) && (
+                <div className="grid grid-cols-2 gap-3">
+                  {deal.industry && (
+                    <div>
+                      <label className={labelClass}>Industry</label>
+                      <p className="text-sm text-gray-700">{deal.industry}</p>
+                    </div>
+                  )}
+                  {deal.company_stage && (
+                    <div>
+                      <label className={labelClass}>Stage</label>
+                      <p className="text-sm text-gray-700">{deal.company_stage}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Real deal — full editable fields */
+            <>
+              {/* Stage + Priority row */}
+              <div className="flex items-end gap-3">
+                <div className="flex-1">
+                  <label className={labelClass}>Stage</label>
+                  <select
+                    value={form.stage}
+                    onChange={e => updateField('stage', e.target.value)}
+                    className={inputClass}
+                  >
+                    {DEAL_STAGES.map(s => (
+                      <option key={s.value} value={s.value}>{s.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => updateField('priority_flag', !form.priority_flag)}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition ${
+                    form.priority_flag
+                      ? 'border-amber-300 bg-amber-50 text-amber-700'
+                      : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50'
+                  }`}
+                  title="Toggle priority"
+                >
+                  <Star className={`w-4 h-4 ${form.priority_flag ? 'fill-amber-400 text-amber-400' : ''}`} />
+                  {form.priority_flag ? 'Priority' : 'Flag'}
+                </button>
+              </div>
+
+              {/* Assigned To */}
+              <div>
+                <label className={labelClass}>Assigned To</label>
+                {teamMembers.length > 0 ? (
+                  <select
+                    value={form.assigned_to_name}
+                    onChange={e => updateField('assigned_to_name', e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="">Unassigned</option>
+                    {teamMembers.map(m => (
+                      <option key={m.id} value={m.name}>{m.name}{m.role === 'owner' ? ' (Owner)' : ''}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    value={form.assigned_to_name}
+                    onChange={e => updateField('assigned_to_name', e.target.value)}
+                    className={inputClass}
+                    placeholder="Team member name"
+                  />
+                )}
+              </div>
+
+              {/* Next Action + Date */}
+              <div className="grid grid-cols-5 gap-3">
+                <div className="col-span-3">
+                  <label className={labelClass}>Next Action</label>
+                  <input
+                    type="text"
+                    value={form.next_action}
+                    onChange={e => updateField('next_action', e.target.value)}
+                    className={inputClass}
+                    placeholder="e.g. Schedule intro call"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className={labelClass}>Date</label>
+                  <input
+                    type="date"
+                    value={form.next_action_date}
+                    onChange={e => updateField('next_action_date', e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+
+              {/* Deal Size + Source */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelClass}>Pre-Money ($)</label>
+                  <label className={labelClass}>Deal Size ($)</label>
                   <input
                     type="text"
-                    value={form.valuation_pre ? formatNumber(form.valuation_pre) : ''}
-                    onChange={e => updateField('valuation_pre', e.target.value.replace(/[^0-9]/g, ''))}
+                    value={form.deal_size ? formatNumber(form.deal_size) : ''}
+                    onChange={e => updateField('deal_size', e.target.value.replace(/[^0-9]/g, ''))}
                     className={inputClass}
-                    placeholder="e.g. 10,000,000"
+                    placeholder="e.g. 2,000,000"
                   />
                 </div>
                 <div>
-                  <label className={labelClass}>Post-Money ($)</label>
-                  <input
-                    type="text"
-                    value={form.valuation_post ? formatNumber(form.valuation_post) : ''}
-                    onChange={e => updateField('valuation_post', e.target.value.replace(/[^0-9]/g, ''))}
+                  <label className={labelClass}>Source</label>
+                  <select
+                    value={form.source}
+                    onChange={e => updateField('source', e.target.value)}
                     className={inputClass}
-                    placeholder="Auto or manual"
-                  />
+                  >
+                    <option value="">Select source</option>
+                    {SOURCE_OPTIONS.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
-              {/* Lead Investor */}
+              {/* ── Round Info ── */}
+              <div className="border-t border-gray-200 pt-5">
+                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Round Info</h3>
+
+                <div className="space-y-3">
+                  {/* Round Type */}
+                  <div>
+                    <label className={labelClass}>Round Type</label>
+                    <select
+                      value={form.round_type}
+                      onChange={e => updateField('round_type', e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="">Select round</option>
+                      {ROUND_TYPES.map(r => (
+                        <option key={r} value={r}>{r}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Valuations */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className={labelClass}>Pre-Money ($)</label>
+                      <input
+                        type="text"
+                        value={form.valuation_pre ? formatNumber(form.valuation_pre) : ''}
+                        onChange={e => updateField('valuation_pre', e.target.value.replace(/[^0-9]/g, ''))}
+                        className={inputClass}
+                        placeholder="e.g. 10,000,000"
+                      />
+                    </div>
+                    <div>
+                      <label className={labelClass}>Post-Money ($)</label>
+                      <input
+                        type="text"
+                        value={form.valuation_post ? formatNumber(form.valuation_post) : ''}
+                        onChange={e => updateField('valuation_post', e.target.value.replace(/[^0-9]/g, ''))}
+                        className={inputClass}
+                        placeholder="Auto or manual"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Lead Investor */}
+                  <div>
+                    <label className={labelClass}>Lead Investor</label>
+                    <input
+                      type="text"
+                      value={form.lead_investor}
+                      onChange={e => updateField('lead_investor', e.target.value)}
+                      className={inputClass}
+                      placeholder="e.g. Sequoia Capital"
+                    />
+                  </div>
+
+                  {/* Co-Investors */}
+                  <div>
+                    <label className={labelClass}>Co-Investors</label>
+                    <textarea
+                      value={form.co_investors}
+                      onChange={e => updateField('co_investors', e.target.value)}
+                      rows={2}
+                      className={`${inputClass} resize-none`}
+                      placeholder="Comma-separated names"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Notes */}
               <div>
-                <label className={labelClass}>Lead Investor</label>
-                <input
-                  type="text"
-                  value={form.lead_investor}
-                  onChange={e => updateField('lead_investor', e.target.value)}
-                  className={inputClass}
-                  placeholder="e.g. Sequoia Capital"
+                <label className={labelClass}>Notes</label>
+                <textarea
+                  value={form.notes}
+                  onChange={e => updateField('notes', e.target.value)}
+                  rows={3}
+                  className={`${inputClass} resize-none`}
+                  placeholder="Internal notes about this deal..."
                 />
               </div>
 
-              {/* Co-Investors */}
+              {/* Thesis Fit */}
               <div>
-                <label className={labelClass}>Co-Investors</label>
+                <label className={labelClass}>Thesis Fit</label>
                 <textarea
-                  value={form.co_investors}
-                  onChange={e => updateField('co_investors', e.target.value)}
+                  value={form.thesis_fit}
+                  onChange={e => updateField('thesis_fit', e.target.value)}
                   rows={2}
                   className={`${inputClass} resize-none`}
-                  placeholder="Comma-separated names"
+                  placeholder="How does this fit your investment thesis?"
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Notes */}
-          <div>
-            <label className={labelClass}>Notes</label>
-            <textarea
-              value={form.notes}
-              onChange={e => updateField('notes', e.target.value)}
-              rows={3}
-              className={`${inputClass} resize-none`}
-              placeholder="Internal notes about this deal..."
-            />
-          </div>
-
-          {/* Thesis Fit */}
-          <div>
-            <label className={labelClass}>Thesis Fit</label>
-            <textarea
-              value={form.thesis_fit}
-              onChange={e => updateField('thesis_fit', e.target.value)}
-              rows={2}
-              className={`${inputClass} resize-none`}
-              placeholder="How does this fit your investment thesis?"
-            />
-          </div>
-
-          {/* Key Contact */}
-          <div>
-            <label className={labelClass}>Key Contact</label>
-            <div className="grid grid-cols-2 gap-3">
-              <input
-                type="text"
-                value={form.contact_name}
-                onChange={e => updateField('contact_name', e.target.value)}
-                className={inputClass}
-                placeholder="Contact name"
-              />
-              <input
-                type="email"
-                value={form.contact_email}
-                onChange={e => updateField('contact_email', e.target.value)}
-                className={inputClass}
-                placeholder="Contact email"
-              />
-            </div>
-          </div>
+              {/* Key Contact */}
+              <div>
+                <label className={labelClass}>Key Contact</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    value={form.contact_name}
+                    onChange={e => updateField('contact_name', e.target.value)}
+                    className={inputClass}
+                    placeholder="Contact name"
+                  />
+                  <input
+                    type="email"
+                    value={form.contact_email}
+                    onChange={e => updateField('contact_email', e.target.value)}
+                    className={inputClass}
+                    placeholder="Contact email"
+                  />
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Footer: Save */}
+        {/* Footer */}
         <div className="border-t border-gray-200 px-5 py-4">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className={`w-full py-2.5 rounded-lg font-semibold text-sm transition ${
-              saved
-                ? 'bg-emerald-500 text-white'
-                : 'bg-[#0168FE] text-white hover:bg-[#0050CC] disabled:opacity-50'
-            }`}
-          >
-            {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
-          </button>
+          {isWatchlistItem ? (
+            <button
+              onClick={handleMoveToPipeline}
+              disabled={movingToPipeline}
+              className="w-full py-2.5 rounded-lg font-semibold text-sm transition bg-[#0168FE] text-white hover:bg-[#0050CC] disabled:opacity-50"
+            >
+              {movingToPipeline ? 'Adding to Pipeline...' : 'Move to Pipeline'}
+            </button>
+          ) : (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className={`w-full py-2.5 rounded-lg font-semibold text-sm transition ${
+                saved
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-[#0168FE] text-white hover:bg-[#0050CC] disabled:opacity-50'
+              }`}
+            >
+              {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+            </button>
+          )}
         </div>
       </div>
     </>

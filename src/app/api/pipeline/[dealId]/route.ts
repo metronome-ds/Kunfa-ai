@@ -1,6 +1,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const DEAL_FIELDS = [
   'notes',
   'priority_flag',
@@ -30,6 +32,10 @@ export async function PUT(
   try {
     const supabase = await createServerSupabaseClient();
     const { dealId } = await params;
+
+    if (!UUID_REGEX.test(dealId)) {
+      return NextResponse.json({ error: 'Invalid deal ID format' }, { status: 400 });
+    }
 
     const {
       data: { user },
@@ -103,6 +109,10 @@ export async function DELETE(
   try {
     const supabase = await createServerSupabaseClient();
     const { dealId } = await params;
+
+    if (!UUID_REGEX.test(dealId)) {
+      return NextResponse.json({ error: 'Invalid deal ID format' }, { status: 400 });
+    }
 
     const {
       data: { user },

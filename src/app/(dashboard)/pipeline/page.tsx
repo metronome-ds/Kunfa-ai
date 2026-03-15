@@ -400,7 +400,41 @@ export default function PipelinePage() {
                 key={item.id}
                 draggable
                 onDragStart={() => handleDragStartWatchlist(item)}
-                className="bg-white rounded-lg p-3 border border-gray-200 hover:border-amber-300 cursor-grab active:cursor-grabbing transition group shadow-sm"
+                onClick={(e) => {
+                  if ((e.target as HTMLElement).closest('[data-grip]')) return;
+                  setSelectedDeal({
+                    id: 'temp-' + item.company_id,
+                    company_id: item.company_id,
+                    stage: 'watchlist',
+                    company_name: item.company_name,
+                    slug: item.slug,
+                    ai_score: item.overall_score,
+                    sector: item.industry,
+                    industry: item.industry,
+                    company_stage: null,
+                    raise_amount: null,
+                    one_liner: item.one_liner,
+                    description: null,
+                    pdf_url: null,
+                    days_in_stage: 0,
+                    notes: null,
+                    priority_flag: false,
+                    next_action: null,
+                    next_action_date: null,
+                    deal_size: null,
+                    source: null,
+                    thesis_fit: null,
+                    contact_name: null,
+                    contact_email: null,
+                    assigned_to_name: null,
+                    valuation_pre: null,
+                    valuation_post: null,
+                    lead_investor: null,
+                    co_investors: null,
+                    round_type: null,
+                  });
+                }}
+                className="bg-white rounded-lg p-3 border border-gray-200 hover:border-amber-300 cursor-pointer active:cursor-grabbing transition group shadow-sm"
               >
                 <div className="flex items-start justify-between gap-2">
                   <h4 className="text-sm font-medium text-gray-900 truncate flex-1">{item.company_name}</h4>
