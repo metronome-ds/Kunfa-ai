@@ -36,12 +36,12 @@ export async function GET(
   const db = getSupabase()
 
   // Resolve company page — try as company_page ID first, then as submission ID
-  let companyPage: { id: string; user_id: string; submission_id: string | null; pdf_url: string | null; financials_url: string | null } | null = null
+  let companyPage: { id: string; user_id: string; added_by: string | null; is_public: boolean | null; submission_id: string | null; pdf_url: string | null; financials_url: string | null } | null = null
   let submissionId: string | null = null
 
   const { data: cp } = await db
     .from('company_pages')
-    .select('id, user_id, submission_id, pdf_url, financials_url')
+    .select('id, user_id, added_by, is_public, submission_id, pdf_url, financials_url')
     .eq('id', id)
     .maybeSingle()
 
@@ -52,7 +52,7 @@ export async function GET(
     // Try as submission ID
     const { data: cp2 } = await db
       .from('company_pages')
-      .select('id, user_id, submission_id, pdf_url, financials_url')
+      .select('id, user_id, added_by, is_public, submission_id, pdf_url, financials_url')
       .eq('submission_id', id)
       .maybeSingle()
 
@@ -68,7 +68,8 @@ export async function GET(
 
   // --- Authorization ---
   const isOwner = companyPage.user_id === user.id
-  let isAuthorized = isOwner
+  const isAdder = companyPage.added_by === user.id
+  let isAuthorized = isOwner || isAdder
 
   if (!isAuthorized) {
     // Check if investor has this company in their pipeline
@@ -86,7 +87,7 @@ export async function GET(
     // Check if investor has watchlisted this company (investor_id is profiles.id)
     const { data: profile } = await db
       .from('profiles')
-      .select('id')
+      .select('id, role')
       .eq('user_id', user.id)
       .maybeSingle()
 
@@ -99,6 +100,11 @@ export async function GET(
         .maybeSingle()
 
       if (wl) isAuthorized = true
+
+      // Any authenticated investor can view public company documents
+      if (!isAuthorized && profile.role === 'investor' && companyPage.is_public) {
+        isAuthorized = true
+      }
     }
   }
 
