@@ -162,28 +162,11 @@ export async function GET(
   }
 
   if (!fileUrl) {
-    return NextResponse.json({ error: 'Document not found' }, { status: 404 })
+    return NextResponse.json({ error: 'No document available' }, { status: 404 })
   }
 
-  // --- Fetch from Vercel Blob and stream back ---
-  try {
-    const response = await fetch(fileUrl)
-    if (!response.ok) {
-      console.error(`Document proxy: blob fetch failed (${response.status}) for ${type}`)
-      return NextResponse.json({ error: 'Failed to fetch document' }, { status: 502 })
-    }
-
-    const contentType = response.headers.get('content-type') || 'application/pdf'
-
-    return new NextResponse(response.body, {
-      headers: {
-        'Content-Type': contentType,
-        'Content-Disposition': `inline; filename="${filename}"`,
-        'Cache-Control': 'private, no-store',
-      },
-    })
-  } catch (err) {
-    console.error('Document proxy fetch error:', err)
-    return NextResponse.json({ error: 'Failed to fetch document' }, { status: 502 })
-  }
+  // Redirect to the blob URL — auth check already passed so the user is authorized.
+  // Blob URLs are publicly accessible by design; the auth proxy prevents
+  // unauthenticated users from discovering the URL.
+  return NextResponse.redirect(fileUrl)
 }
