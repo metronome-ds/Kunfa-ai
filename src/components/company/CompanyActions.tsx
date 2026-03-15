@@ -29,10 +29,11 @@ interface CompanyData {
 interface CompanyActionsProps {
   companyId: string;
   hasPitchDeck?: boolean;
+  pdfUrl?: string | null;
   company?: CompanyData;
 }
 
-export function CompanyActions({ companyId, hasPitchDeck = false, company }: CompanyActionsProps) {
+export function CompanyActions({ companyId, hasPitchDeck = false, pdfUrl, company }: CompanyActionsProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInvestor, setIsInvestor] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
@@ -185,10 +186,10 @@ export function CompanyActions({ companyId, hasPitchDeck = false, company }: Com
           </button>
         )}
 
-        {/* Pitch deck button — proxied through /api/documents/[id] */}
-        {showPitchDeck && (
+        {/* Pitch deck button — direct blob URL */}
+        {showPitchDeck && pdfUrl && (
           <a
-            href={`/api/documents/${companyId}?type=pitch_deck`}
+            href={pdfUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"

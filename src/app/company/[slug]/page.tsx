@@ -212,6 +212,7 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
               <CompanyActions
                 companyId={company.id}
                 hasPitchDeck={!!company.pdf_url}
+                pdfUrl={company.pdf_url}
                 company={{
                   id: company.id,
                   company_name: company.company_name,

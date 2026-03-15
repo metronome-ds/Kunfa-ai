@@ -259,7 +259,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
               )}
               {deal.pdf_url && (
                 <a
-                  href={`/api/documents/${deal.company_id}?type=pitch_deck`}
+                  href={deal.pdf_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900"
