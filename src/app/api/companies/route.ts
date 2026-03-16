@@ -68,6 +68,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create deal' }, { status: 500 })
     }
 
+    // Auto-populate deal room with uploaded pitch deck
+    if (pdf_url && companyPage.id) {
+      try {
+        await supabase.from('dealroom_documents').insert({
+          company_id: companyPage.id,
+          uploaded_by: user.id,
+          file_name: 'pitch-deck.pdf',
+          file_url: pdf_url,
+          file_size: 0,
+          file_type: 'application/pdf',
+          category: 'pitch_deck',
+          is_public: true,
+        })
+      } catch (drErr) {
+        console.error('Failed to create dealroom doc (continuing):', drErr)
+      }
+    }
+
     return NextResponse.json({
       companyPageId: companyPage.id,
       dealId: deal.id,

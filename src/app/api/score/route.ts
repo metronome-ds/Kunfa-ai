@@ -228,6 +228,70 @@ export async function POST(request: NextRequest) {
                 .eq('company_id', companyPageId)
             } catch { /* ignore */ }
 
+            // Auto-populate deal room with uploaded documents on re-score
+            try {
+              const supabase = getSupabase()
+              // Upsert: check if pitch_deck doc already exists for this company, update URL if so
+              if (pitchDeckUrl) {
+                const { data: existingDoc } = await supabase
+                  .from('dealroom_documents')
+                  .select('id')
+                  .eq('company_id', companyPageId)
+                  .eq('category', 'pitch_deck')
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                  .maybeSingle()
+
+                if (existingDoc) {
+                  await supabase.from('dealroom_documents').update({
+                    file_url: pitchDeckUrl,
+                    file_name: pitchDeckFilename || 'pitch-deck.pdf',
+                  }).eq('id', existingDoc.id)
+                } else {
+                  await supabase.from('dealroom_documents').insert({
+                    company_id: companyPageId,
+                    uploaded_by: userId,
+                    file_name: pitchDeckFilename || 'pitch-deck.pdf',
+                    file_url: pitchDeckUrl,
+                    file_size: 0,
+                    file_type: 'application/pdf',
+                    category: 'pitch_deck',
+                    is_public: true,
+                  })
+                }
+              }
+              if (financialsUrl) {
+                const { data: existingFin } = await supabase
+                  .from('dealroom_documents')
+                  .select('id')
+                  .eq('company_id', companyPageId)
+                  .eq('category', 'financials')
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                  .maybeSingle()
+
+                if (existingFin) {
+                  await supabase.from('dealroom_documents').update({
+                    file_url: financialsUrl,
+                    file_name: financialsFilename || 'financials.pdf',
+                  }).eq('id', existingFin.id)
+                } else {
+                  await supabase.from('dealroom_documents').insert({
+                    company_id: companyPageId,
+                    uploaded_by: userId,
+                    file_name: financialsFilename || 'financials.pdf',
+                    file_url: financialsUrl,
+                    file_size: 0,
+                    file_type: 'application/pdf',
+                    category: 'financials',
+                    is_public: true,
+                  })
+                }
+              }
+            } catch (drErr) {
+              console.error('Failed to update dealroom docs on re-score (continuing):', drErr)
+            }
+
             // Get slug from existing company page
             try {
               const supabase = getSupabase()
@@ -294,6 +358,41 @@ export async function POST(request: NextRequest) {
                 })
               } catch (dealErr) {
                 console.error('Failed to create deals record (continuing):', dealErr)
+              }
+
+              // Auto-populate deal room with uploaded documents
+              try {
+                const supabase = getSupabase()
+                const dealroomDocs = []
+                if (pitchDeckUrl) {
+                  dealroomDocs.push({
+                    company_id: result.id,
+                    uploaded_by: userId,
+                    file_name: pitchDeckFilename || 'pitch-deck.pdf',
+                    file_url: pitchDeckUrl,
+                    file_size: 0,
+                    file_type: 'application/pdf',
+                    category: 'pitch_deck',
+                    is_public: true,
+                  })
+                }
+                if (financialsUrl) {
+                  dealroomDocs.push({
+                    company_id: result.id,
+                    uploaded_by: userId,
+                    file_name: financialsFilename || 'financials.pdf',
+                    file_url: financialsUrl,
+                    file_size: 0,
+                    file_type: 'application/pdf',
+                    category: 'financials',
+                    is_public: true,
+                  })
+                }
+                if (dealroomDocs.length > 0) {
+                  await supabase.from('dealroom_documents').insert(dealroomDocs)
+                }
+              } catch (drErr) {
+                console.error('Failed to create dealroom docs (continuing):', drErr)
               }
             }
           }

@@ -7,6 +7,7 @@ import { CompanyNav } from '@/components/company/CompanyNav'
 import { ReportBanner } from '@/components/company/ReportBanner'
 import { ScoreTooltip } from '@/components/ui/ScoreTooltip'
 import { OptionalSidebarLayout } from '@/components/common/OptionalSidebarLayout'
+import DealRoomSection from '@/components/dealroom/DealRoomSection'
 
 interface TeamMember {
   name: string
@@ -367,6 +368,14 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
             </div>
           </div>
         )}
+
+        {/* Deal Room */}
+        <DealRoomSection
+          companyId={company.id}
+          companyName={company.company_name}
+          companyUserId={company.user_id}
+          companyAddedBy={company.added_by}
+        />
       </main>
 
       {/* Footer */}
