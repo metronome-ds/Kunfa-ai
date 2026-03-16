@@ -521,12 +521,24 @@ export default function CompanyProfilePage() {
                 <h3 className="text-sm font-semibold text-gray-900">Unlock Your Full Readiness Report</h3>
                 <p className="text-xs text-gray-500 mt-0.5">Detailed analysis, sector benchmarks, and actionable recommendations.</p>
               </div>
-              <a
-                href={`/api/stripe/checkout?submissionId=${company.submission_id}`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition"
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch('/api/stripe/checkout', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ submissionId: company.submission_id }),
+                    })
+                    const data = await res.json()
+                    if (data.url) window.location.href = data.url
+                  } catch (err) {
+                    console.error('Checkout error:', err)
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition cursor-pointer"
               >
                 Unlock Report — $59
-              </a>
+              </button>
             </div>
           )}
         </div>

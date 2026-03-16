@@ -8,6 +8,7 @@ import { ReportBanner } from '@/components/company/ReportBanner'
 import { ScoreTooltip } from '@/components/ui/ScoreTooltip'
 import { OptionalSidebarLayout } from '@/components/common/OptionalSidebarLayout'
 import DealRoomSection from '@/components/dealroom/DealRoomSection'
+import PaidReportBanner from '@/components/company/PaidReportBanner'
 
 interface TeamMember {
   name: string
@@ -240,6 +241,11 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
         {/* Report Banner */}
         <Suspense fallback={null}>
           <ReportBanner submissionId={company.submission_id} />
+        </Suspense>
+
+        {/* Post-payment report generation indicator */}
+        <Suspense fallback={null}>
+          <PaidReportBanner submissionId={company.submission_id} />
         </Suspense>
 
         {/* Overview */}

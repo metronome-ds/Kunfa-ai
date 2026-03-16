@@ -21,13 +21,12 @@ export async function POST(request: NextRequest) {
       .eq('submission_id', submissionId)
       .maybeSingle()
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin
+    // Use explicit app URL, never fall back to request origin (could be localhost/vercel preview)
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kunfa.ai'
     const successPath = company?.slug
-      ? `/company/${company.slug}?paid=true`
-      : `/report/${submissionId}?session_id={CHECKOUT_SESSION_ID}`
-    const cancelPath = company?.slug
-      ? `/company/${company.slug}`
-      : `/score/${submissionId}`
+      ? `/company/${company.slug}?paid=true&sid=${submissionId}`
+      : `/dashboard?paid=true&sid=${submissionId}`
+    const cancelPath = `/score/${submissionId}`
 
     const session = await createCheckoutSession(submissionId, baseUrl, successPath, cancelPath)
 
