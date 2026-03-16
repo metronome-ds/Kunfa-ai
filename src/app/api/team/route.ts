@@ -1,5 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { sendEmail } from '@/lib/email';
+import { teamInviteEmail } from '@/lib/email-templates';
 
 /**
  * GET /api/team
@@ -138,7 +140,7 @@ export async function POST(request: NextRequest) {
     // Get current user's profile.id for team_id
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id')
+      .select('id, full_name, fund_name, company_name')
       .eq('user_id', user.id)
       .single();
 
@@ -185,6 +187,19 @@ export async function POST(request: NextRequest) {
     if (insertError) {
       console.error('Error inviting team member:', insertError);
       return NextResponse.json({ error: 'Failed to invite team member' }, { status: 500 });
+    }
+
+    // Send invitation email (don't block on failure)
+    if (member.status === 'pending') {
+      const inviterName = profile.full_name || 'A team member';
+      const teamName = profile.fund_name || profile.company_name || 'their team';
+      const emailContent = teamInviteEmail({
+        inviterName,
+        teamName,
+        role: role || 'member',
+        teamMemberId: member.id,
+      });
+      sendEmail({ to: email, ...emailContent }).catch(() => {});
     }
 
     return NextResponse.json(

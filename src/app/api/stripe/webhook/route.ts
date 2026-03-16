@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
-import { markSubmissionPaid } from '@/lib/db'
+import { markSubmissionPaid, getSubmission, getSupabase } from '@/lib/db'
+import { sendEmail } from '@/lib/email'
+import { paymentConfirmationEmail } from '@/lib/email-templates'
 
 export async function POST(request: NextRequest) {
   const body = await request.text()
@@ -37,6 +39,23 @@ export async function POST(request: NextRequest) {
     try {
       await markSubmissionPaid(submissionId, session.id)
       console.log(`Webhook: marked submission ${submissionId} as paid`)
+
+      // Send payment confirmation email (don't block webhook response)
+      const submission = await getSubmission(submissionId)
+      if (submission?.email) {
+        const supabase = getSupabase()
+        const { data: company } = await supabase
+          .from('company_pages')
+          .select('slug')
+          .eq('submission_id', submissionId)
+          .maybeSingle()
+
+        const emailContent = paymentConfirmationEmail({
+          companyName: submission.company_name || 'your company',
+          slug: company?.slug || null,
+        })
+        sendEmail({ to: submission.email, ...emailContent }).catch(() => {})
+      }
     } catch (dbErr) {
       console.error(`Webhook: failed to mark submission ${submissionId} as paid:`, dbErr)
       // Return 500 so Stripe will retry the webhook

@@ -29,8 +29,25 @@ function SignupContent() {
   const [showRoleSelection, setShowRoleSelection] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [tosAgreed, setTosAgreed] = useState(false)
+  const [inviteId, setInviteId] = useState<string | null>(null)
+  const [inviteEmailLocked, setInviteEmailLocked] = useState(false)
 
   useEffect(() => {
+    // Handle invite link: pre-fill email from team invite
+    const invite = searchParams.get('invite')
+    if (invite) {
+      setInviteId(invite)
+      fetch(`/api/auth/invite?id=${invite}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.email) {
+            setEmail(data.email)
+            setInviteEmailLocked(true)
+          }
+        })
+        .catch(() => {})
+    }
+
     if (searchParams.get('step') === 'role') {
       const checkUser = async () => {
         const { data: { user } } = await supabase.auth.getUser()
@@ -67,12 +84,24 @@ function SignupContent() {
           email,
         })
 
-        // Auto-join: check if this email was invited to any team
+        // Auto-join: accept all pending invites for this email
         await supabase
           .from('team_members')
           .update({ member_user_id: data.user.id, status: 'accepted', updated_at: new Date().toISOString() })
           .eq('invited_email', email)
           .eq('status', 'pending')
+
+        // If signing up via invite link, skip role selection and go to dashboard
+        if (inviteId) {
+          // Send welcome email
+          fetch('/api/auth/welcome', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: 'investor' }),
+          }).catch(() => {})
+          window.location.href = '/dashboard'
+          return
+        }
 
         setUserId(data.user.id)
         setShowRoleSelection(true)
@@ -98,6 +127,13 @@ function SignupContent() {
       setLoading(false)
       return
     }
+
+    // Send welcome email (fire and forget)
+    fetch('/api/auth/welcome', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role }),
+    }).catch(() => {})
 
     if (role === 'startup') {
       window.location.href = '/'
@@ -181,7 +217,7 @@ function SignupContent() {
             <KunfaLogo height={32} />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
-          <p className="text-gray-500 mt-2">Get your startup scored by AI</p>
+          <p className="text-gray-500 mt-2">{inviteId ? 'Sign up to accept your team invitation' : 'Get your startup scored by AI'}</p>
         </div>
 
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-lg">
@@ -189,7 +225,8 @@ function SignupContent() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                readOnly={inviteEmailLocked}
+                className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] ${inviteEmailLocked ? 'bg-gray-50' : 'bg-white'}`}
                 placeholder="you@company.com" />
             </div>
             <div>

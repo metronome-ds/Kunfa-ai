@@ -4,6 +4,8 @@ import { generateReport } from '@/lib/pdf'
 import { uploadFile } from '@/lib/upload'
 import { generateExpandedMemo } from '@/lib/anthropic'
 import type { ScoringResult } from '@/lib/anthropic'
+import { sendEmail } from '@/lib/email'
+import { reportReadyEmail } from '@/lib/email-templates'
 
 export const maxDuration = 300
 
@@ -104,6 +106,16 @@ export async function GET(
 
     // Save URL to database
     await updateReportUrl(id, reportUrl)
+
+    // Send report ready email (don't block on failure)
+    if (submission.email) {
+      const emailContent = reportReadyEmail({
+        companyName: submission.company_name || 'your company',
+        score: submission.overall_score || 0,
+        submissionId: id,
+      })
+      sendEmail({ to: submission.email, ...emailContent }).catch(() => {})
+    }
 
     // Insert notification for the user
     if (submission.user_id) {

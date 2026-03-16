@@ -1,5 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { sendEmail } from '@/lib/email';
+import { dealAddedEmail } from '@/lib/email-templates';
 
 /**
  * POST /api/pipeline/move-to-pipeline
@@ -39,7 +41,7 @@ export async function POST(request: NextRequest) {
     // Get company details
     const { data: company } = await supabase
       .from('company_pages')
-      .select('overall_score, industry, raise_amount')
+      .select('overall_score, industry, raise_amount, company_name, slug, user_id')
       .eq('id', company_id)
       .single();
 
@@ -59,6 +61,23 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Error creating deal from watchlist:', error);
       return NextResponse.json({ error: 'Failed to add to pipeline' }, { status: 500 });
+    }
+
+    // Notify the startup owner (don't block response)
+    if (company?.user_id) {
+      const { data: ownerProfile } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('user_id', company.user_id)
+        .single();
+
+      if (ownerProfile?.email) {
+        const emailContent = dealAddedEmail({
+          companyName: company.company_name || 'your company',
+          slug: company.slug || null,
+        });
+        sendEmail({ to: ownerProfile.email, ...emailContent }).catch(() => {});
+      }
     }
 
     return NextResponse.json({ data: deal }, { status: 201 });
