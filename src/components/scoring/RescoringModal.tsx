@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { upload } from '@vercel/blob/client'
 import Modal from '@/components/ui/Modal'
 import UploadZone from './UploadZone'
 import ProcessingAnimation from './ProcessingAnimation'
@@ -41,12 +40,23 @@ function getScoreDiffColor(diff: number) {
   return 'text-gray-400'
 }
 
-async function uploadToBlob(file: File | Blob, pathname: string): Promise<string> {
-  const blob = await upload(pathname, file, {
-    access: 'public',
-    handleUploadUrl: '/api/upload',
+async function uploadToStorage(file: File | Blob, pathname: string): Promise<string> {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('pathname', pathname)
+
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
   })
-  return blob.url
+
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.error || 'Upload failed')
+  }
+
+  const data = await res.json()
+  return data.url
 }
 
 export default function RescoringModal({
@@ -83,13 +93,13 @@ export default function RescoringModal({
 
       try {
         setUploadProgress('Uploading pitch deck...')
-        pitchDeckUrl = await uploadToBlob(
+        pitchDeckUrl = await uploadToStorage(
           pitchDeck,
           `submissions/${timestamp}/rescore-pitch-deck-${pitchDeck.name}`,
         )
         if (financials) {
           setUploadProgress('Uploading financials...')
-          financialsUrl = await uploadToBlob(
+          financialsUrl = await uploadToStorage(
             financials,
             `submissions/${timestamp}/rescore-financials-${financials.name}`,
           )

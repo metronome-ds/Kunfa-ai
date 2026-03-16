@@ -1,14 +1,37 @@
-import { put } from '@vercel/blob'
+import { createClient } from '@supabase/supabase-js'
+
+function getStorageClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+}
 
 /**
  * Server-side upload — used by the report generator and other server code
  * that already has the file bytes in memory.
  */
 export async function uploadFile(file: File | Blob, filename: string): Promise<string> {
-  const blob = await put(filename, file, {
-    access: 'public',
-  })
-  return blob.url
+  const supabase = getStorageClient()
+  const buffer = Buffer.from(await file.arrayBuffer())
+
+  const { data, error } = await supabase.storage
+    .from('documents')
+    .upload(filename, buffer, {
+      contentType: file.type || 'application/pdf',
+      upsert: false,
+    })
+
+  if (error) {
+    throw new Error(`Storage upload failed: ${error.message}`)
+  }
+
+  const { data: urlData } = supabase.storage
+    .from('documents')
+    .getPublicUrl(data.path)
+
+  return urlData.publicUrl
 }
 
 /**

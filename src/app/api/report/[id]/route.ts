@@ -95,7 +95,7 @@ export async function GET(
     )
     console.log(`[Report ${id}] PDF generated (${pdfBuffer.length} bytes)`)
 
-    // Upload PDF to Vercel Blob
+    // Upload PDF to Supabase Storage
     const pdfBlob = new Blob([new Uint8Array(pdfBuffer)], { type: 'application/pdf' })
     const reportUrl = await uploadFile(
       pdfBlob,

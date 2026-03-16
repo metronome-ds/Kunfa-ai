@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { upload } from '@vercel/blob/client'
 import { FileUp, PenLine } from 'lucide-react'
 import { STAGES, INDUSTRIES } from '@/lib/constants'
 import { createBrowserClient } from '@supabase/ssr'
@@ -50,18 +49,29 @@ export default function AddCompanyPage() {
     setError('')
 
     try {
-      // Upload to Vercel Blob
-      const blob = await upload(`companies/${Date.now()}/${file.name}`, file, {
-        access: 'public',
-        handleUploadUrl: '/api/upload',
+      // Upload to Supabase Storage
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('pathname', `companies/${Date.now()}/${file.name}`)
+
+      const uploadRes = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
       })
-      setBlobUrl(blob.url)
+
+      if (!uploadRes.ok) {
+        const uploadData = await uploadRes.json()
+        throw new Error(uploadData.error || 'Upload failed')
+      }
+
+      const { url: uploadedUrl } = await uploadRes.json()
+      setBlobUrl(uploadedUrl)
 
       // Extract details via AI
       const res = await fetch('/api/companies/extract', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pdfUrl: blob.url }),
+        body: JSON.stringify({ pdfUrl: uploadedUrl }),
       })
 
       if (!res.ok) {

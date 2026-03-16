@@ -136,7 +136,7 @@ export default function PrivacyPage() {
             </p>
             <ul className="list-disc pl-6 space-y-2 mt-2">
               <li><strong>Supabase:</strong> Database hosting, user authentication, and data storage (servers in the US/EU).</li>
-              <li><strong>Vercel:</strong> Application hosting, file storage (Vercel Blob), and content delivery.</li>
+              <li><strong>Vercel:</strong> Application hosting and content delivery.</li>
               <li><strong>Stripe:</strong> Payment processing. We do not store your credit card information; it is handled entirely by Stripe in accordance with PCI DSS standards.</li>
               <li><strong>Anthropic (Claude):</strong> AI model provider for document analysis and scoring. Documents are processed in real-time and are not stored by the provider.</li>
             </ul>

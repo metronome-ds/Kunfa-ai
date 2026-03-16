@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { upload } from '@vercel/blob/client'
 import { supabase } from '@/lib/supabase'
 import Modal from '@/components/ui/Modal'
 import UploadZone from './UploadZone'
@@ -47,15 +46,26 @@ function isSlugFormatValid(slug: string): boolean {
   return /^[a-z0-9]([a-z0-9-]{1,38}[a-z0-9])?$/.test(slug)
 }
 
-async function uploadToBlob(
+async function uploadToStorage(
   file: File | Blob,
   pathname: string,
 ): Promise<string> {
-  const blob = await upload(pathname, file, {
-    access: 'public',
-    handleUploadUrl: '/api/upload',
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('pathname', pathname)
+
+  const res = await fetch('/api/upload', {
+    method: 'POST',
+    body: formData,
   })
-  return blob.url
+
+  if (!res.ok) {
+    const data = await res.json()
+    throw new Error(data.error || 'Upload failed')
+  }
+
+  const data = await res.json()
+  return data.url
 }
 
 export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
@@ -338,13 +348,13 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
       try {
         setUploadProgress('Uploading pitch deck...')
-        pitchDeckUrl = await uploadToBlob(
+        pitchDeckUrl = await uploadToStorage(
           pitchDeck,
           `submissions/${timestamp}/pitch-deck-${pitchDeck.name}`,
         )
         if (financials) {
           setUploadProgress('Uploading financials...')
-          financialsUrl = await uploadToBlob(
+          financialsUrl = await uploadToStorage(
             financials,
             `submissions/${timestamp}/financials-${financials.name}`,
           )
@@ -352,7 +362,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         }
       } catch (uploadErr) {
         throw new Error(
-          `File upload failed: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}. Check that BLOB_READ_WRITE_TOKEN is configured.`,
+          `File upload failed: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}.`,
         )
       }
 
