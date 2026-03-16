@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { X, Star, FileText, ExternalLink } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import NotesTimeline from '@/components/pipeline/NotesTimeline'
 
 interface DealData {
   id: string
@@ -99,6 +101,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
   const [movingToPipeline, setMovingToPipeline] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null)
 
   // Reset form when deal changes
   useEffect(() => {
@@ -123,6 +126,12 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
     setSaved(false)
     setError('')
   }, [deal])
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setCurrentUserId(user.id)
+    })
+  }, [])
 
   if (!isOpen) return null
 
@@ -498,16 +507,16 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
                 </div>
               </div>
 
-              {/* Notes */}
+              {/* Notes Timeline */}
               <div>
                 <label className={labelClass}>Notes</label>
-                <textarea
-                  value={form.notes}
-                  onChange={e => updateField('notes', e.target.value)}
-                  rows={3}
-                  className={`${inputClass} resize-none`}
-                  placeholder="Internal notes about this deal..."
-                />
+                {currentUserId ? (
+                  <NotesTimeline dealId={deal.id} currentUserId={currentUserId} />
+                ) : (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400" />
+                  </div>
+                )}
               </div>
 
               {/* Thesis Fit */}

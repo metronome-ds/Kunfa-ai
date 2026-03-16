@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { ScoreTooltip } from '@/components/ui/ScoreTooltip'
 import KunfaLogo from '@/components/common/KunfaLogo'
+import { OptionalSidebarLayout } from '@/components/common/OptionalSidebarLayout'
 
 interface ScoreResult {
   overall_score: number
@@ -91,17 +92,18 @@ export default function ScoreResultsPage() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Nav */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/">
-            <KunfaLogo height={28} />
-          </Link>
-        </div>
-      </nav>
+  const fallbackNav = (
+    <nav className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="max-w-3xl mx-auto flex items-center justify-between">
+        <Link href="/">
+          <KunfaLogo height={28} />
+        </Link>
+      </div>
+    </nav>
+  );
 
+  return (
+    <OptionalSidebarLayout fallbackNav={fallbackNav}>
       <main className="max-w-3xl mx-auto px-6 py-12">
         {loading && (
           <div className="text-center py-16">
@@ -200,6 +202,6 @@ export default function ScoreResultsPage() {
           </div>
         )}
       </main>
-    </div>
+    </OptionalSidebarLayout>
   )
 }

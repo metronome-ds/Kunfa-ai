@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import KunfaLogo from '@/components/common/KunfaLogo'
+import { OptionalSidebarLayout } from '@/components/common/OptionalSidebarLayout'
 
 type Status = 'loading' | 'verifying' | 'paid' | 'unpaid' | 'generating' | 'error'
 
@@ -129,20 +130,21 @@ export default function ReportPage() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Nav */}
-      <nav className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <Link href="/">
-            <KunfaLogo height={28} />
-          </Link>
-          <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900 transition">
-            Dashboard
-          </Link>
-        </div>
-      </nav>
+  const fallbackNav = (
+    <nav className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="max-w-6xl mx-auto flex items-center justify-between">
+        <Link href="/">
+          <KunfaLogo height={28} />
+        </Link>
+        <Link href="/dashboard" className="text-sm text-gray-500 hover:text-gray-900 transition">
+          Dashboard
+        </Link>
+      </div>
+    </nav>
+  );
 
+  return (
+    <OptionalSidebarLayout fallbackNav={fallbackNav}>
       <main className="max-w-6xl mx-auto px-6 py-8">
         {/* Loading */}
         {(status === 'loading' || status === 'verifying') && (
@@ -264,6 +266,6 @@ export default function ReportPage() {
           </div>
         )}
       </main>
-    </div>
+    </OptionalSidebarLayout>
   )
 }

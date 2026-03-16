@@ -96,6 +96,32 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to fetch pipeline deals' }, { status: 500 });
     }
 
+    // Fetch note counts for all deals in one query
+    const dealIds = (deals || []).map((d) => d.id);
+    let noteCountMap: Record<string, number> = {};
+    if (dealIds.length > 0) {
+      const { data: noteCounts } = await supabase
+        .rpc('get_deal_note_counts', { deal_ids: dealIds });
+
+      if (noteCounts) {
+        for (const row of noteCounts) {
+          noteCountMap[row.deal_id] = row.note_count;
+        }
+      } else {
+        // Fallback: query directly
+        const { data: noteRows } = await supabase
+          .from('deal_notes')
+          .select('deal_id')
+          .in('deal_id', dealIds);
+
+        if (noteRows) {
+          for (const row of noteRows) {
+            noteCountMap[row.deal_id] = (noteCountMap[row.deal_id] || 0) + 1;
+          }
+        }
+      }
+    }
+
     // Format watchlist
     const watchlist = (watchlistItems || []).map((item) => {
       const company = item.company_pages as any;
@@ -157,6 +183,7 @@ export async function GET() {
           lead_investor: deal.lead_investor || null,
           co_investors: deal.co_investors || null,
           round_type: deal.round_type || null,
+          note_count: noteCountMap[deal.id] || 0,
         });
       }
     });

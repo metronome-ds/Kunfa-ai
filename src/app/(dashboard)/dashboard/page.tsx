@@ -17,7 +17,12 @@ import {
   PlusCircle,
   Compass,
   ArrowRight,
+  Search,
+  ChevronUp,
+  ChevronDown,
+  MessageSquare,
 } from 'lucide-react';
+import NotesTimeline from '@/components/pipeline/NotesTimeline';
 
 interface UserProfile {
   id: string;
@@ -83,6 +88,20 @@ interface TopDeal {
   stage: string;
   raise_amount: number | null;
   days_in_stage: number;
+}
+
+interface PipelineDeal {
+  id: string;
+  company_id: string;
+  company_name: string;
+  slug: string | null;
+  score: number | null;
+  stage: string;
+  raise_amount: number | null;
+  assigned_to_name: string | null;
+  next_action: string | null;
+  next_action_date: string | null;
+  note_count: number;
 }
 
 interface ActivityItem {
@@ -174,6 +193,13 @@ export default function DashboardPage() {
   const [stageCounts, setStageCounts] = useState<StageCounts>({ sourced: 0, screening: 0, due_diligence: 0, term_sheet: 0, closed: 0 });
   const [topDeals, setTopDeals] = useState<TopDeal[]>([]);
   const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [allDealsFlat, setAllDealsFlat] = useState<PipelineDeal[]>([]);
+  const [allDealsByStage, setAllDealsByStage] = useState<Record<string, { company_name: string; slug: string | null }[]>>({});
+  const [hoveredStage, setHoveredStage] = useState<{ stage: string; x: number; y: number } | null>(null);
+  const [pipelineSearch, setPipelineSearch] = useState('');
+  const [pipelineSort, setPipelineSort] = useState<{ key: string; asc: boolean }>({ key: 'company_name', asc: true });
+  const [expandedDealId, setExpandedDealId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -189,6 +215,7 @@ export default function DashboardPage() {
           if (startup) {
             loadStartupData();
           } else {
+            setCurrentUserId(user.id);
             loadInvestorData(user.id);
           }
         }
@@ -223,9 +250,12 @@ export default function DashboardPage() {
       let totalValue = 0;
       const scores: number[] = [];
       const allDealsList: TopDeal[] = [];
+      const flatDeals: PipelineDeal[] = [];
+      const byStage: Record<string, { company_name: string; slug: string | null }[]> = {};
 
       for (const [stage, deals] of Object.entries(allDeals) as [string, any[]][]) {
         counts[stage as keyof StageCounts] = deals.length;
+        byStage[stage] = [];
         for (const d of deals) {
           if (d.raise_amount) totalValue += Number(d.raise_amount);
           if (d.ai_score) scores.push(d.ai_score);
@@ -238,6 +268,20 @@ export default function DashboardPage() {
             raise_amount: d.raise_amount,
             days_in_stage: d.days_in_stage || 0,
           });
+          flatDeals.push({
+            id: d.id,
+            company_id: d.company_id,
+            company_name: d.company_name,
+            slug: d.slug,
+            score: d.ai_score,
+            stage,
+            raise_amount: d.raise_amount,
+            assigned_to_name: d.assigned_to_name || null,
+            next_action: d.next_action || null,
+            next_action_date: d.next_action_date || null,
+            note_count: d.note_count || 0,
+          });
+          byStage[stage].push({ company_name: d.company_name, slug: d.slug });
         }
       }
 
@@ -276,6 +320,8 @@ export default function DashboardPage() {
       // Sort by time, take latest 10
       activityItems.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
       setActivity(activityItems.slice(0, 10));
+      setAllDealsFlat(flatDeals);
+      setAllDealsByStage(byStage);
     } catch (err) {
       console.error('Failed to load investor data:', err);
     }
@@ -507,22 +553,54 @@ export default function DashboardPage() {
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Deal Stage Breakdown</h2>
         {totalStageDeals > 0 ? (
           <>
-            {/* Horizontal bar */}
-            <div className="flex h-8 rounded-lg overflow-hidden mb-4">
-              {(Object.entries(stageCounts) as [string, number][]).map(([stage, count]) => {
-                if (count === 0) return null;
-                const pct = (count / totalStageDeals) * 100;
-                return (
-                  <div
-                    key={stage}
-                    className={`${STAGE_COLORS[stage]} flex items-center justify-center text-white text-xs font-semibold transition-all`}
-                    style={{ width: `${pct}%` }}
-                    title={`${formatStageLabel(stage)}: ${count}`}
-                  >
-                    {pct > 8 ? count : ''}
-                  </div>
-                );
-              })}
+            {/* Horizontal bar with tooltips */}
+            <div className="relative">
+              <div className="flex h-8 rounded-lg overflow-hidden mb-4">
+                {(Object.entries(stageCounts) as [string, number][]).map(([stage, count]) => {
+                  if (count === 0) return null;
+                  const pct = (count / totalStageDeals) * 100;
+                  return (
+                    <div
+                      key={stage}
+                      className={`${STAGE_COLORS[stage]} flex items-center justify-center text-white text-xs font-semibold transition-all cursor-pointer`}
+                      style={{ width: `${pct}%` }}
+                      onMouseEnter={(e) => {
+                        const rect = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
+                        const segRect = e.currentTarget.getBoundingClientRect();
+                        setHoveredStage({
+                          stage,
+                          x: segRect.left - rect.left + segRect.width / 2,
+                          y: -8,
+                        });
+                      }}
+                      onMouseLeave={() => setHoveredStage(null)}
+                    >
+                      {pct > 8 ? count : ''}
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Tooltip */}
+              {hoveredStage && allDealsByStage[hoveredStage.stage] && (
+                <div
+                  className="absolute z-10 bg-white border border-gray-200 shadow-lg rounded-lg p-3 pointer-events-none"
+                  style={{
+                    left: `${hoveredStage.x}px`,
+                    bottom: '100%',
+                    transform: 'translateX(-50%)',
+                    marginBottom: '4px',
+                    minWidth: '160px',
+                    maxWidth: '240px',
+                  }}
+                >
+                  <p className="text-xs font-semibold text-gray-900 mb-1.5">{formatStageLabel(hoveredStage.stage)}</p>
+                  <ul className="space-y-0.5">
+                    {allDealsByStage[hoveredStage.stage].map((d, i) => (
+                      <li key={i} className="text-xs text-gray-600 truncate">{d.company_name}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
             {/* Legend */}
             <div className="flex flex-wrap items-center gap-4">
@@ -618,6 +696,137 @@ export default function DashboardPage() {
           )}
         </div>
       </div>
+
+      {/* Pipeline Deals Table */}
+      {allDealsFlat.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Pipeline Deals</h2>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                value={pipelineSearch}
+                onChange={(e) => setPipelineSearch(e.target.value)}
+                placeholder="Search companies..."
+                className="pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] w-56"
+              />
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  {[
+                    { key: 'company_name', label: 'Company', align: 'left' },
+                    { key: 'score', label: 'Score', align: 'left' },
+                    { key: 'stage', label: 'Stage', align: 'left' },
+                    { key: 'raise_amount', label: 'Raise', align: 'right' },
+                    { key: 'assigned_to_name', label: 'Assigned', align: 'left' },
+                    { key: 'next_action', label: 'Next Action', align: 'left' },
+                    { key: 'note_count', label: 'Notes', align: 'center' },
+                  ].map((col) => (
+                    <th
+                      key={col.key}
+                      className={`text-${col.align} text-xs font-medium text-gray-400 pb-3 cursor-pointer hover:text-gray-600 transition select-none`}
+                      onClick={() =>
+                        setPipelineSort((prev) =>
+                          prev.key === col.key ? { key: col.key, asc: !prev.asc } : { key: col.key, asc: true }
+                        )
+                      }
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        {col.label}
+                        {pipelineSort.key === col.key && (
+                          pipelineSort.asc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+                        )}
+                      </span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  const filtered = allDealsFlat.filter((d) =>
+                    d.company_name.toLowerCase().includes(pipelineSearch.toLowerCase())
+                  );
+                  const sorted = [...filtered].sort((a, b) => {
+                    const k = pipelineSort.key as keyof PipelineDeal;
+                    const av = a[k];
+                    const bv = b[k];
+                    if (av == null && bv == null) return 0;
+                    if (av == null) return 1;
+                    if (bv == null) return -1;
+                    const cmp = typeof av === 'string'
+                      ? av.localeCompare(bv as string)
+                      : (av as number) - (bv as number);
+                    return pipelineSort.asc ? cmp : -cmp;
+                  });
+                  return sorted.map((deal) => (
+                    <>
+                      <tr key={deal.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
+                        <td className="py-3 pr-3">
+                          {deal.slug ? (
+                            <Link href={`/company/${deal.slug}`} className="text-sm font-medium text-gray-900 hover:text-[#0168FE] transition">
+                              {deal.company_name}
+                            </Link>
+                          ) : (
+                            <span className="text-sm font-medium text-gray-900">{deal.company_name}</span>
+                          )}
+                        </td>
+                        <td className="py-3 pr-3">
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded ${getScoreBadgeColor(deal.score)}`}>
+                            {deal.score ?? '—'}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-3">
+                          <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded text-white ${STAGE_COLORS[deal.stage] || 'bg-gray-400'}`}>
+                            {formatStageLabel(deal.stage)}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-3 text-right">
+                          <span className="text-xs text-gray-600">{deal.raise_amount ? formatCompact(deal.raise_amount) : '—'}</span>
+                        </td>
+                        <td className="py-3 pr-3">
+                          <span className="text-xs text-gray-600">{deal.assigned_to_name || '—'}</span>
+                        </td>
+                        <td className="py-3 pr-3">
+                          <div>
+                            <span className="text-xs text-gray-600">{deal.next_action || '—'}</span>
+                            {deal.next_action_date && (
+                              <span className="text-[10px] text-gray-400 ml-1">({deal.next_action_date})</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 text-center">
+                          <button
+                            onClick={() => setExpandedDealId(expandedDealId === deal.id ? null : deal.id)}
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition ${
+                              expandedDealId === deal.id
+                                ? 'bg-blue-100 text-blue-700'
+                                : 'text-gray-500 hover:bg-gray-100'
+                            }`}
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            {deal.note_count > 0 && <span>{deal.note_count}</span>}
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedDealId === deal.id && currentUserId && (
+                        <tr key={`${deal.id}-notes`}>
+                          <td colSpan={7} className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+                            <NotesTimeline dealId={deal.id} currentUserId={currentUserId} />
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  ));
+                })()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

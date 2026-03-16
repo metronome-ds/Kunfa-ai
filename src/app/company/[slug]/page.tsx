@@ -6,6 +6,7 @@ import { CompanyActions } from '@/components/company/CompanyActions'
 import { CompanyNav } from '@/components/company/CompanyNav'
 import { ReportBanner } from '@/components/company/ReportBanner'
 import { ScoreTooltip } from '@/components/ui/ScoreTooltip'
+import { OptionalSidebarLayout } from '@/components/common/OptionalSidebarLayout'
 
 interface TeamMember {
   name: string
@@ -122,9 +123,7 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
   ].filter(p => p.grade) : []
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <CompanyNav />
-
+    <OptionalSidebarLayout fallbackNav={<CompanyNav />}>
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-6">
         {/* Header */}
         <div className="flex items-start gap-6">
@@ -380,6 +379,6 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
           </div>
         </div>
       </footer>
-    </div>
+    </OptionalSidebarLayout>
   )
 }

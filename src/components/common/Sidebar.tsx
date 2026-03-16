@@ -7,6 +7,8 @@ import {
   Settings,
   LogOut,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Compass,
   TrendingUp,
   Users,
@@ -139,10 +141,37 @@ interface SidebarSectionProps {
   title: string;
   items: NavItem[];
   pathname: string;
+  collapsed: boolean;
 }
 
-function SidebarSection({ title, items, pathname }: SidebarSectionProps) {
+function SidebarSection({ title, items, pathname, collapsed }: SidebarSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+
+  if (collapsed) {
+    return (
+      <div className="mb-2 space-y-1">
+        {items.map((item) => {
+          const isActive =
+            pathname === item.href ||
+            (item.href !== '/' && pathname.startsWith(item.href + '/'));
+          return (
+            <Link
+              key={item.label}
+              href={item.href || '#'}
+              className={`flex items-center justify-center p-2.5 rounded-lg transition-all ${
+                isActive
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
+              title={item.label}
+            >
+              {item.icon}
+            </Link>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div className="mb-4">
@@ -182,7 +211,12 @@ function SidebarSection({ title, items, pathname }: SidebarSectionProps) {
   );
 }
 
-export function Sidebar() {
+interface SidebarProps {
+  collapsed?: boolean;
+  onToggle?: () => void;
+}
+
+export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -225,30 +259,38 @@ export function Sidebar() {
   const tagline = isStartup ? 'Startup Growth Platform' : 'Deal Flow Intelligence';
 
   return (
-    <div className="fixed left-0 top-0 h-screen w-64 bg-gray-900 border-r border-gray-800 flex flex-col overflow-hidden">
+    <div
+      className={`fixed left-0 top-0 h-screen bg-gray-900 border-r border-gray-800 flex flex-col overflow-hidden transition-all duration-200 ${
+        collapsed ? 'w-16' : 'w-64'
+      }`}
+    >
       {/* Logo */}
-      <div className="p-6 border-b border-gray-800">
+      <div className={`border-b border-gray-800 ${collapsed ? 'p-3 flex items-center justify-center' : 'p-6'}`}>
         <Link href="/dashboard" className="block hover:opacity-80 transition-opacity">
-          <KunfaLogo height={24} inverted />
+          {collapsed ? (
+            <span className="text-white font-bold text-lg">K</span>
+          ) : (
+            <KunfaLogo height={24} inverted />
+          )}
         </Link>
-        <p className="text-xs text-gray-400 mt-2">{tagline}</p>
+        {!collapsed && <p className="text-xs text-gray-400 mt-2">{tagline}</p>}
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto px-3 py-4 space-y-2">
+      <div className={`flex-1 overflow-y-auto py-4 space-y-2 ${collapsed ? 'px-2' : 'px-3'}`}>
         {loading ? (
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
           </div>
         ) : (
           Object.entries(navigationSections).map(([title, items]) => (
-            <SidebarSection key={title} title={title} items={items} pathname={pathname} />
+            <SidebarSection key={title} title={title} items={items} pathname={pathname} collapsed={collapsed} />
           ))
         )}
       </div>
 
       {/* Bottom */}
-      <div className="border-t border-gray-800 p-3 space-y-3">
+      <div className={`border-t border-gray-800 ${collapsed ? 'p-2' : 'p-3'} space-y-3`}>
         <div className="space-y-1">
           {bottomSections.map((item) => {
             const isActive =
@@ -258,14 +300,15 @@ export function Sidebar() {
               <Link
                 key={item.label}
                 href={item.href || '#'}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
+                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
                   isActive
                     ? 'bg-blue-600 text-white shadow-md'
                     : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}
+                title={collapsed ? item.label : undefined}
               >
                 {item.icon}
-                <span className="text-sm font-medium">{item.label}</span>
+                {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
               </Link>
             );
           })}
@@ -273,11 +316,23 @@ export function Sidebar() {
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-300 hover:bg-red-600/10 hover:text-red-400 transition-all"
+          className={`w-full flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg text-gray-300 hover:bg-red-600/10 hover:text-red-400 transition-all`}
+          title={collapsed ? 'Sign Out' : undefined}
         >
           <LogOut className="h-5 w-5" />
-          <span className="text-sm font-medium">Sign Out</span>
+          {!collapsed && <span className="text-sm font-medium">Sign Out</span>}
         </button>
+
+        {/* Toggle button */}
+        {onToggle && (
+          <button
+            onClick={onToggle}
+            className="w-full flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition-all"
+            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          >
+            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          </button>
+        )}
       </div>
     </div>
   );
