@@ -1,16 +1,83 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import KunfaLogo from '@/components/common/KunfaLogo'
 
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0168FE]" />
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
+  )
+}
+
+function ResetPasswordContent() {
+  const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [sessionReady, setSessionReady] = useState(false)
+  const [initializing, setInitializing] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+
+    async function establishSession() {
+      // 1. PKCE flow: exchange code for session
+      const code = searchParams.get('code')
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code)
+        if (!error && mounted) {
+          setSessionReady(true)
+          setInitializing(false)
+          return
+        }
+      }
+
+      // 2. Hash fragment flow: Supabase client picks up #access_token automatically
+      //    Listen for auth state change
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (!mounted) return
+        if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+          setSessionReady(true)
+          setInitializing(false)
+        }
+      })
+
+      // 3. Check if session already exists (e.g. user is already logged in)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session && mounted) {
+        setSessionReady(true)
+        setInitializing(false)
+        return
+      }
+
+      // Give hash fragment flow a few seconds to complete
+      setTimeout(() => {
+        if (mounted && !sessionReady) {
+          setInitializing(false)
+        }
+      }, 3000)
+
+      return () => {
+        subscription.unsubscribe()
+      }
+    }
+
+    establishSession()
+
+    return () => { mounted = false }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function handleReset(e: React.FormEvent) {
     e.preventDefault()
@@ -36,6 +103,39 @@ export default function ResetPasswordPage() {
       setSuccess(true)
     }
     setLoading(false)
+  }
+
+  if (initializing) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0168FE] mx-auto mb-4" />
+          <p className="text-sm text-gray-500">Verifying your reset link...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!sessionReady) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="w-full max-w-md text-center">
+          <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Reset link expired or invalid</h2>
+          <p className="text-sm text-gray-500 mb-6">Please request a new password reset link.</p>
+          <Link
+            href="/login"
+            className="inline-block px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition"
+          >
+            Back to login
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   if (success) {

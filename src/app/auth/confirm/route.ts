@@ -38,6 +38,11 @@ export async function GET(request: NextRequest) {
     })
 
     if (!error && data.user) {
+      // Recovery flow → redirect to reset-password page
+      if (type === 'recovery') {
+        return NextResponse.redirect(new URL('/reset-password', request.url))
+      }
+
       // Create profile if it doesn't exist yet
       const { data: existingProfile } = await supabase
         .from('profiles')
