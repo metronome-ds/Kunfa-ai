@@ -63,7 +63,7 @@ export default function LoginPage() {
     setForgotError('')
 
     const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: 'https://kunfa.ai/reset-password',
     })
 
     if (error) {
