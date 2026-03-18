@@ -21,6 +21,7 @@ import {
   ChevronUp,
   ChevronDown,
   MessageSquare,
+  Loader2,
 } from 'lucide-react';
 import NotesTimeline from '@/components/pipeline/NotesTimeline';
 
@@ -186,6 +187,7 @@ export default function DashboardPage() {
   // Startup state
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [paid, setPaid] = useState(false);
+  const [hasReport, setHasReport] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   // Investor state
@@ -234,6 +236,7 @@ export default function DashboardPage() {
       const data = await res.json();
       setCompany(data.company || null);
       setPaid(!!data.paid);
+      setHasReport(!!data.hasReport);
     } catch { /* ignore */ }
   };
 
@@ -415,14 +418,34 @@ export default function DashboardPage() {
 
             {/* Report Status */}
             {company.submission_id && (
-              <div className={`rounded-xl p-5 mb-6 border ${paid ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
-                {paid ? (
+              <div className={`rounded-xl p-5 mb-6 border ${
+                paid && hasReport ? 'bg-emerald-50 border-emerald-200'
+                  : paid ? 'bg-blue-50 border-blue-200'
+                  : 'bg-amber-50 border-amber-200'
+              }`}>
+                {paid && hasReport ? (
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-sm font-semibold text-gray-900">Kunfa Readiness Report</h3>
                       <p className="text-xs text-gray-600 mt-0.5">Your full AI-powered investment analysis is ready.</p>
                     </div>
                     <Link href={`/report/${company.submission_id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition">View Report</Link>
+                  </div>
+                ) : paid ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Loader2 className="w-5 h-5 text-[#0168FE] animate-spin flex-shrink-0" />
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-900">Report Generating...</h3>
+                        <p className="text-xs text-gray-600 mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => loadStartupData()}
+                      className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                    >
+                      <RefreshCw className="w-4 h-4" /> Check Status
+                    </button>
                   </div>
                 ) : (
                   <div className="flex items-center justify-between">

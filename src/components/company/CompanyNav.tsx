@@ -7,6 +7,7 @@ import KunfaLogo from '@/components/common/KunfaLogo'
 
 export function CompanyNav() {
   const [userRole, setUserRole] = useState<string | null>(null)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
@@ -16,6 +17,8 @@ export function CompanyNav() {
         setLoaded(true)
         return
       }
+
+      setIsLoggedIn(true)
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -53,6 +56,13 @@ export function CompanyNav() {
                   className="bg-[#0168FE] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
                 >
                   Browse Companies
+                </Link>
+              ) : isLoggedIn ? (
+                <Link
+                  href="/dashboard"
+                  className="bg-[#0168FE] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+                >
+                  Go to Dashboard
                 </Link>
               ) : (
                 <Link
