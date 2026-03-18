@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { UserRole } from '@/lib/types';
 import {
@@ -180,13 +181,25 @@ const STAGE_COLORS: Record<string, string> = {
 // ── Main Component ──
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading...</div>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
+  const searchParams = useSearchParams();
+  const paidParam = searchParams.get('paid') === 'true';
+  const sidParam = searchParams.get('sid');
+
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStartup, setIsStartup] = useState(false);
 
   // Startup state
   const [company, setCompany] = useState<CompanyData | null>(null);
-  const [paid, setPaid] = useState(false);
+  const [paid, setPaid] = useState(paidParam);
   const [hasReport, setHasReport] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
@@ -230,15 +243,33 @@ export default function DashboardPage() {
     load();
   }, []);
 
-  const loadStartupData = async () => {
+  const loadStartupData = useCallback(async () => {
     try {
       const res = await fetch('/api/my-company');
       const data = await res.json();
       setCompany(data.company || null);
-      setPaid(!!data.paid);
+      // If user arrived with ?paid=true, trust that over API (webhook race condition)
+      setPaid((prev) => prev || !!data.paid);
       setHasReport(!!data.hasReport);
     } catch { /* ignore */ }
-  };
+  }, []);
+
+  // Poll for report readiness when paid but report not yet generated
+  useEffect(() => {
+    if (!paid || hasReport || !isStartup) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/my-company');
+        const data = await res.json();
+        if (data.paid) setPaid(true);
+        if (data.hasReport) {
+          setHasReport(true);
+          clearInterval(interval);
+        }
+      } catch { /* ignore */ }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [paid, hasReport, isStartup]);
 
   const loadInvestorData = async (userId: string) => {
     try {
@@ -361,6 +392,21 @@ export default function DashboardPage() {
           </h1>
           <p className="text-gray-500 mt-1">Manage your startup profile and track your investment readiness.</p>
         </div>
+
+        {/* Payment Success Banner */}
+        {paidParam && (
+          <div className="rounded-xl p-4 mb-6 border bg-emerald-50 border-emerald-200">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Payment confirmed!</p>
+                <p className="text-xs text-gray-500 mt-0.5">Your Readiness Report is being generated. You&apos;ll see it below when it&apos;s ready.</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {company ? (
           <>

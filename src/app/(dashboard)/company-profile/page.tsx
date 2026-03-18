@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ExternalLink, Copy, Check, FileText, Pencil, RefreshCw, X } from 'lucide-react'
+import { ExternalLink, Copy, Check, FileText, Pencil, RefreshCw, X, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import RescoringModal from '@/components/scoring/RescoringModal'
 import { STAGES, INDUSTRIES } from '@/lib/constants'
@@ -80,7 +80,7 @@ const SELECT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-
 export default function CompanyProfilePage() {
   const [company, setCompany] = useState<CompanyData | null>(null)
   const [paid, setPaid] = useState(false)
-  const [reportUrl, setReportUrl] = useState<string | null>(null)
+  const [hasReport, setHasReport] = useState(false)
   const [loading, setLoading] = useState(true)
   const [copied, setCopied] = useState(false)
   const [userEmail, setUserEmail] = useState('')
@@ -119,7 +119,7 @@ export default function CompanyProfilePage() {
         const data = await res.json()
         setCompany(data.company || null)
         setPaid(!!data.paid)
-        setReportUrl(data.reportUrl || null)
+        setHasReport(!!data.hasReport)
       } catch {
         // ignore
       } finally {
@@ -128,6 +128,23 @@ export default function CompanyProfilePage() {
     }
     load()
   }, [])
+
+  // Poll for report readiness when paid but report not yet generated
+  useEffect(() => {
+    if (!paid || hasReport) return
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/my-company')
+        const data = await res.json()
+        if (data.paid) setPaid(true)
+        if (data.hasReport) {
+          setHasReport(true)
+          clearInterval(interval)
+        }
+      } catch { /* ignore */ }
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [paid, hasReport])
 
   const startEditing = () => {
     if (!company) return
@@ -497,11 +514,11 @@ export default function CompanyProfilePage() {
       {/* Report Status */}
       {company.submission_id && (
         <div className={`rounded-xl p-4 mb-6 border ${
-          paid
-            ? 'bg-blue-50 border-blue-200'
+          paid && hasReport ? 'bg-emerald-50 border-emerald-200'
+            : paid ? 'bg-blue-50 border-blue-200'
             : 'bg-amber-50 border-amber-200'
         }`}>
-          {paid ? (
+          {paid && hasReport ? (
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-sm font-semibold text-gray-900">Kunfa Readiness Report</h3>
@@ -514,6 +531,16 @@ export default function CompanyProfilePage() {
                 View Report
                 <ExternalLink className="w-3.5 h-3.5" />
               </Link>
+            </div>
+          ) : paid ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 text-[#0168FE] animate-spin flex-shrink-0" />
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">Report Generating...</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
+                </div>
+              </div>
             </div>
           ) : (
             <div className="flex items-center justify-between">
