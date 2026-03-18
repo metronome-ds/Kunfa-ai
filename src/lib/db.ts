@@ -263,6 +263,7 @@ export async function createCompanyPage(data: {
   founderName?: string
   founderTitle?: string
   linkedinUrl?: string
+  companyLinkedinUrl?: string
   foundingTeam?: { name: string; title: string; email?: string; linkedin?: string }[]
   pdfUrl?: string
   financialsUrl?: string
@@ -306,6 +307,7 @@ export async function createCompanyPage(data: {
       founder_name: data.founderName || null,
       founder_title: data.founderTitle || null,
       linkedin_url: data.linkedinUrl || null,
+      company_linkedin_url: data.companyLinkedinUrl || null,
       founding_team: data.foundingTeam && data.foundingTeam.length > 0 ? data.foundingTeam : null,
       pdf_url: data.pdfUrl || null,
       financials_url: data.financialsUrl || null,

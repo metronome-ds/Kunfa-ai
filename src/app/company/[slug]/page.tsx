@@ -184,9 +184,9 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
                   {company.website_url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
                 </a>
               )}
-              {company.linkedin_url && (
+              {company.company_linkedin_url && (
                 <a
-                  href={company.linkedin_url.startsWith('http') ? company.linkedin_url : `https://${company.linkedin_url}`}
+                  href={company.company_linkedin_url.startsWith('http') ? company.company_linkedin_url : `https://${company.company_linkedin_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#0A66C2]/10 text-[#0A66C2] text-xs font-medium hover:bg-[#0A66C2]/20 transition"

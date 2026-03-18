@@ -92,6 +92,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   const [companyStage, setCompanyStage] = useState('')
   const [companyCountry, setCompanyCountry] = useState('')
   const [companyWebsite, setCompanyWebsite] = useState('')
+  const [companyLinkedinUrl, setCompanyLinkedinUrl] = useState('')
 
   // Founder step
   const [founderName, setFounderName] = useState('')
@@ -380,6 +381,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         body: JSON.stringify({
           email,
           linkedinUrl: linkedinUrl || undefined,
+          companyLinkedinUrl: companyLinkedinUrl || undefined,
           pitchDeckUrl,
           pitchDeckFilename: pitchDeck.name,
           financialsUrl,
@@ -453,6 +455,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     setCompanyStage('')
     setCompanyCountry('')
     setCompanyWebsite('')
+    setCompanyLinkedinUrl('')
     setFounderName('')
     setFounderTitle('')
     setTeamSize('')
@@ -685,6 +688,14 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                   placeholder="https://acme.com"
                   className={INPUT_CLASS} />
               </div>
+            </div>
+
+            {/* Company LinkedIn */}
+            <div>
+              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Company LinkedIn URL</label>
+              <input type="url" value={companyLinkedinUrl} onChange={(e) => setCompanyLinkedinUrl(e.target.value)}
+                placeholder="linkedin.com/company/your-company"
+                className={INPUT_CLASS} />
             </div>
 
             <button onClick={handleSaveCompany} disabled={!isCompanyValid || authLoading}

@@ -10,6 +10,7 @@ import { STAGES, INDUSTRIES } from '@/lib/constants'
 interface TeamMember {
   name: string
   title?: string
+  email?: string
   linkedin?: string
 }
 
@@ -25,6 +26,7 @@ interface CompanyData {
   headquarters: string | null
   website_url: string | null
   linkedin_url: string | null
+  company_linkedin_url: string | null
   overall_score: number | null
   raise_amount: number | string | null
   team_size: number | null
@@ -100,13 +102,14 @@ export default function CompanyProfilePage() {
     country: '',
     headquarters: '',
     website_url: '',
-    linkedin_url: '',
+    company_linkedin_url: '',
     raise_amount: '',
     team_size: '',
     founded_year: '',
     use_of_funds: '',
     traction: '',
   })
+  const [editTeam, setEditTeam] = useState<{ name: string; title: string; email: string; linkedin: string }[]>([])
 
   useEffect(() => {
     async function load() {
@@ -156,13 +159,28 @@ export default function CompanyProfilePage() {
       country: company.country || '',
       headquarters: company.headquarters || '',
       website_url: company.website_url || '',
-      linkedin_url: company.linkedin_url || '',
+      company_linkedin_url: company.company_linkedin_url || '',
       raise_amount: company.raise_amount ? String(company.raise_amount) : '',
       team_size: company.team_size ? String(company.team_size) : '',
       founded_year: company.founded_year ? String(company.founded_year) : '',
       use_of_funds: company.use_of_funds || '',
       traction: company.traction || '',
     })
+    // Populate team editing from founding_team or fallback
+    const team: { name: string; title: string; email: string; linkedin: string }[] = []
+    if (company.founding_team && Array.isArray(company.founding_team) && company.founding_team.length > 0) {
+      for (const m of company.founding_team) {
+        if (m && typeof m === 'object' && m.name) {
+          team.push({ name: m.name, title: m.title || '', email: m.email || '', linkedin: m.linkedin || '' })
+        }
+      }
+    } else if (company.founder_name) {
+      team.push({ name: company.founder_name, title: company.founder_title || '', email: '', linkedin: company.linkedin_url || '' })
+    }
+    if (team.length === 0) {
+      team.push({ name: '', title: '', email: '', linkedin: '' })
+    }
+    setEditTeam(team)
     setEditing(true)
     setSaveSuccess(false)
   }
@@ -176,6 +194,11 @@ export default function CompanyProfilePage() {
     setSaving(true)
     setSaveSuccess(false)
     try {
+      // Build founding_team from editTeam, filtering out empty entries
+      const foundingTeam = editTeam
+        .filter(m => m.name.trim())
+        .map(m => ({ name: m.name.trim(), title: m.title.trim(), email: m.email.trim(), linkedin: m.linkedin.trim() }))
+
       const res = await fetch('/api/my-company', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -187,12 +210,13 @@ export default function CompanyProfilePage() {
           country: editForm.country || null,
           headquarters: editForm.headquarters || null,
           website_url: editForm.website_url || null,
-          linkedin_url: editForm.linkedin_url || null,
+          company_linkedin_url: editForm.company_linkedin_url || null,
           raise_amount: editForm.raise_amount ? Number(editForm.raise_amount) : null,
           team_size: editForm.team_size ? Number(editForm.team_size) : null,
           founded_year: editForm.founded_year ? Number(editForm.founded_year) : null,
           use_of_funds: editForm.use_of_funds || null,
           traction: editForm.traction || null,
+          founding_team: foundingTeam.length > 0 ? foundingTeam : null,
         }),
       })
 
@@ -331,9 +355,9 @@ export default function CompanyProfilePage() {
                   {company.website_url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
                 </a>
               )}
-              {company.linkedin_url && (
+              {company.company_linkedin_url && (
                 <a
-                  href={company.linkedin_url.startsWith('http') ? company.linkedin_url : `https://${company.linkedin_url}`}
+                  href={company.company_linkedin_url.startsWith('http') ? company.company_linkedin_url : `https://${company.company_linkedin_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition"
@@ -455,9 +479,10 @@ export default function CompanyProfilePage() {
                 className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">LinkedIn URL</label>
-              <input type="url" value={editForm.linkedin_url}
-                onChange={(e) => setEditForm(f => ({ ...f, linkedin_url: e.target.value }))}
+              <label className="block text-xs font-medium text-gray-500 mb-1">Company LinkedIn URL</label>
+              <input type="url" value={editForm.company_linkedin_url}
+                onChange={(e) => setEditForm(f => ({ ...f, company_linkedin_url: e.target.value }))}
+                placeholder="linkedin.com/company/your-company"
                 className={INPUT_CLASS} />
             </div>
             <div>
@@ -493,6 +518,68 @@ export default function CompanyProfilePage() {
                 className={INPUT_CLASS} />
             </div>
           </div>
+
+          {/* Founding Team Editor */}
+          <div className="mt-6 border-t border-gray-200 pt-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-900">Founding Team</h3>
+              {editTeam.length < 5 && (
+                <button
+                  type="button"
+                  onClick={() => setEditTeam([...editTeam, { name: '', title: '', email: '', linkedin: '' }])}
+                  className="text-sm text-[#0168FE] font-medium hover:text-[#0050CC] transition"
+                >
+                  + Add Co-Founder
+                </button>
+              )}
+            </div>
+            <div className="space-y-3">
+              {editTeam.map((member, i) => (
+                <div key={i} className="bg-gray-50 rounded-lg p-3 relative">
+                  {i > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setEditTeam(editTeam.filter((_, j) => j !== i))}
+                      className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                  <div className={`grid grid-cols-2 gap-3 ${i > 0 ? 'pr-6' : ''}`}>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Name {i === 0 ? '*' : ''}</label>
+                      <input type="text" value={member.name}
+                        onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, name: e.target.value } : m))}
+                        placeholder="Jane Smith"
+                        className={INPUT_CLASS} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Title</label>
+                      <input type="text" value={member.title}
+                        onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, title: e.target.value } : m))}
+                        placeholder="CEO & Co-Founder"
+                        className={INPUT_CLASS} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
+                      <input type="email" value={member.email}
+                        onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, email: e.target.value } : m))}
+                        placeholder="jane@company.com"
+                        className={INPUT_CLASS} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">LinkedIn</label>
+                      <input type="url" value={member.linkedin}
+                        onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, linkedin: e.target.value } : m))}
+                        placeholder="linkedin.com/in/..."
+                        className={INPUT_CLASS} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="flex items-center gap-3 mt-4">
             <button
               onClick={handleSave}

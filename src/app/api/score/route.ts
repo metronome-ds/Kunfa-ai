@@ -67,6 +67,7 @@ export async function POST(request: NextRequest) {
     const {
       email,
       linkedinUrl,
+      companyLinkedinUrl,
       pitchDeckUrl,
       pitchDeckFilename,
       financialsUrl,
@@ -77,6 +78,7 @@ export async function POST(request: NextRequest) {
     } = body as {
       email: string
       linkedinUrl?: string
+      companyLinkedinUrl?: string
       pitchDeckUrl: string
       pitchDeckFilename: string
       financialsUrl?: string
@@ -337,6 +339,7 @@ export async function POST(request: NextRequest) {
               founderName: profile?.full_name || undefined,
               founderTitle: profile?.job_title || undefined,
               linkedinUrl: profile?.linkedin_url || linkedinUrl || undefined,
+              companyLinkedinUrl: companyLinkedinUrl || undefined,
               foundingTeam: foundingTeam || undefined,
               pdfUrl: pitchDeckUrl || undefined,
               financialsUrl: financialsUrl || undefined,
