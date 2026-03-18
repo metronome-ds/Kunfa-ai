@@ -54,6 +54,8 @@ export async function GET() {
     const hasPitchDeck = !!(pdf_url || company.submission_id)
     const hasFinancials = !!financials_url
 
+    console.log(`[my-company] user=${user.id} submission=${company.submission_id || 'none'} paid=${paid} hasReport=${hasReport}`)
+
     return NextResponse.json({ company: safeCompany, paid, hasReport, hasPitchDeck, hasFinancials })
   } catch (error) {
     console.error('Error in GET /api/my-company:', error)

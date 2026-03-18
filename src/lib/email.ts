@@ -4,8 +4,14 @@ const FROM_EMAIL = 'Kunfa <onboarding@resend.dev>'
 
 let _resend: Resend | null = null
 function getResend(): Resend | null {
-  if (!process.env.RESEND_API_KEY) return null
-  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY)
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[Email] RESEND_API_KEY is NOT set in environment')
+    return null
+  }
+  if (!_resend) {
+    console.log('[Email] Initializing Resend client (API key present, length:', process.env.RESEND_API_KEY.length, ')')
+    _resend = new Resend(process.env.RESEND_API_KEY)
+  }
   return _resend
 }
 

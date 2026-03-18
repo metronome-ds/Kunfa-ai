@@ -180,7 +180,28 @@ export async function getSubmission(id: string) {
 
 export async function markSubmissionPaid(id: string, stripeSessionId: string) {
   const supabase = getSupabase()
-  const { error, count } = await supabase
+
+  // First verify the submission exists
+  const { data: existing, error: lookupError } = await supabase
+    .from('submissions')
+    .select('id, paid')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (lookupError) {
+    console.error(`markSubmissionPaid: lookup failed for ${id}:`, lookupError.message)
+    throw lookupError
+  }
+  if (!existing) {
+    console.error(`markSubmissionPaid: submission ${id} not found in database`)
+    throw new Error(`Submission ${id} not found`)
+  }
+  if (existing.paid) {
+    console.log(`markSubmissionPaid: submission ${id} already paid, skipping`)
+    return
+  }
+
+  const { data: updated, error } = await supabase
     .from('submissions')
     .update({
       paid: true,
@@ -188,12 +209,13 @@ export async function markSubmissionPaid(id: string, stripeSessionId: string) {
       paid_at: new Date().toISOString(),
     })
     .eq('id', id)
+    .select('id, paid')
 
   if (error) {
-    console.error(`markSubmissionPaid failed for ${id}:`, error.message)
+    console.error(`markSubmissionPaid: update failed for ${id}:`, error.message)
     throw error
   }
-  console.log(`markSubmissionPaid: updated submission ${id}, count=${count}`)
+  console.log(`markSubmissionPaid: success for ${id}, updated rows:`, updated?.length ?? 0)
 }
 
 export async function updateReportUrl(id: string, reportUrl: string) {

@@ -193,13 +193,26 @@ export async function POST(request: NextRequest) {
     if (member.status === 'pending') {
       const inviterName = profile.full_name || 'A team member';
       const teamName = profile.fund_name || profile.company_name || 'their team';
+      console.log(`[Team Invite] Sending invite email to ${email} from ${inviterName} (${teamName})`);
       const emailContent = teamInviteEmail({
         inviterName,
         teamName,
         role: role || 'member',
         teamMemberId: member.id,
       });
-      sendEmail({ to: email, ...emailContent }).catch(() => {});
+      sendEmail({ to: email, ...emailContent })
+        .then(sent => {
+          if (sent) {
+            console.log(`[Team Invite] Email sent successfully to ${email}`);
+          } else {
+            console.error(`[Team Invite] Email FAILED to send to ${email} — check RESEND_API_KEY`);
+          }
+        })
+        .catch(err => {
+          console.error(`[Team Invite] Email error for ${email}:`, err instanceof Error ? err.message : err);
+        });
+    } else {
+      console.log(`[Team Invite] Skipping email for ${email} — status is ${member.status} (auto-accepted)`);
     }
 
     return NextResponse.json(
