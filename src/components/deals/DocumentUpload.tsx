@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import { FileText, Upload, X, AlertCircle } from 'lucide-react';
 
 interface UploadedFile {
@@ -106,27 +107,49 @@ export function DocumentUpload({
     if (!dealId) return;
 
     try {
-      const formData = new FormData();
-      formData.append('file', uploadedFile.file);
-      formData.append('document_type', 'other');
+      // Upload directly to Supabase Storage from browser
+      const storagePath = `${dealId}/${Date.now()}-${uploadedFile.file.name}`;
+      const { error: storageError } = await supabase.storage
+        .from('documents')
+        .upload(storagePath, uploadedFile.file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
 
-      const response = await fetch(`/api/deals/${dealId}/documents`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
+      if (storageError) {
         setUploadedFiles((prev) =>
           prev.map((f) =>
             f.id === uploadedFile.id
-              ? { ...f, error: 'Upload failed' }
+              ? { ...f, error: 'Upload failed. Please try again.' }
               : f
           )
         );
         return;
       }
 
-      const result = await response.json();
+      // Create document record via API
+      const response = await fetch(`/api/deals/${dealId}/documents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: uploadedFile.file.name,
+          filePath: storagePath,
+          fileSize: uploadedFile.file.size,
+          mimeType: uploadedFile.file.type,
+          documentType: 'other',
+        }),
+      });
+
+      if (!response.ok) {
+        setUploadedFiles((prev) =>
+          prev.map((f) =>
+            f.id === uploadedFile.id
+              ? { ...f, error: 'Upload failed. Please try again.' }
+              : f
+          )
+        );
+        return;
+      }
 
       setUploadedFiles((prev) =>
         prev.map((f) =>
@@ -135,11 +158,11 @@ export function DocumentUpload({
             : f
         )
       );
-    } catch (error) {
+    } catch {
       setUploadedFiles((prev) =>
         prev.map((f) =>
           f.id === uploadedFile.id
-            ? { ...f, error: 'Network error' }
+            ? { ...f, error: 'Upload failed. Please try again.' }
             : f
         )
       );
@@ -214,11 +237,11 @@ export function DocumentUpload({
               Drag and drop your files here
             </p>
             <p className="text-sm text-gray-500">
-              or click to browse (PDF, PowerPoint, Word)
+              or click to browse
             </p>
           </div>
           <p className="text-xs text-gray-400">
-            Maximum {maxFiles} files, {(maxSize / 1024 / 1024).toFixed(0)}MB each
+            Max file size: {(maxSize / 1024 / 1024).toFixed(0)}MB. Supported formats: PDF, PPT, PPTX, XLS, XLSX. Up to {maxFiles} files.
           </p>
         </div>
       </div>

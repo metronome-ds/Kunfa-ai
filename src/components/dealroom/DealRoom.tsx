@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '@/lib/supabase'
 import { FileText, Upload, Trash2, Filter, X, FolderOpen } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import ShareDealRoom from './ShareDealRoom'
@@ -310,29 +311,58 @@ function UploadModal({
 
   const handleUpload = async () => {
     if (!file) return
+
+    if (file.size > 50 * 1024 * 1024) {
+      setError('File is too large. Maximum size is 50MB.')
+      return
+    }
+
     setUploading(true)
     setError('')
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('category', category)
-      if (description) formData.append('description', description)
+      // Upload directly to Supabase Storage from browser
+      const timestamp = Date.now()
+      const filePath = `dealroom/${companyId}/${timestamp}/${file.name}`
 
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false,
+        })
+
+      if (uploadError) {
+        throw new Error('Upload failed. Please try again.')
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('documents')
+        .getPublicUrl(uploadData.path)
+
+      // Create the document record via API
       const res = await fetch(`/api/dealroom/${companyId}`, {
         method: 'POST',
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileUrl: publicUrl,
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type || 'application/octet-stream',
+          category,
+          description: description || null,
+        }),
       })
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || 'Upload failed')
+        throw new Error(data.error || 'Upload failed. Please try again.')
       }
 
       reset()
       onUploaded()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed')
+      setError(err instanceof Error ? err.message : 'Upload failed. Please try again.')
     } finally {
       setUploading(false)
     }
@@ -357,7 +387,14 @@ function UploadModal({
             e.preventDefault()
             setDragOver(false)
             const dropped = e.dataTransfer.files[0]
-            if (dropped) setFile(dropped)
+            if (dropped) {
+              if (dropped.size > 50 * 1024 * 1024) {
+                setError('File is too large. Maximum size is 50MB.')
+              } else {
+                setError('')
+                setFile(dropped)
+              }
+            }
           }}
           className={`border-2 border-dashed rounded-xl p-8 text-center transition cursor-pointer ${
             dragOver
@@ -370,9 +407,16 @@ function UploadModal({
             const input = document.createElement('input')
             input.type = 'file'
             input.accept = '.pdf,.ppt,.pptx,.key,.xlsx,.xls,.csv,.doc,.docx'
-            input.onchange = (e) => {
-              const f = (e.target as HTMLInputElement).files?.[0]
-              if (f) setFile(f)
+            input.onchange = (ev) => {
+              const f = (ev.target as HTMLInputElement).files?.[0]
+              if (f) {
+                if (f.size > 50 * 1024 * 1024) {
+                  setError('File is too large. Maximum size is 50MB.')
+                } else {
+                  setError('')
+                  setFile(f)
+                }
+              }
             }
             input.click()
           }}
@@ -395,7 +439,7 @@ function UploadModal({
             <>
               <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
               <p className="text-sm text-gray-600">Drop a file here or click to browse</p>
-              <p className="text-xs text-gray-400 mt-1">PDF, PPT, XLS, DOC up to 50MB</p>
+              <p className="text-xs text-gray-400 mt-1">Max file size: 50MB. Supported formats: PDF, PPT, PPTX, XLS, XLSX</p>
             </>
           )}
         </div>

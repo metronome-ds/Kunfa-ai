@@ -2,6 +2,8 @@
 
 import { useCallback, useState, useRef } from 'react'
 
+const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+
 interface UploadZoneProps {
   label: string
   subtitle: string
@@ -13,7 +15,17 @@ interface UploadZoneProps {
 
 export default function UploadZone({ label, subtitle, required, accept, file, onFileSelect }: UploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false)
+  const [sizeError, setSizeError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const validateAndSelect = useCallback((f: File | null) => {
+    setSizeError('')
+    if (f && f.size > MAX_FILE_SIZE) {
+      setSizeError('File is too large. Maximum size is 50MB.')
+      return
+    }
+    onFileSelect(f)
+  }, [onFileSelect])
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -29,13 +41,13 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
     e.preventDefault()
     setIsDragOver(false)
     const droppedFile = e.dataTransfer.files[0]
-    if (droppedFile) onFileSelect(droppedFile)
-  }, [onFileSelect])
+    if (droppedFile) validateAndSelect(droppedFile)
+  }, [validateAndSelect])
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null
-    onFileSelect(selectedFile)
-  }, [onFileSelect])
+    validateAndSelect(selectedFile)
+  }, [validateAndSelect])
 
   return (
     <div
@@ -90,6 +102,9 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
           {required ? 'REQUIRED' : 'OPTIONAL'}
         </span>
       </div>
+      {sizeError && (
+        <p className="text-xs text-red-500 mt-1.5">{sizeError}</p>
+      )}
     </div>
   )
 }

@@ -81,41 +81,69 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const formData = await request.formData()
-    const file = formData.get('file') as File | null
-    const category = (formData.get('category') as string) || 'other'
-    const description = (formData.get('description') as string) || null
-
-    if (!file) {
-      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
-    }
-
-    if (file.size > 50 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File too large (max 50MB)' }, { status: 400 })
-    }
-
+    const contentType = request.headers.get('content-type') || ''
     const supabase = getServiceClient()
 
-    // Upload to storage
-    const timestamp = Date.now()
-    const filePath = `dealroom/${companyId}/${timestamp}/${file.name}`
-    const buffer = Buffer.from(await file.arrayBuffer())
+    let fileName: string
+    let fileUrl: string
+    let fileSize: number
+    let fileType: string
+    let category: string
+    let description: string | null
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('documents')
-      .upload(filePath, buffer, {
-        contentType: file.type || 'application/octet-stream',
-        upsert: false,
-      })
+    if (contentType.includes('application/json')) {
+      // Client already uploaded to Supabase Storage directly
+      const body = await request.json()
+      fileName = body.fileName
+      fileUrl = body.fileUrl
+      fileSize = body.fileSize || 0
+      fileType = body.fileType || 'application/octet-stream'
+      category = body.category || 'other'
+      description = body.description || null
 
-    if (uploadError) {
-      console.error('Storage upload error:', uploadError)
-      return NextResponse.json({ error: `Upload failed: ${uploadError.message}` }, { status: 500 })
+      if (!fileUrl || !fileName) {
+        return NextResponse.json({ error: 'fileUrl and fileName are required' }, { status: 400 })
+      }
+    } else {
+      // Legacy FormData upload (fallback)
+      const formData = await request.formData()
+      const file = formData.get('file') as File | null
+      category = (formData.get('category') as string) || 'other'
+      description = (formData.get('description') as string) || null
+
+      if (!file) {
+        return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+      }
+
+      if (file.size > 50 * 1024 * 1024) {
+        return NextResponse.json({ error: 'File too large (max 50MB)' }, { status: 400 })
+      }
+
+      const timestamp = Date.now()
+      const filePath = `dealroom/${companyId}/${timestamp}/${file.name}`
+      const buffer = Buffer.from(await file.arrayBuffer())
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, buffer, {
+          contentType: file.type || 'application/octet-stream',
+          upsert: false,
+        })
+
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError)
+        return NextResponse.json({ error: 'Upload failed. Please try again.' }, { status: 500 })
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('documents')
+        .getPublicUrl(uploadData.path)
+
+      fileName = file.name
+      fileUrl = urlData.publicUrl
+      fileSize = file.size
+      fileType = file.type || 'application/octet-stream'
     }
-
-    const { data: urlData } = supabase.storage
-      .from('documents')
-      .getPublicUrl(uploadData.path)
 
     // Create dealroom_documents record
     const { data: doc, error: insertError } = await supabase
@@ -123,10 +151,10 @@ export async function POST(
       .insert({
         company_id: companyId,
         uploaded_by: user.id,
-        file_name: file.name,
-        file_url: urlData.publicUrl,
-        file_size: file.size,
-        file_type: file.type || 'application/octet-stream',
+        file_name: fileName,
+        file_url: fileUrl,
+        file_size: fileSize,
+        file_type: fileType,
         category,
         description,
         is_public: true,

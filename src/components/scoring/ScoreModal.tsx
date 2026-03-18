@@ -50,22 +50,22 @@ async function uploadToStorage(
   file: File | Blob,
   pathname: string,
 ): Promise<string> {
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('pathname', pathname)
+  const { data, error } = await supabase.storage
+    .from('documents')
+    .upload(pathname, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
 
-  const res = await fetch('/api/upload', {
-    method: 'POST',
-    body: formData,
-  })
-
-  if (!res.ok) {
-    const data = await res.json()
-    throw new Error(data.error || 'Upload failed')
+  if (error) {
+    throw new Error('Upload failed. Please try again.')
   }
 
-  const data = await res.json()
-  return data.url
+  const { data: { publicUrl } } = supabase.storage
+    .from('documents')
+    .getPublicUrl(data.path)
+
+  return publicUrl
 }
 
 export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
@@ -362,7 +362,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         }
       } catch (uploadErr) {
         throw new Error(
-          `File upload failed: ${uploadErr instanceof Error ? uploadErr.message : 'Unknown error'}.`,
+          uploadErr instanceof Error ? uploadErr.message : 'Upload failed. Please try again.',
         )
       }
 

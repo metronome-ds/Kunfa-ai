@@ -64,56 +64,78 @@ export async function POST(
       );
     }
 
-    // Parse form data
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const documentType = formData.get('document_type') as string;
+    const contentType = request.headers.get('content-type') || '';
+    let docFileName: string;
+    let filePath: string;
+    let fileSize: number;
+    let mimeType: string;
+    let documentType: string;
 
-    if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
+    if (contentType.includes('application/json')) {
+      // Client already uploaded to Supabase Storage directly
+      const body = await request.json();
+      docFileName = body.fileName;
+      filePath = body.filePath;
+      fileSize = body.fileSize || 0;
+      mimeType = body.mimeType || 'application/octet-stream';
+      documentType = body.documentType || 'other';
+
+      if (!filePath || !docFileName) {
+        return NextResponse.json(
+          { error: 'filePath and fileName are required' },
+          { status: 400 }
+        );
+      }
+    } else {
+      // Legacy FormData upload (fallback)
+      const formData = await request.formData();
+      const file = formData.get('file') as File;
+      documentType = (formData.get('document_type') as string) || 'other';
+
+      if (!file) {
+        return NextResponse.json(
+          { error: 'No file provided' },
+          { status: 400 }
+        );
+      }
+
+      const maxSize = 50 * 1024 * 1024;
+      if (file.size > maxSize) {
+        return NextResponse.json(
+          { error: 'File too large. Maximum size: 50MB' },
+          { status: 400 }
+        );
+      }
+
+      const storagePath = `${id}/${Date.now()}-${file.name}`;
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(storagePath, file);
+
+      if (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        return NextResponse.json(
+          { error: 'Upload failed. Please try again.' },
+          { status: 500 }
+        );
+      }
+
+      docFileName = file.name;
+      filePath = storagePath;
+      fileSize = file.size;
+      mimeType = file.type;
     }
-
-    // Validate file
-    const maxSize = 50 * 1024 * 1024; // 50MB
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: `File too large. Maximum size: 50MB` },
-        { status: 400 }
-      );
-    }
-
-    // Upload file to Supabase Storage
-    const fileName = `${id}/${Date.now()}-${file.name}`;
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('documents')
-      .upload(fileName, file);
-
-    if (uploadError) {
-      console.error('Error uploading file:', uploadError);
-      return NextResponse.json(
-        { error: 'Failed to upload file' },
-        { status: 500 }
-      );
-    }
-
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from('documents')
-      .getPublicUrl(fileName);
 
     // Create document record
     const { data: document, error: docError } = await supabase
       .from('deal_documents')
       .insert({
         deal_id: id,
-        document_type: documentType || 'other',
-        file_name: file.name,
-        file_path: fileName,
-        file_size: file.size,
-        mime_type: file.type,
+        document_type: documentType,
+        file_name: docFileName,
+        file_path: filePath,
+        file_size: fileSize,
+        mime_type: mimeType,
         uploaded_by: user.id,
         parse_status: 'pending',
       })
@@ -125,7 +147,7 @@ export async function POST(
       // Clean up uploaded file
       await supabase.storage
         .from('documents')
-        .remove([fileName]);
+        .remove([filePath]);
 
       return NextResponse.json(
         { error: 'Failed to create document record' },
