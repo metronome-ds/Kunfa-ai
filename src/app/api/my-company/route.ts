@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { getSupabase } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -28,15 +29,20 @@ export async function GET() {
     }
 
     // Check submission payment status if submission exists
+    // Use service role client to bypass RLS on submissions table
     let paid = false
     let hasReport = false
     if (company.submission_id) {
-      const { data: submission } = await supabase
+      const adminDb = getSupabase()
+      const { data: submission, error: subError } = await adminDb
         .from('submissions')
         .select('paid, report_url, created_at')
         .eq('id', company.submission_id)
         .single()
 
+      if (subError) {
+        console.error('my-company: failed to fetch submission', company.submission_id, subError.message)
+      }
       if (submission) {
         paid = !!submission.paid
         hasReport = !!submission.report_url

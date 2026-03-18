@@ -27,12 +27,21 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  console.log(`Stripe webhook received: ${event.type}`)
+
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as { id: string; metadata: { submission_id?: string } }
+    const session = event.data.object as { id: string; metadata: Record<string, string> | null; customer_email?: string; amount_total?: number }
+    console.log('Webhook session:', JSON.stringify({
+      sessionId: session.id,
+      metadata: session.metadata,
+      email: session.customer_email,
+      amount: session.amount_total,
+    }))
+
     const submissionId = session.metadata?.submission_id
 
     if (!submissionId) {
-      console.error('Webhook: checkout.session.completed missing submission_id in metadata')
+      console.error('Webhook: checkout.session.completed missing submission_id in metadata. Full metadata:', JSON.stringify(session.metadata))
       return NextResponse.json({ error: 'Missing submission_id' }, { status: 400 })
     }
 

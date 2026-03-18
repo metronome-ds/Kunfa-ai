@@ -180,7 +180,7 @@ export async function getSubmission(id: string) {
 
 export async function markSubmissionPaid(id: string, stripeSessionId: string) {
   const supabase = getSupabase()
-  await supabase
+  const { error, count } = await supabase
     .from('submissions')
     .update({
       paid: true,
@@ -188,6 +188,12 @@ export async function markSubmissionPaid(id: string, stripeSessionId: string) {
       paid_at: new Date().toISOString(),
     })
     .eq('id', id)
+
+  if (error) {
+    console.error(`markSubmissionPaid failed for ${id}:`, error.message)
+    throw error
+  }
+  console.log(`markSubmissionPaid: updated submission ${id}, count=${count}`)
 }
 
 export async function updateReportUrl(id: string, reportUrl: string) {
