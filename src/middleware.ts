@@ -4,6 +4,12 @@ import { createServerClient } from "@supabase/ssr";
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Skip middleware for Stripe webhooks — they carry no cookies/session
+  // and must not be intercepted by auth logic
+  if (pathname.startsWith("/api/stripe/")) {
+    return NextResponse.next();
+  }
+
   // Skip middleware for auth routes that handle tokens
   if (pathname.startsWith("/auth/callback") || pathname.startsWith("/auth/confirm")) {
     return NextResponse.next();

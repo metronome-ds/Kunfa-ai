@@ -4,6 +4,10 @@ import { markSubmissionPaid, getSubmission, getSupabase } from '@/lib/db'
 import { sendEmail } from '@/lib/email'
 import { paymentConfirmationEmail } from '@/lib/email-templates'
 
+export async function GET() {
+  return NextResponse.json({ status: 'webhook endpoint active' })
+}
+
 export async function POST(request: NextRequest) {
   // Verify required env vars
   if (!process.env.STRIPE_WEBHOOK_SECRET) {
