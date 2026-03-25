@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://kunfa.ai'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.kunfa.ai'
 
 function layout(content: string): string {
   return `<!DOCTYPE html>
@@ -169,6 +169,92 @@ export function dealAddedEmail(params: {
         Make sure your company profile and deal room are up to date to make the best impression.
       </p>
       ${button('View Your Profile', ctaUrl)}
+    `),
+  }
+}
+
+// --- Claim Invite ---
+
+export function claimInviteEmail(params: {
+  investorName: string
+  companyName: string
+  score: number | null
+  claimToken: string
+}): { subject: string; html: string } {
+  const { investorName, companyName, score, claimToken } = params
+  const claimUrl = `${BASE_URL}/claim/${claimToken}`
+
+  const scoreSection = score
+    ? `<table cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
+        <tr><td style="background:#0168FE;color:#ffffff;font-size:18px;font-weight:700;padding:8px 20px;border-radius:8px;">
+          ${score}/100
+        </td></tr>
+      </table>`
+    : ''
+
+  return {
+    subject: `Your company ${companyName} is on Kunfa — claim your profile`,
+    html: layout(`
+      <h1 style="margin:0 0 16px;font-size:20px;color:#111827;">Claim your company profile</h1>
+      <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.6;">
+        <strong>${investorName}</strong> has added <strong>${companyName}</strong> to Kunfa, a venture intelligence platform where investors discover and evaluate startups.
+      </p>
+      <p style="margin:0 0 16px;font-size:14px;color:#6b7280;line-height:1.6;">
+        Your company profile is live and visible to investors. Claim it to take ownership, update your information, and manage your data room.
+      </p>
+      ${scoreSection}
+      ${button('Claim Your Profile', claimUrl)}
+      <p style="margin:0;font-size:12px;color:#9ca3af;line-height:1.5;">
+        If you don&rsquo;t recognize this company, you can safely ignore this email.
+      </p>
+    `),
+  }
+}
+
+// --- Claim Approved ---
+
+export function claimApprovedEmail(params: {
+  companyName: string
+  slug: string
+}): { subject: string; html: string } {
+  const { companyName, slug } = params
+  const profileUrl = `${BASE_URL}/company/${slug}`
+
+  return {
+    subject: `Your claim for ${companyName} has been approved`,
+    html: layout(`
+      <h1 style="margin:0 0 16px;font-size:20px;color:#111827;">Claim approved!</h1>
+      <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.6;">
+        Your claim for <strong>${companyName}</strong> on Kunfa has been approved. You now have full ownership of this company profile.
+      </p>
+      <p style="margin:0 0 8px;font-size:14px;color:#6b7280;line-height:1.6;">
+        You can now update your company information, manage your data room, and connect with investors.
+      </p>
+      ${button('View Your Profile', profileUrl)}
+    `),
+  }
+}
+
+// --- Claim Rejected ---
+
+export function claimRejectedEmail(params: {
+  companyName: string
+  reason?: string
+}): { subject: string; html: string } {
+  const { companyName, reason } = params
+
+  return {
+    subject: `Your claim for ${companyName} was not approved`,
+    html: layout(`
+      <h1 style="margin:0 0 16px;font-size:20px;color:#111827;">Claim not approved</h1>
+      <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.6;">
+        Your claim for <strong>${companyName}</strong> on Kunfa was reviewed and not approved.
+      </p>
+      ${reason ? `<p style="margin:0 0 12px;font-size:14px;color:#6b7280;line-height:1.6;"><strong>Reason:</strong> ${reason}</p>` : ''}
+      <p style="margin:0 0 8px;font-size:14px;color:#6b7280;line-height:1.6;">
+        If you believe this was a mistake, please contact us at support@kunfa.ai.
+      </p>
+      ${button('Go to Kunfa', BASE_URL)}
     `),
   }
 }

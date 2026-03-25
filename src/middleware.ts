@@ -86,7 +86,8 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith("/investors") ||
       pathname.startsWith("/debt-partners") ||
       pathname.startsWith("/points") ||
-      pathname.startsWith("/rewards"))
+      pathname.startsWith("/rewards") ||
+      pathname.startsWith("/admin"))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";

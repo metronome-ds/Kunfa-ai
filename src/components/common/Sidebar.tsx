@@ -21,6 +21,7 @@ import {
   Landmark,
   PlusCircle,
   Bookmark,
+  ShieldCheck,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import KunfaLogo from '@/components/common/KunfaLogo';
@@ -219,6 +220,7 @@ interface SidebarProps {
 export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -231,11 +233,12 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         if (user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role, is_admin')
             .eq('user_id', user.id)
             .single();
 
           setUserRole(profile?.role || 'investor');
+          setIsAdmin(profile?.is_admin === true);
         }
       } catch (err) {
         console.error('Error loading user role:', err);
@@ -292,6 +295,20 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       {/* Bottom */}
       <div className={`border-t border-gray-800 ${collapsed ? 'p-2' : 'p-3'} space-y-3`}>
         <div className="space-y-1">
+          {isAdmin && (
+            <Link
+              href="/admin/claims"
+              className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
+                pathname.startsWith('/admin')
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
+              title={collapsed ? 'Admin' : undefined}
+            >
+              <ShieldCheck className="h-5 w-5" />
+              {!collapsed && <span className="text-sm font-medium">Admin</span>}
+            </Link>
+          )}
           {bottomSections.map((item) => {
             const isActive =
               pathname === item.href ||

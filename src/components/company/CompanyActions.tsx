@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUser } from '@/lib/supabase';
 import { supabase } from '@/lib/supabase';
-import { Heart, HeartOff, Plus, Check, FileText, Pencil } from 'lucide-react';
+import { Heart, HeartOff, Plus, Check, Pencil, Send, Copy, Clock, CheckCircle2, Circle } from 'lucide-react';
 import EditCompanyModal from './EditCompanyModal';
 
 interface CompanyData {
@@ -28,15 +28,17 @@ interface CompanyData {
 
 interface CompanyActionsProps {
   companyId: string;
-  hasPitchDeck?: boolean;
-  pdfUrl?: string | null;
   company?: CompanyData;
+  claimStatus?: string | null;
+  claimToken?: string | null;
+  claimInvitedEmail?: string | null;
 }
 
-export function CompanyActions({ companyId, hasPitchDeck = false, pdfUrl, company }: CompanyActionsProps) {
+export function CompanyActions({ companyId, company, claimStatus: initialClaimStatus, claimToken, claimInvitedEmail }: CompanyActionsProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInvestor, setIsInvestor] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
+  const [isAddedBy, setIsAddedBy] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
   const [isWatchlisted, setIsWatchlisted] = useState(false);
   const [inPipeline, setInPipeline] = useState(false);
@@ -44,6 +46,14 @@ export function CompanyActions({ companyId, hasPitchDeck = false, pdfUrl, compan
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [pipelineLoading, setPipelineLoading] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+
+  // Claim UI state
+  const [currentClaimStatus, setCurrentClaimStatus] = useState(initialClaimStatus || 'unclaimed');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [showInviteForm, setShowInviteForm] = useState(false);
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [hasPendingRequest, setHasPendingRequest] = useState(false);
 
   useEffect(() => {
     async function checkAuth() {
@@ -59,6 +69,21 @@ export function CompanyActions({ companyId, hasPitchDeck = false, pdfUrl, compan
       if (company) {
         if (company.added_by === user.id || company.user_id === user.id) {
           setCanEdit(true);
+        }
+        if (company.added_by === user.id) {
+          setIsAddedBy(true);
+          // Fetch live claim status
+          fetch(`/api/companies/${companyId}/claim-invite`)
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+              if (data) {
+                setCurrentClaimStatus(data.claim_status || 'unclaimed');
+                if (data.pending_request) {
+                  setHasPendingRequest(true);
+                }
+              }
+            })
+            .catch(() => {});
         }
       }
 
@@ -169,12 +194,56 @@ export function CompanyActions({ companyId, hasPitchDeck = false, pdfUrl, compan
     }
   };
 
-  // Show pitch deck button for owners and investors (proxied, auth-gated)
-  const showPitchDeck = hasPitchDeck && (isOwner || isInvestor);
+  const handleSendInvite = async () => {
+    if (!inviteEmail) return;
+    setInviteLoading(true);
+    try {
+      const res = await fetch(`/api/companies/${companyId}/claim-invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail }),
+      });
+      if (res.ok) {
+        setCurrentClaimStatus('invite_sent');
+        setShowInviteForm(false);
+        setInviteEmail('');
+      }
+    } catch (err) {
+      console.error('Send invite error:', err);
+    }
+    setInviteLoading(false);
+  };
+
+  const handleCopyLink = async () => {
+    if (!claimToken) return;
+    try {
+      await navigator.clipboard.writeText(`https://www.kunfa.ai/claim/${claimToken}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard not available
+    }
+  };
+
+  // Claim status badge config
+  const claimBadge = (() => {
+    if (currentClaimStatus === 'claimed') return { label: 'Claimed', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: <CheckCircle2 className="w-3.5 h-3.5" /> };
+    if (hasPendingRequest) return { label: 'Pending Review', color: 'bg-orange-50 text-orange-700 border-orange-200', icon: <Clock className="w-3.5 h-3.5" /> };
+    if (currentClaimStatus === 'invite_sent') return { label: 'Invite Sent', color: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: <Send className="w-3.5 h-3.5" /> };
+    return { label: 'Unclaimed', color: 'bg-gray-50 text-gray-600 border-gray-200', icon: <Circle className="w-3.5 h-3.5" /> };
+  })();
 
   return (
     <>
       <div className="flex flex-wrap items-center gap-3">
+        {/* Claim status badge — visible to investor who added the company */}
+        {isAddedBy && claimToken && (
+          <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${claimBadge.color}`}>
+            {claimBadge.icon}
+            {claimBadge.label}
+          </span>
+        )}
+
         {/* Edit button — for added_by or owner */}
         {canEdit && company && (
           <button
@@ -186,17 +255,24 @@ export function CompanyActions({ companyId, hasPitchDeck = false, pdfUrl, compan
           </button>
         )}
 
-        {/* Pitch deck button — direct blob URL */}
-        {showPitchDeck && pdfUrl && (
-          <a
-            href={pdfUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"
-          >
-            <FileText className="w-4 h-4 text-gray-500" />
-            View Pitch Deck
-          </a>
+        {/* Claim invite actions — for investor who added, when not yet claimed */}
+        {isAddedBy && claimToken && currentClaimStatus !== 'claimed' && (
+          <>
+            <button
+              onClick={() => setShowInviteForm(!showInviteForm)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"
+            >
+              <Send className="w-4 h-4 text-gray-500" />
+              Invite Founder
+            </button>
+            <button
+              onClick={handleCopyLink}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"
+            >
+              <Copy className="w-4 h-4 text-gray-500" />
+              {copied ? 'Copied!' : 'Copy Invite Link'}
+            </button>
+          </>
         )}
 
         {/* Investor-only actions */}
@@ -248,6 +324,26 @@ export function CompanyActions({ companyId, hasPitchDeck = false, pdfUrl, compan
           </>
         )}
       </div>
+
+      {/* Invite form (inline) */}
+      {showInviteForm && isAddedBy && (
+        <div className="flex items-center gap-2 mt-3">
+          <input
+            type="email"
+            value={inviteEmail}
+            onChange={(e) => setInviteEmail(e.target.value)}
+            placeholder="founder@company.com"
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] w-64"
+          />
+          <button
+            onClick={handleSendInvite}
+            disabled={inviteLoading || !inviteEmail}
+            className="px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition disabled:opacity-50"
+          >
+            {inviteLoading ? 'Sending...' : 'Send Invite'}
+          </button>
+        </div>
+      )}
 
       {/* Edit Modal */}
       {canEdit && company && (

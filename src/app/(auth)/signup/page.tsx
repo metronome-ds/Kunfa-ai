@@ -31,8 +31,28 @@ function SignupContent() {
   const [tosAgreed, setTosAgreed] = useState(false)
   const [inviteId, setInviteId] = useState<string | null>(null)
   const [inviteEmailLocked, setInviteEmailLocked] = useState(false)
+  const [claimToken, setClaimToken] = useState<string | null>(null)
+  const [claimCompanyName, setClaimCompanyName] = useState<string | null>(null)
 
   useEffect(() => {
+    // Handle claim link: pre-fill email from claim invite
+    const claim = searchParams.get('claim')
+    if (claim) {
+      setClaimToken(claim)
+      fetch(`/api/claim/info?token=${claim}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.valid) {
+            setClaimCompanyName(data.company_name)
+            if (data.claim_invited_email) {
+              setEmail(data.claim_invited_email)
+              setInviteEmailLocked(true)
+            }
+          }
+        })
+        .catch(() => {})
+    }
+
     // Handle invite link: pre-fill email from team invite
     const invite = searchParams.get('invite')
     if (invite) {
@@ -65,10 +85,14 @@ function SignupContent() {
     setLoading(true)
     setError('')
 
+    const redirectUrl = claimToken
+      ? `${window.location.origin}/auth/confirm?next=/claim/${claimToken}`
+      : `${window.location.origin}/auth/confirm`
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/confirm` }
+      options: { emailRedirectTo: redirectUrl }
     })
 
     if (error) {
@@ -82,6 +106,7 @@ function SignupContent() {
         await supabase.from('profiles').insert({
           user_id: data.user.id,
           email,
+          ...(claimToken ? { role: 'startup' } : {}),
         })
 
         // Auto-join: accept all pending invites for this email
@@ -90,6 +115,27 @@ function SignupContent() {
           .update({ member_user_id: data.user.id, status: 'accepted', updated_at: new Date().toISOString() })
           .eq('invited_email', email)
           .eq('status', 'pending')
+
+        // If signing up via claim link, process claim and skip role selection
+        if (claimToken) {
+          try {
+            const res = await fetch('/api/claim', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: claimToken }),
+            })
+            const claimData = await res.json()
+
+            if (claimData.approved) {
+              window.location.href = '/dashboard?claimed=true'
+            } else {
+              window.location.href = '/dashboard?claim_pending=true'
+            }
+          } catch {
+            window.location.href = '/dashboard'
+          }
+          return
+        }
 
         // If signing up via invite link, skip role selection and go to dashboard
         if (inviteId) {
@@ -217,7 +263,7 @@ function SignupContent() {
             <KunfaLogo height={32} />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
-          <p className="text-gray-500 mt-2">{inviteId ? 'Sign up to accept your team invitation' : 'Get your startup scored by AI'}</p>
+          <p className="text-gray-500 mt-2">{claimCompanyName ? `Sign up to claim ${claimCompanyName}` : inviteId ? 'Sign up to accept your team invitation' : 'Get your startup scored by AI'}</p>
         </div>
 
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-lg">

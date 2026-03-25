@@ -27,6 +27,7 @@ interface DealRoomProps {
   canUpload: boolean
   canShare: boolean
   currentUserId: string | null
+  publicOnly?: boolean
 }
 
 const CATEGORIES = [
@@ -88,7 +89,7 @@ function timeAgo(dateStr: string) {
   return new Date(dateStr).toLocaleDateString()
 }
 
-export default function DealRoom({ companyId, companyName, canUpload, canShare, currentUserId }: DealRoomProps) {
+export default function DealRoom({ companyId, companyName, canUpload, canShare, currentUserId, publicOnly = false }: DealRoomProps) {
   const [documents, setDocuments] = useState<DealRoomDocument[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
@@ -100,14 +101,19 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
       const res = await fetch(`/api/dealroom/${companyId}`)
       if (res.ok) {
         const data = await res.json()
-        setDocuments(data.documents || [])
+        let docs = data.documents || []
+        // In public mode, only show documents marked as public
+        if (publicOnly) {
+          docs = docs.filter((d: DealRoomDocument) => d.is_public)
+        }
+        setDocuments(docs)
       }
     } catch (err) {
       console.error('Failed to fetch documents:', err)
     } finally {
       setLoading(false)
     }
-  }, [companyId])
+  }, [companyId, publicOnly])
 
   useEffect(() => {
     fetchDocuments()

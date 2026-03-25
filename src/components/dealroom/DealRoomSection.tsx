@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { FolderOpen } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import DealRoom from './DealRoom'
 
@@ -17,11 +16,16 @@ export default function DealRoomSection({ companyId, companyName, companyUserId,
   const [canUpload, setCanUpload] = useState(false)
   const [canShare, setCanShare] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [authChecked, setAuthChecked] = useState(false)
 
   useEffect(() => {
     async function checkAuth() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+
+      if (!user) {
+        setAuthChecked(true)
+        return
+      }
 
       setIsAuthenticated(true)
       setCurrentUserId(user.id)
@@ -31,6 +35,7 @@ export default function DealRoomSection({ companyId, companyName, companyUserId,
       if (isOwner) {
         setCanUpload(true)
         setCanShare(true)
+        setAuthChecked(true)
         return
       }
 
@@ -45,12 +50,15 @@ export default function DealRoomSection({ companyId, companyName, companyUserId,
       if (deal) {
         setCanUpload(true)
       }
+
+      setAuthChecked(true)
     }
 
     checkAuth()
   }, [companyId, companyUserId, companyAddedBy])
 
-  if (!isAuthenticated) return null
+  // Wait for auth check before rendering
+  if (!authChecked) return null
 
   return (
     <DealRoom
@@ -59,6 +67,7 @@ export default function DealRoomSection({ companyId, companyName, companyUserId,
       canUpload={canUpload}
       canShare={canShare}
       currentUserId={currentUserId}
+      publicOnly={!isAuthenticated}
     />
   )
 }

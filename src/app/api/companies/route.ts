@@ -1,6 +1,7 @@
 import { createServerSupabaseClient, getServerUser } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuid } from 'uuid'
+import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +25,9 @@ export async function POST(request: NextRequest) {
       .replace(/^-|-$/g, '')
       + '-' + uuid().slice(0, 8)
 
+    // Generate claim token for founder claim flow
+    const claimToken = crypto.randomBytes(12).toString('hex')
+
     // Create company page
     const { data: companyPage, error: cpError } = await supabase
       .from('company_pages')
@@ -40,6 +44,8 @@ export async function POST(request: NextRequest) {
         pdf_url: pdf_url || null,
         source: 'investor_added',
         added_by: user.id,
+        claim_token: claimToken,
+        claim_status: 'unclaimed',
       })
       .select('id')
       .single()
@@ -90,6 +96,7 @@ export async function POST(request: NextRequest) {
       companyPageId: companyPage.id,
       dealId: deal.id,
       slug,
+      claimToken,
     })
   } catch (error) {
     console.error('Companies POST error:', error)
