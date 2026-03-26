@@ -11,6 +11,8 @@ const EDITABLE_FIELDS = [
   'headquarters',
   'website_url',
   'linkedin_url',
+  'company_linkedin_url',
+  'logo_url',
   'raise_amount',
   'team_size',
   'founded_year',

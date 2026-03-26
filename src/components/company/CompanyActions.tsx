@@ -17,6 +17,8 @@ interface CompanyData {
   headquarters: string | null
   website_url: string | null
   linkedin_url: string | null
+  company_linkedin_url?: string | null
+  logo_url?: string | null
   raise_amount: number | string | null
   team_size: number | null
   founded_year: number | null

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ExternalLink, Copy, Check, FileText, Pencil, RefreshCw, X, Loader2 } from 'lucide-react'
+import { ExternalLink, Copy, Check, FileText, Pencil, RefreshCw, X, Loader2, Upload } from 'lucide-react'
+import CompanyLogo from '@/components/common/CompanyLogo'
 import { supabase } from '@/lib/supabase'
 import RescoringModal from '@/components/scoring/RescoringModal'
 import { STAGES, INDUSTRIES } from '@/lib/constants'
@@ -27,6 +28,7 @@ interface CompanyData {
   website_url: string | null
   linkedin_url: string | null
   company_linkedin_url: string | null
+  logo_url: string | null
   overall_score: number | null
   raise_amount: number | string | null
   team_size: number | null
@@ -103,6 +105,7 @@ export default function CompanyProfilePage() {
     headquarters: '',
     website_url: '',
     company_linkedin_url: '',
+    logo_url: '',
     raise_amount: '',
     team_size: '',
     founded_year: '',
@@ -160,6 +163,7 @@ export default function CompanyProfilePage() {
       headquarters: company.headquarters || '',
       website_url: company.website_url || '',
       company_linkedin_url: company.company_linkedin_url || '',
+      logo_url: company.logo_url || '',
       raise_amount: company.raise_amount ? String(company.raise_amount) : '',
       team_size: company.team_size ? String(company.team_size) : '',
       founded_year: company.founded_year ? String(company.founded_year) : '',
@@ -211,6 +215,7 @@ export default function CompanyProfilePage() {
           headquarters: editForm.headquarters || null,
           website_url: editForm.website_url || null,
           company_linkedin_url: editForm.company_linkedin_url || null,
+          logo_url: editForm.logo_url || null,
           raise_amount: editForm.raise_amount ? Number(editForm.raise_amount) : null,
           team_size: editForm.team_size ? Number(editForm.team_size) : null,
           founded_year: editForm.founded_year ? Number(editForm.founded_year) : null,
@@ -309,11 +314,22 @@ export default function CompanyProfilePage() {
       {/* Header row: score + company info + actions */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
         <div className="flex items-start gap-6">
-          {/* Score badge */}
-          <div className={`w-20 h-20 rounded-2xl border-2 flex flex-col items-center justify-center flex-shrink-0 ${getScoreBg(company.overall_score)}`}>
-            <span className={`text-3xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
-            {scored !== null && (
-              <span className="text-[10px] text-gray-400">{scored}d ago</span>
+          {/* Logo or Score badge */}
+          <div className="flex flex-col items-center flex-shrink-0 gap-1">
+            {company.logo_url ? (
+              <>
+                <CompanyLogo name={company.company_name} logoUrl={company.logo_url} size="lg" className="w-20 h-20" />
+                {company.overall_score != null && (
+                  <span className={`text-xs font-bold ${getScoreColor(company.overall_score)}`}>Score: {company.overall_score}</span>
+                )}
+              </>
+            ) : (
+              <div className={`w-20 h-20 rounded-2xl border-2 flex flex-col items-center justify-center ${getScoreBg(company.overall_score)}`}>
+                <span className={`text-3xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
+                {scored !== null && (
+                  <span className="text-[10px] text-gray-400">{scored}d ago</span>
+                )}
+              </div>
             )}
           </div>
 
@@ -434,6 +450,45 @@ export default function CompanyProfilePage() {
       {editing && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
           <h2 className="text-sm font-semibold text-gray-900 mb-4">Edit Profile</h2>
+
+          {/* Logo upload */}
+          <div className="mb-4">
+            <label className="block text-xs font-medium text-gray-500 mb-1">Company Logo</label>
+            <div className="flex items-center gap-3">
+              <CompanyLogo name={editForm.company_name || 'C'} logoUrl={editForm.logo_url || null} size="lg" />
+              <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer">
+                <Upload className="w-3.5 h-3.5" />
+                {editForm.logo_url ? 'Change Logo' : 'Upload Logo'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    try {
+                      const supa = (await import('@supabase/ssr')).createBrowserClient(
+                        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                      )
+                      const path = `logos/${Date.now()}-${file.name}`
+                      const { data, error: uploadError } = await supa.storage
+                        .from('documents')
+                        .upload(path, file, { cacheControl: '3600', upsert: false })
+                      if (uploadError) throw uploadError
+                      const { data: { publicUrl } } = supa.storage
+                        .from('documents')
+                        .getPublicUrl(data.path)
+                      setEditForm(f => ({ ...f, logo_url: publicUrl }))
+                    } catch (err) {
+                      console.error('Logo upload error:', err)
+                    }
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-500 mb-1">Company Name</label>

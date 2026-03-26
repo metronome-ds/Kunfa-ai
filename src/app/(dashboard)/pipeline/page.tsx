@@ -4,6 +4,7 @@ import { useEffect, useState, DragEvent } from 'react';
 import { GripVertical, Bookmark, ArrowRight, Star, CalendarDays } from 'lucide-react';
 import Link from 'next/link';
 import DealSlideout from '@/components/pipeline/DealSlideout';
+import CompanyLogo from '@/components/common/CompanyLogo';
 
 interface TeamMember {
   id: string;
@@ -23,6 +24,7 @@ interface WatchlistCard {
   industry: string | null;
   overall_score: number | null;
   one_liner: string | null;
+  logo_url: string | null;
 }
 
 interface DealCard {
@@ -39,6 +41,7 @@ interface DealCard {
   one_liner: string | null;
   description: string | null;
   pdf_url: string | null;
+  logo_url: string | null;
   days_in_stage: number;
   notes: string | null;
   priority_flag: boolean;
@@ -203,6 +206,7 @@ export default function PipelinePage() {
         one_liner: card.one_liner,
         description: null,
         pdf_url: null,
+        logo_url: card.logo_url,
         days_in_stage: 0,
         notes: null,
         priority_flag: false,
@@ -416,6 +420,7 @@ export default function PipelinePage() {
                     one_liner: item.one_liner,
                     description: null,
                     pdf_url: null,
+                    logo_url: item.logo_url,
                     days_in_stage: 0,
                     notes: null,
                     priority_flag: false,
@@ -437,7 +442,10 @@ export default function PipelinePage() {
                 className="bg-white rounded-lg p-3 border border-gray-200 hover:border-amber-300 cursor-pointer active:cursor-grabbing transition group shadow-sm"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <h4 className="text-sm font-medium text-gray-900 truncate flex-1">{item.company_name}</h4>
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <CompanyLogo name={item.company_name} logoUrl={item.logo_url} size="sm" />
+                    <h4 className="text-sm font-medium text-gray-900 truncate">{item.company_name}</h4>
+                  </div>
                   <GripVertical data-grip className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5" />
                 </div>
 
@@ -514,6 +522,7 @@ export default function PipelinePage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                        <CompanyLogo name={deal.company_name} logoUrl={deal.logo_url} size="sm" />
                         {deal.priority_flag && (
                           <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
                         )}

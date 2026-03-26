@@ -3,6 +3,7 @@
 import { Bookmark } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
+import CompanyLogo from '@/components/common/CompanyLogo';
 
 interface CompanyCardProps {
   company: {
@@ -126,10 +127,13 @@ export function CompanyCard({
             )}
           </div>
 
-          {/* Company Name */}
-          <h3 className="text-lg font-bold text-gray-900 line-clamp-1 mb-1">
-            {company.company_name}
-          </h3>
+          {/* Company Name + Logo */}
+          <div className="flex items-center gap-2.5 mb-1">
+            <CompanyLogo name={company.company_name} logoUrl={company.logo_url} size="md" />
+            <h3 className="text-lg font-bold text-gray-900 line-clamp-1">
+              {company.company_name}
+            </h3>
+          </div>
 
           {/* Location */}
           {location && (

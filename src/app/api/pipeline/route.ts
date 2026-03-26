@@ -39,7 +39,8 @@ export async function GET() {
           slug,
           industry,
           overall_score,
-          one_liner
+          one_liner,
+          logo_url
         )
       `)
       .eq('investor_id', profileId || '')
@@ -85,7 +86,8 @@ export async function GET() {
           overall_score,
           one_liner,
           description,
-          pdf_url
+          pdf_url,
+          logo_url
         )
       `)
       .eq('created_by', user.id)
@@ -133,6 +135,7 @@ export async function GET() {
         industry: company?.industry || null,
         overall_score: company?.overall_score || null,
         one_liner: company?.one_liner || null,
+        logo_url: company?.logo_url || null,
       };
     });
 
@@ -166,6 +169,7 @@ export async function GET() {
           one_liner: company?.one_liner || null,
           description: company?.description || null,
           pdf_url: company?.pdf_url || null,
+          logo_url: company?.logo_url || null,
           days_in_stage: daysInStage,
           stage_changed_at: deal.stage_changed_at,
           notes: deal.notes,

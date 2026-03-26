@@ -150,15 +150,31 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
       <main className="max-w-4xl mx-auto px-6 py-12 space-y-6">
         {/* Header */}
         <div className="flex items-start gap-6">
-          {/* Score badge */}
+          {/* Logo or Score badge */}
           <div className="flex flex-col items-center flex-shrink-0 gap-1">
-            <div className={`w-20 h-20 rounded-2xl border-2 flex items-center justify-center ${scoreColor}`}>
-              <span className="text-3xl font-bold">{company.overall_score ?? '—'}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Kunfa Score</span>
-              <ScoreTooltip />
-            </div>
+            {company.logo_url ? (
+              <>
+                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 flex-shrink-0">
+                  <img src={company.logo_url} alt={`${company.company_name} logo`} className="w-full h-full object-cover" />
+                </div>
+                {company.overall_score != null && (
+                  <div className="flex items-center gap-1">
+                    <span className={`text-xs font-bold ${scoreColor.split(' ')[0]}`}>{company.overall_score}</span>
+                    <ScoreTooltip />
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className={`w-20 h-20 rounded-2xl border-2 flex items-center justify-center ${scoreColor}`}>
+                  <span className="text-3xl font-bold">{company.overall_score ?? '—'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-gray-400 uppercase tracking-wider font-medium">Kunfa Score</span>
+                  <ScoreTooltip />
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex-1 min-w-0">
@@ -279,6 +295,8 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
                   headquarters: company.headquarters,
                   website_url: company.website_url,
                   linkedin_url: company.linkedin_url,
+                  company_linkedin_url: company.company_linkedin_url,
+                  logo_url: company.logo_url,
                   raise_amount: company.raise_amount,
                   team_size: company.team_size,
                   founded_year: company.founded_year,

@@ -81,7 +81,7 @@ export async function PATCH(request: NextRequest) {
       'company_name', 'one_liner', 'industry', 'stage', 'country',
       'headquarters', 'website_url', 'raise_amount', 'team_size',
       'founded_year', 'use_of_funds', 'traction', 'linkedin_url',
-      'company_linkedin_url', 'founding_team',
+      'company_linkedin_url', 'logo_url', 'founding_team',
     ]
 
     const updates: Record<string, unknown> = {}

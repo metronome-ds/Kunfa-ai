@@ -1,8 +1,10 @@
 'use client'
 
-import { useState } from 'react'
-import { X } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { X, Upload } from 'lucide-react'
 import { STAGES, INDUSTRIES } from '@/lib/constants'
+import { createBrowserClient } from '@supabase/ssr'
+import CompanyLogo from '@/components/common/CompanyLogo'
 
 interface CompanyData {
   id: string
@@ -15,6 +17,8 @@ interface CompanyData {
   headquarters: string | null
   website_url: string | null
   linkedin_url: string | null
+  company_linkedin_url?: string | null
+  logo_url?: string | null
   raise_amount: number | string | null
   team_size: number | null
   founded_year: number | null
@@ -39,6 +43,8 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
     country: company.country || company.headquarters || '',
     website_url: company.website_url || '',
     linkedin_url: company.linkedin_url || '',
+    company_linkedin_url: company.company_linkedin_url || '',
+    logo_url: company.logo_url || '',
     raise_amount: company.raise_amount ? String(company.raise_amount) : '',
     team_size: company.team_size ? String(company.team_size) : '',
     founded_year: company.founded_year ? String(company.founded_year) : '',
@@ -48,6 +54,34 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
+  const [logoPreview, setLogoPreview] = useState<string | null>(company.logo_url || null)
+  const [logoUploading, setLogoUploading] = useState(false)
+  const logoInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleLogoUpload(file: File) {
+    setLogoPreview(URL.createObjectURL(file))
+    setLogoUploading(true)
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      )
+      const path = `logos/${Date.now()}-${file.name}`
+      const { data, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(path, file, { cacheControl: '3600', upsert: false })
+      if (uploadError) throw uploadError
+      const { data: { publicUrl } } = supabase.storage
+        .from('documents')
+        .getPublicUrl(data.path)
+      setForm(prev => ({ ...prev, logo_url: publicUrl }))
+    } catch (err) {
+      console.error('Logo upload error:', err)
+      setLogoPreview(company.logo_url || null)
+    } finally {
+      setLogoUploading(false)
+    }
+  }
 
   if (!isOpen) return null
 
@@ -81,6 +115,8 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
           headquarters: form.country || null,
           website_url: form.website_url || null,
           linkedin_url: form.linkedin_url || null,
+          company_linkedin_url: form.company_linkedin_url || null,
+          logo_url: form.logo_url || null,
           raise_amount: form.raise_amount ? Number(form.raise_amount) : null,
           team_size: form.team_size ? Number(form.team_size) : null,
           founded_year: form.founded_year ? Number(form.founded_year) : null,
@@ -137,17 +173,53 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
             </div>
           )}
 
-          {/* Company Name */}
-          <div>
-            <label className={labelClass}>Company Name *</label>
-            <input
-              type="text"
-              value={form.company_name}
-              onChange={e => updateField('company_name', e.target.value)}
-              required
-              className={inputClass}
-              placeholder="Acme Corp"
-            />
+          {/* Logo + Company Name */}
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <label className={labelClass}>Logo</label>
+              <div
+                onClick={() => logoInputRef.current?.click()}
+                className="cursor-pointer"
+              >
+                {logoPreview ? (
+                  <div className="relative group">
+                    <CompanyLogo name={form.company_name || 'C'} logoUrl={logoPreview} size="lg" />
+                    <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                      <Upload className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-[#0168FE] transition bg-gray-50">
+                    {logoUploading ? (
+                      <div className="w-5 h-5 border-2 border-[#0168FE] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-5 h-5 text-gray-400" />
+                    )}
+                  </div>
+                )}
+              </div>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) handleLogoUpload(file)
+                }}
+              />
+            </div>
+            <div className="flex-1">
+              <label className={labelClass}>Company Name *</label>
+              <input
+                type="text"
+                value={form.company_name}
+                onChange={e => updateField('company_name', e.target.value)}
+                required
+                className={inputClass}
+                placeholder="Acme Corp"
+              />
+            </div>
           </div>
 
           {/* One-liner */}
@@ -228,13 +300,13 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
             </div>
           </div>
 
-          {/* LinkedIn */}
+          {/* Company LinkedIn */}
           <div>
-            <label className={labelClass}>LinkedIn URL</label>
+            <label className={labelClass}>Company LinkedIn URL</label>
             <input
               type="text"
-              value={form.linkedin_url}
-              onChange={e => updateField('linkedin_url', e.target.value)}
+              value={form.company_linkedin_url}
+              onChange={e => updateField('company_linkedin_url', e.target.value)}
               className={inputClass}
               placeholder="https://linkedin.com/company/..."
             />

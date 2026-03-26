@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { FileUp, PenLine } from 'lucide-react'
+import { FileUp, PenLine, Upload, X } from 'lucide-react'
 import { STAGES, INDUSTRIES } from '@/lib/constants'
 import { createBrowserClient } from '@supabase/ssr'
+import CompanyLogo from '@/components/common/CompanyLogo'
 
 type Tab = 'pdf' | 'manual'
 type Status = 'idle' | 'extracting' | 'submitting' | 'scoring' | 'done'
@@ -26,7 +27,14 @@ export default function AddCompanyPage() {
     description: '',
     team_size: '',
     founded_year: '',
+    website_url: '',
+    company_linkedin_url: '',
   })
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [logoUrl, setLogoUrl] = useState<string | null>(null)
+  const [logoUploading, setLogoUploading] = useState(false)
+  const logoInputRef = useRef<HTMLInputElement>(null)
 
   // Get current user email for scoring
   useEffect(() => {
@@ -41,6 +49,33 @@ export default function AddCompanyPage() {
 
   function updateField(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  async function handleLogoUpload(file: File) {
+    setLogoFile(file)
+    setLogoPreview(URL.createObjectURL(file))
+    setLogoUploading(true)
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      )
+      const path = `logos/${Date.now()}-${file.name}`
+      const { data, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(path, file, { cacheControl: '3600', upsert: false })
+      if (uploadError) throw uploadError
+      const { data: { publicUrl } } = supabase.storage
+        .from('documents')
+        .getPublicUrl(data.path)
+      setLogoUrl(publicUrl)
+    } catch (err) {
+      console.error('Logo upload error:', err)
+      setLogoFile(null)
+      setLogoPreview(null)
+    } finally {
+      setLogoUploading(false)
+    }
   }
 
   async function handlePdfUpload(file: File) {
@@ -88,6 +123,8 @@ export default function AddCompanyPage() {
         description: extracted.description || '',
         team_size: extracted.team_size ? String(extracted.team_size) : '',
         founded_year: extracted.founded_year ? String(extracted.founded_year) : '',
+        website_url: extracted.website_url || '',
+        company_linkedin_url: extracted.company_linkedin_url || '',
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to extract PDF data')
@@ -120,6 +157,9 @@ export default function AddCompanyPage() {
           team_size: form.team_size ? Number(form.team_size) : null,
           founded_year: form.founded_year ? Number(form.founded_year) : null,
           pdf_url: blobUrl || null,
+          website_url: form.website_url || null,
+          company_linkedin_url: form.company_linkedin_url || null,
+          logo_url: logoUrl || null,
         }),
       })
 
@@ -252,16 +292,77 @@ export default function AddCompanyPage() {
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
-            <input
-              type="text"
-              value={form.company_name}
-              onChange={(e) => updateField('company_name', e.target.value)}
-              required
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
-              placeholder="Acme Corp"
-            />
+          {/* Logo + Company Name row */}
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Logo</label>
+              <div
+                onClick={() => logoInputRef.current?.click()}
+                className="cursor-pointer"
+              >
+                {logoPreview ? (
+                  <div className="relative group">
+                    <CompanyLogo name={form.company_name || 'C'} logoUrl={logoPreview} size="lg" />
+                    <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                      <Upload className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-[#0168FE] transition bg-gray-50">
+                    {logoUploading ? (
+                      <div className="w-5 h-5 border-2 border-[#0168FE] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-5 h-5 text-gray-400" />
+                    )}
+                  </div>
+                )}
+              </div>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) handleLogoUpload(file)
+                }}
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+              <input
+                type="text"
+                value={form.company_name}
+                onChange={(e) => updateField('company_name', e.target.value)}
+                required
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                placeholder="Acme Corp"
+              />
+            </div>
+          </div>
+
+          {/* Website + LinkedIn */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+              <input
+                type="text"
+                value={form.website_url}
+                onChange={(e) => updateField('website_url', e.target.value)}
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                placeholder="https://example.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Company LinkedIn</label>
+              <input
+                type="text"
+                value={form.company_linkedin_url}
+                onChange={(e) => updateField('company_linkedin_url', e.target.value)}
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                placeholder="https://linkedin.com/company/..."
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
