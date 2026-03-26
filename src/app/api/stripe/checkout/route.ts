@@ -21,13 +21,22 @@ export async function POST(request: NextRequest) {
       .eq('submission_id', submissionId)
       .maybeSingle()
 
-    // Use explicit app URL, never fall back to request origin (could be localhost/vercel preview)
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://kunfa.ai'
     const successPath = company?.slug
       ? `/company/${company.slug}?paid=true&sid=${submissionId}`
       : `/dashboard?paid=true&sid=${submissionId}`
-    const cancelPath = `/score/${submissionId}`
 
+    // Temporary bypass: skip Stripe, mark paid immediately
+    if (process.env.STRIPE_BYPASS === 'true') {
+      await supabase
+        .from('submissions')
+        .update({ paid: true })
+        .eq('id', submissionId)
+
+      return NextResponse.json({ url: `${baseUrl}${successPath}` })
+    }
+
+    const cancelPath = `/score/${submissionId}`
     const session = await createCheckoutSession(submissionId, baseUrl, successPath, cancelPath)
 
     return NextResponse.json({ url: session.url })
