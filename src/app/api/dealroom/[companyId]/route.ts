@@ -90,6 +90,7 @@ export async function POST(
     let fileType: string
     let category: string
     let description: string | null
+    let isPublic = true
 
     if (contentType.includes('application/json')) {
       // Client already uploaded to Supabase Storage directly
@@ -100,6 +101,7 @@ export async function POST(
       fileType = body.fileType || 'application/octet-stream'
       category = body.category || 'other'
       description = body.description || null
+      if (body.isPublic !== undefined) isPublic = body.isPublic
 
       if (!fileUrl || !fileName) {
         return NextResponse.json({ error: 'fileUrl and fileName are required' }, { status: 400 })
@@ -157,7 +159,7 @@ export async function POST(
         file_type: fileType,
         category,
         description,
-        is_public: true,
+        is_public: isPublic,
       })
       .select()
       .single()

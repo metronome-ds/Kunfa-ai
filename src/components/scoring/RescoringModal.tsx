@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import Modal from '@/components/ui/Modal'
-import UploadZone from './UploadZone'
 import ProcessingAnimation from './ProcessingAnimation'
+import { FileText, Upload, CheckSquare, Square, Plus } from 'lucide-react'
 
 interface RescoringModalProps {
   isOpen: boolean
@@ -13,6 +13,17 @@ interface RescoringModalProps {
   companyName: string
   currentScore: number | null
   email: string
+}
+
+interface DealRoomDoc {
+  id: string
+  file_name: string
+  file_url: string
+  file_size: number
+  file_type: string
+  category: string
+  is_public: boolean
+  created_at: string
 }
 
 interface ScoreResult {
@@ -41,24 +52,44 @@ function getScoreDiffColor(diff: number) {
   return 'text-gray-400'
 }
 
-async function uploadToStorage(file: File | Blob, pathname: string): Promise<string> {
-  const { data, error } = await supabase.storage
-    .from('documents')
-    .upload(pathname, file, {
-      cacheControl: '3600',
-      upsert: false,
-    })
-
-  if (error) {
-    throw new Error('Upload failed. Please try again.')
+function getCategoryLabel(category: string) {
+  const labels: Record<string, string> = {
+    pitch_deck: 'Pitch Deck',
+    financials: 'Financials',
+    cap_table: 'Cap Table',
+    legal: 'Legal',
+    term_sheet: 'Term Sheet',
+    due_diligence: 'Due Diligence',
+    product: 'Product',
+    other: 'Other',
   }
-
-  const { data: { publicUrl } } = supabase.storage
-    .from('documents')
-    .getPublicUrl(data.path)
-
-  return publicUrl
+  return labels[category] || category
 }
+
+function getCategoryColor(category: string) {
+  const colors: Record<string, string> = {
+    pitch_deck: 'bg-blue-100 text-blue-700',
+    financials: 'bg-emerald-100 text-emerald-700',
+    cap_table: 'bg-purple-100 text-purple-700',
+    legal: 'bg-amber-100 text-amber-700',
+    term_sheet: 'bg-rose-100 text-rose-700',
+    due_diligence: 'bg-cyan-100 text-cyan-700',
+    product: 'bg-indigo-100 text-indigo-700',
+    other: 'bg-gray-100 text-gray-700',
+  }
+  return colors[category] || colors.other
+}
+
+const UPLOAD_CATEGORIES = [
+  { value: 'pitch_deck', label: 'Pitch Deck' },
+  { value: 'financials', label: 'Financials' },
+  { value: 'cap_table', label: 'Cap Table' },
+  { value: 'legal', label: 'Legal' },
+  { value: 'term_sheet', label: 'Term Sheet' },
+  { value: 'due_diligence', label: 'Due Diligence' },
+  { value: 'product', label: 'Product' },
+  { value: 'other', label: 'Other' },
+]
 
 export default function RescoringModal({
   isOpen,
@@ -68,102 +99,159 @@ export default function RescoringModal({
   currentScore,
   email,
 }: RescoringModalProps) {
-  const [step, setStep] = useState<'upload' | 'processing' | 'results'>('upload')
-  const [disclaimerChecked, setDisclaimerChecked] = useState(false)
-  const [pitchDeck, setPitchDeck] = useState<File | null>(null)
-  const [financials, setFinancials] = useState<File | null>(null)
+  const [step, setStep] = useState<'select' | 'processing' | 'results'>('select')
+  const [documents, setDocuments] = useState<DealRoomDoc[]>([])
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [loadingDocs, setLoadingDocs] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null)
   const [submissionId, setSubmissionId] = useState('')
   const [error, setError] = useState('')
   const [uploadProgress, setUploadProgress] = useState('')
 
-  const isUploadValid = !!pitchDeck && disclaimerChecked
+  // Inline upload state
+  const [showUpload, setShowUpload] = useState(false)
+  const [uploadFile, setUploadFile] = useState<File | null>(null)
+  const [uploadCategory, setUploadCategory] = useState('other')
+  const [uploading, setUploading] = useState(false)
+
+  // Fetch deal room documents
+  useEffect(() => {
+    if (!isOpen) return
+    setLoadingDocs(true)
+    fetch(`/api/dealroom/${companyPageId}`)
+      .then(res => res.json())
+      .then(data => {
+        const docs = (data.documents || []) as DealRoomDoc[]
+        setDocuments(docs)
+        // Auto-select all documents by default
+        setSelectedIds(new Set(docs.map(d => d.id)))
+      })
+      .catch(() => setDocuments([]))
+      .finally(() => setLoadingDocs(false))
+  }, [isOpen, companyPageId])
+
+  const toggleDoc = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const selectAll = () => setSelectedIds(new Set(documents.map(d => d.id)))
+  const deselectAll = () => setSelectedIds(new Set())
+
+  const hasPitchDeck = documents.some(d => selectedIds.has(d.id) && d.category === 'pitch_deck')
+
+  const handleUploadDoc = async () => {
+    if (!uploadFile) return
+    setUploading(true)
+    setError('')
+
+    try {
+      const timestamp = Date.now()
+      const filePath = `dealroom/${companyPageId}/${timestamp}/${uploadFile.name}`
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, uploadFile, { cacheControl: '3600', upsert: false })
+
+      if (uploadError) throw new Error('Upload failed.')
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('documents')
+        .getPublicUrl(uploadData.path)
+
+      const res = await fetch(`/api/dealroom/${companyPageId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileUrl: publicUrl,
+          fileName: uploadFile.name,
+          fileSize: uploadFile.size,
+          fileType: uploadFile.type || 'application/octet-stream',
+          category: uploadCategory,
+        }),
+      })
+
+      if (!res.ok) throw new Error('Failed to save document.')
+
+      const newDoc = await res.json()
+      const doc: DealRoomDoc = newDoc.document || {
+        id: newDoc.id,
+        file_name: uploadFile.name,
+        file_url: publicUrl,
+        file_size: uploadFile.size,
+        file_type: uploadFile.type,
+        category: uploadCategory,
+        is_public: false,
+        created_at: new Date().toISOString(),
+      }
+
+      setDocuments(prev => [...prev, doc])
+      setSelectedIds(prev => new Set([...prev, doc.id]))
+      setUploadFile(null)
+      setUploadCategory('other')
+      setShowUpload(false)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Upload failed.')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSubmit = useCallback(async () => {
-    if (!isUploadValid || isSubmitting || !pitchDeck) return
+    if (selectedIds.size === 0 || isSubmitting) return
     setError('')
     setIsSubmitting(true)
     setStep('processing')
 
     try {
-      const timestamp = Date.now()
-      let pitchDeckUrl: string
-      let financialsUrl: string | undefined
-      let financialsFilename: string | undefined
-
-      try {
-        setUploadProgress('Uploading pitch deck...')
-        pitchDeckUrl = await uploadToStorage(
-          pitchDeck,
-          `submissions/${timestamp}/rescore-pitch-deck-${pitchDeck.name}`,
-        )
-        if (financials) {
-          setUploadProgress('Uploading financials...')
-          financialsUrl = await uploadToStorage(
-            financials,
-            `submissions/${timestamp}/rescore-financials-${financials.name}`,
-          )
-          financialsFilename = financials.name
-        }
-      } catch (uploadErr) {
-        throw new Error(
-          uploadErr instanceof Error ? uploadErr.message : 'Upload failed. Please try again.',
-        )
-      }
-
-      setUploadProgress('')
-
       const response = await fetch('/api/score', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          pitchDeckUrl,
-          pitchDeckFilename: pitchDeck.name,
-          financialsUrl,
-          financialsFilename,
+          pitchDeckUrl: 'deal-room-rescore', // placeholder — documents fetched server-side
+          pitchDeckFilename: 'deal-room-rescore',
           companyPageId,
+          documentIds: Array.from(selectedIds),
         }),
       })
 
       const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || `Server error (${response.status})`)
-      }
+      if (!response.ok) throw new Error(data.error || `Server error (${response.status})`)
 
       setScoreResult(data.teaser)
       setSubmissionId(data.submissionId)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
-      setStep('upload')
+      setStep('select')
     } finally {
       setIsSubmitting(false)
       setUploadProgress('')
     }
-  }, [email, pitchDeck, financials, companyPageId, isUploadValid, isSubmitting])
+  }, [email, companyPageId, selectedIds, isSubmitting])
 
   const handleProcessingComplete = useCallback(() => {
-    if (scoreResult) {
-      setStep('results')
-    }
+    if (scoreResult) setStep('results')
   }, [scoreResult])
 
   const handleClose = () => {
     if (step === 'results') {
-      // Reload the page to show updated score
       window.location.reload()
       return
     }
-    setStep('upload')
-    setDisclaimerChecked(false)
-    setPitchDeck(null)
-    setFinancials(null)
+    setStep('select')
+    setSelectedIds(new Set())
     setScoreResult(null)
     setSubmissionId('')
     setError('')
     setUploadProgress('')
+    setShowUpload(false)
+    setUploadFile(null)
     onClose()
   }
 
@@ -173,75 +261,169 @@ export default function RescoringModal({
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
-      <div className="p-6 sm:p-8">
+      <div className="p-6 sm:p-8 max-h-[80vh] overflow-y-auto">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-kunfa-navy">Update Your Score</h2>
           <p className="text-sm text-gray-500 mt-1">{companyName}</p>
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
 
-        {/* Upload Step */}
-        {step === 'upload' && (
+        {/* Document Selection Step */}
+        {step === 'select' && (
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Upload your latest pitch deck to get a new score. Your company profile will be updated with the new results.
+              Select the documents to include in your new score. A pitch deck is required for scoring.
             </p>
 
-            <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Pitch Deck *</label>
-              <UploadZone
-                label="Tap to upload"
-                subtitle="PDF, PPT, Keynote — up to 50 MB"
-                required={true}
-                accept=".pdf,.ppt,.pptx,.key"
-                file={pitchDeck}
-                onFileSelect={setPitchDeck}
-              />
-            </div>
+            {loadingDocs ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0168FE]" />
+              </div>
+            ) : documents.length === 0 ? (
+              <div className="text-center py-6 bg-gray-50 rounded-lg">
+                <FileText className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">No documents in your deal room yet.</p>
+                <p className="text-xs text-gray-400 mt-1">Upload documents below to get started.</p>
+              </div>
+            ) : (
+              <>
+                {/* Select All / Deselect All */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-500">
+                    {selectedIds.size} of {documents.length} selected
+                  </span>
+                  <div className="flex gap-2">
+                    <button onClick={selectAll} className="text-xs text-[#0168FE] hover:underline">
+                      Select All
+                    </button>
+                    <span className="text-xs text-gray-300">|</span>
+                    <button onClick={deselectAll} className="text-xs text-gray-500 hover:underline">
+                      Deselect All
+                    </button>
+                  </div>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Financials & Metrics</label>
-              <UploadZone
-                label="Tap to upload"
-                subtitle="Financials, data room — up to 50 MB (optional)"
-                required={false}
-                accept=".pdf,.xlsx,.xls,.csv"
-                file={financials}
-                onFileSelect={setFinancials}
-              />
-            </div>
+                {/* Document List */}
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {documents.map(doc => {
+                    const checked = selectedIds.has(doc.id)
+                    return (
+                      <button
+                        key={doc.id}
+                        onClick={() => toggleDoc(doc.id)}
+                        className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition ${
+                          checked
+                            ? 'border-[#0168FE] bg-blue-50/50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        {checked ? (
+                          <CheckSquare className="w-5 h-5 text-[#0168FE] flex-shrink-0" />
+                        ) : (
+                          <Square className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{doc.file_name}</p>
+                          <span className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-medium ${getCategoryColor(doc.category)}`}>
+                            {getCategoryLabel(doc.category)}
+                          </span>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </>
+            )}
 
-            <label className="flex items-start gap-2.5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={disclaimerChecked}
-                onChange={(e) => setDisclaimerChecked(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-kunfa focus:ring-kunfa"
-              />
-              <span className="text-xs text-gray-500 leading-relaxed">
-                I confirm that all information provided is accurate and self-reported. I agree to the{' '}
-                <a href="/terms" target="_blank" className="text-kunfa hover:underline">Terms of Service</a>
-                {' '}and{' '}
-                <a href="/privacy" target="_blank" className="text-kunfa hover:underline">Privacy Policy</a>.
-                This data is subject to due diligence by any interested investor.
-              </span>
-            </label>
+            {/* Add Document Inline */}
+            {!showUpload ? (
+              <button
+                onClick={() => setShowUpload(true)}
+                className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-[#0168FE] hover:text-[#0168FE] transition"
+              >
+                <Plus className="w-4 h-4" />
+                Upload Additional Document
+              </button>
+            ) : (
+              <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+                <div
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = '.pdf,.ppt,.pptx,.key,.xlsx,.xls,.csv,.doc,.docx'
+                    input.onchange = (ev) => {
+                      const f = (ev.target as HTMLInputElement).files?.[0]
+                      if (f) setUploadFile(f)
+                    }
+                    input.click()
+                  }}
+                  className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition ${
+                    uploadFile ? 'border-emerald-300 bg-emerald-50' : 'border-gray-300 hover:border-[#0168FE]'
+                  }`}
+                >
+                  {uploadFile ? (
+                    <p className="text-sm text-gray-900">{uploadFile.name}</p>
+                  ) : (
+                    <>
+                      <Upload className="w-5 h-5 text-gray-400 mx-auto mb-1" />
+                      <p className="text-xs text-gray-500">Click to select file</p>
+                    </>
+                  )}
+                </div>
+                <select
+                  value={uploadCategory}
+                  onChange={(e) => setUploadCategory(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+                >
+                  {UPLOAD_CATEGORIES.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setShowUpload(false); setUploadFile(null) }}
+                    className="flex-1 py-2 rounded-lg text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleUploadDoc}
+                    disabled={!uploadFile || uploading}
+                    className="flex-1 py-2 rounded-lg text-sm bg-[#0168FE] text-white hover:bg-[#0050CC] transition disabled:opacity-50"
+                  >
+                    {uploading ? 'Uploading...' : 'Add'}
+                  </button>
+                </div>
+              </div>
+            )}
 
+            {/* Warning if no pitch deck */}
+            {!hasPitchDeck && selectedIds.size > 0 && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-xs text-amber-700">
+                  No pitch deck selected. A pitch deck is required for scoring. Please select one or upload a new pitch deck.
+                </p>
+              </div>
+            )}
+
+            {/* Submit Button */}
             <button
               onClick={handleSubmit}
-              disabled={!isUploadValid || isSubmitting}
+              disabled={selectedIds.size === 0 || !hasPitchDeck || isSubmitting}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
-                isUploadValid
+                selectedIds.size > 0 && hasPitchDeck
                   ? 'bg-kunfa hover:bg-kunfa-dark text-white cursor-pointer'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
             >
-              RE-SCORE MY STARTUP
+              {selectedIds.size === 0
+                ? 'SELECT DOCUMENTS TO SCORE'
+                : `RE-SCORE WITH ${selectedIds.size} DOCUMENT${selectedIds.size !== 1 ? 'S' : ''}`}
             </button>
           </div>
         )}
@@ -256,23 +438,22 @@ export default function RescoringModal({
           </div>
         )}
 
-        {/* Results Step — Score Comparison */}
+        {/* Results Step */}
         {step === 'results' && scoreResult && (
           <div className="space-y-6">
-            {/* Score Comparison */}
             <div className="flex items-center justify-center gap-8">
               {currentScore != null && (
-                <div className="text-center">
-                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Previous</p>
-                  <p className="text-4xl font-bold text-gray-400">{currentScore}</p>
-                </div>
-              )}
-              {currentScore != null && (
-                <div className="text-center">
-                  <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                  </svg>
-                </div>
+                <>
+                  <div className="text-center">
+                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Previous</p>
+                    <p className="text-4xl font-bold text-gray-400">{currentScore}</p>
+                  </div>
+                  <div className="text-center">
+                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                  </div>
+                </>
               )}
               <div className="text-center">
                 <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">New Score</p>
@@ -287,7 +468,6 @@ export default function RescoringModal({
               </div>
             </div>
 
-            {/* Category Grades */}
             <div className="grid grid-cols-2 gap-3">
               {(['team', 'market', 'product', 'financial'] as const).map((key) => {
                 const dim = scoreResult.dimensions[key]
@@ -311,14 +491,12 @@ export default function RescoringModal({
               })}
             </div>
 
-            {/* Summary */}
             {scoreResult.summary && (
               <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                 <p className="text-sm text-gray-700 leading-relaxed">{scoreResult.summary}</p>
               </div>
             )}
 
-            {/* Actions */}
             <div className="flex flex-col gap-3">
               <button
                 onClick={() => window.location.href = `/score/${submissionId}`}

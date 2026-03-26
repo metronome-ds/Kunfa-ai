@@ -4,13 +4,17 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { FolderOpen, Rocket } from 'lucide-react'
 import DealRoom from '@/components/dealroom/DealRoom'
+import RescoringModal from '@/components/scoring/RescoringModal'
 import Link from 'next/link'
 
 export default function DataRoomPage() {
   const [loading, setLoading] = useState(true)
   const [companyId, setCompanyId] = useState<string | null>(null)
   const [companyName, setCompanyName] = useState('')
+  const [currentScore, setCurrentScore] = useState<number | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
+  const [userEmail, setUserEmail] = useState('')
+  const [showRescore, setShowRescore] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -18,10 +22,11 @@ export default function DataRoomPage() {
       if (!user) { setLoading(false); return }
 
       setUserId(user.id)
+      setUserEmail(user.email || '')
 
       const { data: company } = await supabase
         .from('company_pages')
-        .select('id, company_name')
+        .select('id, company_name, overall_score')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(1)
@@ -30,6 +35,7 @@ export default function DataRoomPage() {
       if (company) {
         setCompanyId(company.id)
         setCompanyName(company.company_name)
+        setCurrentScore(company.overall_score)
       }
 
       setLoading(false)
@@ -75,6 +81,15 @@ export default function DataRoomPage() {
         canUpload={true}
         canShare={true}
         currentUserId={userId}
+        onRequestRescore={() => setShowRescore(true)}
+      />
+      <RescoringModal
+        isOpen={showRescore}
+        onClose={() => setShowRescore(false)}
+        companyPageId={companyId}
+        companyName={companyName}
+        currentScore={currentScore}
+        email={userEmail}
       />
     </div>
   )

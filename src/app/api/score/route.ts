@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { scoreStartup, extractTeaser } from '@/lib/anthropic'
+import { scoreStartup, extractTeaser, ScoringDocument } from '@/lib/anthropic'
 import { extractTextFromBlobUrl } from '@/lib/upload'
 import {
   createSubmission,
@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
       slug: userSlug,
       companyPageId,
       foundingTeam,
+      documentIds,
     } = body as {
       email: string
       linkedinUrl?: string
@@ -86,11 +87,15 @@ export async function POST(request: NextRequest) {
       slug?: string
       companyPageId?: string
       foundingTeam?: { name: string; title: string; email?: string; linkedin?: string }[]
+      documentIds?: string[]
     }
 
-    if (!email || !pitchDeckUrl) {
+    // documentIds mode: re-score using deal room documents (requires companyPageId)
+    const isDealRoomRescore = documentIds && documentIds.length > 0 && companyPageId
+
+    if (!email || (!pitchDeckUrl && !isDealRoomRescore)) {
       return NextResponse.json(
-        { error: 'Missing required fields: email, pitchDeckUrl' },
+        { error: 'Missing required fields: email, pitchDeckUrl (or documentIds for re-scoring)' },
         { status: 400 },
       )
     }
@@ -143,21 +148,105 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // --- Fetch files from Blob and extract text ---
-    let pitchDeckText: string
+    // --- Fetch files and extract text ---
+    let pitchDeckText = ''
     let financialsText = ''
-    try {
-      pitchDeckText = await extractTextFromBlobUrl(pitchDeckUrl, pitchDeckFilename || 'file.pdf')
+    let supplementaryDocs: ScoringDocument[] = []
+    let scoredDocuments: { id: string; file_name: string; category: string }[] = []
 
-      if (financialsUrl) {
-        financialsText = await extractTextFromBlobUrl(financialsUrl, financialsFilename || 'file.pdf')
+    if (isDealRoomRescore) {
+      // --- Deal room re-score: fetch documents by IDs ---
+      try {
+        const supabase = getSupabase()
+        const { data: docs, error: docsErr } = await supabase
+          .from('dealroom_documents')
+          .select('id, file_name, file_url, category')
+          .in('id', documentIds!)
+          .eq('company_id', companyPageId!)
+
+        if (docsErr || !docs || docs.length === 0) {
+          return NextResponse.json(
+            { error: 'Could not find the selected documents.' },
+            { status: 404 },
+          )
+        }
+
+        // Extract text from each document
+        for (const doc of docs) {
+          try {
+            const text = await extractTextFromBlobUrl(doc.file_url, doc.file_name)
+
+            if (doc.category === 'pitch_deck') {
+              // Use the most recent pitch deck as primary
+              pitchDeckText = text
+            } else if (doc.category === 'financials') {
+              financialsText = text
+            } else {
+              supplementaryDocs.push({
+                category: doc.category,
+                fileName: doc.file_name,
+                text,
+              })
+            }
+
+            scoredDocuments.push({
+              id: doc.id,
+              file_name: doc.file_name,
+              category: doc.category,
+            })
+          } catch (extractErr) {
+            console.error(`Failed to extract text from ${doc.file_name}:`, extractErr)
+            // Continue with other documents — don't fail the whole scoring
+          }
+        }
+
+        // If no pitch deck found among selected docs, use the latest pitch_deck from the deal room
+        if (!pitchDeckText) {
+          const { data: latestPitch } = await supabase
+            .from('dealroom_documents')
+            .select('id, file_name, file_url')
+            .eq('company_id', companyPageId!)
+            .eq('category', 'pitch_deck')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle()
+
+          if (latestPitch) {
+            try {
+              pitchDeckText = await extractTextFromBlobUrl(latestPitch.file_url, latestPitch.file_name)
+              // Add to scored documents list if not already there
+              if (!scoredDocuments.find(d => d.id === latestPitch.id)) {
+                scoredDocuments.push({
+                  id: latestPitch.id,
+                  file_name: latestPitch.file_name,
+                  category: 'pitch_deck',
+                })
+              }
+            } catch { /* continue without pitch deck */ }
+          }
+        }
+      } catch (fetchErr) {
+        console.error('Deal room document fetch error:', fetchErr)
+        return NextResponse.json(
+          { error: `Failed to read deal room documents: ${(fetchErr as Error).message}` },
+          { status: 502 },
+        )
       }
-    } catch (fetchErr) {
-      console.error('File fetch/extract error:', fetchErr)
-      return NextResponse.json(
-        { error: `Failed to read uploaded files: ${(fetchErr as Error).message}` },
-        { status: 502 },
-      )
+    } else {
+      // --- Original flow: direct file URLs ---
+      try {
+        pitchDeckText = await extractTextFromBlobUrl(pitchDeckUrl, pitchDeckFilename || 'file.pdf')
+
+        if (financialsUrl) {
+          financialsText = await extractTextFromBlobUrl(financialsUrl, financialsFilename || 'file.pdf')
+        }
+      } catch (fetchErr) {
+        console.error('File fetch/extract error:', fetchErr)
+        return NextResponse.json(
+          { error: `Failed to read uploaded files: ${(fetchErr as Error).message}` },
+          { status: 502 },
+        )
+      }
     }
 
     // --- Validate extracted text ---
@@ -169,7 +258,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`Extracted text: pitchDeck=${pitchDeckText.length} chars, financials=${financialsText.length} chars`)
+    console.log(`Extracted text: pitchDeck=${pitchDeckText.length} chars, financials=${financialsText.length} chars, supplementary=${supplementaryDocs.length} docs`)
 
     // --- Get company stage from profile for stage-adjusted scoring weights ---
     let companyStage = ''
@@ -180,10 +269,29 @@ export async function POST(request: NextRequest) {
       } catch { /* continue with default weights */ }
     }
 
+    // If re-scoring, also try to get stage from the company page
+    if (companyPageId && !companyStage) {
+      try {
+        const supabase = getSupabase()
+        const { data: cp } = await supabase
+          .from('company_pages')
+          .select('stage')
+          .eq('id', companyPageId)
+          .single()
+        companyStage = cp?.stage || ''
+      } catch { /* continue with default weights */ }
+    }
+
     // --- Score with Claude ---
     let fullResult
     try {
-      fullResult = await scoreStartup(pitchDeckText, financialsText, linkedinUrl || '', companyStage)
+      fullResult = await scoreStartup(
+        pitchDeckText,
+        financialsText,
+        linkedinUrl || '',
+        companyStage,
+        supplementaryDocs.length > 0 ? supplementaryDocs : undefined,
+      )
     } catch (aiErr) {
       console.error('Claude API error:', aiErr)
       return NextResponse.json(
@@ -198,6 +306,19 @@ export async function POST(request: NextRequest) {
       try {
         await updateSubmissionScore(submissionId, fullResult as unknown as Record<string, unknown>)
 
+        // Save scored_documents on the submission if we have them
+        if (scoredDocuments.length > 0) {
+          try {
+            const supabase = getSupabase()
+            await supabase
+              .from('submissions')
+              .update({ scored_documents: scoredDocuments })
+              .eq('id', submissionId)
+          } catch (sdErr) {
+            console.error('Failed to save scored_documents (continuing):', sdErr)
+          }
+        }
+
         // Create or update company page with AI-extracted profile + user profile data
         if (userId) {
           const cp = (fullResult as any)?.company_profile || {}
@@ -208,6 +329,36 @@ export async function POST(request: NextRequest) {
 
           if (companyPageId) {
             // Re-scoring: update existing company page with new score + AI analysis
+            // For deal room re-score, get pdf_url/financials_url from the scored docs
+            let rescorePdfUrl = pitchDeckUrl || undefined
+            let rescoreFinUrl = financialsUrl || undefined
+
+            if (isDealRoomRescore) {
+              // Find the pitch deck and financials URLs from the scored documents
+              try {
+                const supabase = getSupabase()
+                const pitchDoc = scoredDocuments.find(d => d.category === 'pitch_deck')
+                const finDoc = scoredDocuments.find(d => d.category === 'financials')
+
+                if (pitchDoc) {
+                  const { data: pd } = await supabase
+                    .from('dealroom_documents')
+                    .select('file_url')
+                    .eq('id', pitchDoc.id)
+                    .single()
+                  if (pd?.file_url) rescorePdfUrl = pd.file_url
+                }
+                if (finDoc) {
+                  const { data: fd } = await supabase
+                    .from('dealroom_documents')
+                    .select('file_url')
+                    .eq('id', finDoc.id)
+                    .single()
+                  if (fd?.file_url) rescoreFinUrl = fd.file_url
+                }
+              } catch { /* continue with existing URLs */ }
+            }
+
             await updateCompanyPageScore(companyPageId, {
               submissionId,
               overallScore: (fullResult as any)?.overall_score || 0,
@@ -218,8 +369,8 @@ export async function POST(request: NextRequest) {
               traction: cp.traction || undefined,
               useOfFunds: cp.use_of_funds || undefined,
               keyRisks: cp.key_risks || undefined,
-              pdfUrl: pitchDeckUrl || undefined,
-              financialsUrl: financialsUrl || undefined,
+              pdfUrl: rescorePdfUrl,
+              financialsUrl: rescoreFinUrl,
             })
 
             // Update deals record ai_score
@@ -230,68 +381,69 @@ export async function POST(request: NextRequest) {
                 .eq('company_id', companyPageId)
             } catch { /* ignore */ }
 
-            // Auto-populate deal room with uploaded documents on re-score
-            try {
-              const supabase = getSupabase()
-              // Upsert: check if pitch_deck doc already exists for this company, update URL if so
-              if (pitchDeckUrl) {
-                const { data: existingDoc } = await supabase
-                  .from('dealroom_documents')
-                  .select('id')
-                  .eq('company_id', companyPageId)
-                  .eq('category', 'pitch_deck')
-                  .order('created_at', { ascending: false })
-                  .limit(1)
-                  .maybeSingle()
+            // Auto-populate deal room with uploaded documents on re-score (only for non-deal-room re-scores)
+            if (!isDealRoomRescore) {
+              try {
+                const supabase = getSupabase()
+                if (pitchDeckUrl) {
+                  const { data: existingDoc } = await supabase
+                    .from('dealroom_documents')
+                    .select('id')
+                    .eq('company_id', companyPageId)
+                    .eq('category', 'pitch_deck')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle()
 
-                if (existingDoc) {
-                  await supabase.from('dealroom_documents').update({
-                    file_url: pitchDeckUrl,
-                    file_name: pitchDeckFilename || 'pitch-deck.pdf',
-                  }).eq('id', existingDoc.id)
-                } else {
-                  await supabase.from('dealroom_documents').insert({
-                    company_id: companyPageId,
-                    uploaded_by: userId,
-                    file_name: pitchDeckFilename || 'pitch-deck.pdf',
-                    file_url: pitchDeckUrl,
-                    file_size: 0,
-                    file_type: 'application/pdf',
-                    category: 'pitch_deck',
-                    is_public: true,
-                  })
+                  if (existingDoc) {
+                    await supabase.from('dealroom_documents').update({
+                      file_url: pitchDeckUrl,
+                      file_name: pitchDeckFilename || 'pitch-deck.pdf',
+                    }).eq('id', existingDoc.id)
+                  } else {
+                    await supabase.from('dealroom_documents').insert({
+                      company_id: companyPageId,
+                      uploaded_by: userId,
+                      file_name: pitchDeckFilename || 'pitch-deck.pdf',
+                      file_url: pitchDeckUrl,
+                      file_size: 0,
+                      file_type: 'application/pdf',
+                      category: 'pitch_deck',
+                      is_public: true,
+                    })
+                  }
                 }
-              }
-              if (financialsUrl) {
-                const { data: existingFin } = await supabase
-                  .from('dealroom_documents')
-                  .select('id')
-                  .eq('company_id', companyPageId)
-                  .eq('category', 'financials')
-                  .order('created_at', { ascending: false })
-                  .limit(1)
-                  .maybeSingle()
+                if (financialsUrl) {
+                  const { data: existingFin } = await supabase
+                    .from('dealroom_documents')
+                    .select('id')
+                    .eq('company_id', companyPageId)
+                    .eq('category', 'financials')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle()
 
-                if (existingFin) {
-                  await supabase.from('dealroom_documents').update({
-                    file_url: financialsUrl,
-                    file_name: financialsFilename || 'financials.pdf',
-                  }).eq('id', existingFin.id)
-                } else {
-                  await supabase.from('dealroom_documents').insert({
-                    company_id: companyPageId,
-                    uploaded_by: userId,
-                    file_name: financialsFilename || 'financials.pdf',
-                    file_url: financialsUrl,
-                    file_size: 0,
-                    file_type: 'application/pdf',
-                    category: 'financials',
-                    is_public: true,
-                  })
+                  if (existingFin) {
+                    await supabase.from('dealroom_documents').update({
+                      file_url: financialsUrl,
+                      file_name: financialsFilename || 'financials.pdf',
+                    }).eq('id', existingFin.id)
+                  } else {
+                    await supabase.from('dealroom_documents').insert({
+                      company_id: companyPageId,
+                      uploaded_by: userId,
+                      file_name: financialsFilename || 'financials.pdf',
+                      file_url: financialsUrl,
+                      file_size: 0,
+                      file_type: 'application/pdf',
+                      category: 'financials',
+                      is_public: true,
+                    })
+                  }
                 }
+              } catch (drErr) {
+                console.error('Failed to update dealroom docs on re-score (continuing):', drErr)
               }
-            } catch (drErr) {
-              console.error('Failed to update dealroom docs on re-score (continuing):', drErr)
             }
 
             // Get slug from existing company page

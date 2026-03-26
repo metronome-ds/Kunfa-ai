@@ -244,6 +244,16 @@ export async function updateCompanyPageScore(companyPageId: string, data: {
   financialsUrl?: string
 }) {
   const supabase = getSupabase()
+
+  // First get current score_count to increment
+  const { data: current } = await supabase
+    .from('company_pages')
+    .select('score_count')
+    .eq('id', companyPageId)
+    .single()
+
+  const newScoreCount = ((current?.score_count as number) || 0) + 1
+
   const { error } = await supabase
     .from('company_pages')
     .update({
@@ -258,6 +268,8 @@ export async function updateCompanyPageScore(companyPageId: string, data: {
       key_risks: data.keyRisks || undefined,
       pdf_url: data.pdfUrl || undefined,
       financials_url: data.financialsUrl || undefined,
+      score_count: newScoreCount,
+      last_scored_at: new Date().toISOString(),
     })
     .eq('id', companyPageId)
 

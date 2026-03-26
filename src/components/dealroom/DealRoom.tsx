@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { FileText, Upload, Trash2, Filter, X, FolderOpen } from 'lucide-react'
+import { FileText, Upload, Trash2, Filter, X, FolderOpen, MoreVertical, Pencil, RefreshCw, Eye, EyeOff } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import ShareDealRoom from './ShareDealRoom'
 
@@ -28,6 +28,7 @@ interface DealRoomProps {
   canShare: boolean
   currentUserId: string | null
   publicOnly?: boolean
+  onRequestRescore?: () => void
 }
 
 const CATEGORIES = [
@@ -89,12 +90,16 @@ function timeAgo(dateStr: string) {
   return new Date(dateStr).toLocaleDateString()
 }
 
-export default function DealRoom({ companyId, companyName, canUpload, canShare, currentUserId, publicOnly = false }: DealRoomProps) {
+export default function DealRoom({ companyId, companyName, canUpload, canShare, currentUserId, publicOnly = false, onRequestRescore }: DealRoomProps) {
   const [documents, setDocuments] = useState<DealRoomDocument[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
   const [uploadOpen, setUploadOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
+  const [editingDoc, setEditingDoc] = useState<DealRoomDocument | null>(null)
+  const [replacingDoc, setReplacingDoc] = useState<DealRoomDocument | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
 
   const fetchDocuments = useCallback(async () => {
     try {
@@ -102,7 +107,6 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
       if (res.ok) {
         const data = await res.json()
         let docs = data.documents || []
-        // In public mode, only show documents marked as public
         if (publicOnly) {
           docs = docs.filter((d: DealRoomDocument) => d.is_public)
         }
@@ -119,6 +123,22 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
     fetchDocuments()
   }, [fetchDocuments])
 
+  // Auto-hide toast
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => setToast(null), 8000)
+      return () => clearTimeout(timer)
+    }
+  }, [toast])
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!menuOpenId) return
+    const handleClick = () => setMenuOpenId(null)
+    document.addEventListener('click', handleClick)
+    return () => document.removeEventListener('click', handleClick)
+  }, [menuOpenId])
+
   const handleDelete = async (docId: string) => {
     if (!confirm('Delete this document?')) return
     setDeletingId(docId)
@@ -134,6 +154,32 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
     }
   }
 
+  const handleTogglePublic = async (doc: DealRoomDocument) => {
+    const newPublic = !doc.is_public
+    // Optimistic update
+    setDocuments(prev => prev.map(d => d.id === doc.id ? { ...d, is_public: newPublic } : d))
+
+    try {
+      const res = await fetch(`/api/dealroom/${companyId}/${doc.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_public: newPublic }),
+      })
+      if (!res.ok) {
+        // Revert
+        setDocuments(prev => prev.map(d => d.id === doc.id ? { ...d, is_public: !newPublic } : d))
+      }
+    } catch {
+      setDocuments(prev => prev.map(d => d.id === doc.id ? { ...d, is_public: !newPublic } : d))
+    }
+  }
+
+  const handleUploaded = () => {
+    setUploadOpen(false)
+    fetchDocuments()
+    setToast('Document uploaded! Re-score to include it in your Kunfa Score.')
+  }
+
   const filtered = filter === 'all' ? documents : documents.filter(d => d.category === filter)
   const activeCounts = CATEGORIES.reduce((acc, c) => {
     acc[c.value] = c.value === 'all' ? documents.length : documents.filter(d => d.category === c.value).length
@@ -142,6 +188,25 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
 
   return (
     <div id="deal-room" className="bg-white rounded-xl border border-gray-200 shadow-sm">
+      {/* Toast */}
+      {toast && (
+        <div className="mx-6 mt-4 flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <RefreshCw className="w-4 h-4 text-[#0168FE] flex-shrink-0" />
+          <p className="text-sm text-blue-800 flex-1">{toast}</p>
+          {onRequestRescore && (
+            <button
+              onClick={() => { setToast(null); onRequestRescore() }}
+              className="text-xs font-semibold text-[#0168FE] hover:underline whitespace-nowrap"
+            >
+              Re-Score Now
+            </button>
+          )}
+          <button onClick={() => setToast(null)} className="text-blue-400 hover:text-blue-600">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="px-6 py-5 border-b border-gray-100">
         <div className="flex items-center justify-between">
@@ -219,51 +284,109 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map(doc => (
-              <div
-                key={doc.id}
-                className="group border border-gray-200 rounded-lg p-4 hover:border-[#0168FE]/30 hover:shadow-sm transition"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <span className="text-2xl">{getFileIcon(doc.file_type)}</span>
-                  {(currentUserId === doc.uploaded_by || canUpload) && (
-                    <button
-                      onClick={() => handleDelete(doc.id)}
-                      disabled={deletingId === doc.id}
-                      className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition"
-                      title="Delete document"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-                <a
-                  href={doc.file_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block"
+            {filtered.map(doc => {
+              const canManage = currentUserId === doc.uploaded_by || canUpload
+              return (
+                <div
+                  key={doc.id}
+                  className="group border border-gray-200 rounded-lg p-4 hover:border-[#0168FE]/30 hover:shadow-sm transition relative"
                 >
-                  <p className="text-sm font-medium text-gray-900 truncate hover:text-[#0168FE] transition">
-                    {doc.file_name}
-                  </p>
-                </a>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${getCategoryColor(doc.category)}`}>
-                    {getCategoryLabel(doc.category)}
-                  </span>
-                  {doc.file_size > 0 && (
-                    <span className="text-[10px] text-gray-400">{formatFileSize(doc.file_size)}</span>
+                  <div className="flex items-start justify-between mb-3">
+                    <span className="text-2xl">{getFileIcon(doc.file_type)}</span>
+                    <div className="flex items-center gap-1">
+                      {/* Public/Private indicator */}
+                      {!publicOnly && canManage && (
+                        <button
+                          onClick={() => handleTogglePublic(doc)}
+                          className="p-1 text-gray-400 hover:text-gray-600 transition"
+                          title={doc.is_public ? 'Public — click to make private' : 'Private — click to make public'}
+                        >
+                          {doc.is_public ? (
+                            <Eye className="w-4 h-4 text-emerald-500" />
+                          ) : (
+                            <EyeOff className="w-4 h-4 text-gray-400" />
+                          )}
+                        </button>
+                      )}
+                      {/* Menu */}
+                      {canManage && (
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setMenuOpenId(menuOpenId === doc.id ? null : doc.id)
+                            }}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-gray-600 transition"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+                          {menuOpenId === doc.id && (
+                            <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setMenuOpenId(null)
+                                  setEditingDoc(doc)
+                                }}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              >
+                                <Pencil className="w-3.5 h-3.5" /> Edit
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setMenuOpenId(null)
+                                  setReplacingDoc(doc)
+                                }}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" /> Replace
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setMenuOpenId(null)
+                                  handleDelete(doc.id)
+                                }}
+                                disabled={deletingId === doc.id}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" /> Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <a
+                    href={doc.file_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <p className="text-sm font-medium text-gray-900 truncate hover:text-[#0168FE] transition">
+                      {doc.file_name}
+                    </p>
+                  </a>
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${getCategoryColor(doc.category)}`}>
+                      {getCategoryLabel(doc.category)}
+                    </span>
+                    {doc.file_size > 0 && (
+                      <span className="text-[10px] text-gray-400">{formatFileSize(doc.file_size)}</span>
+                    )}
+                  </div>
+                  {doc.description && (
+                    <p className="text-xs text-gray-500 mt-2 line-clamp-2">{doc.description}</p>
                   )}
+                  <div className="flex items-center justify-between mt-3 text-[10px] text-gray-400">
+                    <span>{doc.uploaded_by_name}</span>
+                    <span>{timeAgo(doc.created_at)}</span>
+                  </div>
                 </div>
-                {doc.description && (
-                  <p className="text-xs text-gray-500 mt-2 line-clamp-2">{doc.description}</p>
-                )}
-                <div className="flex items-center justify-between mt-3 text-[10px] text-gray-400">
-                  <span>{doc.uploaded_by_name}</span>
-                  <span>{timeAgo(doc.created_at)}</span>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>
@@ -273,11 +396,35 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
         isOpen={uploadOpen}
         onClose={() => setUploadOpen(false)}
         companyId={companyId}
-        onUploaded={() => {
-          setUploadOpen(false)
-          fetchDocuments()
-        }}
+        onUploaded={handleUploaded}
       />
+
+      {/* Edit Modal */}
+      {editingDoc && (
+        <EditDocModal
+          doc={editingDoc}
+          companyId={companyId}
+          onClose={() => setEditingDoc(null)}
+          onSaved={(updated) => {
+            setDocuments(prev => prev.map(d => d.id === updated.id ? { ...d, ...updated } : d))
+            setEditingDoc(null)
+          }}
+        />
+      )}
+
+      {/* Replace Modal */}
+      {replacingDoc && (
+        <ReplaceDocModal
+          doc={replacingDoc}
+          companyId={companyId}
+          onClose={() => setReplacingDoc(null)}
+          onReplaced={() => {
+            setReplacingDoc(null)
+            fetchDocuments()
+            setToast('Document replaced! Re-score to update your Kunfa Score.')
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -297,6 +444,7 @@ function UploadModal({
   const [file, setFile] = useState<File | null>(null)
   const [category, setCategory] = useState('other')
   const [description, setDescription] = useState('')
+  const [isPublic, setIsPublic] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [dragOver, setDragOver] = useState(false)
@@ -305,6 +453,7 @@ function UploadModal({
     setFile(null)
     setCategory('other')
     setDescription('')
+    setIsPublic(false)
     setError('')
     setUploading(false)
     setDragOver(false)
@@ -327,7 +476,6 @@ function UploadModal({
     setError('')
 
     try {
-      // Upload directly to Supabase Storage from browser
       const timestamp = Date.now()
       const filePath = `dealroom/${companyId}/${timestamp}/${file.name}`
 
@@ -346,7 +494,6 @@ function UploadModal({
         .from('documents')
         .getPublicUrl(uploadData.path)
 
-      // Create the document record via API
       const res = await fetch(`/api/dealroom/${companyId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -357,6 +504,7 @@ function UploadModal({
           fileType: file.type || 'application/octet-stream',
           category,
           description: description || null,
+          isPublic: isPublic,
         }),
       })
 
@@ -476,6 +624,17 @@ function UploadModal({
           />
         </div>
 
+        {/* Public checkbox */}
+        <label className="flex items-center gap-2 mt-4 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isPublic}
+            onChange={(e) => setIsPublic(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-[#0168FE] focus:ring-[#0168FE]"
+          />
+          <span className="text-sm text-gray-700">Make publicly visible on company profile</span>
+        </label>
+
         {/* Actions */}
         <div className="flex gap-3 mt-6">
           <button
@@ -490,6 +649,216 @@ function UploadModal({
             className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[#0168FE] text-white hover:bg-[#0050CC] transition disabled:opacity-50"
           >
             {uploading ? 'Uploading...' : 'Upload'}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
+// --- Edit Document Modal ---
+function EditDocModal({
+  doc,
+  companyId,
+  onClose,
+  onSaved,
+}: {
+  doc: DealRoomDocument
+  companyId: string
+  onClose: () => void
+  onSaved: (updated: Partial<DealRoomDocument> & { id: string }) => void
+}) {
+  const [category, setCategory] = useState(doc.category)
+  const [description, setDescription] = useState(doc.description || '')
+  const [isPublic, setIsPublic] = useState(doc.is_public)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleSave = async () => {
+    setSaving(true)
+    setError('')
+    try {
+      const res = await fetch(`/api/dealroom/${companyId}/${doc.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, description: description || null, is_public: isPublic }),
+      })
+      if (!res.ok) throw new Error('Failed to update')
+      onSaved({ id: doc.id, category, description: description || null, is_public: isPublic })
+    } catch {
+      setError('Failed to save changes.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Modal isOpen={true} onClose={onClose}>
+      <div className="p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Document</h3>
+        <p className="text-sm text-gray-600 mb-4 truncate">{doc.file_name}</p>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+            >
+              {UPLOAD_CATEGORIES.map(c => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <input
+              type="text"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Brief description"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400"
+            />
+          </div>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isPublic}
+              onChange={(e) => setIsPublic(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-[#0168FE] focus:ring-[#0168FE]"
+            />
+            <span className="text-sm text-gray-700">Publicly visible</span>
+          </label>
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[#0168FE] text-white hover:bg-[#0050CC] transition disabled:opacity-50"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  )
+}
+
+// --- Replace Document Modal ---
+function ReplaceDocModal({
+  doc,
+  companyId,
+  onClose,
+  onReplaced,
+}: {
+  doc: DealRoomDocument
+  companyId: string
+  onClose: () => void
+  onReplaced: () => void
+}) {
+  const [file, setFile] = useState<File | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleReplace = async () => {
+    if (!file) return
+    setUploading(true)
+    setError('')
+
+    try {
+      const timestamp = Date.now()
+      const filePath = `dealroom/${companyId}/${timestamp}/${file.name}`
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file, { cacheControl: '3600', upsert: false })
+
+      if (uploadError) throw new Error('Upload failed.')
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('documents')
+        .getPublicUrl(uploadData.path)
+
+      const res = await fetch(`/api/dealroom/${companyId}/${doc.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          file_url: publicUrl,
+          file_name: file.name,
+          file_size: file.size,
+          file_type: file.type || 'application/octet-stream',
+        }),
+      })
+
+      if (!res.ok) throw new Error('Failed to update document.')
+      onReplaced()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Replace failed.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <Modal isOpen={true} onClose={onClose}>
+      <div className="p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">Replace Document</h3>
+        <p className="text-sm text-gray-500 mb-4">
+          Replacing: <span className="font-medium text-gray-700">{doc.file_name}</span>
+        </p>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
+        <div
+          onClick={() => {
+            const input = document.createElement('input')
+            input.type = 'file'
+            input.accept = '.pdf,.ppt,.pptx,.key,.xlsx,.xls,.csv,.doc,.docx'
+            input.onchange = (ev) => {
+              const f = (ev.target as HTMLInputElement).files?.[0]
+              if (f) setFile(f)
+            }
+            input.click()
+          }}
+          className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition ${
+            file ? 'border-emerald-300 bg-emerald-50' : 'border-gray-300 hover:border-[#0168FE]'
+          }`}
+        >
+          {file ? (
+            <p className="text-sm font-medium text-gray-900">{file.name}</p>
+          ) : (
+            <>
+              <Upload className="w-6 h-6 text-gray-400 mx-auto mb-1" />
+              <p className="text-sm text-gray-500">Click to select new file</p>
+            </>
+          )}
+        </div>
+
+        <div className="flex gap-3 mt-6">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+            Cancel
+          </button>
+          <button
+            onClick={handleReplace}
+            disabled={!file || uploading}
+            className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[#0168FE] text-white hover:bg-[#0050CC] transition disabled:opacity-50"
+          >
+            {uploading ? 'Replacing...' : 'Replace'}
           </button>
         </div>
       </div>

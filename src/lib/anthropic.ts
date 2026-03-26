@@ -83,12 +83,19 @@ CRITICAL RULES:
 - Start your response with { and end with }.
 - All string values must be properly escaped for JSON.`
 
+export interface ScoringDocument {
+  category: string
+  fileName: string
+  text: string
+}
+
 function buildUserPrompt(
   pitchDeckText: string,
   financialsText: string,
   linkedinUrl: string,
   weights: StageWeights,
   hasFinancials: boolean,
+  supplementaryDocs?: ScoringDocument[],
 ): string {
   const weightsPercent = {
     team: Math.round(weights.team * 100),
@@ -97,21 +104,33 @@ function buildUserPrompt(
     financial: Math.round(weights.financial * 100),
   }
 
+  // Build supplementary documents section
+  let supplementarySection = ''
+  if (supplementaryDocs && supplementaryDocs.length > 0) {
+    supplementarySection = supplementaryDocs.map(doc => {
+      const categoryLabel = doc.category.replace(/_/g, ' ').toUpperCase()
+      return `\nSUPPLEMENTARY DOCUMENT — ${categoryLabel} (${doc.fileName}):\n${doc.text}\n`
+    }).join('\n')
+  }
+
   const financialsSection = hasFinancials
     ? `- Financial Data (separately provided):
 ${financialsText}
 
 NOTE: The above financial data has been provided separately. Use this to give a more informed Financial Health & Traction score.`
-    : `NOTE: No separate financial data was provided. Score Financial Health based solely on what's available in the pitch deck. Note this limitation in your analysis.`
+    : supplementarySection
+      ? '' // If we have supplementary docs, don't add the "no financials" note
+      : `NOTE: No separate financial data was provided. Score Financial Health based solely on what's available in the pitch deck. Note this limitation in your analysis.`
 
   return `Analyze these startup materials and return a JSON investment scoring report.
 
 ## Documents Provided:
-- Pitch Deck Content:
+
+PRIMARY DOCUMENT — PITCH DECK:
 ${pitchDeckText || '[No pitch deck text could be extracted]'}
 
 ${financialsSection}
-
+${supplementarySection}
 - LinkedIn Profile: ${linkedinUrl || '[Not provided]'}
 
 ## Stage-Adjusted Scoring Weights (${weights.label}):
@@ -250,6 +269,7 @@ async function callClaude(
   linkedinUrl: string,
   weights: StageWeights,
   hasFinancials: boolean,
+  supplementaryDocs?: ScoringDocument[],
 ): Promise<string> {
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -258,7 +278,7 @@ async function callClaude(
     messages: [
       {
         role: 'user',
-        content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials),
+        content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials, supplementaryDocs),
       },
     ],
   })
@@ -276,6 +296,7 @@ export async function scoreStartup(
   financialsText: string,
   linkedinUrl: string,
   companyStage: string,
+  supplementaryDocs?: ScoringDocument[],
 ): Promise<ScoringResult> {
   const weights = getStageWeights(companyStage)
   const hasFinancials = !!financialsText && financialsText.trim().length > 0
@@ -283,7 +304,7 @@ export async function scoreStartup(
   // --- Attempt 1 ---
   let rawResponse: string
   try {
-    rawResponse = await callClaude(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials)
+    rawResponse = await callClaude(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials, supplementaryDocs)
   } catch (apiErr) {
     console.error('Claude API call failed:', apiErr)
     throw new Error(`Claude API call failed: ${(apiErr as Error).message}`)
@@ -306,7 +327,7 @@ export async function scoreStartup(
       messages: [
         {
           role: 'user',
-          content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials),
+          content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials, supplementaryDocs),
         },
         {
           role: 'assistant',
