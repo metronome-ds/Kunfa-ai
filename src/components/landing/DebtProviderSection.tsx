@@ -63,7 +63,7 @@ export default function DebtProviderSection() {
         </div>
 
         <a
-          href="mailto:hello@vitality.capital"
+          href="mailto:invest@kunfa.ai"
           className="inline-flex items-center gap-2 bg-kunfa-orange hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
         >
           Register as Provider

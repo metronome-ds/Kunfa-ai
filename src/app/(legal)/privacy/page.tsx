@@ -31,7 +31,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Introduction</h2>
             <p>
-              Kunfa.AI (&ldquo;the Platform&rdquo;) is operated by Metronome FZ-LLC, a company registered in Dubai, UAE. This Privacy Policy describes how we collect, use, store, and share your personal information when you use our Platform. We are committed to protecting your privacy and handling your data in accordance with applicable UAE data protection regulations and international best practices.
+              Kunfa.AI (&ldquo;the Platform&rdquo;) is operated by Alif Fund LLC, a company registered in Dubai, UAE. This Privacy Policy describes how we collect, use, store, and share your personal information when you use our Platform. We are committed to protecting your privacy and handling your data in accordance with applicable UAE data protection regulations and international best practices.
             </p>
           </section>
 
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
               <li><strong>Anonymized data:</strong> Aggregated, anonymized analytics data may be retained indefinitely for platform improvement.</li>
             </ul>
             <p className="mt-3">
-              To request deletion of your account and associated data, contact us at <a href="mailto:hello@vitality.capital" className="text-[#0168FE] hover:underline">hello@vitality.capital</a>.
+              To request deletion of your account and associated data, contact us at <a href="mailto:invest@kunfa.ai" className="text-[#0168FE] hover:underline">invest@kunfa.ai</a>.
             </p>
           </section>
 
@@ -175,7 +175,7 @@ export default function PrivacyPage() {
               <li><strong>Objection:</strong> Object to certain processing of your personal data.</li>
             </ul>
             <p className="mt-3">
-              To exercise any of these rights, please contact us at <a href="mailto:hello@vitality.capital" className="text-[#0168FE] hover:underline">hello@vitality.capital</a>. We will respond to your request within 30 days.
+              To exercise any of these rights, please contact us at <a href="mailto:invest@kunfa.ai" className="text-[#0168FE] hover:underline">invest@kunfa.ai</a>. We will respond to your request within 30 days.
             </p>
           </section>
 
@@ -213,9 +213,9 @@ export default function PrivacyPage() {
               For questions about this Privacy Policy or our data practices, please contact:
             </p>
             <p className="mt-2">
-              <strong>Metronome FZ-LLC</strong><br />
+              <strong>Alif Fund LLC</strong><br />
               Dubai, United Arab Emirates<br />
-              Email: <a href="mailto:hello@vitality.capital" className="text-[#0168FE] hover:underline">hello@vitality.capital</a>
+              Email: <a href="mailto:invest@kunfa.ai" className="text-[#0168FE] hover:underline">invest@kunfa.ai</a>
             </p>
           </section>
         </div>

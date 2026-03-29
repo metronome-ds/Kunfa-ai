@@ -13,7 +13,7 @@ export default function Footer() {
 
           {/* Company info */}
           <p className="text-gray-400 text-sm mb-6">
-            Metronome FZ-LLC &middot; Dubai, UAE
+            Alif Fund LLC &middot; Dubai, UAE
           </p>
 
           {/* Links */}
