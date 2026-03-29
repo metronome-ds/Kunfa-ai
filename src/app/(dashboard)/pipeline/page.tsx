@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, DragEvent } from 'react';
-import { GripVertical, Bookmark, ArrowRight, Star, CalendarDays, Mail, RefreshCw, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { GripVertical, Bookmark, ArrowRight, Star, CalendarDays, Mail, RefreshCw, ChevronDown, ChevronUp, Check, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import DealSlideout from '@/components/pipeline/DealSlideout';
 import CompanyLogo from '@/components/common/CompanyLogo';
@@ -139,6 +139,7 @@ export default function PipelinePage() {
   const [invites, setInvites] = useState<InviteCard[]>([]);
   const [showInvites, setShowInvites] = useState(true);
   const [resendingId, setResendingId] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
 
   const fetchTeam = async () => {
     try {
@@ -348,6 +349,26 @@ export default function PipelinePage() {
     }
   };
 
+  const handleCancelInvite = async (invite: InviteCard) => {
+    if (!confirm(`Cancel invite for ${invite.company_name}?`)) return;
+    setCancellingId(invite.id);
+    try {
+      const res = await fetch('/api/companies/invite/cancel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyId: invite.id }),
+      });
+      if (res.ok) {
+        // Remove from local state
+        setInvites(prev => prev.filter(i => i.id !== invite.id));
+      }
+    } catch {
+      // ignore
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   function getInviteStatusBadge(invite: InviteCard) {
     if (invite.claim_status === 'claimed') {
       if (invite.overall_score) return { label: 'Scored', color: 'bg-emerald-100 text-emerald-700' };
@@ -469,16 +490,26 @@ export default function PipelinePage() {
                       </span>
                     )}
 
-                    <div className="mt-2 flex items-center gap-1">
+                    <div className="mt-2 flex items-center gap-2">
                       {invite.claim_status !== 'claimed' && invite.invited_email && (
-                        <button
-                          onClick={() => handleResendInvite(invite)}
-                          disabled={resendingId === invite.id}
-                          className="flex items-center gap-1 text-[10px] text-[#0168FE] hover:text-[#0050CC] font-medium disabled:opacity-50"
-                        >
-                          <RefreshCw className={`w-3 h-3 ${resendingId === invite.id ? 'animate-spin' : ''}`} />
-                          {resendingId === invite.id ? 'Sending...' : 'Resend'}
-                        </button>
+                        <>
+                          <button
+                            onClick={() => handleResendInvite(invite)}
+                            disabled={resendingId === invite.id || cancellingId === invite.id}
+                            className="flex items-center gap-1 text-[10px] text-[#0168FE] hover:text-[#0050CC] font-medium disabled:opacity-50"
+                          >
+                            <RefreshCw className={`w-3 h-3 ${resendingId === invite.id ? 'animate-spin' : ''}`} />
+                            {resendingId === invite.id ? 'Sending...' : 'Resend'}
+                          </button>
+                          <button
+                            onClick={() => handleCancelInvite(invite)}
+                            disabled={cancellingId === invite.id || resendingId === invite.id}
+                            className="flex items-center gap-1 text-[10px] text-red-500 hover:text-red-700 font-medium disabled:opacity-50"
+                          >
+                            <XCircle className="w-3 h-3" />
+                            {cancellingId === invite.id ? 'Cancelling...' : 'Cancel'}
+                          </button>
+                        </>
                       )}
                       {invite.claim_status === 'claimed' && invite.slug && (
                         <Link

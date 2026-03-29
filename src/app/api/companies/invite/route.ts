@@ -43,20 +43,26 @@ export async function POST(request: NextRequest) {
 
     // Resend existing invite — just re-send the email
     if (resend && existingToken) {
-      const email = companyInviteEmail({
+      const emailContent = companyInviteEmail({
         investorName,
         companyName,
         claimToken: existingToken,
         personalMessage: message || undefined,
       })
 
-      await sendEmail({
+      console.log('[INVITE] Attempting to resend invite email to:', founderEmail)
+      const sent = await sendEmail({
         to: founderEmail,
-        subject: email.subject,
-        html: email.html,
+        subject: emailContent.subject,
+        html: emailContent.html,
       })
+      if (sent) {
+        console.log('[INVITE] Resend email sent successfully to:', founderEmail)
+      } else {
+        console.error('[INVITE] Resend email FAILED for:', founderEmail)
+      }
 
-      return NextResponse.json({ success: true, resent: true })
+      return NextResponse.json({ success: true, resent: true, emailSent: sent })
     }
 
     // Generate claim token and slug
@@ -93,24 +99,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Send invite email
-    const email = companyInviteEmail({
+    const emailContent = companyInviteEmail({
       investorName,
       companyName,
       claimToken,
       personalMessage: message || undefined,
     })
 
-    await sendEmail({
+    console.log('[INVITE] Attempting to send invite email to:', founderEmail, '| Company:', companyName, '| Investor:', investorName)
+    const sent = await sendEmail({
       to: founderEmail,
-      subject: email.subject,
-      html: email.html,
+      subject: emailContent.subject,
+      html: emailContent.html,
     })
+    if (sent) {
+      console.log('[INVITE] Email sent successfully to:', founderEmail)
+    } else {
+      console.error('[INVITE] Email FAILED to send to:', founderEmail)
+    }
 
     return NextResponse.json({
       success: true,
       companyId: company.id,
       slug: company.slug,
       claimToken,
+      emailSent: sent,
     })
   } catch (error) {
     console.error('Company invite error:', error)
