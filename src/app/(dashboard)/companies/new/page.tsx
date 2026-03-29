@@ -46,14 +46,26 @@ export default function AddCompanyPage() {
   const [inviteSending, setInviteSending] = useState(false)
   const [inviteSuccess, setInviteSuccess] = useState('')
 
-  // Get current user email for scoring
+  // Get current user email + profile for scoring and invite default message
   useEffect(() => {
     const supabase = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     )
-    supabase.auth.getUser().then(({ data }) => {
+    supabase.auth.getUser().then(async ({ data }) => {
       if (data.user?.email) setUserEmail(data.user.email)
+      if (data.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, fund_name')
+          .eq('user_id', data.user.id)
+          .single()
+        const investorLabel = profile?.fund_name || profile?.full_name || 'our team'
+        setInviteForm(f => ({
+          ...f,
+          message: `The team at ${investorLabel} is excited to invite you to our private deal room. Simply upload your key documents and your profile will be auto-generated — no lengthy forms required. This is your first step in our due diligence process.\n\nWe're looking forward to partnering on this journey with you.`,
+        }))
+      }
     })
   }, [])
 
@@ -392,10 +404,10 @@ export default function AddCompanyPage() {
             <textarea
               value={inviteForm.message}
               onChange={(e) => setInviteForm(f => ({ ...f, message: e.target.value }))}
-              rows={3}
+              rows={5}
               className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] resize-none"
-              placeholder="Add a personal note..."
             />
+            <p className="text-xs text-gray-400 mt-1">This message will appear in the invite email. Edit freely or clear it.</p>
           </div>
 
           <button
