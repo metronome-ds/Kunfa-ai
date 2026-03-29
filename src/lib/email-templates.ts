@@ -9,8 +9,8 @@ function layout(content: string): string {
     <tr><td align="center">
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
         <!-- Header -->
-        <tr><td style="background:#0168FE;padding:24px 32px;">
-          <span style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:0.5px;">Kunfa</span>
+        <tr><td style="background:#0168FE;padding:28px 32px;text-align:center;">
+          <img src="https://akvjxobgnbbljmtvrlhk.supabase.co/storage/v1/object/public/documents/Brand/kunfa-logo.png" alt="Kunfa" height="32" style="display:inline-block;" />
         </td></tr>
         <!-- Body -->
         <tr><td style="padding:32px;">
@@ -19,7 +19,7 @@ function layout(content: string): string {
         <!-- Footer -->
         <tr><td style="padding:20px 32px;border-top:1px solid #e5e7eb;">
           <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;">
-            Kunfa &mdash; Venture Intelligence | <a href="${BASE_URL}" style="color:#0168FE;text-decoration:none;">kunfa.ai</a>
+            <a href="${BASE_URL}" style="color:#0168FE;text-decoration:none;">kunfa.ai</a> &mdash; Venture Intelligence for the GCC
           </p>
         </td></tr>
       </table>
@@ -231,6 +231,42 @@ export function claimApprovedEmail(params: {
         You can now update your company information, manage your data room, and connect with investors.
       </p>
       ${button('View Your Profile', profileUrl)}
+    `),
+  }
+}
+
+// --- Company Invite (investor invites founder) ---
+
+export function companyInviteEmail(params: {
+  investorName: string
+  companyName: string
+  claimToken: string
+  personalMessage?: string
+}): { subject: string; html: string } {
+  const { investorName, companyName, claimToken, personalMessage } = params
+  const claimUrl = `${BASE_URL}/claim/${claimToken}`
+
+  const messageBlock = personalMessage
+    ? `<div style="margin:16px 0;padding:12px 16px;border-left:4px solid #0168FE;background:#f0f7ff;border-radius:0 8px 8px 0;">
+        <p style="margin:0;font-size:14px;color:#374151;line-height:1.6;font-style:italic;">&ldquo;${personalMessage}&rdquo;</p>
+      </div>`
+    : ''
+
+  return {
+    subject: `${investorName} has invited you to join Kunfa`,
+    html: layout(`
+      <h1 style="margin:0 0 16px;font-size:20px;color:#111827;">You've been invited to Kunfa</h1>
+      <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.6;">
+        <strong>${investorName}</strong> has invited <strong>${companyName}</strong> to join Kunfa &mdash; the AI-powered venture intelligence platform for the GCC.
+      </p>
+      ${messageBlock}
+      <p style="margin:0 0 16px;font-size:14px;color:#6b7280;line-height:1.6;">
+        Create your company profile, upload your pitch deck, and get an instant AI-powered investment readiness score. It takes less than 5 minutes.
+      </p>
+      ${button('Create Your Profile', claimUrl)}
+      <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;line-height:1.5;">
+        This invite was sent by ${investorName} via Kunfa.
+      </p>
     `),
   }
 }

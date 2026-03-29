@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, DragEvent } from 'react';
-import { GripVertical, Bookmark, ArrowRight, Star, CalendarDays } from 'lucide-react';
+import { GripVertical, Bookmark, ArrowRight, Star, CalendarDays, Mail, RefreshCw, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import Link from 'next/link';
 import DealSlideout from '@/components/pipeline/DealSlideout';
 import CompanyLogo from '@/components/common/CompanyLogo';
@@ -68,6 +68,17 @@ interface PipelineStages {
   closed: DealCard[];
 }
 
+interface InviteCard {
+  id: string;
+  company_name: string;
+  slug: string | null;
+  claim_status: string;
+  invited_email: string | null;
+  claim_token: string | null;
+  created_at: string;
+  overall_score: number | null;
+}
+
 type DragItem =
   | { type: 'watchlist'; card: WatchlistCard }
   | { type: 'deal'; card: DealCard; fromStage: string };
@@ -125,6 +136,9 @@ export default function PipelinePage() {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [dealFilter, setDealFilter] = useState<DealFilter>('all');
   const [ownerName, setOwnerName] = useState('');
+  const [invites, setInvites] = useState<InviteCard[]>([]);
+  const [showInvites, setShowInvites] = useState(true);
+  const [resendingId, setResendingId] = useState<string | null>(null);
 
   const fetchTeam = async () => {
     try {
@@ -145,6 +159,7 @@ export default function PipelinePage() {
       const result = await response.json();
       setWatchlist(result.watchlist || []);
       setDeals(result.deals || { sourced: [], screening: [], due_diligence: [], term_sheet: [], closed: [] });
+      setInvites(result.invites || []);
       setError(null);
 
       // If a deal is selected, update it with fresh data
@@ -311,6 +326,37 @@ export default function PipelinePage() {
     return cards;
   }
 
+  const handleResendInvite = async (invite: InviteCard) => {
+    if (!invite.invited_email || !invite.claim_token) return;
+    setResendingId(invite.id);
+    try {
+      const res = await fetch('/api/companies/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyName: invite.company_name,
+          founderEmail: invite.invited_email,
+          resend: true,
+          existingToken: invite.claim_token,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to resend');
+    } catch {
+      // silently fail — UX will show button revert
+    } finally {
+      setResendingId(null);
+    }
+  };
+
+  function getInviteStatusBadge(invite: InviteCard) {
+    if (invite.claim_status === 'claimed') {
+      if (invite.overall_score) return { label: 'Scored', color: 'bg-emerald-100 text-emerald-700' };
+      return { label: 'Claimed', color: 'bg-blue-100 text-blue-700' };
+    }
+    return { label: 'Pending', color: 'bg-amber-100 text-amber-700' };
+  }
+
+  const pendingInvites = invites.filter(i => i.claim_status !== 'claimed' || !i.overall_score);
   const totalDeals = Object.values(deals).reduce((sum, arr) => sum + arr.length, 0);
 
   if (isLoading) {
@@ -380,6 +426,77 @@ export default function PipelinePage() {
           </button>
         ))}
       </div>
+
+      {/* Pending Invites Section */}
+      {invites.length > 0 && (
+        <div className="mb-6">
+          <button
+            onClick={() => setShowInvites(!showInvites)}
+            className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 mb-3"
+          >
+            <Mail className="w-4 h-4 text-[#0168FE]" />
+            Pending Invites
+            <span className="text-xs font-normal text-gray-500">({invites.length})</span>
+            {showInvites ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+
+          {showInvites && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              {invites.map((invite) => {
+                const badge = getInviteStatusBadge(invite);
+                const dateStr = new Date(invite.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return (
+                  <div
+                    key={invite.id}
+                    className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm"
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-gray-900 truncate">{invite.company_name}</h4>
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0 ml-1 ${badge.color}`}>
+                        {badge.label}
+                      </span>
+                    </div>
+
+                    {invite.invited_email && (
+                      <p className="text-[11px] text-gray-500 truncate">{invite.invited_email}</p>
+                    )}
+
+                    <p className="text-[10px] text-gray-400 mt-1">Invited {dateStr}</p>
+
+                    {invite.overall_score !== null && (
+                      <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded mt-2 ${getScoreBadgeColor(invite.overall_score)}`}>
+                        Score: {invite.overall_score}
+                      </span>
+                    )}
+
+                    <div className="mt-2 flex items-center gap-1">
+                      {invite.claim_status !== 'claimed' && invite.invited_email && (
+                        <button
+                          onClick={() => handleResendInvite(invite)}
+                          disabled={resendingId === invite.id}
+                          className="flex items-center gap-1 text-[10px] text-[#0168FE] hover:text-[#0050CC] font-medium disabled:opacity-50"
+                        >
+                          <RefreshCw className={`w-3 h-3 ${resendingId === invite.id ? 'animate-spin' : ''}`} />
+                          {resendingId === invite.id ? 'Sending...' : 'Resend'}
+                        </button>
+                      )}
+                      {invite.claim_status === 'claimed' && invite.slug && (
+                        <Link
+                          href={`/company/${invite.slug}`}
+                          className="flex items-center gap-1 text-[10px] text-[#0168FE] hover:text-[#0050CC] font-medium"
+                        >
+                          <Check className="w-3 h-3" />
+                          View
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Kanban Board: 6 columns */}
       <div className="grid grid-cols-6 gap-3 min-h-[500px]">

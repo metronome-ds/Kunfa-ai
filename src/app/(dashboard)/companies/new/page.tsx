@@ -2,12 +2,12 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { FileUp, PenLine, Upload, X } from 'lucide-react'
+import { FileUp, PenLine, Upload, X, Send, Mail } from 'lucide-react'
 import { STAGES, INDUSTRIES } from '@/lib/constants'
 import { createBrowserClient } from '@supabase/ssr'
 import CompanyLogo from '@/components/common/CompanyLogo'
 
-type Tab = 'pdf' | 'manual'
+type Tab = 'pdf' | 'manual' | 'invite'
 type Status = 'idle' | 'extracting' | 'submitting' | 'scoring' | 'done'
 
 export default function AddCompanyPage() {
@@ -35,6 +35,16 @@ export default function AddCompanyPage() {
   const [logoUrl, setLogoUrl] = useState<string | null>(null)
   const [logoUploading, setLogoUploading] = useState(false)
   const logoInputRef = useRef<HTMLInputElement>(null)
+
+  // Invite tab state
+  const [inviteForm, setInviteForm] = useState({
+    companyName: '',
+    founderEmail: '',
+    founderName: '',
+    message: '',
+  })
+  const [inviteSending, setInviteSending] = useState(false)
+  const [inviteSuccess, setInviteSuccess] = useState('')
 
   // Get current user email for scoring
   useEffect(() => {
@@ -199,6 +209,43 @@ export default function AddCompanyPage() {
     }
   }
 
+  async function handleInviteSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!inviteForm.companyName || !inviteForm.founderEmail) {
+      setError('Company name and founder email are required')
+      return
+    }
+
+    setInviteSending(true)
+    setError('')
+    setInviteSuccess('')
+
+    try {
+      const res = await fetch('/api/companies/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyName: inviteForm.companyName,
+          founderEmail: inviteForm.founderEmail,
+          founderName: inviteForm.founderName || undefined,
+          message: inviteForm.message || undefined,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to send invite')
+      }
+
+      setInviteSuccess(`Invite sent to ${inviteForm.founderEmail}!`)
+      setTimeout(() => router.push('/pipeline'), 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setInviteSending(false)
+    }
+  }
+
   const isProcessing = status === 'extracting' || status === 'submitting' || status === 'scoring'
 
   return (
@@ -228,6 +275,17 @@ export default function AddCompanyPage() {
         >
           <PenLine className="w-4 h-4" />
           Add Manually
+        </button>
+        <button
+          onClick={() => setTab('invite')}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
+            tab === 'invite'
+              ? 'bg-[#0168FE] text-white'
+              : 'bg-gray-100 text-gray-500 hover:text-gray-900 border border-gray-200'
+          }`}
+        >
+          <Mail className="w-4 h-4" />
+          Invite Company
         </button>
       </div>
 
@@ -281,8 +339,78 @@ export default function AddCompanyPage() {
         </div>
       )}
 
+      {/* Invite Company Tab */}
+      {tab === 'invite' && (
+        <form onSubmit={handleInviteSubmit} className="space-y-4">
+          {inviteSuccess && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-2">
+              <p className="text-sm text-emerald-700">{inviteSuccess}</p>
+            </div>
+          )}
+
+          <p className="text-sm text-gray-600 mb-2">
+            Send an email invite to a founder. They&apos;ll create their profile, upload their pitch deck, and get an AI score.
+          </p>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+            <input
+              type="text"
+              value={inviteForm.companyName}
+              onChange={(e) => setInviteForm(f => ({ ...f, companyName: e.target.value }))}
+              required
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+              placeholder="Acme Corp"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Founder&apos;s Email *</label>
+            <input
+              type="email"
+              value={inviteForm.founderEmail}
+              onChange={(e) => setInviteForm(f => ({ ...f, founderEmail: e.target.value }))}
+              required
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+              placeholder="founder@company.com"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Founder&apos;s Name</label>
+            <input
+              type="text"
+              value={inviteForm.founderName}
+              onChange={(e) => setInviteForm(f => ({ ...f, founderName: e.target.value }))}
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+              placeholder="Jane Smith (optional)"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+            <textarea
+              value={inviteForm.message}
+              onChange={(e) => setInviteForm(f => ({ ...f, message: e.target.value }))}
+              rows={3}
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] resize-none"
+              placeholder="Add a personal note..."
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={inviteSending || !inviteForm.companyName || !inviteForm.founderEmail}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition disabled:opacity-50"
+          >
+            <Send className="w-4 h-4" />
+            {inviteSending ? 'Sending...' : 'Send Invite'}
+          </button>
+        </form>
+      )}
+
       {/* Form (shown in manual tab or after PDF extraction) */}
-      {(tab === 'manual' || form.company_name) && status !== 'scoring' && (
+      {(tab === 'manual' || (tab === 'pdf' && form.company_name)) && status !== 'scoring' && (
         <form onSubmit={handleSubmit} className="space-y-4">
           {tab === 'pdf' && form.company_name && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">

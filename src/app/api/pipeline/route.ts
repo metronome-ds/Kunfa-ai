@@ -124,6 +124,26 @@ export async function GET() {
       }
     }
 
+    // Fetch invited companies (source = 'investor_invited', added_by = current user)
+    const { data: invitedCompanies } = await supabase
+      .from('company_pages')
+      .select('id, company_name, slug, claim_status, claim_invited_email, claim_token, created_at, overall_score')
+      .eq('added_by', user.id)
+      .eq('source', 'investor_invited')
+      .order('created_at', { ascending: false });
+
+    // Format invites
+    const invites = (invitedCompanies || []).map((c) => ({
+      id: c.id,
+      company_name: c.company_name,
+      slug: c.slug,
+      claim_status: c.claim_status || 'invite_sent',
+      invited_email: c.claim_invited_email,
+      claim_token: c.claim_token,
+      created_at: c.created_at,
+      overall_score: c.overall_score,
+    }));
+
     // Format watchlist
     const watchlist = (watchlistItems || []).map((item) => {
       const company = item.company_pages as any;
@@ -195,6 +215,7 @@ export async function GET() {
     return NextResponse.json({
       watchlist,
       deals: grouped,
+      invites,
       total: deals?.length || 0,
     }, { status: 200 });
   } catch (error) {
