@@ -9,9 +9,8 @@ import { ScoreTooltip } from '@/components/ui/ScoreTooltip'
 import { OptionalSidebarLayout } from '@/components/common/OptionalSidebarLayout'
 import DealRoomSection from '@/components/dealroom/DealRoomSection'
 import PaidReportBanner from '@/components/company/PaidReportBanner'
-import KunfaLogo from '@/components/common/KunfaLogo'
 
-const BLOCKED_SLUGS = ['kunfa']
+
 
 interface TeamMember {
   name: string
@@ -86,22 +85,7 @@ function formatRaiseAmount(amount: number | string | null) {
 export default async function CompanyPublicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
 
-  if (BLOCKED_SLUGS.includes(slug)) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <div className="mb-8">
-            <KunfaLogo height={36} />
-          </div>
-          <h1 className="text-xl font-semibold text-gray-900 mb-2">We&apos;re updating this page. Back shortly.</h1>
-          <p className="text-gray-500 text-sm mb-8">Something broke, we&apos;re fixing it ASAP.</p>
-          <Link href="/" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium bg-[#0168FE] text-white hover:bg-[#0050CC] transition">
-            Go to kunfa.ai
-          </Link>
-        </div>
-      </div>
-    )
-  }
+
 
   const company = await getCompanyPage(slug)
 
