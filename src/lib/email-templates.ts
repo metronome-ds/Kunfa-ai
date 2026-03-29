@@ -271,6 +271,40 @@ export function companyInviteEmail(params: {
   }
 }
 
+// --- Company Claimed (notify investor) ---
+
+export function companyClaimedNotificationEmail(params: {
+  companyName: string
+  slug: string | null
+  score?: number | null
+}): { subject: string; html: string } {
+  const { companyName, slug, score } = params
+  const ctaUrl = slug ? `${BASE_URL}/company/${slug}` : `${BASE_URL}/pipeline`
+
+  const scoreSection = score
+    ? `<table cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
+        <tr><td style="background:#0168FE;color:#ffffff;font-size:18px;font-weight:700;padding:8px 20px;border-radius:8px;">
+          ${score}/100
+        </td></tr>
+      </table>`
+    : ''
+
+  return {
+    subject: `${companyName} has joined Kunfa!`,
+    html: layout(`
+      <h1 style="margin:0 0 16px;font-size:20px;color:#111827;">Great news!</h1>
+      <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.6;">
+        <strong>${companyName}</strong> has claimed their profile on Kunfa. The founder is now managing their company page.
+      </p>
+      ${scoreSection}
+      <p style="margin:0 0 8px;font-size:14px;color:#6b7280;line-height:1.6;">
+        You can view their updated profile and continue managing them in your deal pipeline.
+      </p>
+      ${button('View Company', ctaUrl)}
+    `),
+  }
+}
+
 // --- Claim Rejected ---
 
 export function claimRejectedEmail(params: {

@@ -1,6 +1,7 @@
 import { getServerUser } from '@/lib/supabase-server'
 import { getSupabase } from '@/lib/db'
 import { sendEmail } from '@/lib/email'
+import { companyClaimedNotificationEmail } from '@/lib/email-templates'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     // Look up company by claim_token
     const { data: company, error: compError } = await supabase
       .from('company_pages')
-      .select('id, company_name, slug, claim_status, website_url')
+      .select('id, company_name, slug, claim_status, website_url, added_by, overall_score')
       .eq('claim_token', token)
       .single()
 
@@ -51,10 +52,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const domainMatch = !!(userDomain && companyDomain && userDomain === companyDomain)
+    // Auto-approve if: domains match OR no website_url to compare
+    const domainMatch = !companyDomain || !!(userDomain && companyDomain && userDomain === companyDomain)
 
     if (domainMatch) {
-      // Auto-approve: domain matches
+      // Auto-approve
       await supabase
         .from('company_pages')
         .update({
@@ -64,7 +66,7 @@ export async function POST(request: NextRequest) {
         })
         .eq('id', company.id)
 
-      // Set profile role to startup if not already
+      // Set profile role to startup + onboarding_completed so ScoreModal skips to upload
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
@@ -74,8 +76,31 @@ export async function POST(request: NextRequest) {
       if (profile && profile.role !== 'startup' && profile.role !== 'founder') {
         await supabase
           .from('profiles')
-          .update({ role: 'startup' })
+          .update({ role: 'startup', onboarding_completed: true })
           .eq('user_id', user.id)
+      } else {
+        await supabase
+          .from('profiles')
+          .update({ onboarding_completed: true })
+          .eq('user_id', user.id)
+      }
+
+      // Notify the investor who added the company
+      if (company.added_by && company.added_by !== user.id) {
+        const { data: investorProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('user_id', company.added_by)
+          .single()
+
+        if (investorProfile?.email) {
+          const notifEmail = companyClaimedNotificationEmail({
+            companyName: company.company_name,
+            slug: company.slug,
+            score: company.overall_score,
+          })
+          await sendEmail({ to: investorProfile.email, subject: notifEmail.subject, html: notifEmail.html }).catch(() => {})
+        }
       }
 
       return NextResponse.json({ approved: true, slug: company.slug })

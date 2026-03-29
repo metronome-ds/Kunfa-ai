@@ -1,7 +1,7 @@
 import { getServerUser } from '@/lib/supabase-server'
 import { getSupabase } from '@/lib/db'
 import { sendEmail } from '@/lib/email'
-import { claimApprovedEmail, claimRejectedEmail } from '@/lib/email-templates'
+import { claimApprovedEmail, claimRejectedEmail, companyClaimedNotificationEmail } from '@/lib/email-templates'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function PATCH(
@@ -53,7 +53,7 @@ export async function PATCH(
     // Get company info
     const { data: company } = await supabase
       .from('company_pages')
-      .select('id, company_name, slug')
+      .select('id, company_name, slug, added_by, overall_score')
       .eq('id', claimRequest.company_id)
       .single()
 
@@ -93,7 +93,12 @@ export async function PATCH(
       if (requesterProfile && requesterProfile.role !== 'startup' && requesterProfile.role !== 'founder') {
         await supabase
           .from('profiles')
-          .update({ role: 'startup' })
+          .update({ role: 'startup', onboarding_completed: true })
+          .eq('user_id', claimRequest.requested_by)
+      } else {
+        await supabase
+          .from('profiles')
+          .update({ onboarding_completed: true })
           .eq('user_id', claimRequest.requested_by)
       }
 
@@ -103,6 +108,24 @@ export async function PATCH(
         slug: company.slug,
       })
       await sendEmail({ to: claimRequest.requester_email, subject, html })
+
+      // Notify the investor who added the company
+      if (company.added_by && company.added_by !== claimRequest.requested_by) {
+        const { data: investorProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('user_id', company.added_by)
+          .single()
+
+        if (investorProfile?.email) {
+          const notifEmail = companyClaimedNotificationEmail({
+            companyName: company.company_name,
+            slug: company.slug,
+            score: company.overall_score,
+          })
+          await sendEmail({ to: investorProfile.email, subject: notifEmail.subject, html: notifEmail.html }).catch(() => {})
+        }
+      }
 
       return NextResponse.json({ success: true, action: 'approved' })
     }

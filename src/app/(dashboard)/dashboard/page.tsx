@@ -25,6 +25,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import NotesTimeline from '@/components/pipeline/NotesTimeline';
+import ScoreModal from '@/components/scoring/ScoreModal';
 
 interface UserProfile {
   id: string;
@@ -191,6 +192,8 @@ export default function DashboardPage() {
 function DashboardContent() {
   const searchParams = useSearchParams();
   const paidParam = searchParams.get('paid') === 'true';
+  const claimedParam = searchParams.get('claimed') === 'true';
+  const claimPendingParam = searchParams.get('claim_pending') === 'true';
   const sidParam = searchParams.get('sid');
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -202,6 +205,7 @@ function DashboardContent() {
   const [paid, setPaid] = useState(paidParam);
   const [hasReport, setHasReport] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [showScoreModal, setShowScoreModal] = useState(false);
 
   // Investor state
   const [investorStats, setInvestorStats] = useState<InvestorStats>({ pipelineDeals: 0, watchlisted: 0, totalPipelineValue: 0, avgKunfaScore: null });
@@ -253,6 +257,13 @@ function DashboardContent() {
       setHasReport(!!data.hasReport);
     } catch { /* ignore */ }
   }, []);
+
+  // Auto-open ScoreModal when arriving from a claim with no score
+  useEffect(() => {
+    if (claimedParam && isStartup && company && !company.overall_score) {
+      setShowScoreModal(true);
+    }
+  }, [claimedParam, isStartup, company]);
 
   // Poll for report readiness when paid but report not yet generated
   useEffect(() => {
@@ -408,6 +419,46 @@ function DashboardContent() {
           </div>
         )}
 
+        {/* Claim Success Banner */}
+        {claimedParam && (
+          <div className="rounded-xl p-4 mb-6 border bg-emerald-50 border-emerald-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">Company claimed successfully!</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Upload your pitch deck to get your AI-powered investment readiness score.</p>
+                </div>
+              </div>
+              {company && !company.overall_score && (
+                <button
+                  onClick={() => setShowScoreModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition flex-shrink-0"
+                >
+                  <Star className="w-4 h-4" /> Get Your Score
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Claim Pending Banner */}
+        {claimPendingParam && (
+          <div className="rounded-xl p-4 mb-6 border bg-amber-50 border-amber-200">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-4 h-4 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Claim submitted for review</p>
+                <p className="text-xs text-gray-500 mt-0.5">Your claim request has been submitted. We&apos;ll notify you by email once it&apos;s approved.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {company ? (
           <>
             {/* Score + Company Card */}
@@ -538,9 +589,17 @@ function DashboardContent() {
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><Star className="w-8 h-8 text-gray-400" /></div>
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Get Your Kunfa Score</h2>
             <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">Upload your pitch deck to get your AI-powered investment readiness score and create your company profile.</p>
-            <Link href="/" className="inline-flex items-center gap-2 px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition">Get Your Kunfa Score</Link>
+            <button
+              onClick={() => setShowScoreModal(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition"
+            >
+              Get Your Kunfa Score
+            </button>
           </div>
         )}
+
+        {/* Score Modal */}
+        <ScoreModal isOpen={showScoreModal} onClose={() => { setShowScoreModal(false); loadStartupData(); }} />
       </div>
     );
   }

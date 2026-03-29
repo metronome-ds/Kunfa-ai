@@ -37,6 +37,7 @@ export default function ClaimPage() {
   const [error, setError] = useState('')
 
   // Signup form state
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [signupLoading, setSignupLoading] = useState(false)
@@ -119,7 +120,9 @@ export default function ClaimPage() {
       await supabase.from('profiles').insert({
         user_id: data.user.id,
         email,
+        full_name: fullName || null,
         role: 'startup',
+        onboarding_completed: true,
       })
 
       // Auto-join pending invites
@@ -247,8 +250,12 @@ export default function ClaimPage() {
           <Link href="/" className="inline-block mb-6">
             <KunfaLogo height={32} />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Claim Your Company</h1>
-          <p className="text-gray-500 mt-2">Take ownership of your company profile on Kunfa</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Create your {companyInfo.company_name} profile on Kunfa
+          </h1>
+          <p className="text-gray-500 mt-2">
+            Upload your pitch deck, get an AI-powered investment readiness score, and connect with investors.
+          </p>
         </div>
 
         {/* Company card */}
@@ -307,6 +314,17 @@ export default function ClaimPage() {
             </p>
 
             <form onSubmit={handleSignup} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                  placeholder="Your full name"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 <input
