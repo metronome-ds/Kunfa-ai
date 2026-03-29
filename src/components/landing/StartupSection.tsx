@@ -21,10 +21,10 @@ export default function StartupSection({ onApplyNow }: StartupSectionProps) {
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-[#0168FE] mb-4">
               For Startups
             </span>
-            <h2 className="text-3xl lg:text-4xl font-bold text-kunfa-navy mb-4">
+            <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
               Get instant AI feedback on your fundraising readiness
             </h2>
-            <p className="text-gray-600 text-lg mb-8 leading-relaxed">
+            <p className="text-gray-600 text-base mb-8 leading-relaxed">
               Upload your deck, get scored by our AI, and gain instant visibility
               to verified investors across the GCC. No warm intros needed.
             </p>

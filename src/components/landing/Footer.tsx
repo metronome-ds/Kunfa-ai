@@ -33,7 +33,7 @@ export default function Footer() {
             </Link>
             <span className="text-gray-700">|</span>
             <a
-              href="https://linkedin.com/company/kunfa"
+              href="https://www.linkedin.com/company/alif-fund/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-400 hover:text-white text-sm transition-colors"
@@ -42,7 +42,7 @@ export default function Footer() {
             </a>
             <span className="text-gray-700">|</span>
             <a
-              href="mailto:hello@kunfa.ai"
+              href="mailto:invest@kunfa.ai"
               className="text-gray-400 hover:text-white text-sm transition-colors"
             >
               Contact

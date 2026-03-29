@@ -65,10 +65,10 @@ export default function InvestorSection() {
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 mb-4">
               For Investors
             </span>
-            <h2 className="text-3xl lg:text-4xl font-bold text-kunfa-navy mb-4">
+            <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
               AI-curated deal flow across the GCC
             </h2>
-            <p className="text-gray-600 text-lg mb-8 leading-relaxed">
+            <p className="text-gray-600 text-base mb-8 leading-relaxed">
               Discover pre-scored startups, manage your pipeline, and access secure
               data rooms — all from one platform built for GCC venture capital.
             </p>

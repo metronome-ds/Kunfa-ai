@@ -36,10 +36,10 @@ export default function HowItWorks() {
     <section id="how-it-works" className="py-20 lg:py-28 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-3xl lg:text-4xl font-bold text-kunfa-navy mb-4">
+          <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
             How It Works
           </h2>
-          <p className="text-gray-600 text-lg max-w-xl mx-auto">
+          <p className="text-gray-600 text-base max-w-xl mx-auto">
             Three steps from pitch deck to investor pipeline
           </p>
         </div>

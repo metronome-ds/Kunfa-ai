@@ -32,10 +32,10 @@ export default function DebtProviderSection() {
         <span className="badge-green mb-4 inline-flex">
           🏛️ Debt Provider Network
         </span>
-        <h2 className="text-3xl lg:text-4xl font-bold text-kunfa-navy mt-4 mb-4">
+        <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mt-4 mb-4">
           Join our growing lender network
         </h2>
-        <p className="text-kunfa-text-secondary text-lg max-w-2xl mx-auto mb-12">
+        <p className="text-kunfa-text-secondary text-base max-w-2xl mx-auto mb-12">
           Connect with pre-vetted, high-growth startups looking for venture debt, growth
           lending, and equipment financing. AI-matched to your lending criteria.
         </p>

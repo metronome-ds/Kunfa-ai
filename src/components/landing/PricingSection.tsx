@@ -40,7 +40,7 @@ const plans = [
   },
   {
     name: 'Enterprise',
-    price: 'Custom',
+    price: 'Launching Soon',
     subtitle: 'For funds & accelerators',
     features: [
       'Everything in Readiness Report',
@@ -61,10 +61,10 @@ export default function PricingSection({ onApplyNow }: PricingSectionProps) {
   return (
     <section id="pricing" className="py-20 lg:py-28 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl lg:text-4xl font-bold text-kunfa-navy mb-4">
+        <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
           Simple, transparent pricing
         </h2>
-        <p className="text-gray-600 text-lg max-w-xl mx-auto mb-12">
+        <p className="text-gray-600 text-base max-w-xl mx-auto mb-12">
           Start free. Upgrade when you need deeper insights.
         </p>
 
@@ -84,7 +84,7 @@ export default function PricingSection({ onApplyNow }: PricingSectionProps) {
               )}
 
               <h3 className="text-lg font-bold text-kunfa-navy mb-2">{plan.name}</h3>
-              <p className="text-4xl font-bold text-kunfa-navy mb-1">{plan.price}</p>
+              <p className="text-3xl font-bold text-kunfa-navy mb-1">{plan.price}</p>
               <p className="text-sm text-gray-500 mb-8">{plan.subtitle}</p>
 
               <ul className="space-y-3 mb-8 flex-1 text-left">
@@ -101,7 +101,7 @@ export default function PricingSection({ onApplyNow }: PricingSectionProps) {
               <button
                 onClick={() => {
                   if (plan.action === 'contact') {
-                    window.location.href = 'mailto:hello@kunfa.ai'
+                    window.location.href = 'mailto:invest@kunfa.ai'
                   } else {
                     onApplyNow()
                   }
