@@ -43,37 +43,16 @@ export default function AdminImportsPage() {
 
   const fetchData = useCallback(async (status: StatusFilter) => {
     setLoading(true)
-
-    // Fetch stats
-    const { data: allRecords } = await supabase
-      .from('company_imports')
-      .select('status')
-
-    if (allRecords) {
-      const s: Stats = { total: allRecords.length, raw: 0, cleaned: 0, promoted: 0, rejected: 0, duplicate: 0 }
-      for (const r of allRecords) {
-        if (r.status === 'raw') s.raw++
-        else if (r.status === 'cleaned') s.cleaned++
-        else if (r.status === 'promoted') s.promoted++
-        else if (r.status === 'rejected') s.rejected++
-        else if (r.status === 'duplicate') s.duplicate++
+    try {
+      const res = await fetch(`/api/admin/imports?status=${status}`)
+      if (res.ok) {
+        const data = await res.json()
+        setStats(data.stats)
+        setRecords(data.records || [])
       }
-      setStats(s)
+    } catch (err) {
+      console.error('Failed to fetch imports:', err)
     }
-
-    // Fetch records for current tab
-    let query = supabase
-      .from('company_imports')
-      .select('id, raw_name, clean_name, raw_source, status, raw_country, clean_country, raw_sector, clean_sector, batch_id, rejection_reason, imported_at')
-      .order('imported_at', { ascending: false })
-      .limit(100)
-
-    if (status !== 'all') {
-      query = query.eq('status', status)
-    }
-
-    const { data } = await query
-    setRecords(data || [])
     setLoading(false)
   }, [])
 
@@ -138,15 +117,19 @@ export default function AdminImportsPage() {
 
   async function handleReject(id: string) {
     setActionLoading(id)
-    const { error } = await supabase
-      .from('company_imports')
-      .update({ status: 'rejected', rejection_reason: rejectionReason || 'Manually rejected' })
-      .eq('id', id)
-
-    if (!error) {
-      setRejectingId(null)
-      setRejectionReason('')
-      fetchData(activeTab)
+    try {
+      const res = await fetch(`/api/admin/imports/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject', rejection_reason: rejectionReason || 'Manually rejected' }),
+      })
+      if (res.ok) {
+        setRejectingId(null)
+        setRejectionReason('')
+        fetchData(activeTab)
+      }
+    } catch {
+      alert('Failed to reject')
     }
     setActionLoading(null)
   }
