@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const FROM_EMAIL = 'Kunfa <onboarding@resend.dev>'
+const FROM_EMAIL = 'Kunfa <noreply@kunfa.ai>'
 
 let _resend: Resend | null = null
 function getResend(): Resend | null {
