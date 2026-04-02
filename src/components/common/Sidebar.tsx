@@ -17,6 +17,7 @@ import {
   Handshake,
   Gift,
   Star,
+  Upload,
   LayoutDashboard,
   Landmark,
   PlusCircle,
@@ -296,18 +297,32 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       <div className={`border-t border-gray-800 ${collapsed ? 'p-2' : 'p-3'} space-y-3`}>
         <div className="space-y-1">
           {isAdmin && (
-            <Link
-              href="/admin/claims"
-              className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
-                pathname.startsWith('/admin')
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-              }`}
-              title={collapsed ? 'Admin' : undefined}
-            >
-              <ShieldCheck className="h-5 w-5" />
-              {!collapsed && <span className="text-sm font-medium">Admin</span>}
-            </Link>
+            <>
+              <Link
+                href="/admin/claims"
+                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
+                  pathname === '/admin/claims'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+                title={collapsed ? 'Claims' : undefined}
+              >
+                <ShieldCheck className="h-5 w-5" />
+                {!collapsed && <span className="text-sm font-medium">Claims</span>}
+              </Link>
+              <Link
+                href="/admin/imports"
+                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
+                  pathname === '/admin/imports'
+                    ? 'bg-blue-600 text-white shadow-md'
+                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                }`}
+                title={collapsed ? 'Imports' : undefined}
+              >
+                <Upload className="h-5 w-5" />
+                {!collapsed && <span className="text-sm font-medium">Imports</span>}
+              </Link>
+            </>
           )}
           {bottomSections.map((item) => {
             const isActive =

@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "_restore", "github-push", "kunfa-report-update"]
+  "exclude": ["node_modules", "_restore", "github-push", "kunfa-report-update", "supabase"]
 }
