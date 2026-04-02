@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       // Generate claim token
       const claimToken = crypto.randomBytes(12).toString('hex')
 
-      // Create company_pages record
+      // Create company_pages record (no user_id — unclaimed, no owner yet)
       const { data: company, error: insertError } = await supabase
         .from('company_pages')
         .insert({
@@ -106,13 +106,12 @@ export async function POST(request: NextRequest) {
           claim_status: 'unclaimed',
           claim_token: claimToken,
           is_public: true,
-          user_id: null,
         })
         .select('id')
         .single()
 
       if (insertError) {
-        console.error('[PROMOTE] Insert failed for:', companyName, insertError.message)
+        console.error('[PROMOTE] Insert failed for:', companyName, '| code:', insertError.code, '| message:', insertError.message, '| details:', insertError.details)
         continue
       }
 

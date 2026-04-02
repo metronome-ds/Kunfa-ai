@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
 
         if (result.is_valid === false) {
           // Rejected
-          await supabase
+          const { error: updateErr } = await supabase
             .from('company_imports')
             .update({
               status: 'rejected',
@@ -125,10 +125,14 @@ export async function POST(request: NextRequest) {
               cleaned_at: new Date().toISOString(),
             })
             .eq('id', record.id)
-          rejected++
+          if (updateErr) {
+            console.error('[CLEAN] Update (reject) failed for:', record.raw_name, updateErr.message)
+          } else {
+            rejected++
+          }
         } else {
           // Cleaned
-          await supabase
+          const { error: updateErr } = await supabase
             .from('company_imports')
             .update({
               clean_name: (result.clean_name as string) || record.raw_name,
@@ -148,7 +152,11 @@ export async function POST(request: NextRequest) {
               cleaned_at: new Date().toISOString(),
             })
             .eq('id', record.id)
-          cleaned++
+          if (updateErr) {
+            console.error('[CLEAN] Update (clean) failed for:', record.raw_name, updateErr.message)
+          } else {
+            cleaned++
+          }
         }
       } catch (err) {
         console.error('[CLEAN] Error processing:', record.raw_name, err)
