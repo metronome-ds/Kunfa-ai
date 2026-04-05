@@ -6,8 +6,15 @@ import Modal from '@/components/ui/Modal'
 import UploadZone from './UploadZone'
 import ProcessingAnimation from './ProcessingAnimation'
 import TeaserScore from './TeaserScore'
+import UploadErrorBanner from '@/components/common/UploadErrorBanner'
 import { Check, X, Loader2 } from 'lucide-react'
 import { STAGES, INDUSTRIES } from '@/lib/constants'
+
+type SubmitErrorKind = 'network' | 'scoring_too_large' | 'generic'
+interface SubmitError {
+  kind: SubmitErrorKind
+  message: string
+}
 
 interface ScoreModalProps {
   isOpen: boolean
@@ -125,6 +132,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   const [submissionId, setSubmissionId] = useState('')
   const [resultSlug, setResultSlug] = useState('')
   const [error, setError] = useState('')
+  const [submitError, setSubmitError] = useState<SubmitError | null>(null)
   const [uploadProgress, setUploadProgress] = useState('')
 
   const slugCheckTimerRef = useRef<NodeJS.Timeout | null>(null)
@@ -340,6 +348,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   const handleSubmit = useCallback(async () => {
     if (!isUploadValid || isSubmitting || !pitchDeck) return
     setError('')
+    setSubmitError(null)
     setIsSubmitting(true)
     setStep('processing')
 
@@ -365,10 +374,13 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
           )
           financialsFilename = financials.name
         }
-      } catch (uploadErr) {
-        throw new Error(
-          uploadErr instanceof Error ? uploadErr.message : 'Upload failed. Please try again.',
-        )
+      } catch {
+        setSubmitError({
+          kind: 'network',
+          message: 'Upload failed. Please check your connection and try again.',
+        })
+        setStep('upload')
+        return
       }
 
       setUploadProgress('')
@@ -379,41 +391,80 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         ...coFounders.filter(cf => cf.name && cf.title && cf.email),
       ]
 
-      const response = await fetch('/api/score', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          linkedinUrl: linkedinUrl || undefined,
-          companyLinkedinUrl: companyLinkedinUrl || undefined,
-          pitchDeckUrl,
-          pitchDeckFilename: pitchDeck.name,
-          financialsUrl,
-          financialsFilename,
-          slug: chosenSlug,
-          foundingTeam,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || `Server error (${response.status})`)
+      let response: Response
+      try {
+        response = await fetch('/api/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            linkedinUrl: linkedinUrl || undefined,
+            companyLinkedinUrl: companyLinkedinUrl || undefined,
+            pitchDeckUrl,
+            pitchDeckFilename: pitchDeck.name,
+            financialsUrl,
+            financialsFilename,
+            slug: chosenSlug,
+            foundingTeam,
+          }),
+        })
+      } catch {
+        // Network failure — fetch threw before we got any response
+        setSubmitError({
+          kind: 'network',
+          message: 'Upload failed. Please check your connection and try again.',
+        })
+        setStep('upload')
+        return
       }
 
-      setScoreResult(data.teaser)
-      setSubmissionId(data.submissionId)
+      let data: { error?: string; teaser?: ScoreResult; submissionId?: string; slug?: string } = {}
+      try {
+        data = await response.json()
+      } catch {
+        // Non-JSON response (504, HTML error page, etc.) — treat as network error
+        setSubmitError({
+          kind: 'network',
+          message: 'Upload failed. Please check your connection and try again.',
+        })
+        setStep('upload')
+        return
+      }
+
+      if (!response.ok) {
+        // 413 = ScoringTooLargeError from /api/score. Uploads succeeded, AI analysis couldn't run.
+        if (response.status === 413) {
+          setSubmitError({
+            kind: 'scoring_too_large',
+            message:
+              'Your document was uploaded successfully but is too large for AI analysis. Please upload a deck under 50 pages for scoring. You can still share this document in your deal room.',
+          })
+        } else {
+          setSubmitError({
+            kind: 'generic',
+            message: data.error || `Something went wrong (${response.status}). Please try again.`,
+          })
+        }
+        setStep('upload')
+        return
+      }
+
+      setScoreResult(data.teaser ?? null)
+      setSubmissionId(data.submissionId ?? '')
       if (data.slug) {
         setResultSlug(data.slug)
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setSubmitError({
+        kind: 'generic',
+        message: err instanceof Error ? err.message : 'Something went wrong. Please try again.',
+      })
       setStep('upload')
     } finally {
       setIsSubmitting(false)
       setUploadProgress('')
     }
-  }, [email, chosenSlug, pitchDeck, financials, linkedinUrl, isUploadValid, isSubmitting])
+  }, [email, chosenSlug, pitchDeck, financials, linkedinUrl, companyLinkedinUrl, founderName, founderTitle, coFounders, isUploadValid, isSubmitting])
 
   const handleProcessingComplete = useCallback(() => {
     if (scoreResult) {
@@ -471,6 +522,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     setSubmissionId('')
     setResultSlug('')
     setError('')
+    setSubmitError(null)
     setUploadProgress('')
     onClose()
   }
@@ -893,6 +945,27 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 This data is subject to due diligence by any interested investor.
               </span>
             </label>
+
+            {submitError && (
+              <UploadErrorBanner
+                variant={submitError.kind === 'scoring_too_large' ? 'warning' : 'error'}
+                title={
+                  submitError.kind === 'scoring_too_large'
+                    ? 'Upload succeeded — AI scoring unavailable'
+                    : undefined
+                }
+                message={submitError.message}
+                onDismiss={() => setSubmitError(null)}
+                onRetry={
+                  submitError.kind === 'network'
+                    ? () => {
+                        setSubmitError(null)
+                        handleSubmit()
+                      }
+                    : undefined
+                }
+              />
+            )}
 
             <button onClick={handleSubmit} disabled={!isUploadValid || isSubmitting}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${

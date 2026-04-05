@@ -1,8 +1,9 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { FileText, Upload, X, AlertCircle } from 'lucide-react';
+import { FileText, Upload, X } from 'lucide-react';
+import UploadErrorBanner from '@/components/common/UploadErrorBanner';
 
 interface UploadedFile {
   file: File;
@@ -27,7 +28,7 @@ const ACCEPTED_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ];
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB — aligned with AI scoring pipeline ceiling
 const MAX_FILES = 5;
 
 export function DocumentUpload({
@@ -43,11 +44,11 @@ export function DocumentUpload({
 
   const validateFile = (file: File): string | null => {
     if (!acceptedTypes.includes(file.type)) {
-      return `Invalid file type. Accepted: PDF, PowerPoint, Word`;
+      return 'Please upload a PDF, PowerPoint, or Word file. Other file types are not supported.';
     }
 
     if (file.size > maxSize) {
-      return `File too large. Maximum size: ${(maxSize / 1024 / 1024).toFixed(0)}MB`;
+      return `This file is too large. Maximum size is ${(maxSize / 1024 / 1024).toFixed(0)}MB. Try compressing your PDF or reducing the number of pages.`;
     }
 
     return null;
@@ -56,24 +57,21 @@ export function DocumentUpload({
   const handleFiles = async (files: FileList) => {
       setGlobalError(null);
       const newFiles: UploadedFile[] = [];
+      let rejectedMessage: string | null = null;
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
 
         // Check max files limit
         if (uploadedFiles.length + newFiles.length >= maxFiles) {
-          setGlobalError(`Maximum ${maxFiles} files allowed`);
+          rejectedMessage = `Maximum ${maxFiles} files allowed.`;
           break;
         }
 
-        // Validate file
+        // Validate file — surface the first rejection as a persistent banner
         const error = validateFile(file);
         if (error) {
-          newFiles.push({
-            file,
-            id: `${file.name}-${Date.now()}`,
-            error,
-          });
+          if (!rejectedMessage) rejectedMessage = error;
           continue;
         }
 
@@ -83,6 +81,8 @@ export function DocumentUpload({
           progress: 0,
         });
       }
+
+      if (rejectedMessage) setGlobalError(rejectedMessage);
 
       const allFiles = [...uploadedFiles, ...newFiles];
       setUploadedFiles(allFiles);
@@ -120,7 +120,7 @@ export function DocumentUpload({
         setUploadedFiles((prev) =>
           prev.map((f) =>
             f.id === uploadedFile.id
-              ? { ...f, error: 'Upload failed. Please try again.' }
+              ? { ...f, error: 'Upload failed. Please check your connection and try again.' }
               : f
           )
         );
@@ -144,7 +144,7 @@ export function DocumentUpload({
         setUploadedFiles((prev) =>
           prev.map((f) =>
             f.id === uploadedFile.id
-              ? { ...f, error: 'Upload failed. Please try again.' }
+              ? { ...f, error: 'Upload failed. Please check your connection and try again.' }
               : f
           )
         );
@@ -241,17 +241,17 @@ export function DocumentUpload({
             </p>
           </div>
           <p className="text-xs text-gray-400">
-            Max file size: {(maxSize / 1024 / 1024).toFixed(0)}MB. Supported formats: PDF, PPT, PPTX, XLS, XLSX. Up to {maxFiles} files.
+            Max file size: {(maxSize / 1024 / 1024).toFixed(0)}MB. Supported formats: PDF, PowerPoint, Word. Up to {maxFiles} files.
           </p>
         </div>
       </div>
 
       {/* Error Message */}
       {globalError && (
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-          <p className="text-sm text-red-700">{globalError}</p>
-        </div>
+        <UploadErrorBanner
+          message={globalError}
+          onDismiss={() => setGlobalError(null)}
+        />
       )}
 
       {/* Uploaded Files */}

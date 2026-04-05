@@ -5,6 +5,35 @@ import { supabase } from '@/lib/supabase'
 import { FileText, Upload, Trash2, Filter, X, FolderOpen, MoreVertical, Pencil, RefreshCw, Eye, EyeOff } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import ShareDealRoom from './ShareDealRoom'
+import UploadErrorBanner from '@/components/common/UploadErrorBanner'
+
+const DEAL_ROOM_MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB
+const DEAL_ROOM_ACCEPTED_EXTENSIONS = ['.pdf', '.ppt', '.pptx', '.key', '.xlsx', '.xls', '.csv', '.doc', '.docx'] as const
+const DEAL_ROOM_ACCEPT_ATTR = DEAL_ROOM_ACCEPTED_EXTENSIONS.join(',')
+
+type DealRoomUploadErrorKind = 'size' | 'type' | 'network' | 'generic'
+interface DealRoomUploadError {
+  kind: DealRoomUploadErrorKind
+  message: string
+}
+
+function validateDealRoomFile(file: File): DealRoomUploadError | null {
+  const name = file.name.toLowerCase()
+  const extOk = DEAL_ROOM_ACCEPTED_EXTENSIONS.some((ext) => name.endsWith(ext))
+  if (!extOk) {
+    return {
+      kind: 'type',
+      message: 'Please upload a PDF, PowerPoint, Word, Excel, or CSV file. Other file types are not supported.',
+    }
+  }
+  if (file.size > DEAL_ROOM_MAX_FILE_SIZE) {
+    return {
+      kind: 'size',
+      message: 'This file is too large. Maximum size is 25MB. Try compressing your PDF or reducing the number of pages.',
+    }
+  }
+  return null
+}
 
 interface DealRoomDocument {
   id: string
@@ -468,7 +497,7 @@ function UploadModal({
   const [description, setDescription] = useState('')
   const [isPublic, setIsPublic] = useState(false)
   const [uploading, setUploading] = useState(false)
-  const [error, setError] = useState('')
+  const [uploadError, setUploadError] = useState<DealRoomUploadError | null>(null)
   const [dragOver, setDragOver] = useState(false)
 
   const reset = () => {
@@ -476,7 +505,7 @@ function UploadModal({
     setCategory('other')
     setDescription('')
     setIsPublic(false)
-    setError('')
+    setUploadError(null)
     setUploading(false)
     setDragOver(false)
   }
@@ -486,59 +515,94 @@ function UploadModal({
     onClose()
   }
 
+  const handleFileSelected = (f: File) => {
+    const validationErr = validateDealRoomFile(f)
+    if (validationErr) {
+      setUploadError(validationErr)
+      return
+    }
+    setUploadError(null)
+    setFile(f)
+  }
+
   const handleUpload = async () => {
     if (!file) return
 
-    if (file.size > 50 * 1024 * 1024) {
-      setError('File is too large. Maximum size is 50MB.')
+    // Re-validate before upload as a safety net
+    const validationErr = validateDealRoomFile(file)
+    if (validationErr) {
+      setUploadError(validationErr)
       return
     }
 
     setUploading(true)
-    setError('')
+    setUploadError(null)
 
     try {
       const timestamp = Date.now()
       const filePath = `dealroom/${companyId}/${timestamp}/${file.name}`
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadErr } = await supabase.storage
         .from('documents')
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: false,
         })
 
-      if (uploadError) {
-        throw new Error('Upload failed. Please try again.')
+      if (uploadErr) {
+        setUploadError({
+          kind: 'network',
+          message: 'Upload failed. Please check your connection and try again.',
+        })
+        return
       }
 
       const { data: { publicUrl } } = supabase.storage
         .from('documents')
         .getPublicUrl(uploadData.path)
 
-      const res = await fetch(`/api/dealroom/${companyId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileUrl: publicUrl,
-          fileName: file.name,
-          fileSize: file.size,
-          fileType: file.type || 'application/octet-stream',
-          category,
-          description: description || null,
-          isPublic: isPublic,
-        }),
-      })
+      let res: Response
+      try {
+        res = await fetch(`/api/dealroom/${companyId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileUrl: publicUrl,
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type || 'application/octet-stream',
+            category,
+            description: description || null,
+            isPublic: isPublic,
+          }),
+        })
+      } catch {
+        setUploadError({
+          kind: 'network',
+          message: 'Upload failed. Please check your connection and try again.',
+        })
+        return
+      }
 
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Upload failed. Please try again.')
+        let errMsg = 'Something went wrong. Please try again.'
+        try {
+          const data = await res.json()
+          if (data?.error) errMsg = data.error
+        } catch {
+          // keep default
+        }
+        setUploadError({ kind: 'generic', message: errMsg })
+        return
       }
 
       reset()
       onUploaded()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed. Please try again.')
+    } catch {
+      setUploadError({
+        kind: 'network',
+        message: 'Upload failed. Please check your connection and try again.',
+      })
     } finally {
       setUploading(false)
     }
@@ -549,12 +613,6 @@ function UploadModal({
       <div className="p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Document</h3>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-            <p className="text-sm text-red-600">{error}</p>
-          </div>
-        )}
-
         {/* Drop Zone */}
         <div
           onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
@@ -563,14 +621,7 @@ function UploadModal({
             e.preventDefault()
             setDragOver(false)
             const dropped = e.dataTransfer.files[0]
-            if (dropped) {
-              if (dropped.size > 50 * 1024 * 1024) {
-                setError('File is too large. Maximum size is 50MB.')
-              } else {
-                setError('')
-                setFile(dropped)
-              }
-            }
+            if (dropped) handleFileSelected(dropped)
           }}
           className={`border-2 border-dashed rounded-xl p-8 text-center transition cursor-pointer ${
             dragOver
@@ -582,17 +633,10 @@ function UploadModal({
           onClick={() => {
             const input = document.createElement('input')
             input.type = 'file'
-            input.accept = '.pdf,.ppt,.pptx,.key,.xlsx,.xls,.csv,.doc,.docx'
+            input.accept = DEAL_ROOM_ACCEPT_ATTR
             input.onchange = (ev) => {
               const f = (ev.target as HTMLInputElement).files?.[0]
-              if (f) {
-                if (f.size > 50 * 1024 * 1024) {
-                  setError('File is too large. Maximum size is 50MB.')
-                } else {
-                  setError('')
-                  setFile(f)
-                }
-              }
+              if (f) handleFileSelected(f)
             }
             input.click()
           }}
@@ -615,10 +659,27 @@ function UploadModal({
             <>
               <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
               <p className="text-sm text-gray-600">Drop a file here or click to browse</p>
-              <p className="text-xs text-gray-400 mt-1">Max file size: 50MB. Supported formats: PDF, PPT, PPTX, XLS, XLSX</p>
+              <p className="text-xs text-gray-400 mt-1">Max file size: 25MB. Supported formats: PDF, PPT, PPTX, DOC, DOCX, XLS, XLSX, CSV</p>
             </>
           )}
         </div>
+
+        {uploadError && (
+          <div className="mt-3">
+            <UploadErrorBanner
+              message={uploadError.message}
+              onDismiss={() => setUploadError(null)}
+              onRetry={
+                uploadError.kind === 'network' && file
+                  ? () => {
+                      setUploadError(null)
+                      handleUpload()
+                    }
+                  : undefined
+              }
+            />
+          </div>
+        )}
 
         {/* Category */}
         <div className="mt-4">

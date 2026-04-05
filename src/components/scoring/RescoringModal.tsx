@@ -4,7 +4,36 @@ import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import Modal from '@/components/ui/Modal'
 import ProcessingAnimation from './ProcessingAnimation'
+import UploadErrorBanner from '@/components/common/UploadErrorBanner'
 import { FileText, Upload, CheckSquare, Square, Plus } from 'lucide-react'
+
+const RESCORE_MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB
+const RESCORE_ACCEPTED_EXTENSIONS = ['.pdf', '.ppt', '.pptx', '.key', '.xlsx', '.xls', '.csv', '.doc', '.docx'] as const
+const RESCORE_ACCEPT_ATTR = RESCORE_ACCEPTED_EXTENSIONS.join(',')
+
+type RescoreErrorKind = 'size' | 'type' | 'network' | 'scoring_too_large' | 'generic'
+interface RescoreError {
+  kind: RescoreErrorKind
+  message: string
+}
+
+function validateRescoreFile(file: File): RescoreError | null {
+  const name = file.name.toLowerCase()
+  const extOk = RESCORE_ACCEPTED_EXTENSIONS.some((ext) => name.endsWith(ext))
+  if (!extOk) {
+    return {
+      kind: 'type',
+      message: 'Please upload a PDF, PowerPoint, Word, Excel, or CSV file. Other file types are not supported.',
+    }
+  }
+  if (file.size > RESCORE_MAX_FILE_SIZE) {
+    return {
+      kind: 'size',
+      message: 'This file is too large. Maximum size is 25MB. Try compressing your PDF or reducing the number of pages.',
+    }
+  }
+  return null
+}
 
 interface RescoringModalProps {
   isOpen: boolean
@@ -106,7 +135,7 @@ export default function RescoringModal({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null)
   const [submissionId, setSubmissionId] = useState('')
-  const [error, setError] = useState('')
+  const [rescoreError, setRescoreError] = useState<RescoreError | null>(null)
   const [uploadProgress, setUploadProgress] = useState('')
 
   // Inline upload state
@@ -145,38 +174,77 @@ export default function RescoringModal({
 
   const hasPitchDeck = documents.some(d => selectedIds.has(d.id) && d.category === 'pitch_deck')
 
+  const handleFilePicked = (f: File) => {
+    const validationErr = validateRescoreFile(f)
+    if (validationErr) {
+      setRescoreError(validationErr)
+      return
+    }
+    setRescoreError(null)
+    setUploadFile(f)
+  }
+
   const handleUploadDoc = async () => {
     if (!uploadFile) return
+
+    // Re-validate before upload
+    const validationErr = validateRescoreFile(uploadFile)
+    if (validationErr) {
+      setRescoreError(validationErr)
+      return
+    }
+
     setUploading(true)
-    setError('')
+    setRescoreError(null)
 
     try {
       const timestamp = Date.now()
       const filePath = `dealroom/${companyPageId}/${timestamp}/${uploadFile.name}`
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadErr } = await supabase.storage
         .from('documents')
         .upload(filePath, uploadFile, { cacheControl: '3600', upsert: false })
 
-      if (uploadError) throw new Error('Upload failed.')
+      if (uploadErr) {
+        setRescoreError({
+          kind: 'network',
+          message: 'Upload failed. Please check your connection and try again.',
+        })
+        return
+      }
 
       const { data: { publicUrl } } = supabase.storage
         .from('documents')
         .getPublicUrl(uploadData.path)
 
-      const res = await fetch(`/api/dealroom/${companyPageId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileUrl: publicUrl,
-          fileName: uploadFile.name,
-          fileSize: uploadFile.size,
-          fileType: uploadFile.type || 'application/octet-stream',
-          category: uploadCategory,
-        }),
-      })
+      let res: Response
+      try {
+        res = await fetch(`/api/dealroom/${companyPageId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileUrl: publicUrl,
+            fileName: uploadFile.name,
+            fileSize: uploadFile.size,
+            fileType: uploadFile.type || 'application/octet-stream',
+            category: uploadCategory,
+          }),
+        })
+      } catch {
+        setRescoreError({
+          kind: 'network',
+          message: 'Upload failed. Please check your connection and try again.',
+        })
+        return
+      }
 
-      if (!res.ok) throw new Error('Failed to save document.')
+      if (!res.ok) {
+        setRescoreError({
+          kind: 'generic',
+          message: 'Failed to save document. Please try again.',
+        })
+        return
+      }
 
       const newDoc = await res.json()
       const doc: DealRoomDoc = newDoc.document || {
@@ -195,8 +263,11 @@ export default function RescoringModal({
       setUploadFile(null)
       setUploadCategory('other')
       setShowUpload(false)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed.')
+    } catch {
+      setRescoreError({
+        kind: 'network',
+        message: 'Upload failed. Please check your connection and try again.',
+      })
     } finally {
       setUploading(false)
     }
@@ -204,30 +275,69 @@ export default function RescoringModal({
 
   const handleSubmit = useCallback(async () => {
     if (selectedIds.size === 0 || isSubmitting) return
-    setError('')
+    setRescoreError(null)
     setIsSubmitting(true)
     setStep('processing')
 
     try {
-      const response = await fetch('/api/score', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          pitchDeckUrl: 'deal-room-rescore', // placeholder — documents fetched server-side
-          pitchDeckFilename: 'deal-room-rescore',
-          companyPageId,
-          documentIds: Array.from(selectedIds),
-        }),
-      })
+      let response: Response
+      try {
+        response = await fetch('/api/score', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            pitchDeckUrl: 'deal-room-rescore', // placeholder — documents fetched server-side
+            pitchDeckFilename: 'deal-room-rescore',
+            companyPageId,
+            documentIds: Array.from(selectedIds),
+          }),
+        })
+      } catch {
+        setRescoreError({
+          kind: 'network',
+          message: 'Upload failed. Please check your connection and try again.',
+        })
+        setStep('select')
+        return
+      }
 
-      const data = await response.json()
-      if (!response.ok) throw new Error(data.error || `Server error (${response.status})`)
+      let data: { error?: string; teaser?: ScoreResult; submissionId?: string } = {}
+      try {
+        data = await response.json()
+      } catch {
+        setRescoreError({
+          kind: 'network',
+          message: 'Upload failed. Please check your connection and try again.',
+        })
+        setStep('select')
+        return
+      }
 
-      setScoreResult(data.teaser)
-      setSubmissionId(data.submissionId)
+      if (!response.ok) {
+        if (response.status === 413) {
+          setRescoreError({
+            kind: 'scoring_too_large',
+            message:
+              'Your document was uploaded successfully but is too large for AI analysis. Please upload a deck under 50 pages for scoring. You can still share this document in your deal room.',
+          })
+        } else {
+          setRescoreError({
+            kind: 'generic',
+            message: data.error || `Something went wrong (${response.status}). Please try again.`,
+          })
+        }
+        setStep('select')
+        return
+      }
+
+      setScoreResult(data.teaser ?? null)
+      setSubmissionId(data.submissionId ?? '')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setRescoreError({
+        kind: 'generic',
+        message: err instanceof Error ? err.message : 'Something went wrong. Please try again.',
+      })
       setStep('select')
     } finally {
       setIsSubmitting(false)
@@ -248,7 +358,7 @@ export default function RescoringModal({
     setSelectedIds(new Set())
     setScoreResult(null)
     setSubmissionId('')
-    setError('')
+    setRescoreError(null)
     setUploadProgress('')
     setShowUpload(false)
     setUploadFile(null)
@@ -267,9 +377,26 @@ export default function RescoringModal({
           <p className="text-sm text-gray-500 mt-1">{companyName}</p>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-            <p className="text-sm text-red-600">{error}</p>
+        {rescoreError && (
+          <div className="mb-4">
+            <UploadErrorBanner
+              variant={rescoreError.kind === 'scoring_too_large' ? 'warning' : 'error'}
+              title={
+                rescoreError.kind === 'scoring_too_large'
+                  ? 'Upload succeeded — AI scoring unavailable'
+                  : undefined
+              }
+              message={rescoreError.message}
+              onDismiss={() => setRescoreError(null)}
+              onRetry={
+                rescoreError.kind === 'network'
+                  ? () => {
+                      setRescoreError(null)
+                      handleSubmit()
+                    }
+                  : undefined
+              }
+            />
           </div>
         )}
 
@@ -355,10 +482,10 @@ export default function RescoringModal({
                   onClick={() => {
                     const input = document.createElement('input')
                     input.type = 'file'
-                    input.accept = '.pdf,.ppt,.pptx,.key,.xlsx,.xls,.csv,.doc,.docx'
+                    input.accept = RESCORE_ACCEPT_ATTR
                     input.onchange = (ev) => {
                       const f = (ev.target as HTMLInputElement).files?.[0]
-                      if (f) setUploadFile(f)
+                      if (f) handleFilePicked(f)
                     }
                     input.click()
                   }}
@@ -371,7 +498,7 @@ export default function RescoringModal({
                   ) : (
                     <>
                       <Upload className="w-5 h-5 text-gray-400 mx-auto mb-1" />
-                      <p className="text-xs text-gray-500">Click to select file</p>
+                      <p className="text-xs text-gray-500">Click to select file · Max 25MB</p>
                     </>
                   )}
                 </div>
