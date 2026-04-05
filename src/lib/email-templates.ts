@@ -305,6 +305,31 @@ export function companyClaimedNotificationEmail(params: {
   }
 }
 
+// --- Deal Room Access Nurture ---
+
+export function dealroomAccessNurtureEmail(params: {
+  companyName: string
+}): { subject: string; html: string } {
+  const { companyName } = params
+
+  return {
+    subject: `You viewed ${companyName} on Kunfa`,
+    html: layout(`
+      <h1 style="margin:0 0 16px;font-size:20px;color:#111827;">Thanks for checking out ${companyName}</h1>
+      <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.6;">
+        You just unlocked the deal room for <strong>${companyName}</strong> on Kunfa.
+      </p>
+      <p style="margin:0 0 8px;font-size:14px;color:#6b7280;line-height:1.6;">
+        Create your free investor profile to save deals, manage your pipeline, and get AI-scored deal flow from across the GCC and beyond.
+      </p>
+      ${button('Create Your Profile', `${BASE_URL}/signup`)}
+      <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;line-height:1.5;">
+        Kunfa is the AI-native platform for venture intelligence &mdash; join hundreds of investors and founders already on the platform.
+      </p>
+    `),
+  }
+}
+
 // --- Claim Rejected ---
 
 export function claimRejectedEmail(params: {

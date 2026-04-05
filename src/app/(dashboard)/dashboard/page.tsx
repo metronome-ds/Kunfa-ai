@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import NotesTimeline from '@/components/pipeline/NotesTimeline';
 import ScoreModal from '@/components/scoring/ScoreModal';
+import DealRoomActivityCard from '@/components/dashboard/DealRoomActivityCard';
 
 interface UserProfile {
   id: string;
@@ -512,6 +513,9 @@ function DashboardContent() {
                 </div>
               </div>
             </div>
+
+            {/* Deal Room Activity */}
+            <DealRoomActivityCard companyId={company.id} />
 
             {/* Report Status */}
             {company.submission_id && (

@@ -29,6 +29,8 @@ interface DealRoomProps {
   currentUserId: string | null
   publicOnly?: boolean
   onRequestRescore?: () => void
+  sessionId?: string | null
+  trackingEnabled?: boolean
 }
 
 const CATEGORIES = [
@@ -90,7 +92,7 @@ function timeAgo(dateStr: string) {
   return new Date(dateStr).toLocaleDateString()
 }
 
-export default function DealRoom({ companyId, companyName, canUpload, canShare, currentUserId, publicOnly = false, onRequestRescore }: DealRoomProps) {
+export default function DealRoom({ companyId, companyName, canUpload, canShare, currentUserId, publicOnly = false, onRequestRescore, sessionId = null, trackingEnabled = false }: DealRoomProps) {
   const [documents, setDocuments] = useState<DealRoomDocument[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
@@ -178,6 +180,21 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
     setUploadOpen(false)
     fetchDocuments()
     setToast('Document uploaded! Re-score to include it in your Kunfa Score.')
+  }
+
+  const trackDocumentView = (docId: string) => {
+    if (!trackingEnabled) return
+    // Fire-and-forget
+    fetch('/api/dealroom/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId,
+        companyId,
+        documentId: docId,
+        accessType: 'document_view',
+      }),
+    }).catch(() => { /* ignore */ })
   }
 
   const filtered = filter === 'all' ? documents : documents.filter(d => d.category === filter)
@@ -363,6 +380,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
                     href={doc.file_url}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => trackDocumentView(doc.id)}
                     className="block"
                   >
                     <p className="text-sm font-medium text-gray-900 truncate hover:text-[#0168FE] transition">
