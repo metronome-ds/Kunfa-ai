@@ -91,6 +91,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'companyId is required' }, { status: 400 });
     }
 
+    // KUN-21: Score gate — only allow 75+ unless the requester is an admin
+    const { data: requesterProfile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    const isAdmin = requesterProfile?.is_admin === true;
+
+    if (!isAdmin) {
+      const { data: company } = await supabase
+        .from('company_pages')
+        .select('overall_score')
+        .eq('id', companyId)
+        .maybeSingle();
+
+      if (!company) {
+        return NextResponse.json({ error: 'Company not found' }, { status: 404 });
+      }
+      if ((company.overall_score ?? 0) < 75) {
+        return NextResponse.json(
+          { error: 'This company has not yet met the minimum Kunfa Score (75) for investor matching.' },
+          { status: 403 }
+        );
+      }
+    }
+
     const { data, error } = await supabase
       .from('watchlist_items')
       .insert({ investor_id: profileId, company_id: companyId })

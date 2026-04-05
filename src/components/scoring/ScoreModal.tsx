@@ -25,7 +25,9 @@ interface ScoreResult {
     team: { score: number; letter_grade: string; headline: string }
     market: { score: number; letter_grade: string; headline: string }
     product: { score: number; letter_grade: string; headline: string }
+    traction?: { score: number; letter_grade: string; headline: string }
     financial: { score: number; letter_grade: string; headline: string }
+    fundraise_readiness?: { score: number; letter_grade: string; headline: string }
   }
 }
 

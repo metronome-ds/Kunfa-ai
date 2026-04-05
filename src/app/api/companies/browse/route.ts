@@ -18,6 +18,22 @@ export async function GET(request: NextRequest) {
     const industries = searchParams.getAll('industry');
     const stages = searchParams.getAll('stage');
 
+    // Admin bypass: admins can see all companies regardless of score
+    let isAdmin = false;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        isAdmin = profile?.is_admin === true;
+      }
+    } catch {
+      // Non-auth or lookup failure — treat as non-admin
+    }
+
     let query = supabase
       .from('company_pages')
       .select(
@@ -25,6 +41,11 @@ export async function GET(request: NextRequest) {
         { count: 'exact' }
       )
       .eq('is_public', true);
+
+    // KUN-21: Only show companies with Kunfa Score >= 75 to non-admins
+    if (!isAdmin) {
+      query = query.gte('overall_score', 75);
+    }
 
     // Search filter — match on company_name or one_liner
     if (search) {

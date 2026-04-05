@@ -319,6 +319,17 @@ export async function POST(request: NextRequest) {
           }
         }
 
+        // Build 6-dimension breakdown for KUN-21 scoring transparency
+        const fr = fullResult as any
+        const dimensionScores = {
+          team: { score: fr?.team_score ?? 0, grade: fr?.team_grade ?? null, summary: fr?.team_summary ?? null },
+          market: { score: fr?.market_score ?? 0, grade: fr?.market_grade ?? null, summary: fr?.market_summary ?? null },
+          product: { score: fr?.product_score ?? 0, grade: fr?.product_grade ?? null, summary: fr?.product_summary ?? null },
+          traction: { score: fr?.traction_score ?? 0, grade: fr?.traction_grade ?? null, summary: fr?.traction_summary ?? null },
+          financial: { score: fr?.financial_score ?? 0, grade: fr?.financial_grade ?? null, summary: fr?.financial_summary ?? null },
+          fundraise_readiness: { score: fr?.fundraise_readiness_score ?? 0, grade: fr?.fundraise_readiness_grade ?? null, summary: fr?.fundraise_readiness_summary ?? null },
+        }
+
         // Create or update company page with AI-extracted profile + user profile data
         if (userId) {
           const cp = (fullResult as any)?.company_profile || {}
@@ -371,6 +382,7 @@ export async function POST(request: NextRequest) {
               keyRisks: cp.key_risks || undefined,
               pdfUrl: rescorePdfUrl,
               financialsUrl: rescoreFinUrl,
+              dimensionScores,
             })
 
             // Update deals record ai_score
@@ -496,6 +508,7 @@ export async function POST(request: NextRequest) {
               pdfUrl: pitchDeckUrl || undefined,
               financialsUrl: financialsUrl || undefined,
               source: 'startup_submission',
+              dimensionScores,
             })
             slug = result.slug
 

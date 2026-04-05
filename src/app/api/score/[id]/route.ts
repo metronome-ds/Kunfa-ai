@@ -16,7 +16,7 @@ export async function GET(
 
     const { data: submission, error } = await supabase
       .from('submissions')
-      .select('id, overall_score, team_score, team_grade, market_score, market_grade, product_score, product_grade, financial_score, financial_grade, full_analysis')
+      .select('id, overall_score, team_score, team_grade, market_score, market_grade, product_score, product_grade, traction_score, traction_grade, financial_score, financial_grade, fundraise_readiness_score, fundraise_readiness_grade, dimension_scores, full_analysis')
       .eq('id', id)
       .single()
 
@@ -77,7 +77,9 @@ export async function GET(
           team: { score: submission.team_score || 0, letter_grade: submission.team_grade || 'N/A', headline: '' },
           market: { score: submission.market_score || 0, letter_grade: submission.market_grade || 'N/A', headline: '' },
           product: { score: submission.product_score || 0, letter_grade: submission.product_grade || 'N/A', headline: '' },
+          traction: { score: submission.traction_score || 0, letter_grade: submission.traction_grade || 'N/A', headline: '' },
           financial: { score: submission.financial_score || 0, letter_grade: submission.financial_grade || 'N/A', headline: '' },
+          fundraise_readiness: { score: submission.fundraise_readiness_score || 0, letter_grade: submission.fundraise_readiness_grade || 'N/A', headline: '' },
         },
       }
     }

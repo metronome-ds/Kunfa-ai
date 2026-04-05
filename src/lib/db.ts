@@ -138,12 +138,56 @@ export async function updateSubmissionScore(
     overall_score: number
     team_score: number
     team_grade: string
+    team_summary?: string
     market_score: number
     market_grade: string
+    market_summary?: string
     product_score: number
     product_grade: string
+    product_summary?: string
+    traction_score?: number
+    traction_grade?: string
+    traction_summary?: string
     financial_score: number
     financial_grade: string
+    financial_summary?: string
+    fundraise_readiness_score?: number
+    fundraise_readiness_grade?: string
+    fundraise_readiness_summary?: string
+  }
+
+  // Build the 6-dimension breakdown jsonb — KUN-21 scoring transparency
+  const dimensionScores = {
+    team: {
+      score: a.team_score ?? 0,
+      grade: a.team_grade ?? null,
+      summary: a.team_summary ?? null,
+    },
+    market: {
+      score: a.market_score ?? 0,
+      grade: a.market_grade ?? null,
+      summary: a.market_summary ?? null,
+    },
+    product: {
+      score: a.product_score ?? 0,
+      grade: a.product_grade ?? null,
+      summary: a.product_summary ?? null,
+    },
+    traction: {
+      score: a.traction_score ?? 0,
+      grade: a.traction_grade ?? null,
+      summary: a.traction_summary ?? null,
+    },
+    financial: {
+      score: a.financial_score ?? 0,
+      grade: a.financial_grade ?? null,
+      summary: a.financial_summary ?? null,
+    },
+    fundraise_readiness: {
+      score: a.fundraise_readiness_score ?? 0,
+      grade: a.fundraise_readiness_grade ?? null,
+      summary: a.fundraise_readiness_summary ?? null,
+    },
   }
 
   const supabase = getSupabase()
@@ -157,8 +201,15 @@ export async function updateSubmissionScore(
       market_grade: a.market_grade,
       product_score: a.product_score,
       product_grade: a.product_grade,
+      traction_score: a.traction_score ?? null,
+      traction_grade: a.traction_grade ?? null,
+      traction_summary: a.traction_summary ?? null,
       financial_score: a.financial_score,
       financial_grade: a.financial_grade,
+      fundraise_readiness_score: a.fundraise_readiness_score ?? null,
+      fundraise_readiness_grade: a.fundraise_readiness_grade ?? null,
+      fundraise_readiness_summary: a.fundraise_readiness_summary ?? null,
+      dimension_scores: dimensionScores,
       full_analysis: analysis,
     })
     .eq('id', id)
@@ -242,6 +293,7 @@ export async function updateCompanyPageScore(companyPageId: string, data: {
   keyRisks?: string
   pdfUrl?: string
   financialsUrl?: string
+  dimensionScores?: Record<string, unknown>
 }) {
   const supabase = getSupabase()
 
@@ -268,6 +320,7 @@ export async function updateCompanyPageScore(companyPageId: string, data: {
       key_risks: data.keyRisks || undefined,
       pdf_url: data.pdfUrl || undefined,
       financials_url: data.financialsUrl || undefined,
+      dimension_scores: data.dimensionScores || undefined,
       score_count: newScoreCount,
       last_scored_at: new Date().toISOString(),
     })
@@ -307,6 +360,7 @@ export async function createCompanyPage(data: {
   foundingTeam?: { name: string; title: string; email?: string; linkedin?: string }[]
   pdfUrl?: string
   financialsUrl?: string
+  dimensionScores?: Record<string, unknown>
 }) {
   const supabase = getSupabase()
 
@@ -351,6 +405,7 @@ export async function createCompanyPage(data: {
       founding_team: data.foundingTeam && data.foundingTeam.length > 0 ? data.foundingTeam : null,
       pdf_url: data.pdfUrl || null,
       financials_url: data.financialsUrl || null,
+      dimension_scores: data.dimensionScores || null,
     })
     .select('id')
     .single()

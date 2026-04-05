@@ -11,7 +11,9 @@ interface ScoreResult {
     team: { score: number; letter_grade: string; headline: string }
     market: { score: number; letter_grade: string; headline: string }
     product: { score: number; letter_grade: string; headline: string }
+    traction?: { score: number; letter_grade: string; headline: string }
     financial: { score: number; letter_grade: string; headline: string }
+    fundraise_readiness?: { score: number; letter_grade: string; headline: string }
   }
 }
 
@@ -48,11 +50,13 @@ const dimensionLabels: Record<string, { name: string; icon: string }> = {
   team: { name: 'Team & Founders', icon: '👥' },
   market: { name: 'Market Opportunity & TAM', icon: '📈' },
   product: { name: 'Product/Tech Differentiation', icon: '💡' },
+  traction: { name: 'Traction & Growth', icon: '📊' },
   financial: { name: 'Financial Health & Projections', icon: '💰' },
+  fundraise_readiness: { name: 'Fundraise Readiness', icon: '🎯' },
 }
 
 const memoFeatures = [
-  'Full analysis across all 4 dimensions',
+  'Full analysis across all 6 dimensions',
   'Specific strengths & risk factors',
   'Sector benchmarks & comparisons',
   'Slide-by-slide deck improvements',
@@ -147,9 +151,12 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
       </div>
 
       {/* Dimension Cards — after CTA */}
-      <div className="grid sm:grid-cols-2 gap-4 mb-8">
-        {(Object.entries(result.dimensions) as [string, typeof result.dimensions.team][]).map(([key, dim]) => {
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        {(Object.entries(result.dimensions) as [string, typeof result.dimensions.team][])
+          .filter(([, dim]) => dim && typeof dim === 'object')
+          .map(([key, dim]) => {
           const label = dimensionLabels[key]
+          if (!label) return null
           return (
             <div key={key} className="border border-gray-200 rounded-xl p-4 relative overflow-hidden">
               <div className="flex items-start justify-between mb-2">

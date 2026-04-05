@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { CompanyActions } from '@/components/company/CompanyActions'
+import ScoreBreakdown from '@/components/scoring/ScoreBreakdown'
 import { CompanyNav } from '@/components/company/CompanyNav'
 import { ReportBanner } from '@/components/company/ReportBanner'
 import { ScoreTooltip } from '@/components/ui/ScoreTooltip'
@@ -268,6 +269,7 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
                 claimStatus={company.claim_status}
                 claimToken={company.claim_token}
                 claimInvitedEmail={company.claim_invited_email}
+                overallScore={company.overall_score}
                 company={{
                   id: company.id,
                   company_name: company.company_name,
@@ -294,6 +296,24 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
           </div>
         </div>
 
+        {/* KUN-21: Sub-75 score gate banner */}
+        {(company.overall_score ?? 0) < 75 && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-amber-900">Not yet eligible for investor matching</p>
+                <p className="text-sm text-amber-800 mt-1">
+                  This company has not yet met the minimum Kunfa Score (75) for investor matching.{' '}
+                  <Link href="/how-it-works" className="underline font-medium">Learn how scoring works</Link>.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Report Banner */}
         <Suspense fallback={null}>
           <ReportBanner submissionId={company.submission_id} />
@@ -310,6 +330,16 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Overview</h2>
             <p className="text-gray-600 leading-relaxed">{company.description}</p>
           </div>
+        )}
+
+        {/* KUN-21: Kunfa Score Breakdown */}
+        {company.dimension_scores && (
+          <ScoreBreakdown
+            dimensions={company.dimension_scores as Record<string, unknown>}
+            overallScore={company.overall_score}
+            title="Kunfa Score Breakdown"
+            showSummaries
+          />
         )}
 
         {/* Team */}

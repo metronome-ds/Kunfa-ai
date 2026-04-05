@@ -45,6 +45,25 @@ export async function POST(request: NextRequest) {
       .eq('id', companyId)
       .single();
 
+    if (!company) {
+      return NextResponse.json({ error: 'Company not found' }, { status: 404 });
+    }
+
+    // KUN-21: Score gate — only allow 75+ unless the requester is an admin
+    const { data: requesterProfile } = await supabase
+      .from('profiles')
+      .select('is_admin')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    const isAdmin = requesterProfile?.is_admin === true;
+
+    if (!isAdmin && (company.overall_score ?? 0) < 75) {
+      return NextResponse.json(
+        { error: 'This company has not yet met the minimum Kunfa Score (75) for investor matching.' },
+        { status: 403 }
+      );
+    }
+
     const { data: deal, error } = await supabase
       .from('deals')
       .insert({

@@ -29,9 +29,15 @@ export interface ScoringResult {
   product_score: number
   product_grade: string
   product_summary: string
+  traction_score: number
+  traction_grade: string
+  traction_summary: string
   financial_score: number
   financial_grade: string
   financial_summary: string
+  fundraise_readiness_score: number
+  fundraise_readiness_grade: string
+  fundraise_readiness_summary: string
   description: string
   company_profile: CompanyProfile
   stage_weights_applied: string
@@ -53,7 +59,9 @@ interface StageWeights {
   team: number
   market: number
   product: number
+  traction: number
   financial: number
+  fundraise_readiness: number
   label: string
 }
 
@@ -64,13 +72,26 @@ function getStageWeights(stage: string): StageWeights {
     s.includes('series c') ||
     s.includes('growth')
   ) {
-    return { team: 0.15, market: 0.20, product: 0.20, financial: 0.45, label: 'series_b_plus' }
+    // Growth stage: traction + financials dominate
+    return {
+      team: 0.10, market: 0.15, product: 0.15,
+      traction: 0.25, financial: 0.25, fundraise_readiness: 0.10,
+      label: 'series_b_plus',
+    }
   }
   if (s.includes('series a')) {
-    return { team: 0.25, market: 0.25, product: 0.20, financial: 0.30, label: 'series_a' }
+    return {
+      team: 0.20, market: 0.20, product: 0.15,
+      traction: 0.20, financial: 0.15, fundraise_readiness: 0.10,
+      label: 'series_a',
+    }
   }
-  // Default: Pre-Seed / Seed / unknown
-  return { team: 0.35, market: 0.25, product: 0.25, financial: 0.15, label: 'pre_seed_seed' }
+  // Default: Pre-Seed / Seed / unknown — team + market matter most
+  return {
+    team: 0.30, market: 0.25, product: 0.20,
+    traction: 0.05, financial: 0.10, fundraise_readiness: 0.10,
+    label: 'pre_seed_seed',
+  }
 }
 
 const SYSTEM_PROMPT = `You are Kunfa AI, a venture capital analysis engine that outputs ONLY valid JSON.
@@ -101,7 +122,9 @@ function buildUserPrompt(
     team: Math.round(weights.team * 100),
     market: Math.round(weights.market * 100),
     product: Math.round(weights.product * 100),
+    traction: Math.round(weights.traction * 100),
     financial: Math.round(weights.financial * 100),
+    fundraise_readiness: Math.round(weights.fundraise_readiness * 100),
   }
 
   // Build supplementary documents section
@@ -137,7 +160,9 @@ ${supplementarySection}
 - Team & Founders: ${weightsPercent.team}%
 - Market Opportunity: ${weightsPercent.market}%
 - Product & Technology: ${weightsPercent.product}%
-- Financial Health & Traction: ${weightsPercent.financial}%
+- Traction: ${weightsPercent.traction}%
+- Financials: ${weightsPercent.financial}%
+- Fundraise Readiness: ${weightsPercent.fundraise_readiness}%
 
 ## Scoring Rubric — score each category 0-25:
 
@@ -162,12 +187,26 @@ ${supplementarySection}
 - Technical architecture and IP considerations
 - User feedback and validation signals
 
-### Financial Health & Traction (raw score 0-25):
-- Revenue or pre-revenue traction signals
-- Growth rate (MoM or YoY)
-- Unit economics (CAC, LTV, margins) if available
-- Burn rate and runway
-- Fundraising history and use of funds clarity
+### Traction (raw score 0-25):
+- Revenue or pre-revenue traction signals (paying customers, LOIs, pilots)
+- Growth rate (MoM or YoY), user/engagement metrics
+- Retention and cohort quality
+- Key partnerships, distribution channels
+- Evidence of product-market fit
+
+### Financials (raw score 0-25):
+- Unit economics (CAC, LTV, gross margin, payback period)
+- Burn rate, runway, and capital efficiency
+- Revenue model clarity and scalability
+- Financial projections credibility
+- Historical financial performance (if available)
+
+### Fundraise Readiness (raw score 0-25):
+- Clarity of use of funds and milestones tied to the raise
+- Valuation reasonableness relative to stage and traction
+- Data room completeness (pitch deck, financials, legal, team bios)
+- Storytelling and narrative tightness
+- Investor alignment and round structure
 
 ## Overall Score Calculation:
 Compute the weighted overall score (0-100) using this formula:
@@ -175,7 +214,9 @@ overall_score = round(
   (team_raw/25 * ${weightsPercent.team}) +
   (market_raw/25 * ${weightsPercent.market}) +
   (product_raw/25 * ${weightsPercent.product}) +
-  (financial_raw/25 * ${weightsPercent.financial})
+  (traction_raw/25 * ${weightsPercent.traction}) +
+  (financial_raw/25 * ${weightsPercent.financial}) +
+  (fundraise_readiness_raw/25 * ${weightsPercent.fundraise_readiness})
 )
 
 ## Grade Mapping (apply per category based on raw score 0-25):
@@ -195,9 +236,15 @@ overall_score = round(
   "product_score": 18,
   "product_grade": "B+",
   "product_summary": "One sentence summary of product assessment",
+  "traction_score": 16,
+  "traction_grade": "B",
+  "traction_summary": "One sentence summary of traction assessment",
   "financial_score": 15,
   "financial_grade": "B-",
   "financial_summary": "One sentence summary of financial assessment",
+  "fundraise_readiness_score": 17,
+  "fundraise_readiness_grade": "B",
+  "fundraise_readiness_summary": "One sentence summary of fundraise readiness assessment",
   "description": "2-3 sentence overall investment assessment",
   "company_profile": {
     "company_name": "the company name extracted from the pitch deck",
@@ -388,10 +435,20 @@ export function extractTeaser(result: ScoringResult) {
         letter_grade: result.product_grade || 'N/A',
         headline: result.product_summary || '',
       },
+      traction: {
+        score: result.traction_score || 0,
+        letter_grade: result.traction_grade || 'N/A',
+        headline: result.traction_summary || '',
+      },
       financial: {
         score: result.financial_score || 0,
         letter_grade: result.financial_grade || 'N/A',
         headline: result.financial_summary || '',
+      },
+      fundraise_readiness: {
+        score: result.fundraise_readiness_score || 0,
+        letter_grade: result.fundraise_readiness_grade || 'N/A',
+        headline: result.fundraise_readiness_summary || '',
       },
     },
   }

@@ -34,11 +34,13 @@ interface CompanyActionsProps {
   claimStatus?: string | null;
   claimToken?: string | null;
   claimInvitedEmail?: string | null;
+  overallScore?: number | null;
 }
 
-export function CompanyActions({ companyId, company, claimStatus: initialClaimStatus, claimToken, claimInvitedEmail }: CompanyActionsProps) {
+export function CompanyActions({ companyId, company, claimStatus: initialClaimStatus, claimToken, claimInvitedEmail, overallScore }: CompanyActionsProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInvestor, setIsInvestor] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [isAddedBy, setIsAddedBy] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
@@ -92,9 +94,13 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
       // Check if user is an investor or the company owner
       const { data: profile } = await supabase
         .from('profiles')
-        .select('id, role')
+        .select('id, role, is_admin')
         .eq('user_id', user.id)
         .single();
+
+      if (profile?.is_admin === true) {
+        setIsAdmin(true);
+      }
 
       // Check if this user owns this company page
       const { data: ownedCompany } = await supabase
@@ -277,8 +283,8 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
           </>
         )}
 
-        {/* Investor-only actions */}
-        {isInvestor && (
+        {/* Investor-only actions — hidden if company score < 75 and user is not admin (KUN-21) */}
+        {isInvestor && (isAdmin || (overallScore ?? 0) >= 75) && (
           <>
             <button
               onClick={toggleWatchlist}

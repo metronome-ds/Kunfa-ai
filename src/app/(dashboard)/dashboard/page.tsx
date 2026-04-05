@@ -26,6 +26,8 @@ import {
 } from 'lucide-react';
 import NotesTimeline from '@/components/pipeline/NotesTimeline';
 import ScoreModal from '@/components/scoring/ScoreModal';
+import ScoreBreakdown from '@/components/scoring/ScoreBreakdown';
+import ImprovementTips from '@/components/scoring/ImprovementTips';
 import DealRoomActivityCard from '@/components/dashboard/DealRoomActivityCard';
 
 interface UserProfile {
@@ -64,6 +66,7 @@ interface CompanyData {
   use_of_funds: string | null;
   traction: string | null;
   submission_id: string | null;
+  dimension_scores: Record<string, unknown> | null;
   created_at: string;
 }
 
@@ -514,8 +517,67 @@ function DashboardContent() {
               </div>
             </div>
 
-            {/* Deal Room Activity */}
-            <DealRoomActivityCard companyId={company.id} />
+            {/* KUN-21: Sub-75 score gate messaging for startups */}
+            {(company.overall_score ?? 0) < 75 && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 mb-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-gray-900">
+                      {company.overall_score == null ? 'Get your Kunfa Score to unlock investor discovery' : 'Your Kunfa Score is below 75'}
+                    </h3>
+                    <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                      {company.overall_score == null
+                        ? 'Upload your pitch deck and financials to get scored. Companies with a Kunfa Score of 75+ become eligible for investor matching on the platform.'
+                        : 'Improve your score to 75+ to unlock investor discovery. Update your pitch deck and financials, then re-score to see your new result.'}
+                    </p>
+                    <div className="flex items-center gap-2 mt-3">
+                      <button
+                        onClick={() => setShowScoreModal(true)}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        {company.overall_score == null ? 'Get Your Score' : 'Re-score My Company'}
+                      </button>
+                      <Link
+                        href="/how-it-works"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                      >
+                        How scoring works
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* KUN-21: Score Breakdown — show whenever we have dimension scores */}
+            {company.dimension_scores && (
+              <div className="mb-6">
+                <ScoreBreakdown
+                  dimensions={company.dimension_scores}
+                  overallScore={company.overall_score}
+                  title="Your Kunfa Score Breakdown"
+                  showSummaries
+                />
+              </div>
+            )}
+
+            {/* KUN-21: Improvement Recommendations — only for sub-75 with dimension scores */}
+            {company.dimension_scores && (company.overall_score ?? 0) < 75 && (
+              <div className="mb-6">
+                <ImprovementTips dimensions={company.dimension_scores} />
+              </div>
+            )}
+
+            {/* Deal Room Activity — only visible for 75+ companies (KUN-21) */}
+            {(company.overall_score ?? 0) >= 75 && (
+              <DealRoomActivityCard companyId={company.id} />
+            )}
 
             {/* Report Status */}
             {company.submission_id && (
