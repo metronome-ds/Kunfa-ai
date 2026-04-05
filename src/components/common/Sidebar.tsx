@@ -23,9 +23,11 @@ import {
   PlusCircle,
   Bookmark,
   ShieldCheck,
+  BarChart3,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import KunfaLogo from '@/components/common/KunfaLogo';
+import { isSuperAdmin } from '@/lib/super-admins';
 
 interface NavItem {
   label: string;
@@ -222,6 +224,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -240,6 +243,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
           setUserRole(profile?.role || 'investor');
           setIsAdmin(profile?.is_admin === true);
+          setIsSuperAdminUser(isSuperAdmin(user.email));
         }
       } catch (err) {
         console.error('Error loading user role:', err);
@@ -296,6 +300,20 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       {/* Bottom */}
       <div className={`border-t border-gray-800 ${collapsed ? 'p-2' : 'p-3'} space-y-3`}>
         <div className="space-y-1">
+          {isSuperAdminUser && (
+            <Link
+              href="/admin/analytics"
+              className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
+                pathname === '/admin/analytics'
+                  ? 'bg-blue-600 text-white shadow-md'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
+              title={collapsed ? 'Analytics' : undefined}
+            >
+              <BarChart3 className="h-5 w-5" />
+              {!collapsed && <span className="text-sm font-medium">Analytics</span>}
+            </Link>
+          )}
           {isAdmin && (
             <>
               <Link
