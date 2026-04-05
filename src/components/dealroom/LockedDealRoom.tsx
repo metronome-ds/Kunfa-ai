@@ -26,6 +26,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   legal: 'Legal',
   term_sheet: 'Term Sheet',
   due_diligence: 'Due Diligence',
+  investment_memo: 'Investment Memo',
+  internal_memo: 'Internal Memo',
   product: 'Product',
   other: 'Other',
 }
@@ -37,6 +39,8 @@ const CATEGORY_COLORS: Record<string, string> = {
   legal: 'bg-amber-100 text-amber-700',
   term_sheet: 'bg-rose-100 text-rose-700',
   due_diligence: 'bg-cyan-100 text-cyan-700',
+  investment_memo: 'bg-teal-100 text-teal-700',
+  internal_memo: 'bg-slate-100 text-slate-700',
   product: 'bg-indigo-100 text-indigo-700',
   other: 'bg-gray-100 text-gray-700',
 }

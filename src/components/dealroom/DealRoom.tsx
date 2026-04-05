@@ -41,6 +41,8 @@ const CATEGORIES = [
   { value: 'legal', label: 'Legal' },
   { value: 'term_sheet', label: 'Term Sheet' },
   { value: 'due_diligence', label: 'Due Diligence' },
+  { value: 'investment_memo', label: 'Investment Memo' },
+  { value: 'internal_memo', label: 'Internal Memo' },
   { value: 'product', label: 'Product' },
   { value: 'other', label: 'Other' },
 ]
@@ -55,6 +57,8 @@ function getCategoryColor(category: string) {
     legal: 'bg-amber-100 text-amber-700',
     term_sheet: 'bg-rose-100 text-rose-700',
     due_diligence: 'bg-cyan-100 text-cyan-700',
+    investment_memo: 'bg-teal-100 text-teal-700',
+    internal_memo: 'bg-slate-100 text-slate-700',
     product: 'bg-indigo-100 text-indigo-700',
     other: 'bg-gray-100 text-gray-700',
   }
