@@ -2,7 +2,7 @@
 
 import { useCallback, useState, useRef } from 'react'
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB — KUN-37: hard ceiling for AI scoring pipeline
 
 interface UploadZoneProps {
   label: string
@@ -21,7 +21,7 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
   const validateAndSelect = useCallback((f: File | null) => {
     setSizeError('')
     if (f && f.size > MAX_FILE_SIZE) {
-      setSizeError('File is too large. Maximum size is 50MB.')
+      setSizeError('File size must be under 25MB. Please compress your PDF.')
       return
     }
     onFileSelect(f)

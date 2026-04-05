@@ -350,13 +350,15 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
       let financialsFilename: string | undefined
 
       try {
-        setUploadProgress('Uploading pitch deck...')
+        const deckSizeMb = (pitchDeck.size / (1024 * 1024)).toFixed(1)
+        setUploadProgress(`Uploading pitch deck (${deckSizeMb} MB)…`)
         pitchDeckUrl = await uploadToStorage(
           pitchDeck,
           `submissions/${timestamp}/pitch-deck-${pitchDeck.name}`,
         )
         if (financials) {
-          setUploadProgress('Uploading financials...')
+          const finSizeMb = (financials.size / (1024 * 1024)).toFixed(1)
+          setUploadProgress(`Uploading financials (${finSizeMb} MB)…`)
           financialsUrl = await uploadToStorage(
             financials,
             `submissions/${timestamp}/financials-${financials.name}`,
@@ -834,7 +836,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Pitch Deck *</label>
               <UploadZone
                 label="Tap to upload"
-                subtitle="PDF, PPT, Keynote — up to 50 MB"
+                subtitle="PDF, PPT, Keynote — up to 25 MB"
                 required={true}
                 accept=".pdf,.ppt,.pptx,.key"
                 file={pitchDeck}
@@ -846,7 +848,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Financials & Metrics</label>
               <UploadZone
                 label="Tap to upload"
-                subtitle="Financials, data room — up to 50 MB (optional)"
+                subtitle="Financials, data room — up to 25 MB (optional)"
                 required={false}
                 accept=".pdf,.xlsx,.xls,.csv"
                 file={financials}

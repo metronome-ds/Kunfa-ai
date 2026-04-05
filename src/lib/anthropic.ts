@@ -4,6 +4,45 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 })
 
+// KUN-37: Character ceilings to keep prompts within Claude's 200K token window.
+// Rough heuristic: 1 token ≈ 4 chars, so 280K chars ≈ 70K tokens for the deck,
+// leaving comfortable headroom for the system prompt, financials, supplementary
+// docs, and the JSON response.
+const MAX_PITCH_DECK_CHARS = 280_000
+const MAX_FINANCIALS_CHARS = 80_000
+const MAX_SUPPLEMENTARY_CHARS_EACH = 40_000
+
+function truncate(text: string, max: number, label: string): string {
+  if (!text || text.length <= max) return text
+  console.warn(`[scoring] truncating ${label}: ${text.length} → ${max} chars`)
+  return text.slice(0, max) + `\n\n[... ${label} truncated to ${max} characters for AI context limits ...]`
+}
+
+/**
+ * Thrown when the input documents are too large for Claude's context window.
+ * The API layer catches this and returns a friendly 413 to the user.
+ */
+export class ScoringTooLargeError extends Error {
+  constructor(message = 'This file is too large for AI analysis. Please upload a deck under 50 pages.') {
+    super(message)
+    this.name = 'ScoringTooLargeError'
+  }
+}
+
+function isPromptTooLongError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false
+  const e = err as { status?: number; message?: string; error?: { type?: string; message?: string } }
+  const msg = (e.message || e.error?.message || '').toLowerCase()
+  const type = (e.error?.type || '').toLowerCase()
+  return (
+    msg.includes('prompt is too long') ||
+    msg.includes('prompt_too_long') ||
+    msg.includes('context window') ||
+    msg.includes('maximum context length') ||
+    type === 'invalid_request_error' && msg.includes('too long')
+  )
+}
+
 export interface CompanyProfile {
   company_name: string
   industry: string
@@ -348,11 +387,29 @@ export async function scoreStartup(
   const weights = getStageWeights(companyStage)
   const hasFinancials = !!financialsText && financialsText.trim().length > 0
 
+  // KUN-37: Truncate inputs up-front to stay within Claude's 200K token window.
+  // If the raw pitch deck alone already dwarfs our ceiling (e.g. a 200-page
+  // scanned deck), bail immediately with a friendly error so the user isn't
+  // billed for an almost-certainly-doomed Claude call.
+  if (pitchDeckText && pitchDeckText.length > MAX_PITCH_DECK_CHARS * 3) {
+    throw new ScoringTooLargeError()
+  }
+  const safeDeckText = truncate(pitchDeckText, MAX_PITCH_DECK_CHARS, 'pitch deck')
+  const safeFinancialsText = truncate(financialsText, MAX_FINANCIALS_CHARS, 'financials')
+  const safeSupplementary = supplementaryDocs?.map(doc => ({
+    ...doc,
+    text: truncate(doc.text, MAX_SUPPLEMENTARY_CHARS_EACH, `supplementary (${doc.category})`),
+  }))
+
   // --- Attempt 1 ---
   let rawResponse: string
   try {
-    rawResponse = await callClaude(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials, supplementaryDocs)
+    rawResponse = await callClaude(safeDeckText, safeFinancialsText, linkedinUrl, weights, hasFinancials, safeSupplementary)
   } catch (apiErr) {
+    if (isPromptTooLongError(apiErr)) {
+      console.error('[scoring] Claude prompt too long — input exceeds context window', apiErr)
+      throw new ScoringTooLargeError()
+    }
     console.error('Claude API call failed:', apiErr)
     throw new Error(`Claude API call failed: ${(apiErr as Error).message}`)
   }
@@ -374,7 +431,7 @@ export async function scoreStartup(
       messages: [
         {
           role: 'user',
-          content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials, supplementaryDocs),
+          content: buildUserPrompt(safeDeckText, safeFinancialsText, linkedinUrl, weights, hasFinancials, safeSupplementary),
         },
         {
           role: 'assistant',
@@ -393,6 +450,10 @@ export async function scoreStartup(
     const parsed = extractJson(retryRaw)
     return parsed as unknown as ScoringResult
   } catch (retryErr) {
+    if (isPromptTooLongError(retryErr)) {
+      console.error('[scoring] Claude prompt too long on retry', retryErr)
+      throw new ScoringTooLargeError()
+    }
     console.error('Attempt 2 also failed:', retryErr)
     throw new Error(
       `AI scoring failed after 2 attempts. The AI did not return valid JSON. ` +

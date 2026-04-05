@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { scoreStartup, extractTeaser, ScoringDocument } from '@/lib/anthropic'
+import { scoreStartup, extractTeaser, ScoringDocument, ScoringTooLargeError } from '@/lib/anthropic'
 import { extractTextFromBlobUrl } from '@/lib/upload'
 import {
   createSubmission,
@@ -293,6 +293,24 @@ export async function POST(request: NextRequest) {
         supplementaryDocs.length > 0 ? supplementaryDocs : undefined,
       )
     } catch (aiErr) {
+      // KUN-37: If the input is too large for Claude's context window, return a
+      // friendly 413 and delete the stale submission row so the user can retry
+      // with a smaller deck (userHasSubmission would otherwise block them).
+      if (aiErr instanceof ScoringTooLargeError) {
+        console.error('[scoring] Input too large for AI context window')
+        if (isDatabaseConfigured() && userId && !isDealRoomRescore) {
+          try {
+            const supabase = getSupabase()
+            await supabase.from('submissions').delete().eq('id', submissionId)
+          } catch (cleanupErr) {
+            console.error('Failed to clean up stale submission after too-large error:', cleanupErr)
+          }
+        }
+        return NextResponse.json(
+          { error: aiErr.message },
+          { status: 413 },
+        )
+      }
       console.error('Claude API error:', aiErr)
       return NextResponse.json(
         { error: `AI scoring failed: ${(aiErr as Error).message}` },
