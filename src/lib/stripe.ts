@@ -33,7 +33,7 @@ export async function createCheckoutSession(
           product_data: {
             name: 'Kunfa Investment Memo',
             description:
-              'Full 15+ page AI-powered startup analysis with detailed scoring, benchmarks, and actionable recommendations.',
+              'AI-powered investment readiness report with detailed scoring across 6 dimensions, sector benchmarks, and actionable recommendations.',
           },
           unit_amount: 5900, // $59.00
         },

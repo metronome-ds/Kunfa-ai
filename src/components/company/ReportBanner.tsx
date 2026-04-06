@@ -140,7 +140,7 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
           <div className="w-8 h-8 border-3 border-[#0168FE] border-t-transparent rounded-full animate-spin flex-shrink-0" />
           <div>
             <h3 className="text-lg font-bold text-gray-900">Generating your Kunfa Readiness Report...</h3>
-            <p className="text-sm text-gray-500 mt-0.5">Building your 15+ page AI-powered investment analysis</p>
+            <p className="text-sm text-gray-500 mt-0.5">Building your AI-powered investment readiness report</p>
           </div>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">

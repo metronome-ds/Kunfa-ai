@@ -209,7 +209,7 @@ export default function ReportPage() {
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-3">Unlock Your Full Readiness Report</h1>
             <p className="text-gray-600 mb-8">
-              Get a comprehensive 15+ page AI-powered investment memorandum with detailed analysis, sector benchmarks, and actionable recommendations.
+              Get a comprehensive AI-powered investment readiness report with detailed scoring across 6 dimensions, sector benchmarks, and actionable recommendations.
             </p>
             <button
               onClick={handleCheckout}

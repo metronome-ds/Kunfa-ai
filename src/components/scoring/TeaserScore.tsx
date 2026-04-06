@@ -120,7 +120,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
             </svg>
           </div>
           <h4 className="text-xl font-bold mb-2">
-            Unlock Your Full 15-Page Investment Memorandum
+            Unlock Your Full Investment Readiness Report
           </h4>
           <p className="text-indigo-200 text-sm mb-6 max-w-md mx-auto">
             Detailed analysis, sector benchmarks, and actionable recommendations to strengthen your fundraise

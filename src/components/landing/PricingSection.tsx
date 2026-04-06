@@ -27,7 +27,7 @@ const plans = [
     subtitle: 'One-time purchase',
     features: [
       'Everything in Free',
-      '15+ page investment memo',
+      'Full investment readiness report',
       'Actionable improvement plan',
       'Sector benchmarks & comparisons',
       'Financial model feedback',
