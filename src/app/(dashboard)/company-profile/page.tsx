@@ -241,7 +241,7 @@ export default function CompanyProfilePage() {
 
   const handleCopyLink = () => {
     if (!company?.slug) return
-    navigator.clipboard.writeText(`https://kunfa-ai.vercel.app/company/${company.slug}`)
+    navigator.clipboard.writeText(`https://www.kunfa.ai/company/${company.slug}`)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
