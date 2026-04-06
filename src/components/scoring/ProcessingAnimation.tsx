@@ -17,6 +17,7 @@ interface ProcessingAnimationProps {
 export default function ProcessingAnimation({ onComplete }: ProcessingAnimationProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [progress, setProgress] = useState(0)
+  const [showLargeDocHint, setShowLargeDocHint] = useState(false)
 
   useEffect(() => {
     const progressInterval = setInterval(() => {
@@ -30,6 +31,12 @@ export default function ProcessingAnimation({ onComplete }: ProcessingAnimationP
     }, 150)
 
     return () => clearInterval(progressInterval)
+  }, [])
+
+  // After 10 seconds show a "this may take a while" hint
+  useEffect(() => {
+    const timer = setTimeout(() => setShowLargeDocHint(true), 10_000)
+    return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
@@ -94,6 +101,12 @@ export default function ProcessingAnimation({ onComplete }: ProcessingAnimationP
           </div>
         ))}
       </div>
+
+      {showLargeDocHint && (
+        <p className="mt-6 text-xs text-gray-400 animate-fade-in">
+          Scoring in progress&hellip; This may take up to a minute for large documents.
+        </p>
+      )}
     </div>
   )
 }

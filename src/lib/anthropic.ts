@@ -14,7 +14,7 @@ const MAX_SUPPLEMENTARY_CHARS_EACH = 40_000
 
 function truncate(text: string, max: number, label: string): string {
   if (!text || text.length <= max) return text
-  console.warn(`[scoring] truncating ${label}: ${text.length} → ${max} chars`)
+  console.log(`[SCORE] Truncated ${label} from ${text.length} to ${max} chars`)
   return text.slice(0, max) + `\n\n[... ${label} truncated to ${max} characters for AI context limits ...]`
 }
 
@@ -387,13 +387,10 @@ export async function scoreStartup(
   const weights = getStageWeights(companyStage)
   const hasFinancials = !!financialsText && financialsText.trim().length > 0
 
-  // KUN-37: Truncate inputs up-front to stay within Claude's 200K token window.
-  // If the raw pitch deck alone already dwarfs our ceiling (e.g. a 200-page
-  // scanned deck), bail immediately with a friendly error so the user isn't
-  // billed for an almost-certainly-doomed Claude call.
-  if (pitchDeckText && pitchDeckText.length > MAX_PITCH_DECK_CHARS * 3) {
-    throw new ScoringTooLargeError()
-  }
+  // Truncate inputs up-front to stay within Claude's 200K token window.
+  // We always truncate and proceed — the user's upload succeeded, so we
+  // score with whatever fits. ScoringTooLargeError is only thrown as a
+  // last resort if Claude itself still rejects the prompt after truncation.
   const safeDeckText = truncate(pitchDeckText, MAX_PITCH_DECK_CHARS, 'pitch deck')
   const safeFinancialsText = truncate(financialsText, MAX_FINANCIALS_CHARS, 'financials')
   const safeSupplementary = supplementaryDocs?.map(doc => ({
