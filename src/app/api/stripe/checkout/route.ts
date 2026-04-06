@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       .eq('submission_id', submissionId)
       .maybeSingle()
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.kunfa.ai'
+    const baseUrl = 'https://www.kunfa.ai'
     const successPath = company?.slug
       ? `/company/${company.slug}?paid=true&sid=${submissionId}`
       : `/dashboard?paid=true&sid=${submissionId}`

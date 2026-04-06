@@ -576,7 +576,7 @@ function DashboardContent() {
 
             {/* Deal Room Activity — only visible for 75+ companies (KUN-21) */}
             {(company.overall_score ?? 0) >= 75 && (
-              <DealRoomActivityCard companyId={company.id} />
+              <DealRoomActivityCard companyId={company.id} companyName={company.company_name} />
             )}
 
             {/* Report Status */}

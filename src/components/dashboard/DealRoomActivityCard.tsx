@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { Users, Eye, FileText, BarChart3 } from 'lucide-react'
+import { Users, Eye, FileText, BarChart3, Send } from 'lucide-react'
+import InviteInvestorModal from './InviteInvestorModal'
 
 interface AnalyticsResponse {
   stats: {
@@ -9,6 +10,7 @@ interface AnalyticsResponse {
     uniqueViewersAllTime: number
     documentViewsThisWeek: number
     documentViewsAllTime: number
+    invitesSentAllTime: number
   }
   chart: { date: string; views: number }[]
   recentViewers: {
@@ -23,6 +25,7 @@ interface AnalyticsResponse {
 
 interface DealRoomActivityCardProps {
   companyId: string
+  companyName?: string
 }
 
 function formatDate(iso: string) {
@@ -44,10 +47,11 @@ function formatShortDate(iso: string) {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
-export default function DealRoomActivityCard({ companyId }: DealRoomActivityCardProps) {
+export default function DealRoomActivityCard({ companyId, companyName }: DealRoomActivityCardProps) {
   const [data, setData] = useState<AnalyticsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(false)
+  const [showInviteModal, setShowInviteModal] = useState(false)
 
   const fetchData = useCallback(async () => {
     try {
@@ -100,10 +104,17 @@ export default function DealRoomActivityCard({ companyId }: DealRoomActivityCard
             <p className="text-xs text-gray-500">See who&apos;s viewing your deal room</p>
           </div>
         </div>
+        <button
+          onClick={() => setShowInviteModal(true)}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+        >
+          <Send className="w-3.5 h-3.5" />
+          Invite Investor
+        </button>
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
         <div className="border border-gray-100 rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-1">
             <Users className="w-3.5 h-3.5 text-gray-400" />
@@ -131,6 +142,13 @@ export default function DealRoomActivityCard({ companyId }: DealRoomActivityCard
             <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Doc views (all)</p>
           </div>
           <p className="text-2xl font-bold text-gray-900">{stats.documentViewsAllTime}</p>
+        </div>
+        <div className="border border-gray-100 rounded-lg p-3">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Send className="w-3.5 h-3.5 text-gray-400" />
+            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Invites sent</p>
+          </div>
+          <p className="text-2xl font-bold text-gray-900">{stats.invitesSentAllTime}</p>
         </div>
       </div>
 
@@ -221,6 +239,14 @@ export default function DealRoomActivityCard({ companyId }: DealRoomActivityCard
           </div>
         )}
       </div>
+
+      <InviteInvestorModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        companyId={companyId}
+        companyName={companyName || 'your company'}
+        onInvitesSent={() => fetchData()}
+      />
     </div>
   )
 }

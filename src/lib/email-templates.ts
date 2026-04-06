@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.kunfa.ai'
+const BASE_URL = 'https://www.kunfa.ai'
 
 function layout(content: string): string {
   return `<!DOCTYPE html>
@@ -325,6 +325,52 @@ export function dealroomAccessNurtureEmail(params: {
       ${button('Create Your Profile', `${BASE_URL}/signup`)}
       <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;line-height:1.5;">
         Kunfa is the AI-native platform for venture intelligence &mdash; join hundreds of investors and founders already on the platform.
+      </p>
+    `),
+  }
+}
+
+// --- Investor Review Invite ---
+
+export function investorReviewInviteEmail(params: {
+  founderName: string
+  companyName: string
+  slug: string
+  score: number | null
+  personalMessage?: string
+}): { subject: string; html: string } {
+  const { founderName, companyName, slug, score, personalMessage } = params
+  const companyUrl = `${BASE_URL}/company/${slug}`
+
+  const scoreSection = score
+    ? `<table cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
+        <tr><td style="background:#0168FE;color:#ffffff;font-size:18px;font-weight:700;padding:8px 20px;border-radius:8px;">
+          ${score}/100
+        </td></tr>
+      </table>`
+    : ''
+
+  const messageBlock = personalMessage
+    ? `<div style="margin:16px 0;padding:12px 16px;border-left:4px solid #0168FE;background:#f0f7ff;border-radius:0 8px 8px 0;">
+        <p style="margin:0;font-size:14px;color:#374151;line-height:1.6;font-style:italic;">&ldquo;${personalMessage}&rdquo;</p>
+      </div>`
+    : ''
+
+  return {
+    subject: `${founderName} invited you to review ${companyName} on Kunfa`,
+    html: layout(`
+      <h1 style="margin:0 0 16px;font-size:20px;color:#111827;">You're invited to review a deal</h1>
+      <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.6;">
+        <strong>${founderName}</strong> has invited you to review <strong>${companyName}</strong> on Kunfa &mdash; the AI-powered venture intelligence platform.
+      </p>
+      ${messageBlock}
+      ${scoreSection}
+      <p style="margin:0 0 16px;font-size:14px;color:#6b7280;line-height:1.6;">
+        View their company profile, AI-scored pitch deck analysis, and deal room documents.
+      </p>
+      ${button('View Company Profile', companyUrl)}
+      <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;line-height:1.5;">
+        This invite was sent by ${founderName} via Kunfa.
       </p>
     `),
   }

@@ -79,10 +79,13 @@ export async function GET(request: NextRequest) {
     const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000
     const fourteenDaysAgo = now - 14 * 24 * 60 * 60 * 1000
 
+    // Exclude invite_sent from viewer counts (invites != views)
+    const viewLogs = filtered.filter((l) => l.access_type !== 'invite_sent')
+
     // Unique viewer emails (all time + this week)
-    const uniqueEmailsAllTime = new Set(filtered.map((l) => l.viewer_email))
+    const uniqueEmailsAllTime = new Set(viewLogs.map((l) => l.viewer_email))
     const uniqueEmailsThisWeek = new Set(
-      filtered
+      viewLogs
         .filter((l) => new Date(l.created_at).getTime() >= oneWeekAgo)
         .map((l) => l.viewer_email)
     )
@@ -122,7 +125,7 @@ export async function GET(request: NextRequest) {
 
     // Recent viewers — group by email, enrich with profile info if Kunfa user, and which docs they viewed
     const recentCutoff = fourteenDaysAgo
-    const recentLogs = filtered.filter(
+    const recentLogs = viewLogs.filter(
       (l) => new Date(l.created_at).getTime() >= recentCutoff
     )
 
@@ -209,12 +212,17 @@ export async function GET(request: NextRequest) {
       })
       .sort((a, b) => new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime())
 
+    // Count invites sent
+    const inviteLogs = allLogs.filter((l) => l.access_type === 'invite_sent')
+    const invitesSentAllTime = inviteLogs.length
+
     return NextResponse.json({
       stats: {
         uniqueViewersThisWeek: uniqueEmailsThisWeek.size,
         uniqueViewersAllTime: uniqueEmailsAllTime.size,
         documentViewsThisWeek: docViewsThisWeek,
         documentViewsAllTime: docViewsAllTime,
+        invitesSentAllTime,
       },
       chart: chartData,
       recentViewers,
