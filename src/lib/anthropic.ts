@@ -4,13 +4,25 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 })
 
-// KUN-37: Character ceilings to keep prompts within Claude's 200K token window.
-// Rough heuristic: 1 token ≈ 4 chars, so 280K chars ≈ 70K tokens for the deck,
-// leaving comfortable headroom for the system prompt, financials, supplementary
-// docs, and the JSON response.
+// KUN-37 / KUN-54: Per-category character ceilings to keep prompts within
+// Claude's 200K token window.  Rough heuristic: 1 token ≈ 4 chars.
 const MAX_PITCH_DECK_CHARS = 280_000
 const MAX_FINANCIALS_CHARS = 80_000
-const MAX_SUPPLEMENTARY_CHARS_EACH = 40_000
+
+// KUN-54: Per-category truncation limits for supplementary documents
+const CATEGORY_CHAR_LIMITS: Record<string, number> = {
+  cap_table: 40_000,
+  investment_memo: 60_000,
+  term_sheet: 40_000,
+  due_diligence: 60_000,
+  product: 40_000,
+  legal: 30_000,
+  other: 40_000,
+}
+const DEFAULT_SUPPLEMENTARY_LIMIT = 40_000
+
+// Categories excluded from AI scoring (internal-only documents)
+const EXCLUDED_CATEGORIES = new Set(['internal_memo'])
 
 function truncate(text: string, max: number, label: string): string {
   if (!text || text.length <= max) return text
@@ -141,7 +153,21 @@ CRITICAL RULES:
 - Do NOT wrap the JSON in markdown code fences or backticks.
 - Do NOT include any explanation, commentary, or preamble.
 - Start your response with { and end with }.
-- All string values must be properly escaped for JSON.`
+- All string values must be properly escaped for JSON.
+
+DOCUMENT-TYPE GUIDANCE:
+When multiple documents are provided, weigh them according to their type:
+- PITCH DECK: Primary source of truth for company narrative, team, market, product, and strategy.
+- FINANCIALS: Key source for unit economics, burn rate, revenue, projections. Directly impacts Financial score.
+- CAP TABLE: Assess ownership structure, dilution, investor quality. Impacts Fundraise Readiness score.
+- INVESTMENT MEMO: Prior analysis from another investor — cross-reference but form your own independent assessment.
+- TERM SHEET: Evaluate deal terms, valuation, governance provisions. Impacts Fundraise Readiness score.
+- DUE DILIGENCE: Legal, technical, or operational diligence findings. Look for red flags across all dimensions.
+- PRODUCT: Product specs, roadmaps, technical documentation. Impacts Product & Technology score.
+- LEGAL: Corporate structure, IP filings, regulatory compliance. Look for risks.
+- OTHER: Supplementary context — use to fill gaps in other categories.
+
+Synthesize insights across ALL provided documents. A company that provides more supporting documents should receive more informed (not necessarily higher) scores.`
 
 export interface ScoringDocument {
   category: string
@@ -166,13 +192,16 @@ function buildUserPrompt(
     fundraise_readiness: Math.round(weights.fundraise_readiness * 100),
   }
 
-  // Build supplementary documents section
+  // Build supplementary documents section (KUN-54: === DOCUMENT: Type === headers)
   let supplementarySection = ''
   if (supplementaryDocs && supplementaryDocs.length > 0) {
-    supplementarySection = supplementaryDocs.map(doc => {
-      const categoryLabel = doc.category.replace(/_/g, ' ').toUpperCase()
-      return `\nSUPPLEMENTARY DOCUMENT — ${categoryLabel} (${doc.fileName}):\n${doc.text}\n`
-    }).join('\n')
+    const filteredDocs = supplementaryDocs.filter(doc => !EXCLUDED_CATEGORIES.has(doc.category))
+    if (filteredDocs.length > 0) {
+      supplementarySection = filteredDocs.map(doc => {
+        const categoryLabel = doc.category.replace(/_/g, ' ').toUpperCase()
+        return `\n=== DOCUMENT: ${categoryLabel} (${doc.fileName}) ===\n${doc.text}\n`
+      }).join('\n')
+    }
   }
 
   const financialsSection = hasFinancials
@@ -393,10 +422,16 @@ export async function scoreStartup(
   // last resort if Claude itself still rejects the prompt after truncation.
   const safeDeckText = truncate(pitchDeckText, MAX_PITCH_DECK_CHARS, 'pitch deck')
   const safeFinancialsText = truncate(financialsText, MAX_FINANCIALS_CHARS, 'financials')
-  const safeSupplementary = supplementaryDocs?.map(doc => ({
-    ...doc,
-    text: truncate(doc.text, MAX_SUPPLEMENTARY_CHARS_EACH, `supplementary (${doc.category})`),
-  }))
+  // KUN-54: Per-category truncation limits + exclude internal_memo
+  const safeSupplementary = supplementaryDocs
+    ?.filter(doc => !EXCLUDED_CATEGORIES.has(doc.category))
+    .map(doc => {
+      const limit = CATEGORY_CHAR_LIMITS[doc.category] ?? DEFAULT_SUPPLEMENTARY_LIMIT
+      return {
+        ...doc,
+        text: truncate(doc.text, limit, `${doc.category} (${doc.fileName})`),
+      }
+    })
 
   // --- Attempt 1 ---
   let rawResponse: string

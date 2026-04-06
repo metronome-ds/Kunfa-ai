@@ -7,7 +7,7 @@ import UploadZone from './UploadZone'
 import ProcessingAnimation from './ProcessingAnimation'
 import TeaserScore from './TeaserScore'
 import UploadErrorBanner from '@/components/common/UploadErrorBanner'
-import { Check, X, Loader2 } from 'lucide-react'
+import { Check, X, Loader2, Plus, FileText, Trash2 } from 'lucide-react'
 import { STAGES, INDUSTRIES } from '@/lib/constants'
 
 type SubmitErrorKind = 'network' | 'scoring_too_large' | 'generic'
@@ -42,6 +42,38 @@ interface ScoreResult {
 
 const INPUT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa focus:border-transparent'
 const SELECT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-kunfa focus:border-transparent'
+
+// KUN-55: Additional document categories for enhanced onboarding upload
+interface AdditionalDoc {
+  id: string
+  file: File
+  category: string
+}
+
+const ADDITIONAL_CATEGORIES = [
+  { value: 'cap_table', label: 'Cap Table' },
+  { value: 'term_sheet', label: 'Term Sheet' },
+  { value: 'product', label: 'Product Docs' },
+  { value: 'due_diligence', label: 'Due Diligence' },
+  { value: 'legal', label: 'Legal' },
+  { value: 'other', label: 'Other' },
+]
+
+// Score Strength: compute a 0-100 percentage based on documents provided
+function computeScoreStrength(hasPitchDeck: boolean, hasFinancials: boolean, additionalCount: number): number {
+  let strength = 0
+  if (hasPitchDeck) strength += 50          // Required base
+  if (hasFinancials) strength += 25         // Recommended
+  strength += Math.min(additionalCount * 8, 25) // Up to 25% for additional docs
+  return Math.min(strength, 100)
+}
+
+function getStrengthLabel(strength: number): { label: string; color: string } {
+  if (strength >= 80) return { label: 'Excellent', color: 'text-emerald-600' }
+  if (strength >= 60) return { label: 'Good', color: 'text-blue-600' }
+  if (strength >= 40) return { label: 'Fair', color: 'text-yellow-600' }
+  return { label: 'Minimal', color: 'text-gray-500' }
+}
 
 function generateSlug(name: string): string {
   return name
@@ -127,10 +159,12 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   const [disclaimerChecked, setDisclaimerChecked] = useState(false)
   const [pitchDeck, setPitchDeck] = useState<File | null>(null)
   const [financials, setFinancials] = useState<File | null>(null)
+  const [additionalDocs, setAdditionalDocs] = useState<AdditionalDoc[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [scoreResult, setScoreResult] = useState<ScoreResult | null>(null)
   const [submissionId, setSubmissionId] = useState('')
   const [resultSlug, setResultSlug] = useState('')
+  const [documentsScored, setDocumentsScored] = useState(0)
   const [error, setError] = useState('')
   const [submitError, setSubmitError] = useState<SubmitError | null>(null)
   const [uploadProgress, setUploadProgress] = useState('')
@@ -278,6 +312,8 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
   const isCompanyValid = companyName && chosenSlug && slugStatus === 'available' && oneLiner && industry && companyStage && companyCountry
   const isFounderValid = founderName && founderTitle && coFounders.every(cf => cf.name && cf.title && cf.email)
   const isUploadValid = !!pitchDeck && disclaimerChecked
+  const scoreStrength = computeScoreStrength(!!pitchDeck, !!financials, additionalDocs.length)
+  const strengthInfo = getStrengthLabel(scoreStrength)
 
   // Save company data to profile (called at end of company step)
   const handleSaveCompany = async () => {
@@ -383,6 +419,29 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         return
       }
 
+      // KUN-55: Upload additional documents
+      const uploadedAdditionalDocs: { url: string; filename: string; category: string }[] = []
+      if (additionalDocs.length > 0) {
+        for (let i = 0; i < additionalDocs.length; i++) {
+          const doc = additionalDocs[i]
+          try {
+            const sizeMb = (doc.file.size / (1024 * 1024)).toFixed(1)
+            setUploadProgress(`Uploading ${doc.file.name} (${sizeMb} MB)…`)
+            const url = await uploadToStorage(
+              doc.file,
+              `submissions/${timestamp}/${doc.category}-${doc.file.name}`,
+            )
+            uploadedAdditionalDocs.push({
+              url,
+              filename: doc.file.name,
+              category: doc.category,
+            })
+          } catch {
+            console.error(`Failed to upload additional doc ${doc.file.name}, skipping`)
+          }
+        }
+      }
+
       setUploadProgress('')
 
       // Build founding_team array: main founder first, then co-founders
@@ -406,6 +465,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             financialsFilename,
             slug: chosenSlug,
             foundingTeam,
+            additionalDocs: uploadedAdditionalDocs.length > 0 ? uploadedAdditionalDocs : undefined,
           }),
         })
       } catch {
@@ -418,7 +478,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         return
       }
 
-      let data: { error?: string; teaser?: ScoreResult; submissionId?: string; slug?: string } = {}
+      let data: { error?: string; teaser?: ScoreResult; submissionId?: string; slug?: string; documentsScored?: number } = {}
       try {
         data = await response.json()
       } catch {
@@ -451,6 +511,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
       setScoreResult(data.teaser ?? null)
       setSubmissionId(data.submissionId ?? '')
+      setDocumentsScored(data.documentsScored ?? 0)
       if (data.slug) {
         setResultSlug(data.slug)
       }
@@ -464,7 +525,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
       setIsSubmitting(false)
       setUploadProgress('')
     }
-  }, [email, chosenSlug, pitchDeck, financials, linkedinUrl, companyLinkedinUrl, founderName, founderTitle, coFounders, isUploadValid, isSubmitting])
+  }, [email, chosenSlug, pitchDeck, financials, additionalDocs, linkedinUrl, companyLinkedinUrl, founderName, founderTitle, coFounders, isUploadValid, isSubmitting])
 
   const handleProcessingComplete = useCallback(() => {
     if (scoreResult) {
@@ -518,9 +579,11 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
     setDisclaimerChecked(false)
     setPitchDeck(null)
     setFinancials(null)
+    setAdditionalDocs([])
     setScoreResult(null)
     setSubmissionId('')
     setResultSlug('')
+    setDocumentsScored(0)
     setError('')
     setSubmitError(null)
     setUploadProgress('')
@@ -881,9 +944,30 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
           </div>
         )}
 
-        {/* STEP 4: Upload & Score */}
+        {/* STEP 4: Upload & Score — KUN-55 Enhanced Multi-Document Upload */}
         {!initialLoading && step === 'upload' && (
           <div className="space-y-4">
+            {/* Score Strength Indicator */}
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-semibold text-kunfa-navy">Score Strength</span>
+                <span className={`text-xs font-bold ${strengthInfo.color}`}>{strengthInfo.label}</span>
+              </div>
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500 ease-out"
+                  style={{
+                    width: `${scoreStrength}%`,
+                    backgroundColor: scoreStrength >= 80 ? '#10b981' : scoreStrength >= 60 ? '#0168FE' : scoreStrength >= 40 ? '#f59e0b' : '#9ca3af',
+                  }}
+                />
+              </div>
+              <p className="text-[10px] text-gray-400 mt-1">
+                More documents = more accurate scoring. Add financials and supporting docs for best results.
+              </p>
+            </div>
+
+            {/* Primary: Pitch Deck */}
             <div>
               <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Pitch Deck *</label>
               <UploadZone
@@ -896,11 +980,15 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               />
             </div>
 
+            {/* Secondary: Financials (Recommended) */}
             <div>
-              <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Financials & Metrics</label>
+              <div className="flex items-center gap-2 mb-1.5">
+                <label className="block text-sm font-medium text-kunfa-navy">Financials & Metrics</label>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 text-[#0168FE]">RECOMMENDED</span>
+              </div>
               <UploadZone
                 label="Tap to upload"
-                subtitle="Financials, data room — up to 25 MB (optional)"
+                subtitle="Financials, projections — up to 25 MB"
                 required={false}
                 accept=".pdf,.xlsx,.xls,.csv"
                 file={financials}
@@ -908,10 +996,99 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               />
             </div>
 
-            <div className="flex items-center gap-4 pt-2">
+            {/* Additional Documents */}
+            {additionalDocs.length > 0 && (
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Additional Documents</label>
+                {additionalDocs.map((doc) => (
+                  <div key={doc.id} className="flex items-center gap-2 bg-gray-50 rounded-lg p-2.5">
+                    <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-900 truncate">{doc.file.name}</p>
+                      <p className="text-[10px] text-gray-400">
+                        {ADDITIONAL_CATEGORIES.find(c => c.value === doc.category)?.label || doc.category}
+                        {' · '}
+                        {(doc.file.size / (1024 * 1024)).toFixed(1)} MB
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setAdditionalDocs(prev => prev.filter(d => d.id !== doc.id))}
+                      className="p-1 text-gray-400 hover:text-red-500 transition"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add More Documents Button */}
+            {additionalDocs.length < 5 && (
+              <div className="border border-dashed border-gray-300 rounded-lg p-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-gray-500">
+                    Add supporting documents (cap table, term sheet, product docs, etc.)
+                  </p>
+                  <label className="flex items-center gap-1 text-xs font-semibold text-kunfa hover:text-kunfa-dark transition cursor-pointer">
+                    <Plus className="w-3.5 h-3.5" />
+                    Add
+                    <input
+                      type="file"
+                      className="hidden"
+                      accept=".pdf,.xlsx,.xls,.csv,.doc,.docx,.ppt,.pptx"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (!file) return
+                        if (file.size > 25 * 1024 * 1024) {
+                          setError('File too large. Maximum size is 25MB.')
+                          return
+                        }
+                        // Show category picker inline — default to 'other', user can change
+                        setAdditionalDocs(prev => [...prev, {
+                          id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+                          file,
+                          category: 'other',
+                        }])
+                        e.target.value = '' // Reset so same file can be re-added
+                      }}
+                    />
+                  </label>
+                </div>
+                {/* Category selector for the most recent doc if it's still 'other' */}
+                {additionalDocs.length > 0 && additionalDocs[additionalDocs.length - 1].category === 'other' && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-[10px] text-gray-400">Category:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {ADDITIONAL_CATEGORIES.map(cat => (
+                        <button
+                          key={cat.value}
+                          onClick={() => {
+                            const lastDoc = additionalDocs[additionalDocs.length - 1]
+                            setAdditionalDocs(prev => prev.map(d =>
+                              d.id === lastDoc.id ? { ...d, category: cat.value } : d
+                            ))
+                          }}
+                          className={`text-[10px] px-2 py-0.5 rounded-full transition ${
+                            additionalDocs[additionalDocs.length - 1].category === cat.value
+                              ? 'bg-kunfa text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Document Checklist */}
+            <div className="flex items-center gap-4 pt-1">
               {[
                 { label: 'Pitch deck', done: !!pitchDeck },
                 { label: 'Financials', done: !!financials, optional: true },
+                ...(additionalDocs.length > 0 ? [{ label: `+${additionalDocs.length} more`, done: true, optional: true }] : []),
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-1.5">
                   <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
@@ -973,7 +1150,10 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                   ? 'bg-kunfa hover:bg-kunfa-dark text-white cursor-pointer'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}>
-              GENERATE SCORE
+              {additionalDocs.length > 0 || financials
+                ? `GENERATE SCORE (${1 + (financials ? 1 : 0) + additionalDocs.length} documents)`
+                : 'GENERATE SCORE'
+              }
             </button>
           </div>
         )}

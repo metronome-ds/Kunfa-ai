@@ -76,6 +76,7 @@ export async function POST(request: NextRequest) {
       companyPageId,
       foundingTeam,
       documentIds,
+      additionalDocs,
     } = body as {
       email: string
       linkedinUrl?: string
@@ -88,6 +89,8 @@ export async function POST(request: NextRequest) {
       companyPageId?: string
       foundingTeam?: { name: string; title: string; email?: string; linkedin?: string }[]
       documentIds?: string[]
+      // KUN-55: Additional documents from enhanced onboarding upload
+      additionalDocs?: { url: string; filename: string; category: string }[]
     }
 
     // documentIds mode: re-score using deal room documents (requires companyPageId)
@@ -239,6 +242,26 @@ export async function POST(request: NextRequest) {
 
         if (financialsUrl) {
           financialsText = await extractTextFromBlobUrl(financialsUrl, financialsFilename || 'file.pdf')
+        }
+
+        // KUN-55: Extract text from additional documents uploaded during onboarding
+        if (additionalDocs && additionalDocs.length > 0) {
+          for (const doc of additionalDocs) {
+            try {
+              const text = await extractTextFromBlobUrl(doc.url, doc.filename)
+              if (doc.category === 'financials' && !financialsText) {
+                financialsText = text
+              } else {
+                supplementaryDocs.push({
+                  category: doc.category,
+                  fileName: doc.filename,
+                  text,
+                })
+              }
+            } catch (extractErr) {
+              console.error(`Failed to extract text from additional doc ${doc.filename}:`, extractErr)
+            }
+          }
         }
       } catch (fetchErr) {
         console.error('File fetch/extract error:', fetchErr)
@@ -574,6 +597,22 @@ export async function POST(request: NextRequest) {
                     is_public: true,
                   })
                 }
+                // KUN-55: Also add additional documents from enhanced onboarding
+                if (additionalDocs && additionalDocs.length > 0) {
+                  for (const doc of additionalDocs) {
+                    dealroomDocs.push({
+                      company_id: result.id,
+                      uploaded_by: userId,
+                      file_name: doc.filename,
+                      file_url: doc.url,
+                      file_size: 0,
+                      file_type: 'application/pdf',
+                      category: doc.category,
+                      is_public: true,
+                    })
+                  }
+                }
+
                 if (dealroomDocs.length > 0) {
                   await supabase.from('dealroom_documents').insert(dealroomDocs)
                 }
@@ -590,10 +629,16 @@ export async function POST(request: NextRequest) {
 
     const teaser = extractTeaser(fullResult)
 
+    // KUN-54: Count total documents scored
+    const totalDocsScored = 1 + // pitch deck
+      (financialsText ? 1 : 0) +
+      supplementaryDocs.length
+
     return NextResponse.json({
       submissionId,
       teaser,
       slug,
+      documentsScored: totalDocsScored,
     })
   } catch (error) {
     console.error('Scoring route unexpected error:', error)
