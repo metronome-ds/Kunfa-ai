@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Users, UserPlus, Trash2, X } from 'lucide-react'
+import { Users, UserPlus, Trash2, X, RefreshCw } from 'lucide-react'
 
 interface TeamMember {
   id: string
@@ -48,6 +48,10 @@ export default function TeamPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  // Resend cooldown: map of memberId → true if on cooldown
+  const [resendCooldown, setResendCooldown] = useState<Record<string, boolean>>({})
+  const [resending, setResending] = useState<string | null>(null)
 
   // Invite form
   const [showInvite, setShowInvite] = useState(false)
@@ -130,6 +134,31 @@ export default function TeamPage() {
       setTimeout(() => setSuccess(''), 2000)
     } catch {
       setError('Failed to remove member')
+    }
+  }
+
+  const handleResend = async (memberId: string, email: string) => {
+    setResending(memberId)
+    setError('')
+    try {
+      const res = await fetch('/api/team/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to resend')
+      setSuccess(`Invite resent to ${email}`)
+      setTimeout(() => setSuccess(''), 3000)
+      // Start 30s cooldown
+      setResendCooldown((prev) => ({ ...prev, [memberId]: true }))
+      setTimeout(() => {
+        setResendCooldown((prev) => ({ ...prev, [memberId]: false }))
+      }, 30000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resend invite')
+    } finally {
+      setResending(null)
     }
   }
 
@@ -236,15 +265,28 @@ export default function TeamPage() {
 
                   {/* Actions */}
                   <td className="px-5 py-4 text-right">
-                    {member.id !== 'owner' && (
-                      <button
-                        onClick={() => handleRemove(member.id)}
-                        className="p-1.5 text-gray-400 hover:text-red-500 transition rounded-lg hover:bg-red-50"
-                        title="Remove member"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    <div className="flex items-center justify-end gap-1">
+                      {member.id !== 'owner' && member.status === 'pending' && (
+                        <button
+                          onClick={() => handleResend(member.id, member.email)}
+                          disabled={resending === member.id || resendCooldown[member.id]}
+                          className="px-2 py-1 text-xs font-medium text-[#0168FE] hover:bg-blue-50 transition rounded-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                          title="Resend invite"
+                        >
+                          <RefreshCw className={`w-3 h-3 ${resending === member.id ? 'animate-spin' : ''}`} />
+                          {resendCooldown[member.id] ? 'Sent' : 'Resend'}
+                        </button>
+                      )}
+                      {member.id !== 'owner' && (
+                        <button
+                          onClick={() => handleRemove(member.id)}
+                          className="p-1.5 text-gray-400 hover:text-red-500 transition rounded-lg hover:bg-red-50"
+                          title="Remove member"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
