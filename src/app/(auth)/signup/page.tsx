@@ -33,6 +33,7 @@ function SignupContent() {
   const [inviteEmailLocked, setInviteEmailLocked] = useState(false)
   const [claimToken, setClaimToken] = useState<string | null>(null)
   const [claimCompanyName, setClaimCompanyName] = useState<string | null>(null)
+  const [selectedRole, setSelectedRole] = useState<'startup' | 'investor' | null>(null)
 
   // Email confirmation resend state
   const [resendCooldown, setResendCooldown] = useState(0)
@@ -118,6 +119,8 @@ function SignupContent() {
     setLoading(true)
     setError('')
 
+    const signupRole = claimToken ? 'startup' : inviteId ? 'investor' : selectedRole
+
     const redirectUrl = claimToken
       ? `${window.location.origin}/auth/confirm?next=/claim/${claimToken}`
       : `${window.location.origin}/auth/confirm`
@@ -125,7 +128,10 @@ function SignupContent() {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: redirectUrl }
+      options: {
+        emailRedirectTo: redirectUrl,
+        data: { role: signupRole },
+      }
     })
 
     if (error) {
@@ -139,7 +145,7 @@ function SignupContent() {
         await supabase.from('profiles').insert({
           user_id: data.user.id,
           email,
-          ...(claimToken ? { role: 'startup' } : {}),
+          ...(signupRole ? { role: signupRole } : {}),
         })
 
         // Auto-join: accept all pending invites for this email
@@ -172,7 +178,6 @@ function SignupContent() {
 
         // If signing up via invite link, skip role selection and go to dashboard
         if (inviteId) {
-          // Send welcome email
           fetch('/api/auth/welcome', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -182,6 +187,18 @@ function SignupContent() {
           return
         }
 
+        // Role already selected in form — redirect directly
+        if (signupRole) {
+          fetch('/api/auth/welcome', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role: signupRole }),
+          }).catch(() => {})
+          window.location.href = signupRole === 'investor' ? '/onboarding' : '/dashboard'
+          return
+        }
+
+        // Fallback: show role selection screen
         setUserId(data.user.id)
         setShowRoleSelection(true)
       } else {
@@ -334,6 +351,38 @@ function SignupContent() {
 
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-lg">
           <form onSubmit={handleSignup} className="space-y-4">
+            {!claimToken && !inviteId && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">I am a...</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRole('startup')}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-medium transition ${
+                      selectedRole === 'startup'
+                        ? 'border-[#0168FE] bg-[#0168FE]/5 text-[#0168FE]'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    <Building2 className="w-5 h-5" />
+                    Startup
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRole('investor')}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-medium transition ${
+                      selectedRole === 'investor'
+                        ? 'border-[#0168FE] bg-[#0168FE]/5 text-[#0168FE]'
+                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                    }`}
+                  >
+                    <TrendingUp className="w-5 h-5" />
+                    Investor
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
@@ -367,7 +416,7 @@ function SignupContent() {
               <div className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg p-3">{error}</div>
             )}
 
-            <button type="submit" disabled={loading || !tosAgreed}
+            <button type="submit" disabled={loading || !tosAgreed || (!claimToken && !inviteId && !selectedRole)}
               className="w-full py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition disabled:opacity-50">
               {loading ? 'Creating account...' : 'Create Account'}
             </button>

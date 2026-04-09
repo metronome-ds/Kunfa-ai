@@ -25,10 +25,13 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(redirectTo)
       }
 
+      // Read role from signup metadata
+      const role = (data.user.user_metadata?.role as string) || undefined
+
       // Ensure profile exists for newly confirmed users
       const { data: existingProfile } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, onboarding_completed')
         .eq('user_id', data.user.id)
         .single()
 
@@ -36,6 +39,7 @@ export async function GET(request: NextRequest) {
         await supabase.from('profiles').insert({
           user_id: data.user.id,
           email: data.user.email,
+          ...(role ? { role } : {}),
         })
       }
 
@@ -50,6 +54,12 @@ export async function GET(request: NextRequest) {
           })
           .eq('invited_email', data.user.email)
           .eq('status', 'pending')
+      }
+
+      // For new investors, redirect to onboarding instead of default dashboard
+      const hasExplicitNext = searchParams.get('next')
+      if (!hasExplicitNext && role === 'investor' && !existingProfile?.onboarding_completed) {
+        redirectTo.pathname = '/onboarding'
       }
 
       redirectTo.searchParams.delete('next')
