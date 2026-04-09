@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const token_hash = searchParams.get('token_hash')
   const type = searchParams.get('type') as 'signup' | 'email' | 'recovery' | 'invite' | null
-  const next = searchParams.get('next') ?? '/onboarding'
+  const next = searchParams.get('next') ?? '/dashboard'
 
   if (token_hash && type) {
     const cookieStore = await cookies()
@@ -57,10 +57,23 @@ export async function GET(request: NextRequest) {
         })
       }
 
+      // Auto-join: accept all pending team invites for this email
+      if (data.user.email) {
+        await supabase
+          .from('team_members')
+          .update({
+            member_user_id: data.user.id,
+            status: 'accepted',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('invited_email', data.user.email)
+          .eq('status', 'pending')
+      }
+
       return NextResponse.redirect(new URL(next, request.url))
     }
   }
 
   // If verification failed, redirect to login with error
-  return NextResponse.redirect(new URL('/login?error=verification_failed', request.url))
+  return NextResponse.redirect(new URL('/login?error=confirmation_failed', request.url))
 }

@@ -1,15 +1,37 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import KunfaLogo from '@/components/common/KunfaLogo'
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0168FE]" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
+  )
+}
+
+function LoginContent() {
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Show error from URL params (e.g. confirmation_failed from /auth/confirm)
+  useEffect(() => {
+    const urlError = searchParams.get('error')
+    if (urlError === 'confirmation_failed' || urlError === 'verification_failed') {
+      setError('Email confirmation failed. The link may have expired. Please try signing up again.')
+    }
+  }, [searchParams])
 
   // Forgot password state
   const [showForgot, setShowForgot] = useState(false)
@@ -30,7 +52,13 @@ export default function LoginPage() {
       })
 
       if (error) {
-        setError(error.message)
+        // Detect unconfirmed email error from Supabase
+        const msg = error.message.toLowerCase()
+        if (msg.includes('email not confirmed') || msg.includes('email_not_confirmed')) {
+          setError('Please confirm your email address first. Check your inbox for the confirmation link.')
+        } else {
+          setError(error.message)
+        }
         setIsLoading(false)
         return
       }
