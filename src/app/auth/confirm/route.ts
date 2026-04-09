@@ -1,6 +1,7 @@
 import { type EmailOtpType } from '@supabase/supabase-js'
 import { type NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { getSupabase } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
@@ -14,10 +15,17 @@ export async function GET(request: NextRequest) {
   redirectTo.searchParams.delete('type')
 
   if (token_hash && type) {
+    // Use the cookie-based client for OTP verification (sets session cookies)
     const supabase = await createServerSupabaseClient()
     const { data, error } = await supabase.auth.verifyOtp({ type, token_hash })
 
+    if (error) {
+      console.error('[AUTH CONFIRM] OTP verification failed:', error.message)
+    }
+
     if (!error && data.user) {
+      console.log('[AUTH CONFIRM] User verified:', data.user.id, data.user.email, JSON.stringify(data.user.user_metadata))
+
       // Recovery flow → reset-password page
       if (type === 'recovery') {
         redirectTo.pathname = '/reset-password'
@@ -25,27 +33,45 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(redirectTo)
       }
 
-      // Read role from signup metadata
-      const role = (data.user.user_metadata?.role as string) || undefined
+      // Use service role client for all DB operations (bypasses RLS)
+      const adminDb = getSupabase()
 
-      // Ensure profile exists for newly confirmed users
-      const { data: existingProfile } = await supabase
+      // Read role and invite from signup metadata
+      const role = (data.user.user_metadata?.role as string) || undefined
+      const inviteFromMeta = (data.user.user_metadata?.invite as string) || undefined
+
+      console.log('[AUTH CONFIRM] Metadata — role:', role, '| invite:', inviteFromMeta)
+
+      // Check if profile already exists
+      const { data: existingProfile, error: profileCheckErr } = await adminDb
         .from('profiles')
         .select('id, onboarding_completed')
         .eq('user_id', data.user.id)
         .single()
 
+      console.log('[AUTH CONFIRM] Existing profile check:', existingProfile ? 'found' : 'not found', profileCheckErr?.code || '')
+
+      // Create profile if it doesn't exist
       if (!existingProfile) {
-        await supabase.from('profiles').insert({
+        const profilePayload = {
           user_id: data.user.id,
           email: data.user.email,
           ...(role ? { role } : {}),
-        })
+          onboarding_completed: false,
+        }
+        const { data: insertedProfile, error: profileInsertErr } = await adminDb
+          .from('profiles')
+          .insert(profilePayload)
+          .select('id')
+          .single()
+
+        console.log('[AUTH CONFIRM] Profile insert result:', insertedProfile?.id || 'null', '| error:', profileInsertErr?.message || 'none')
       }
 
       // Auto-join: accept any pending team invites for this email
+      let inviteAccepted = false
       if (data.user.email) {
-        await supabase
+        const { data: joinResult, error: joinErr } = await adminDb
           .from('team_members')
           .update({
             member_user_id: data.user.id,
@@ -54,13 +80,28 @@ export async function GET(request: NextRequest) {
           })
           .eq('invited_email', data.user.email)
           .eq('status', 'pending')
+          .select('id')
+
+        inviteAccepted = !!(joinResult && joinResult.length > 0)
+        console.log('[AUTH CONFIRM] Team join result:', joinResult?.length || 0, 'invites accepted | error:', joinErr?.message || 'none')
       }
 
-      // For new investors, redirect to onboarding instead of default dashboard
+      // Determine redirect
       const hasExplicitNext = searchParams.get('next')
-      if (!hasExplicitNext && role === 'investor' && !existingProfile?.onboarding_completed) {
-        redirectTo.pathname = '/onboarding'
+      if (!hasExplicitNext) {
+        if (inviteAccepted || inviteFromMeta) {
+          // Invite signup — go straight to dashboard (joining existing team)
+          redirectTo.pathname = '/dashboard'
+        } else if (role === 'investor' && !existingProfile?.onboarding_completed) {
+          // New investor — needs onboarding
+          redirectTo.pathname = '/onboarding'
+        } else {
+          // Default
+          redirectTo.pathname = '/dashboard'
+        }
       }
+
+      console.log('[AUTH CONFIRM] Redirecting to:', redirectTo.pathname)
 
       redirectTo.searchParams.delete('next')
       return NextResponse.redirect(redirectTo)

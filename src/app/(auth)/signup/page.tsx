@@ -130,7 +130,10 @@ function SignupContent() {
       password,
       options: {
         emailRedirectTo: redirectUrl,
-        data: { role: signupRole },
+        data: {
+          role: signupRole,
+          ...(inviteId ? { invite: inviteId } : {}),
+        },
       }
     })
 
