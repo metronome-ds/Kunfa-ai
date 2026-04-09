@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import KunfaLogo from '@/components/common/KunfaLogo'
+import { RefreshCw } from 'lucide-react'
 
 export default function LoginPage() {
   return (
@@ -33,12 +34,43 @@ function LoginContent() {
     }
   }, [searchParams])
 
+  // Resend confirmation state (shown when user has unconfirmed email)
+  const [showResendConfirm, setShowResendConfirm] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const [resending, setResending] = useState(false)
+
   // Forgot password state
   const [showForgot, setShowForgot] = useState(false)
   const [forgotEmail, setForgotEmail] = useState('')
   const [forgotLoading, setForgotLoading] = useState(false)
   const [forgotSent, setForgotSent] = useState(false)
   const [forgotError, setForgotError] = useState('')
+
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [resendCooldown])
+
+  const handleResendConfirmation = useCallback(async () => {
+    if (resendCooldown > 0 || resending || !email) return
+    setResending(true)
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      })
+      if (error) throw error
+      setResendCooldown(60)
+      setError('Confirmation email sent! Check your inbox.')
+      setShowResendConfirm(false)
+    } catch {
+      setError('Failed to resend confirmation email. Please try again.')
+    } finally {
+      setResending(false)
+    }
+  }, [email, resendCooldown, resending])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,8 +88,10 @@ function LoginContent() {
         const msg = error.message.toLowerCase()
         if (msg.includes('email not confirmed') || msg.includes('email_not_confirmed')) {
           setError('Please confirm your email address first. Check your inbox for the confirmation link.')
+          setShowResendConfirm(true)
         } else {
           setError(error.message)
+          setShowResendConfirm(false)
         }
         setIsLoading(false)
         return
@@ -179,6 +213,21 @@ function LoginContent() {
               {error && (
                 <div className="mb-4 rounded-lg bg-red-50 p-3 border border-red-200">
                   <p className="text-red-700 text-sm">{error}</p>
+                  {showResendConfirm && (
+                    <button
+                      onClick={handleResendConfirmation}
+                      disabled={resendCooldown > 0 || resending}
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#0168FE] hover:text-[#0050CC] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${resending ? 'animate-spin' : ''}`} />
+                      {resending
+                        ? 'Sending...'
+                        : resendCooldown > 0
+                          ? `Resend in ${resendCooldown}s`
+                          : 'Resend confirmation email'
+                      }
+                    </button>
+                  )}
                 </div>
               )}
 
