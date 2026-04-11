@@ -160,11 +160,21 @@ function SignupContent() {
         })
 
         // Auto-join: accept all pending invites for this email
-        await supabase
+        const { data: joinedTeams } = await supabase
           .from('team_members')
           .update({ member_user_id: data.user.id, status: 'accepted', updated_at: new Date().toISOString() })
           .eq('invited_email', email)
           .eq('status', 'pending')
+          .select('team_id')
+
+        // Set active_team_id so the new member immediately sees the team's dashboard
+        const joinedTeamId = joinedTeams?.[0]?.team_id || null
+        if (joinedTeamId) {
+          await supabase
+            .from('profiles')
+            .update({ active_team_id: joinedTeamId })
+            .eq('user_id', data.user.id)
+        }
 
         // If signing up via claim link, process claim and skip role selection
         if (claimToken) {

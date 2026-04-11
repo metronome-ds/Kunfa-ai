@@ -1,11 +1,12 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getSupabase } from '@/lib/db'
+import { getTeamContext } from '@/lib/team-context'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * GET /api/my-company
- * Returns the current user's most recent company_pages record (full data).
- * Also returns submission payment status if a submission exists.
+ * Returns the company_pages record for the user's effective team context.
+ * For team members, this returns the team owner's company instead of their own.
  */
 export async function GET() {
   try {
@@ -16,10 +17,16 @@ export async function GET() {
       return NextResponse.json({ company: null }, { status: 200 })
     }
 
-    const { data: company } = await supabase
+    // Resolve team context — team members see the team owner's company
+    const context = await getTeamContext(user.id)
+    console.log('[MY-COMPANY] userId:', user.id, 'effectiveUserId:', context.effectiveUserId, 'isTeamMember:', context.isTeamMember)
+
+    // Use service role to read the team owner's company (bypasses RLS for team members)
+    const adminDb = getSupabase()
+    const { data: company } = await adminDb
       .from('company_pages')
       .select('*')
-      .eq('user_id', user.id)
+      .eq('user_id', context.effectiveUserId)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -33,7 +40,6 @@ export async function GET() {
     let paid = false
     let hasReport = false
     if (company.submission_id) {
-      const adminDb = getSupabase()
       const { data: submission, error: subError } = await adminDb
         .from('submissions')
         .select('paid, report_url, created_at')

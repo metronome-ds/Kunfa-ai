@@ -102,6 +102,7 @@ export async function GET(request: NextRequest) {
 
       // Auto-join: accept any pending team invites for this email
       let inviteAccepted = false
+      let joinedTeamId: string | null = null
       if (data.user.email) {
         const { data: joinResult, error: joinErr } = await adminDb
           .from('team_members')
@@ -112,10 +113,20 @@ export async function GET(request: NextRequest) {
           })
           .eq('invited_email', data.user.email)
           .eq('status', 'pending')
-          .select('id')
+          .select('id, team_id')
 
         inviteAccepted = !!(joinResult && joinResult.length > 0)
+        joinedTeamId = joinResult?.[0]?.team_id || null
         console.log('[AUTH CONFIRM] Team join result:', joinResult?.length || 0, 'invites accepted | error:', joinErr?.message || 'none')
+
+        // Set active_team_id so the new member immediately sees the team's dashboard
+        if (joinedTeamId) {
+          const { error: activeTeamErr } = await adminDb
+            .from('profiles')
+            .update({ active_team_id: joinedTeamId })
+            .eq('user_id', data.user.id)
+          console.log('[AUTH CONFIRM] active_team_id set to:', joinedTeamId, '| error:', activeTeamErr?.message || 'none')
+        }
       }
 
       // Determine redirect
