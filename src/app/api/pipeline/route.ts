@@ -40,7 +40,9 @@ export async function GET() {
           industry,
           overall_score,
           one_liner,
-          logo_url
+          logo_url,
+          is_raising,
+          raising_amount
         )
       `)
       .eq('investor_id', profileId || '')
@@ -87,7 +89,9 @@ export async function GET() {
           one_liner,
           description,
           pdf_url,
-          logo_url
+          logo_url,
+          is_raising,
+          raising_amount
         )
       `)
       .eq('created_by', user.id)
@@ -156,6 +160,8 @@ export async function GET() {
         overall_score: company?.overall_score || null,
         one_liner: company?.one_liner || null,
         logo_url: company?.logo_url || null,
+        is_raising: company?.is_raising || false,
+        raising_amount: company?.raising_amount || null,
       };
     });
 
@@ -207,6 +213,8 @@ export async function GET() {
           lead_investor: deal.lead_investor || null,
           co_investors: deal.co_investors || null,
           round_type: deal.round_type || null,
+          is_raising: company?.is_raising || false,
+          raising_amount: company?.raising_amount || null,
           note_count: noteCountMap[deal.id] || 0,
         });
       }

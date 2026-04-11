@@ -10,6 +10,7 @@ export interface CompanyFilterState {
   industries: string[];
   stages: string[];
   sort: 'newest' | 'score' | 'funding';
+  raisingOnly: boolean;
 }
 
 interface CompanyFilterProps {
@@ -23,6 +24,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
     industries: [],
     stages: [],
     sort: 'newest',
+    raisingOnly: false,
   });
 
   const [expandedSections, setExpandedSections] = useState({
@@ -59,6 +61,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
       industries: [],
       stages: [],
       sort: 'newest',
+      raisingOnly: false,
     };
     setFilters(cleared);
     onFilterChange(cleared);
@@ -88,6 +91,29 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
           onChange={(e) => updateFilter({ search: e.target.value })}
           containerClassName="w-full"
         />
+
+        {/* Actively Raising Toggle */}
+        <label className="flex items-center justify-between gap-3 cursor-pointer">
+          <span className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            Actively Raising
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={filters.raisingOnly}
+            onClick={() => updateFilter({ raisingOnly: !filters.raisingOnly })}
+            className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0168FE]/30 focus:ring-offset-2 ${
+              filters.raisingOnly ? 'bg-emerald-500' : 'bg-gray-300'
+            }`}
+          >
+            <span
+              className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform ${
+                filters.raisingOnly ? 'translate-x-5' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+        </label>
 
         {/* Sort */}
         <div>

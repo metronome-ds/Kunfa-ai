@@ -40,6 +40,9 @@ function LoginContent() {
   // Optional invite acceptance after login
   const inviteId = searchParams.get('invite')
 
+  // Optional claim after login
+  const claimToken = searchParams.get('claim')
+
   // Resend confirmation state (shown when user has unconfirmed email)
   const [showResendConfirm, setShowResendConfirm] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
@@ -123,6 +126,31 @@ function LoginContent() {
           // On failure, still fall through to normal redirect
         }
 
+        // If logging in from a claim link, process the claim now
+        if (claimToken) {
+          try {
+            const res = await fetch('/api/claim', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: claimToken }),
+            })
+            if (res.ok) {
+              const claimData = await res.json()
+              if (claimData.approved) {
+                window.location.href = '/dashboard?claimed=true'
+                return
+              }
+              if (claimData.pending) {
+                window.location.href = '/dashboard?claim_pending=true'
+                return
+              }
+            }
+          } catch (err) {
+            console.error('Claim processing failed:', err)
+          }
+          // On failure, still fall through to normal redirect
+        }
+
         const { data: profile } = await supabase
           .from('profiles')
           .select('onboarding_completed')
@@ -170,7 +198,11 @@ function LoginContent() {
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
           <p className="text-gray-500 mt-2">
-            {inviteId ? 'Sign in to accept your team invitation' : 'Sign in to your account'}
+            {inviteId
+              ? 'Sign in to accept your team invitation'
+              : claimToken
+                ? 'Sign in to claim your company profile'
+                : 'Sign in to your account'}
           </p>
         </div>
 

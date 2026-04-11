@@ -288,6 +288,10 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
                   founded_year: company.founded_year,
                   founder_name: company.founder_name,
                   founder_title: company.founder_title,
+                  is_raising: company.is_raising,
+                  raising_amount: company.raising_amount,
+                  raising_instrument: company.raising_instrument,
+                  raising_target_close: company.raising_target_close,
                   added_by: company.added_by,
                   user_id: company.user_id,
                 }}
@@ -295,6 +299,32 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
             </div>
           </div>
         </div>
+
+        {/* Currently Raising banner */}
+        {company.is_raising && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V12Zm-12 0h.008v.008H6V12Z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-bold text-emerald-900">
+                  Currently Raising
+                  {company.raising_amount && <> — {company.raising_amount}</>}
+                  {company.stage && <> {company.stage}</>}
+                  {company.raising_instrument && <> ({company.raising_instrument})</>}
+                </p>
+                {company.raising_target_close && (
+                  <p className="text-xs text-emerald-700 mt-1">
+                    Target close: {new Date(company.raising_target_close).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* KUN-21: Sub-75 score gate banner */}
         {(company.overall_score ?? 0) < 75 && (

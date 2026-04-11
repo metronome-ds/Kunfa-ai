@@ -21,6 +21,7 @@ export default function BrowseCompaniesPage() {
     industries: [],
     stages: [],
     sort: 'newest',
+    raisingOnly: false,
   });
   const [pagination, setPagination] = useState<PaginationData>({
     page: 1,
@@ -48,6 +49,7 @@ export default function BrowseCompaniesPage() {
         if (filters.search) params.set('search', filters.search);
         filters.industries.forEach((ind) => params.append('industry', ind));
         filters.stages.forEach((stage) => params.append('stage', stage));
+        if (filters.raisingOnly) params.set('raising', 'true');
 
         const response = await fetch(`/api/companies/browse?${params.toString()}`);
         if (!response.ok) throw new Error('Failed to fetch companies');
@@ -108,6 +110,7 @@ export default function BrowseCompaniesPage() {
     ...filters.industries,
     ...filters.stages,
     filters.sort !== 'newest' ? filters.sort : null,
+    filters.raisingOnly ? 'raising' : null,
   ].filter(Boolean).length;
 
   return (

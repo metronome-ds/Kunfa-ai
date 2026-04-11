@@ -19,6 +19,9 @@ interface CompanyCardProps {
     country?: string | null;
     headquarters?: string | null;
     logo_url?: string | null;
+    is_raising?: boolean | null;
+    raising_amount?: string | null;
+    raising_instrument?: string | null;
   };
   isWatchlisted?: boolean;
   showWatchlist?: boolean;
@@ -97,6 +100,12 @@ export function CompanyCard({
           {/* Header: badges + watchlist */}
           <div className="flex items-start justify-between mb-3">
             <div className="flex flex-wrap items-center gap-2">
+              {company.is_raising && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  {company.raising_amount ? `Raising ${company.raising_amount}` : 'Raising'}
+                </span>
+              )}
               {company.industry && (
                 <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
                   {company.industry}

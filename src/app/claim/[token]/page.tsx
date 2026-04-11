@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { supabase, getCurrentUser } from '@/lib/supabase'
+import { useParams } from 'next/navigation'
+import { getCurrentUser } from '@/lib/supabase'
 import Link from 'next/link'
 import KunfaLogo from '@/components/common/KunfaLogo'
 
@@ -27,7 +27,6 @@ function getScoreColor(score: number | null | undefined) {
 
 export default function ClaimPage() {
   const { token } = useParams<{ token: string }>()
-  const router = useRouter()
 
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null)
   const [loading, setLoading] = useState(true)
@@ -36,24 +35,12 @@ export default function ClaimPage() {
   const [result, setResult] = useState<{ approved?: boolean; pending?: boolean; slug?: string } | null>(null)
   const [error, setError] = useState('')
 
-  // Signup form state
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [signupLoading, setSignupLoading] = useState(false)
-  const [signupError, setSignupError] = useState('')
-  const [confirmationSent, setConfirmationSent] = useState(false)
-
   useEffect(() => {
     async function init() {
       // Fetch company info
       const res = await fetch(`/api/claim/info?token=${token}`)
       const data: CompanyInfo = await res.json()
       setCompanyInfo(data)
-
-      if (data.valid && data.claim_invited_email) {
-        setEmail(data.claim_invited_email)
-      }
 
       // Check if user is logged in
       const currentUser = await getCurrentUser()
@@ -94,65 +81,6 @@ export default function ClaimPage() {
       setError('Something went wrong. Please try again.')
     }
     setClaiming(false)
-  }
-
-  async function handleSignup(e: React.FormEvent) {
-    e.preventDefault()
-    setSignupLoading(true)
-    setSignupError('')
-
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/confirm?next=/claim/${token}`,
-      },
-    })
-
-    if (error) {
-      setSignupError(error.message)
-      setSignupLoading(false)
-      return
-    }
-
-    if (data.user && data.session) {
-      // Immediate session — create profile and claim
-      await supabase.from('profiles').insert({
-        user_id: data.user.id,
-        email,
-        full_name: fullName || null,
-        role: 'startup',
-        onboarding_completed: true,
-      })
-
-      // Auto-join pending invites
-      await supabase
-        .from('team_members')
-        .update({ member_user_id: data.user.id, status: 'accepted', updated_at: new Date().toISOString() })
-        .eq('invited_email', email)
-        .eq('status', 'pending')
-
-      setUser({ id: data.user.id, email: data.user.email })
-
-      // Now claim
-      const res = await fetch('/api/claim', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token }),
-      })
-      const claimData = await res.json()
-
-      if (claimData.approved) {
-        window.location.href = '/dashboard?claimed=true'
-      } else if (claimData.pending) {
-        window.location.href = '/dashboard?claim_pending=true'
-      }
-      return
-    }
-
-    // No immediate session — confirmation email sent
-    setConfirmationSent(true)
-    setSignupLoading(false)
   }
 
   if (loading) {
@@ -224,25 +152,6 @@ export default function ClaimPage() {
     }
   }
 
-  // Confirmation sent state
-  if (confirmationSent) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="w-full max-w-md text-center">
-          <div className="w-16 h-16 rounded-full bg-[#0168FE]/10 flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-[#0168FE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
-          <p className="text-gray-600">
-            We sent a confirmation link to <strong className="text-gray-900">{email}</strong>. Click the link to verify your account and claim <strong>{companyInfo.company_name}</strong>.
-          </p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
@@ -251,10 +160,10 @@ export default function ClaimPage() {
             <KunfaLogo height={32} />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">
-            Create your {companyInfo.company_name} profile on Kunfa
+            Claim {companyInfo.company_name} on Kunfa
           </h1>
           <p className="text-gray-500 mt-2">
-            Upload your pitch deck, get an AI-powered investment readiness score, and connect with investors.
+            Take ownership of your company profile, update your information, and connect with investors.
           </p>
         </div>
 
@@ -307,65 +216,25 @@ export default function ClaimPage() {
             </button>
           </div>
         ) : (
-          // Not logged in — show signup form
+          // Not logged in — redirect to signup with claim token
           <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
             <p className="text-sm text-gray-600 mb-4">
-              Create an account to claim <strong>{companyInfo.company_name}</strong>
+              Create an account to claim <strong>{companyInfo.company_name}</strong>. We&apos;ll verify your email with a 6-digit code.
             </p>
 
-            <form onSubmit={handleSignup} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
-                  placeholder="Your full name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  readOnly={!!companyInfo.claim_invited_email}
-                  className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] ${companyInfo.claim_invited_email ? 'bg-gray-50' : 'bg-white'}`}
-                  placeholder="you@company.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
-                  placeholder="Min 6 characters"
-                />
-              </div>
-
-              {signupError && (
-                <div className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg p-3">{signupError}</div>
-              )}
-
-              <button
-                type="submit"
-                disabled={signupLoading}
-                className="w-full py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition disabled:opacity-50"
-              >
-                {signupLoading ? 'Creating account...' : 'Sign Up & Claim'}
-              </button>
-            </form>
+            <Link
+              href={`/signup?claim=${token}`}
+              className="w-full block text-center py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition"
+            >
+              Sign Up & Claim
+            </Link>
 
             <p className="text-center text-gray-600 text-sm mt-4">
               Already have an account?{' '}
-              <Link href={`/login?next=/claim/${token}`} className="text-[#0168FE] font-medium hover:underline">
+              <Link
+                href={`/login?claim=${token}`}
+                className="text-[#0168FE] font-medium hover:underline"
+              >
                 Sign in
               </Link>
             </p>

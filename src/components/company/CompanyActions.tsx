@@ -24,6 +24,10 @@ interface CompanyData {
   founded_year: number | null
   founder_name: string | null
   founder_title: string | null
+  is_raising?: boolean | null
+  raising_amount?: string | null
+  raising_instrument?: string | null
+  raising_target_close?: string | null
   added_by: string | null
   user_id: string | null
 }

@@ -18,6 +18,10 @@ const EDITABLE_FIELDS = [
   'founded_year',
   'founder_name',
   'founder_title',
+  'is_raising',
+  'raising_amount',
+  'raising_instrument',
+  'raising_target_close',
 ] as const
 
 export async function PATCH(
@@ -59,6 +63,8 @@ export async function PATCH(
           updates[field] = val ? Number(val) : null
         } else if (field === 'team_size' || field === 'founded_year') {
           updates[field] = val ? Number(val) : null
+        } else if (field === 'is_raising') {
+          updates[field] = val === true
         } else {
           updates[field] = val || null
         }

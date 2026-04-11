@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || '';
     const industries = searchParams.getAll('industry');
     const stages = searchParams.getAll('stage');
+    const raisingOnly = searchParams.get('raising') === 'true';
 
     // Admin bypass: admins can see all companies regardless of score
     let isAdmin = false;
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('company_pages')
       .select(
-        'id, company_name, slug, description, one_liner, industry, stage, overall_score, raise_amount, country, headquarters, logo_url, created_at',
+        'id, company_name, slug, description, one_liner, industry, stage, overall_score, raise_amount, country, headquarters, logo_url, created_at, is_raising, raising_amount, raising_instrument',
         { count: 'exact' }
       )
       .eq('is_public', true);
@@ -62,7 +63,13 @@ export async function GET(request: NextRequest) {
       query = query.in('stage', stages);
     }
 
-    // Sorting
+    // Currently raising filter
+    if (raisingOnly) {
+      query = query.eq('is_raising', true);
+    }
+
+    // Sorting — always show actively raising companies first as a secondary sort
+    query = query.order('is_raising', { ascending: false, nullsFirst: false });
     if (sort === 'score') {
       query = query.order('overall_score', { ascending: false, nullsFirst: false });
     } else if (sort === 'funding') {

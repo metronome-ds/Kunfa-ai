@@ -24,7 +24,20 @@ interface CompanyData {
   founded_year: number | null
   founder_name: string | null
   founder_title: string | null
+  is_raising?: boolean | null
+  raising_amount?: string | null
+  raising_instrument?: string | null
+  raising_target_close?: string | null
 }
+
+const RAISING_INSTRUMENTS = [
+  'SAFE',
+  'Priced Equity',
+  'Convertible Note',
+  'Revenue-Based',
+  'Murabaha',
+  'Other',
+] as const
 
 interface EditCompanyModalProps {
   company: CompanyData
@@ -50,6 +63,10 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
     founded_year: company.founded_year ? String(company.founded_year) : '',
     founder_name: company.founder_name || '',
     founder_title: company.founder_title || '',
+    is_raising: company.is_raising === true,
+    raising_amount: company.raising_amount || '',
+    raising_instrument: company.raising_instrument || '',
+    raising_target_close: company.raising_target_close || '',
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -85,7 +102,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
 
   if (!isOpen) return null
 
-  function updateField(field: string, value: string) {
+  function updateField(field: string, value: string | boolean) {
     setForm(prev => ({ ...prev, [field]: value }))
     setSuccess(false)
   }
@@ -122,6 +139,10 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
           founded_year: form.founded_year ? Number(form.founded_year) : null,
           founder_name: form.founder_name || null,
           founder_title: form.founder_title || null,
+          is_raising: form.is_raising,
+          raising_amount: form.is_raising ? (form.raising_amount || null) : null,
+          raising_instrument: form.is_raising ? (form.raising_instrument || null) : null,
+          raising_target_close: form.is_raising ? (form.raising_target_close || null) : null,
         }),
       })
 
@@ -370,6 +391,72 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
                 placeholder="CEO & Co-Founder"
               />
             </div>
+          </div>
+
+          {/* Currently Raising */}
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-gray-900">Currently Raising</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  Show investors that you&apos;re actively raising a round.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.is_raising}
+                onClick={() => updateField('is_raising', !form.is_raising)}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0168FE]/30 focus:ring-offset-2 ${
+                  form.is_raising ? 'bg-emerald-500' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                    form.is_raising ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {form.is_raising && (
+              <div className="space-y-4 pt-2 border-t border-gray-200">
+                <div>
+                  <label className={labelClass}>Round Size</label>
+                  <input
+                    type="text"
+                    value={form.raising_amount}
+                    onChange={e => updateField('raising_amount', e.target.value)}
+                    className={inputClass}
+                    placeholder="$2M"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Instrument</label>
+                    <select
+                      value={form.raising_instrument}
+                      onChange={e => updateField('raising_instrument', e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="">Select instrument</option>
+                      {RAISING_INSTRUMENTS.map(inst => (
+                        <option key={inst} value={inst}>{inst}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Target Close Date</label>
+                    <input
+                      type="date"
+                      value={form.raising_target_close}
+                      onChange={e => updateField('raising_target_close', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Actions */}

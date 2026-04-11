@@ -68,6 +68,9 @@ interface CompanyData {
   submission_id: string | null;
   dimension_scores: Record<string, unknown> | null;
   created_at: string;
+  is_raising?: boolean | null;
+  raising_amount?: string | null;
+  raising_instrument?: string | null;
 }
 
 // ── Investor types ──
@@ -478,6 +481,12 @@ function DashboardContent() {
                   <div className="flex flex-wrap items-center gap-2 mt-3">
                     {company.industry && <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">{company.industry}</span>}
                     {company.stage && <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">{company.stage}</span>}
+                    {company.is_raising && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        {company.raising_amount ? `Raising ${company.raising_amount}` : 'Currently Raising'}
+                      </span>
+                    )}
                     {scored !== null && <span className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">Scored {scored}d ago</span>}
                   </div>
                 </div>

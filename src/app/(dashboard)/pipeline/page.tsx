@@ -25,6 +25,8 @@ interface WatchlistCard {
   overall_score: number | null;
   one_liner: string | null;
   logo_url: string | null;
+  is_raising: boolean;
+  raising_amount: string | null;
 }
 
 interface DealCard {
@@ -58,6 +60,8 @@ interface DealCard {
   lead_investor: string | null;
   co_investors: string | null;
   round_type: string | null;
+  is_raising: boolean;
+  raising_amount: string | null;
 }
 
 interface PipelineStages {
@@ -239,6 +243,8 @@ export default function PipelinePage() {
         lead_investor: null,
         co_investors: null,
         round_type: null,
+        is_raising: card.is_raising,
+        raising_amount: card.raising_amount,
       };
 
       setDeals((prev) => ({
@@ -585,6 +591,8 @@ export default function PipelinePage() {
                     lead_investor: null,
                     co_investors: null,
                     round_type: null,
+                    is_raising: item.is_raising,
+                    raising_amount: item.raising_amount,
                   });
                 }}
                 className="bg-white rounded-lg p-3 border border-gray-200 hover:border-amber-300 cursor-pointer active:cursor-grabbing transition group shadow-sm"
@@ -597,11 +605,19 @@ export default function PipelinePage() {
                   <GripVertical data-grip className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5" />
                 </div>
 
-                {item.overall_score !== null && (
-                  <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded mt-2 ${getScoreBadgeColor(item.overall_score)}`}>
-                    Score: {item.overall_score}
-                  </span>
-                )}
+                <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                  {item.overall_score !== null && (
+                    <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${getScoreBadgeColor(item.overall_score)}`}>
+                      Score: {item.overall_score}
+                    </span>
+                  )}
+                  {item.is_raising && (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      {item.raising_amount ? `Raising ${item.raising_amount}` : 'Raising'}
+                    </span>
+                  )}
+                </div>
 
                 {item.industry && (
                   <div className="mt-2">
@@ -679,11 +695,19 @@ export default function PipelinePage() {
                       <GripVertical data-grip className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5" />
                     </div>
 
-                    {deal.ai_score !== null && (
-                      <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded mt-2 ${getScoreBadgeColor(deal.ai_score)}`}>
-                        Score: {deal.ai_score}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                      {deal.ai_score !== null && (
+                        <span className={`inline-block text-xs font-semibold px-2 py-0.5 rounded ${getScoreBadgeColor(deal.ai_score)}`}>
+                          Score: {deal.ai_score}
+                        </span>
+                      )}
+                      {deal.is_raising && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          {deal.raising_amount ? `Raising ${deal.raising_amount}` : 'Raising'}
+                        </span>
+                      )}
+                    </div>
 
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {(deal.industry || deal.sector) && (
