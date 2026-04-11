@@ -26,13 +26,19 @@ function LoginContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Show error from URL params (e.g. confirmation_failed from /auth/confirm)
+  // Show error or message from URL params
   useEffect(() => {
     const urlError = searchParams.get('error')
+    const urlMessage = searchParams.get('message')
     if (urlError === 'confirmation_failed' || urlError === 'verification_failed') {
       setError('Email confirmation failed. The link may have expired. Please try signing up again.')
+    } else if (urlMessage) {
+      setError(urlMessage)
     }
   }, [searchParams])
+
+  // Optional invite acceptance after login
+  const inviteId = searchParams.get('invite')
 
   // Resend confirmation state (shown when user has unconfirmed email)
   const [showResendConfirm, setShowResendConfirm] = useState(false)
@@ -98,6 +104,25 @@ function LoginContent() {
       }
 
       if (data.user) {
+        // If logging in from a team invite link, accept the invite now
+        if (inviteId) {
+          try {
+            const res = await fetch('/api/auth/complete-signup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ inviteId }),
+            })
+            if (res.ok) {
+              const result = await res.json()
+              window.location.href = result.redirectTo || '/dashboard'
+              return
+            }
+          } catch (err) {
+            console.error('Invite acceptance failed:', err)
+          }
+          // On failure, still fall through to normal redirect
+        }
+
         const { data: profile } = await supabase
           .from('profiles')
           .select('onboarding_completed')
@@ -144,7 +169,9 @@ function LoginContent() {
             <KunfaLogo height={32} />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
-          <p className="text-gray-500 mt-2">Sign in to your account</p>
+          <p className="text-gray-500 mt-2">
+            {inviteId ? 'Sign in to accept your team invitation' : 'Sign in to your account'}
+          </p>
         </div>
 
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-lg">

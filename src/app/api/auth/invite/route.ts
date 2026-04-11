@@ -39,6 +39,18 @@ export async function GET(request: NextRequest) {
   const teamOwnerName = ownerProfile?.full_name || null
   const fundName = ownerProfile?.fund_name || ownerProfile?.company_name || null
 
+  // Check if a Supabase auth user already exists with this email.
+  // If so, the UI should prompt them to sign in instead of signing up.
+  let existingUser = false
+  if (invite.invited_email) {
+    try {
+      const { data: users } = await supabase.auth.admin.listUsers()
+      existingUser = !!users?.users?.find((u) => u.email === invite.invited_email)
+    } catch (err) {
+      console.error('[invite] Failed to check existing user:', err)
+    }
+  }
+
   return NextResponse.json({
     email: invite.invited_email,
     name: invite.invited_name,
@@ -46,5 +58,6 @@ export async function GET(request: NextRequest) {
     teamOwnerRole, // user role (startup/investor/etc) — new member inherits this
     teamOwnerName,
     fundName,
+    existingUser,
   })
 }

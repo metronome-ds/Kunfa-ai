@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Building2, TrendingUp, Mail, RefreshCw } from 'lucide-react'
+import { Building2, TrendingUp, RefreshCw, Users } from 'lucide-react'
 import KunfaLogo from '@/components/common/KunfaLogo'
+
+type SignupStep = 'form' | 'otp'
 
 export default function SignupPage() {
   return (
@@ -19,29 +21,146 @@ export default function SignupPage() {
   )
 }
 
+/**
+ * 6-digit OTP input: individual boxes with auto-advance, backspace nav, and paste support.
+ * Calls onComplete(code) when all 6 digits are filled.
+ */
+function OtpInput({
+  value,
+  onChange,
+  onComplete,
+  disabled,
+}: {
+  value: string
+  onChange: (v: string) => void
+  onComplete: (v: string) => void
+  disabled?: boolean
+}) {
+  const inputsRef = useRef<Array<HTMLInputElement | null>>([])
+
+  const digits = value.padEnd(6, ' ').slice(0, 6).split('').map(c => c === ' ' ? '' : c)
+
+  const focusInput = (index: number) => {
+    const el = inputsRef.current[index]
+    if (el) el.focus()
+  }
+
+  const setDigit = (index: number, digit: string) => {
+    const current = value.padEnd(6, ' ').split('')
+    current[index] = digit || ' '
+    const next = current.join('').trimEnd()
+    onChange(next)
+    return next
+  }
+
+  const handleChange = (index: number, raw: string) => {
+    if (disabled) return
+    // Only last digit if multiple characters typed
+    const digit = raw.replace(/\D/g, '').slice(-1)
+    const next = setDigit(index, digit)
+
+    if (digit && index < 5) {
+      focusInput(index + 1)
+    }
+
+    const cleaned = next.replace(/\s/g, '')
+    if (cleaned.length === 6) {
+      onComplete(cleaned)
+    }
+  }
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (disabled) return
+    if (e.key === 'Backspace') {
+      if (digits[index]) {
+        setDigit(index, '')
+      } else if (index > 0) {
+        setDigit(index - 1, '')
+        focusInput(index - 1)
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      focusInput(index - 1)
+    } else if (e.key === 'ArrowRight' && index < 5) {
+      focusInput(index + 1)
+    }
+  }
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    if (disabled) return
+    e.preventDefault()
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    if (!pasted) return
+    onChange(pasted)
+    const lastIndex = Math.min(pasted.length - 1, 5)
+    focusInput(lastIndex)
+    if (pasted.length === 6) {
+      onComplete(pasted)
+    }
+  }
+
+  return (
+    <div className="flex justify-center gap-2 sm:gap-3">
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <input
+          key={i}
+          ref={(el) => { inputsRef.current[i] = el }}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={1}
+          value={digits[i]}
+          onChange={(e) => handleChange(i, e.target.value)}
+          onKeyDown={(e) => handleKeyDown(i, e)}
+          onPaste={handlePaste}
+          onFocus={(e) => e.target.select()}
+          disabled={disabled}
+          autoComplete="one-time-code"
+          className="w-11 h-14 sm:w-12 sm:h-16 text-center text-2xl font-semibold bg-white border-2 border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-[#0168FE] focus:ring-2 focus:ring-[#0168FE]/20 disabled:bg-gray-50 disabled:text-gray-400 transition-all"
+        />
+      ))}
+    </div>
+  )
+}
+
 function SignupContent() {
   const searchParams = useSearchParams()
+
+  // Step state
+  const [step, setStep] = useState<SignupStep>('form')
+
+  // Form state
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [fullName, setFullName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [showRoleSelection, setShowRoleSelection] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
   const [tosAgreed, setTosAgreed] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<'startup' | 'investor' | null>(null)
+
+  // Invite state
   const [inviteId, setInviteId] = useState<string | null>(null)
   const [inviteEmailLocked, setInviteEmailLocked] = useState(false)
+  const [inviteTeamOwnerRole, setInviteTeamOwnerRole] = useState<string | null>(null)
+  const [inviteOwnerName, setInviteOwnerName] = useState<string | null>(null)
+  const [inviteTeamName, setInviteTeamName] = useState<string | null>(null)
+  const [inviteExistingUser, setInviteExistingUser] = useState(false)
+
+  // Claim state (preserved from previous flow)
   const [claimToken, setClaimToken] = useState<string | null>(null)
   const [claimCompanyName, setClaimCompanyName] = useState<string | null>(null)
-  const [selectedRole, setSelectedRole] = useState<'startup' | 'investor' | null>(null)
-  const [inviteTeamOwnerRole, setInviteTeamOwnerRole] = useState<string | null>(null)
 
-  // Email confirmation resend state
+  // OTP state
+  const [signupEmail, setSignupEmail] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [otpLoading, setOtpLoading] = useState(false)
+  const [otpError, setOtpError] = useState('')
+  const [otpSuccess, setOtpSuccess] = useState(false)
   const [resendCooldown, setResendCooldown] = useState(0)
   const [resending, setResending] = useState(false)
 
+  // Load invite details
   useEffect(() => {
-    // Handle claim link: pre-fill email from claim invite
     const claim = searchParams.get('claim')
     if (claim) {
       setClaimToken(claim)
@@ -59,7 +178,6 @@ function SignupContent() {
         .catch(() => {})
     }
 
-    // Handle invite link: pre-fill email from team invite
     const invite = searchParams.get('invite')
     if (invite) {
       setInviteId(invite)
@@ -70,22 +188,13 @@ function SignupContent() {
             setEmail(data.email)
             setInviteEmailLocked(true)
           }
-          if (data?.teamOwnerRole) {
-            setInviteTeamOwnerRole(data.teamOwnerRole)
-          }
+          if (data?.name) setFullName(data.name)
+          if (data?.teamOwnerRole) setInviteTeamOwnerRole(data.teamOwnerRole)
+          if (data?.teamOwnerName) setInviteOwnerName(data.teamOwnerName)
+          if (data?.fundName) setInviteTeamName(data.fundName)
+          if (data?.existingUser) setInviteExistingUser(true)
         })
         .catch(() => {})
-    }
-
-    if (searchParams.get('step') === 'role') {
-      const checkUser = async () => {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          setUserId(user.id)
-          setShowRoleSelection(true)
-        }
-      }
-      checkUser()
     }
   }, [searchParams])
 
@@ -96,32 +205,35 @@ function SignupContent() {
     return () => clearTimeout(timer)
   }, [resendCooldown])
 
-  const handleResendConfirmation = useCallback(async () => {
-    if (resendCooldown > 0 || resending || !email) return
+  const handleResendOtp = useCallback(async () => {
+    if (resendCooldown > 0 || resending || !signupEmail) return
     setResending(true)
+    setOtpError('')
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email,
-        options: {
-          emailRedirectTo: claimToken
-            ? `${window.location.origin}/auth/confirm?next=/claim/${claimToken}`
-            : `${window.location.origin}/auth/confirm`,
-        },
+        email: signupEmail,
       })
       if (error) throw error
       setResendCooldown(60)
     } catch {
-      setError('Failed to resend. Please try again.')
+      setOtpError('Failed to resend code. Please try again.')
     } finally {
       setResending(false)
     }
-  }, [email, claimToken, resendCooldown, resending])
+  }, [signupEmail, resendCooldown, resending])
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
+
+    // Invite signups: validate password confirmation
+    if (inviteId && password !== confirmPassword) {
+      setError('Passwords do not match')
+      setLoading(false)
+      return
+    }
 
     const signupRole = claimToken
       ? 'startup'
@@ -129,183 +241,151 @@ function SignupContent() {
         ? (inviteTeamOwnerRole || 'investor')
         : selectedRole
 
-    const redirectUrl = claimToken
-      ? `${window.location.origin}/auth/confirm?next=/claim/${claimToken}`
-      : `${window.location.origin}/auth/confirm`
-
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error: signupError } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
+        // Fallback redirect only — OTP happens on this page. A click on a
+        // legacy email link will land in /auth/confirm which now redirects
+        // to /login.
+        emailRedirectTo: `${window.location.origin}/auth/confirm`,
         data: {
           role: signupRole,
+          ...(fullName ? { full_name: fullName } : {}),
           ...(inviteId ? { invite: inviteId } : {}),
         },
-      }
+      },
     })
 
-    if (error) {
-      setError(error.message)
+    if (signupError) {
+      const msg = signupError.message.toLowerCase()
+      if (msg.includes('already registered') || msg.includes('user already')) {
+        setError('An account with this email already exists. Please sign in instead.')
+      } else {
+        setError(signupError.message)
+      }
       setLoading(false)
       return
     }
 
     if (data.user) {
+      // Immediate session (email confirmation disabled) — complete signup directly.
       if (data.session) {
-        await supabase.from('profiles').insert({
-          user_id: data.user.id,
-          email,
-          ...(signupRole ? { role: signupRole } : {}),
-        })
-
-        // Auto-join: accept all pending invites for this email
-        const { data: joinedTeams } = await supabase
-          .from('team_members')
-          .update({ member_user_id: data.user.id, status: 'accepted', updated_at: new Date().toISOString() })
-          .eq('invited_email', email)
-          .eq('status', 'pending')
-          .select('team_id')
-
-        // Set active_team_id so the new member immediately sees the team's dashboard
-        const joinedTeamId = joinedTeams?.[0]?.team_id || null
-        if (joinedTeamId) {
-          await supabase
-            .from('profiles')
-            .update({ active_team_id: joinedTeamId })
-            .eq('user_id', data.user.id)
-        }
-
-        // If signing up via claim link, process claim and skip role selection
-        if (claimToken) {
-          try {
-            const res = await fetch('/api/claim', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ token: claimToken }),
-            })
-            const claimData = await res.json()
-
-            if (claimData.approved) {
-              window.location.href = '/dashboard?claimed=true'
-            } else {
-              window.location.href = '/dashboard?claim_pending=true'
-            }
-          } catch {
-            window.location.href = '/dashboard'
-          }
-          return
-        }
-
-        // If signing up via invite link, skip role selection and go to dashboard
-        if (inviteId) {
-          fetch('/api/auth/welcome', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role: signupRole || inviteTeamOwnerRole || 'investor' }),
-          }).catch(() => {})
-          window.location.href = '/dashboard'
-          return
-        }
-
-        // Role already selected in form — redirect directly
-        if (signupRole) {
-          fetch('/api/auth/welcome', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role: signupRole }),
-          }).catch(() => {})
-          window.location.href = signupRole === 'investor' ? '/onboarding' : '/dashboard'
-          return
-        }
-
-        // Fallback: show role selection screen
-        setUserId(data.user.id)
-        setShowRoleSelection(true)
-      } else {
-        setSuccess(true)
+        await completeSignupWithSession(signupRole)
+        return
       }
-    }
 
-    setLoading(false)
-  }
-
-  async function handleRoleSelect(role: 'startup' | 'investor') {
-    if (!userId) return
-    setLoading(true)
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({ role })
-      .eq('user_id', userId)
-
-    if (error) {
-      setError('Failed to set role. Please try again.')
+      // Email confirmation ON → move to OTP screen
+      setSignupEmail(email)
+      setStep('otp')
       setLoading(false)
       return
     }
 
-    // Send welcome email (fire and forget)
-    fetch('/api/auth/welcome', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role }),
-    }).catch(() => {})
+    setError('Something went wrong. Please try again.')
+    setLoading(false)
+  }
 
-    if (role === 'startup') {
-      window.location.href = '/'
-    } else {
-      window.location.href = '/onboarding'
+  async function completeSignupWithSession(signupRole: string | null) {
+    try {
+      // Handle claim flow first (preserves existing behavior)
+      if (claimToken) {
+        try {
+          const res = await fetch('/api/claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: claimToken }),
+          })
+          const claimData = await res.json()
+          if (claimData.approved) {
+            window.location.href = '/dashboard?claimed=true'
+          } else {
+            window.location.href = '/dashboard?claim_pending=true'
+          }
+        } catch {
+          window.location.href = '/dashboard'
+        }
+        return
+      }
+
+      // Call complete-signup to create profile + accept invite + set active_team_id
+      const res = await fetch('/api/auth/complete-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: signupRole,
+          ...(inviteId ? { inviteId } : {}),
+          ...(fullName ? { fullName } : {}),
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data?.error || 'Failed to complete signup')
+        setOtpLoading(false)
+        setLoading(false)
+        return
+      }
+
+      const result = await res.json()
+
+      // Fire welcome email (fire-and-forget)
+      fetch('/api/auth/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: result.role || signupRole || 'investor' }),
+      }).catch(() => {})
+
+      window.location.href = result.redirectTo || '/dashboard'
+    } catch (err) {
+      console.error('completeSignupWithSession error:', err)
+      setError('Failed to complete signup. Please try again.')
+      setOtpLoading(false)
+      setLoading(false)
     }
   }
 
-  if (showRoleSelection) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="w-full max-w-lg">
-          <div className="text-center mb-8">
-            <div className="mb-6">
-              <KunfaLogo height={32} />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">How will you use Kunfa?</h1>
-            <p className="text-gray-600 mt-2">Choose your role to get started</p>
-          </div>
+  const handleVerifyOtp = useCallback(async (code: string) => {
+    if (code.length !== 6 || otpLoading) return
 
-          {error && (
-            <div className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg p-3 mb-6">{error}</div>
-          )}
+    setOtpLoading(true)
+    setOtpError('')
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button
-              onClick={() => handleRoleSelect('startup')}
-              disabled={loading}
-              className="group bg-white rounded-xl p-8 border-2 border-gray-200 hover:border-[#0168FE] transition-all text-left disabled:opacity-50 shadow-sm"
-            >
-              <div className="w-14 h-14 rounded-xl bg-[#0168FE]/10 flex items-center justify-center mb-4 group-hover:bg-[#0168FE]/20 transition">
-                <Building2 className="w-7 h-7 text-[#0168FE]" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">I&apos;m a Startup</h3>
-              <p className="text-sm text-gray-600">Get your pitch scored by AI and connect with investors</p>
-            </button>
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: signupEmail,
+      token: code,
+      type: 'email',
+    })
 
-            <button
-              onClick={() => handleRoleSelect('investor')}
-              disabled={loading}
-              className="group bg-white rounded-xl p-8 border-2 border-gray-200 hover:border-[#0168FE] transition-all text-left disabled:opacity-50 shadow-sm"
-            >
-              <div className="w-14 h-14 rounded-xl bg-[#0168FE]/10 flex items-center justify-center mb-4 group-hover:bg-[#0168FE]/20 transition">
-                <TrendingUp className="w-7 h-7 text-[#0168FE]" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">I&apos;m an Investor</h3>
-              <p className="text-sm text-gray-600">Discover deals, manage pipeline, and track portfolio</p>
-            </button>
-          </div>
-        </div>
-      </div>
-    )
+    if (error || !data.session) {
+      setOtpError(error?.message || 'Invalid code. Please try again.')
+      setOtpCode('')
+      setOtpLoading(false)
+      return
+    }
+
+    setOtpSuccess(true)
+
+    const signupRole = claimToken
+      ? 'startup'
+      : inviteId
+        ? (inviteTeamOwnerRole || 'investor')
+        : selectedRole
+
+    await completeSignupWithSession(signupRole)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otpLoading, signupEmail, claimToken, inviteId, inviteTeamOwnerRole, selectedRole])
+
+  function handleUseDifferentEmail() {
+    setStep('form')
+    setOtpCode('')
+    setOtpError('')
+    setOtpSuccess(false)
+    setSignupEmail('')
   }
 
-  if (success) {
+  // ====== OTP STEP ======
+  if (step === 'otp') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
         <div className="w-full max-w-md">
@@ -316,48 +396,87 @@ function SignupContent() {
           </div>
 
           <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-lg text-center">
-            <div className="w-16 h-16 rounded-full bg-[#0168FE]/10 flex items-center justify-center mx-auto mb-6">
-              <Mail className="w-8 h-8 text-[#0168FE]" />
-            </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
-            <p className="text-gray-600 mb-1">
-              We&apos;ve sent a confirmation link to
+            <p className="text-sm text-gray-600 mb-1">
+              Enter the 6-digit code we sent to
             </p>
-            <p className="font-semibold text-gray-900 mb-6">{email}</p>
-            <p className="text-sm text-gray-500 mb-6">
-              Click the link in your email to activate your account. It may take a minute to arrive.
-            </p>
+            <p className="font-semibold text-gray-900 mb-6 break-all">{signupEmail}</p>
 
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <p className="text-xs text-gray-500 mb-3">
-                Didn&apos;t receive it? Check your spam folder or resend below.
-              </p>
-              <button
-                onClick={handleResendConfirmation}
-                disabled={resendCooldown > 0 || resending}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#0168FE] bg-white border border-[#0168FE]/20 rounded-lg hover:bg-[#0168FE]/5 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <RefreshCw className={`w-4 h-4 ${resending ? 'animate-spin' : ''}`} />
-                {resending
-                  ? 'Sending...'
-                  : resendCooldown > 0
-                    ? `Resend in ${resendCooldown}s`
-                    : 'Resend confirmation email'
-                }
-              </button>
-              {error && (
-                <p className="text-xs text-red-600 mt-2">{error}</p>
-              )}
+            <div className="mb-4">
+              <OtpInput
+                value={otpCode}
+                onChange={setOtpCode}
+                onComplete={handleVerifyOtp}
+                disabled={otpLoading || otpSuccess}
+              />
             </div>
 
-            <Link href="/login" className="text-[#0168FE] hover:underline text-sm font-medium">
-              Back to sign in
-            </Link>
+            {otpLoading && !otpSuccess && (
+              <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-4">
+                <div className="w-4 h-4 border-2 border-[#0168FE] border-t-transparent rounded-full animate-spin" />
+                Verifying...
+              </div>
+            )}
+
+            {otpSuccess && (
+              <div className="text-sm text-green-700 font-medium mb-4">
+                Verified! Setting up your account...
+              </div>
+            )}
+
+            {otpError && (
+              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                {otpError}
+              </div>
+            )}
+
+            {!otpSuccess && (
+              <div className="space-y-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={resendCooldown > 0 || resending || otpLoading}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-[#0168FE] hover:text-[#0050CC] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw className={`w-4 h-4 ${resending ? 'animate-spin' : ''}`} />
+                  {resending
+                    ? 'Sending...'
+                    : resendCooldown > 0
+                      ? `Resend in ${resendCooldown}s`
+                      : 'Resend code'
+                  }
+                </button>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleUseDifferentEmail}
+                    disabled={otpLoading}
+                    className="text-sm text-gray-500 hover:text-gray-700 font-medium"
+                  >
+                    Use a different email
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
     )
   }
+
+  // ====== FORM STEP ======
+
+  // Invite-specific heading
+  const inviteHeading = inviteId
+    ? (inviteTeamName ? `Join ${inviteTeamName} on Kunfa` : 'Join your team on Kunfa')
+    : null
+
+  const inviteSubheading = inviteId && inviteOwnerName
+    ? `${inviteOwnerName} has invited you to join their team`
+    : inviteId
+      ? 'You have been invited to join a team'
+      : null
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
@@ -366,12 +485,47 @@ function SignupContent() {
           <Link href="/" className="inline-block mb-6">
             <KunfaLogo height={32} />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
-          <p className="text-gray-500 mt-2">{claimCompanyName ? `Sign up to claim ${claimCompanyName}` : inviteId ? 'Sign up to accept your team invitation' : 'Get your startup scored by AI'}</p>
+          {inviteHeading ? (
+            <>
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#0168FE]/10 mb-3">
+                <Users className="w-6 h-6 text-[#0168FE]" />
+              </div>
+              <h1 className="text-2xl font-bold text-gray-900">{inviteHeading}</h1>
+              {inviteSubheading && (
+                <p className="text-gray-500 mt-2">{inviteSubheading}</p>
+              )}
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
+              <p className="text-gray-500 mt-2">
+                {claimCompanyName ? `Sign up to claim ${claimCompanyName}` : 'Get your startup scored by AI'}
+              </p>
+            </>
+          )}
         </div>
 
         <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-lg">
+          {/* Existing user nudge for invite flow */}
+          {inviteId && inviteExistingUser && (
+            <div className="mb-5 rounded-lg bg-blue-50 border border-blue-200 p-4">
+              <p className="text-sm text-blue-900 font-medium mb-1">
+                You already have a Kunfa account
+              </p>
+              <p className="text-sm text-blue-700">
+                Sign in to accept this invitation.{' '}
+                <Link
+                  href={`/login?invite=${inviteId}`}
+                  className="font-semibold underline hover:no-underline"
+                >
+                  Go to sign in →
+                </Link>
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleSignup} className="space-y-4">
+            {/* Role selector — only for normal signups (not invite/claim) */}
             {!claimToken && !inviteId && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">I am a...</label>
@@ -404,19 +558,62 @@ function SignupContent() {
               </div>
             )}
 
+            {/* Full Name — shown for invite flow */}
+            {inviteId && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                  placeholder="Jane Smith"
+                />
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
                 readOnly={inviteEmailLocked}
                 className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] ${inviteEmailLocked ? 'bg-gray-50' : 'bg-white'}`}
-                placeholder="you@company.com" />
+                placeholder="you@company.com"
+              />
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
                 className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
-                placeholder="Min 6 characters" />
+                placeholder="Min 6 characters"
+              />
             </div>
+
+            {/* Confirm Password — only for invite flow */}
+            {inviteId && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                  placeholder="Re-enter password"
+                />
+              </div>
+            )}
 
             <label className="flex items-start gap-2.5 cursor-pointer">
               <input
@@ -437,15 +634,27 @@ function SignupContent() {
               <div className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg p-3">{error}</div>
             )}
 
-            <button type="submit" disabled={loading || !tosAgreed || (!claimToken && !inviteId && !selectedRole)}
-              className="w-full py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition disabled:opacity-50">
-              {loading ? 'Creating account...' : 'Create Account'}
+            <button
+              type="submit"
+              disabled={loading || !tosAgreed || (!claimToken && !inviteId && !selectedRole)}
+              className="w-full py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition disabled:opacity-50"
+            >
+              {loading
+                ? 'Creating account...'
+                : inviteId
+                  ? 'Create Account & Join Team'
+                  : 'Create Account'}
             </button>
           </form>
 
           <p className="text-center text-gray-600 text-sm mt-6">
             Already have an account?{' '}
-            <Link href="/login" className="text-[#0168FE] font-medium hover:underline">Sign in</Link>
+            <Link
+              href={inviteId ? `/login?invite=${inviteId}` : '/login'}
+              className="text-[#0168FE] font-medium hover:underline"
+            >
+              Sign in
+            </Link>
           </p>
         </div>
       </div>
