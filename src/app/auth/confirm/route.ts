@@ -37,10 +37,10 @@ export async function GET(request: NextRequest) {
       const adminDb = getSupabase()
 
       // Read role and invite from signup metadata
-      const role = (data.user.user_metadata?.role as string) || undefined
+      const metadataRole = (data.user.user_metadata?.role as string) || undefined
       const inviteFromMeta = (data.user.user_metadata?.invite as string) || undefined
 
-      console.log('[AUTH CONFIRM] Metadata — role:', role, '| invite:', inviteFromMeta)
+      console.log('[AUTH CONFIRM] Metadata — role:', metadataRole, '| invite:', inviteFromMeta)
 
       // Check if profile already exists
       const { data: existingProfile, error: profileCheckErr } = await adminDb
@@ -51,13 +51,45 @@ export async function GET(request: NextRequest) {
 
       console.log('[AUTH CONFIRM] Existing profile check:', existingProfile ? 'found' : 'not found', profileCheckErr?.code || '')
 
+      // Detect if this is an invite signup by looking for any pending team_member for this email.
+      // This is the source of truth — more reliable than user_metadata.invite which may be stale.
+      let teamOwnerRole: string | undefined
+      let isInviteSignup = false
+      if (data.user.email) {
+        const { data: pendingInvite } = await adminDb
+          .from('team_members')
+          .select('id, team_id')
+          .eq('invited_email', data.user.email)
+          .eq('status', 'pending')
+          .limit(1)
+          .maybeSingle()
+
+        if (pendingInvite) {
+          isInviteSignup = true
+          // Look up the team owner's user role — the new member inherits this
+          const { data: ownerProfile } = await adminDb
+            .from('profiles')
+            .select('role')
+            .eq('id', pendingInvite.team_id)
+            .single()
+          teamOwnerRole = ownerProfile?.role || undefined
+          console.log('[AUTH CONFIRM] Invite signup detected — team owner role:', teamOwnerRole)
+        }
+      }
+
+      // Determine the role to assign.
+      // For invite signups: always use the team owner's role (ignore metadata which may say 'investor').
+      // For normal signups: use the metadata role from the signup form.
+      const role = isInviteSignup ? teamOwnerRole : metadataRole
+
       // Create profile if it doesn't exist
       if (!existingProfile) {
         const profilePayload = {
           user_id: data.user.id,
           email: data.user.email,
           ...(role ? { role } : {}),
-          onboarding_completed: false,
+          // Invite signups skip onboarding — they're joining an existing team
+          onboarding_completed: isInviteSignup,
         }
         const { data: insertedProfile, error: profileInsertErr } = await adminDb
           .from('profiles')
@@ -89,8 +121,8 @@ export async function GET(request: NextRequest) {
       // Determine redirect
       const hasExplicitNext = searchParams.get('next')
       if (!hasExplicitNext) {
-        if (inviteAccepted || inviteFromMeta) {
-          // Invite signup — go straight to dashboard (joining existing team)
+        if (isInviteSignup || inviteAccepted || inviteFromMeta) {
+          // Invite signup — go straight to dashboard (joining existing team, no onboarding)
           redirectTo.pathname = '/dashboard'
         } else if (role === 'investor' && !existingProfile?.onboarding_completed) {
           // New investor — needs onboarding

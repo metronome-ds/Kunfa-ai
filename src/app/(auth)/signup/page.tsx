@@ -34,6 +34,7 @@ function SignupContent() {
   const [claimToken, setClaimToken] = useState<string | null>(null)
   const [claimCompanyName, setClaimCompanyName] = useState<string | null>(null)
   const [selectedRole, setSelectedRole] = useState<'startup' | 'investor' | null>(null)
+  const [inviteTeamOwnerRole, setInviteTeamOwnerRole] = useState<string | null>(null)
 
   // Email confirmation resend state
   const [resendCooldown, setResendCooldown] = useState(0)
@@ -68,6 +69,9 @@ function SignupContent() {
           if (data?.email) {
             setEmail(data.email)
             setInviteEmailLocked(true)
+          }
+          if (data?.teamOwnerRole) {
+            setInviteTeamOwnerRole(data.teamOwnerRole)
           }
         })
         .catch(() => {})
@@ -119,7 +123,11 @@ function SignupContent() {
     setLoading(true)
     setError('')
 
-    const signupRole = claimToken ? 'startup' : inviteId ? 'investor' : selectedRole
+    const signupRole = claimToken
+      ? 'startup'
+      : inviteId
+        ? (inviteTeamOwnerRole || 'investor')
+        : selectedRole
 
     const redirectUrl = claimToken
       ? `${window.location.origin}/auth/confirm?next=/claim/${claimToken}`
@@ -184,7 +192,7 @@ function SignupContent() {
           fetch('/api/auth/welcome', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ role: 'investor' }),
+            body: JSON.stringify({ role: signupRole || inviteTeamOwnerRole || 'investor' }),
           }).catch(() => {})
           window.location.href = '/dashboard'
           return
