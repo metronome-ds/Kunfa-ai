@@ -368,3 +368,31 @@ export function isValidUrl(url: string): boolean {
     return false;
   }
 }
+
+/**
+ * Determines fundraising urgency based on raising_target_close date.
+ * Returns null if not raising or no target close date.
+ */
+export interface RaisingUrgency {
+  label: string
+  color: string       // Tailwind badge classes
+  daysUntil: number
+}
+
+export function getRaisingUrgency(
+  targetClose: string | null | undefined,
+  isRaising: boolean | null | undefined,
+): RaisingUrgency | null {
+  if (!isRaising || !targetClose) return null
+
+  const now = new Date()
+  const close = new Date(targetClose)
+  if (isNaN(close.getTime())) return null
+
+  const daysUntil = Math.ceil((close.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (daysUntil < 0) return { label: 'Round Closed', color: 'bg-gray-100 text-gray-600', daysUntil }
+  if (daysUntil <= 30) return { label: 'Closing Soon', color: 'bg-red-100 text-red-700', daysUntil }
+  if (daysUntil <= 60) return { label: 'Active', color: 'bg-amber-100 text-amber-700', daysUntil }
+  return { label: 'Open', color: 'bg-green-100 text-green-700', daysUntil }
+}

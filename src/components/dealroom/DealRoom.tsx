@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
-import { FileText, Upload, Trash2, Filter, X, FolderOpen, MoreVertical, Pencil, RefreshCw, Eye, EyeOff, CheckCircle2, AlertCircle } from 'lucide-react'
+import { FileText, Upload, Trash2, Filter, X, FolderOpen, MoreVertical, Pencil, RefreshCw, Eye, EyeOff, CheckCircle2, AlertCircle, Lock } from 'lucide-react'
 import Modal from '@/components/ui/Modal'
 import ShareDealRoom from './ShareDealRoom'
 import UploadErrorBanner from '@/components/common/UploadErrorBanner'
@@ -40,12 +40,13 @@ interface DealRoomDocument {
   company_id: string
   uploaded_by: string
   file_name: string
-  file_url: string
+  file_url: string | null
   file_size: number
   file_type: string
   category: string
   description: string | null
   is_public: boolean
+  restricted?: boolean
   created_at: string
   uploaded_by_name: string
 }
@@ -345,19 +346,27 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
                   <div className="flex items-start justify-between mb-3">
                     <span className="text-2xl">{getFileIcon(doc.file_type)}</span>
                     <div className="flex items-center gap-1">
-                      {/* Public/Private indicator */}
-                      {!publicOnly && canManage && (
-                        <button
-                          onClick={() => handleTogglePublic(doc)}
-                          className="p-1 text-gray-400 hover:text-gray-600 transition"
-                          title={doc.is_public ? 'Public — click to make private' : 'Private — click to make public'}
-                        >
-                          {doc.is_public ? (
-                            <Eye className="w-4 h-4 text-emerald-500" />
-                          ) : (
-                            <EyeOff className="w-4 h-4 text-gray-400" />
-                          )}
-                        </button>
+                      {/* Access level indicator */}
+                      {!publicOnly && (
+                        canManage ? (
+                          <button
+                            onClick={() => handleTogglePublic(doc)}
+                            className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium border transition ${
+                              doc.is_public
+                                ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
+                                : 'bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100'
+                            }`}
+                            title={doc.is_public ? 'Open — click to restrict' : 'Restricted — click to open'}
+                          >
+                            {doc.is_public ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                            {doc.is_public ? 'Open' : 'Restricted'}
+                          </button>
+                        ) : !doc.is_public ? (
+                          <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-600 border border-amber-200">
+                            <EyeOff className="w-3 h-3" />
+                            Restricted
+                          </span>
+                        ) : null
                       )}
                       {/* Menu */}
                       {canManage && (
@@ -410,17 +419,26 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
                       )}
                     </div>
                   </div>
-                  <a
-                    href={doc.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => trackDocumentView(doc.id)}
-                    className="block"
-                  >
-                    <p className="text-sm font-medium text-gray-900 truncate hover:text-[#0168FE] transition">
-                      {doc.file_name}
-                    </p>
-                  </a>
+                  {doc.file_url ? (
+                    <a
+                      href={doc.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => trackDocumentView(doc.id)}
+                      className="block"
+                    >
+                      <p className="text-sm font-medium text-gray-900 truncate hover:text-[#0168FE] transition">
+                        {doc.file_name}
+                      </p>
+                    </a>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      <Lock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+                      <p className="text-sm font-medium text-gray-500 truncate">
+                        {doc.file_name}
+                      </p>
+                    </div>
+                  )}
                   <div className="flex items-center gap-2 mt-2">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${getCategoryColor(doc.category)}`}>
                       {getCategoryLabel(doc.category)}
@@ -550,7 +568,7 @@ function UploadModal({
         file: f,
         category: 'other',
         description: '',
-        isPublic: false,
+        isPublic: true,
         status: validation ? 'error' : 'pending',
         error: null,
         validationError: validation?.message || null,
@@ -796,15 +814,19 @@ function UploadModal({
                           placeholder="Description (optional)"
                           className="flex-1 px-2 py-1 border border-gray-200 rounded text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0168FE]"
                         />
-                        <label className="flex items-center gap-1 cursor-pointer flex-shrink-0" title="Make publicly visible">
-                          <input
-                            type="checkbox"
-                            checked={item.isPublic}
-                            onChange={(e) => updateFile(item.id, { isPublic: e.target.checked })}
-                            className="h-3.5 w-3.5 rounded border-gray-300 text-[#0168FE] focus:ring-[#0168FE]"
-                          />
-                          <Eye className="w-3 h-3 text-gray-400" />
-                        </label>
+                        <button
+                          type="button"
+                          onClick={() => updateFile(item.id, { isPublic: !item.isPublic })}
+                          className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium border transition flex-shrink-0 ${
+                            item.isPublic
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : 'bg-amber-50 text-amber-700 border-amber-200'
+                          }`}
+                          title={item.isPublic ? 'Open — visible to all visitors' : 'Restricted — authorized investors only'}
+                        >
+                          {item.isPublic ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                          {item.isPublic ? 'Open' : 'Restricted'}
+                        </button>
                       </div>
                     )}
                   </div>
@@ -929,15 +951,38 @@ function EditDocModal({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400"
             />
           </div>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={isPublic}
-              onChange={(e) => setIsPublic(e.target.checked)}
-              className="h-4 w-4 rounded border-gray-300 text-[#0168FE] focus:ring-[#0168FE]"
-            />
-            <span className="text-sm text-gray-700">Publicly visible</span>
-          </label>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Access Level</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setIsPublic(true)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition ${
+                  isPublic
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-300 ring-1 ring-emerald-300'
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <Eye className="w-4 h-4" />
+                Open
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsPublic(false)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition ${
+                  !isPublic
+                    ? 'bg-amber-50 text-amber-700 border-amber-300 ring-1 ring-amber-300'
+                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <EyeOff className="w-4 h-4" />
+                Restricted
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {isPublic ? 'Visible to all visitors' : 'Only authorized investors can download'}
+            </p>
+          </div>
         </div>
 
         <div className="flex gap-3 mt-6">

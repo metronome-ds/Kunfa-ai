@@ -42,7 +42,8 @@ export async function GET() {
           one_liner,
           logo_url,
           is_raising,
-          raising_amount
+          raising_amount,
+          raising_target_close
         )
       `)
       .eq('investor_id', profileId || '')
@@ -91,7 +92,8 @@ export async function GET() {
           pdf_url,
           logo_url,
           is_raising,
-          raising_amount
+          raising_amount,
+          raising_target_close
         )
       `)
       .eq('created_by', user.id)
@@ -162,6 +164,7 @@ export async function GET() {
         logo_url: company?.logo_url || null,
         is_raising: company?.is_raising || false,
         raising_amount: company?.raising_amount || null,
+        raising_target_close: company?.raising_target_close || null,
       };
     });
 
@@ -215,6 +218,7 @@ export async function GET() {
           round_type: deal.round_type || null,
           is_raising: company?.is_raising || false,
           raising_amount: company?.raising_amount || null,
+          raising_target_close: company?.raising_target_close || null,
           note_count: noteCountMap[deal.id] || 0,
         });
       }

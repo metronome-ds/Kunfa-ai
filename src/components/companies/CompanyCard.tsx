@@ -1,9 +1,10 @@
 'use client';
 
-import { Bookmark, PlusCircle, Check, Sparkles } from 'lucide-react';
+import { Bookmark, PlusCircle, Check, Sparkles, Clock } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import CompanyLogo from '@/components/common/CompanyLogo';
+import { getRaisingUrgency } from '@/lib/utils';
 
 interface CompanyCardProps {
   company: {
@@ -22,6 +23,7 @@ interface CompanyCardProps {
     is_raising?: boolean | null;
     raising_amount?: string | null;
     raising_instrument?: string | null;
+    raising_target_close?: string | null;
   };
   isWatchlisted?: boolean;
   showWatchlist?: boolean;
@@ -51,6 +53,7 @@ export function CompanyCard({
   const [pipelineAdded, setPipelineAdded] = useState(initialInPipeline);
   const [isPipelineLoading, setIsPipelineLoading] = useState(false);
 
+  const urgency = getRaisingUrgency(company.raising_target_close, company.is_raising);
   const blurb = company.one_liner || company.description || null;
   const truncatedBlurb = blurb && blurb.length > 100 ? blurb.slice(0, 100) + '...' : blurb;
 
@@ -149,6 +152,12 @@ export function CompanyCard({
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   {company.raising_amount ? `Raising ${company.raising_amount}` : 'Raising'}
+                </span>
+              )}
+              {urgency && (
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full ${urgency.color}`}>
+                  <Clock className="w-3 h-3" />
+                  {urgency.label}
                 </span>
               )}
               {company.industry && (

@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState, DragEvent } from 'react';
-import { GripVertical, Bookmark, ArrowRight, Star, CalendarDays, Mail, RefreshCw, ChevronDown, ChevronUp, Check, XCircle } from 'lucide-react';
+import { GripVertical, Bookmark, ArrowRight, Star, CalendarDays, Mail, RefreshCw, ChevronDown, ChevronUp, Check, XCircle, Clock } from 'lucide-react';
 import Link from 'next/link';
 import DealSlideout from '@/components/pipeline/DealSlideout';
 import CompanyLogo from '@/components/common/CompanyLogo';
+import { getRaisingUrgency } from '@/lib/utils';
 
 interface TeamMember {
   id: string;
@@ -27,6 +28,7 @@ interface WatchlistCard {
   logo_url: string | null;
   is_raising: boolean;
   raising_amount: string | null;
+  raising_target_close: string | null;
 }
 
 interface DealCard {
@@ -62,6 +64,7 @@ interface DealCard {
   round_type: string | null;
   is_raising: boolean;
   raising_amount: string | null;
+  raising_target_close: string | null;
 }
 
 interface PipelineStages {
@@ -245,6 +248,7 @@ export default function PipelinePage() {
         round_type: null,
         is_raising: card.is_raising,
         raising_amount: card.raising_amount,
+        raising_target_close: card.raising_target_close,
       };
 
       setDeals((prev) => ({
@@ -593,6 +597,7 @@ export default function PipelinePage() {
                     round_type: null,
                     is_raising: item.is_raising,
                     raising_amount: item.raising_amount,
+                    raising_target_close: item.raising_target_close,
                   });
                 }}
                 className="bg-white rounded-lg p-3 border border-gray-200 hover:border-amber-300 cursor-pointer active:cursor-grabbing transition group shadow-sm"
@@ -617,6 +622,15 @@ export default function PipelinePage() {
                       {item.raising_amount ? `Raising ${item.raising_amount}` : 'Raising'}
                     </span>
                   )}
+                  {(() => {
+                    const u = getRaisingUrgency(item.raising_target_close, item.is_raising);
+                    return u ? (
+                      <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded ${u.color}`}>
+                        <Clock className="w-2.5 h-2.5" />
+                        {u.label}
+                      </span>
+                    ) : null;
+                  })()}
                 </div>
 
                 {item.industry && (
@@ -707,6 +721,15 @@ export default function PipelinePage() {
                           {deal.raising_amount ? `Raising ${deal.raising_amount}` : 'Raising'}
                         </span>
                       )}
+                      {(() => {
+                        const u = getRaisingUrgency(deal.raising_target_close, deal.is_raising);
+                        return u ? (
+                          <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded ${u.color}`}>
+                            <Clock className="w-2.5 h-2.5" />
+                            {u.label}
+                          </span>
+                        ) : null;
+                      })()}
                     </div>
 
                     <div className="flex items-center gap-2 mt-2 flex-wrap">

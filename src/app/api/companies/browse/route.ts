@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('company_pages')
       .select(
-        'id, company_name, slug, description, one_liner, industry, stage, overall_score, raise_amount, country, headquarters, logo_url, created_at, is_raising, raising_amount, raising_instrument',
+        'id, company_name, slug, description, one_liner, industry, stage, overall_score, raise_amount, country, headquarters, logo_url, created_at, is_raising, raising_amount, raising_instrument, raising_target_close',
         { count: 'exact' }
       )
       .eq('is_public', true);
@@ -94,6 +94,7 @@ export async function GET(request: NextRequest) {
     if (sort === 'raising') {
       query = query
         .order('is_raising', { ascending: false, nullsFirst: false })
+        .order('raising_target_close', { ascending: true, nullsFirst: false })
         .order('overall_score', { ascending: false, nullsFirst: false });
     } else if (sort === 'newest') {
       query = query.order('created_at', { ascending: false });

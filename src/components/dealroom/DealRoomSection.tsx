@@ -113,7 +113,7 @@ export default function DealRoomSection({ companyId, companyName, companyUserId,
       canUpload={canUpload}
       canShare={canShare}
       currentUserId={currentUserId}
-      publicOnly={!isAuthenticated}
+      publicOnly={!isAuthenticated && !unlocked}
       sessionId={sessionId}
       trackingEnabled={!isOwner}
     />

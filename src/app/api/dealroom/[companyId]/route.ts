@@ -14,6 +14,9 @@ function getServiceClient() {
 }
 
 // GET — list all documents for a company
+// Returns all open (is_public) docs to everyone.
+// Restricted docs: only returns file_url if viewer is authorized
+// (company owner, team member, invited investor, or pipeline investor).
 export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ companyId: string }> }
@@ -26,6 +29,81 @@ export async function GET(
 
     const supabase = getServiceClient()
 
+    // --- Determine viewer authorization for restricted docs ---
+    let canViewRestricted = false
+    try {
+      const authSupabase = await createServerSupabaseClient()
+      const { data: { user } } = await authSupabase.auth.getUser()
+
+      if (user) {
+        // Fetch company owner info
+        const { data: company } = await supabase
+          .from('company_pages')
+          .select('user_id, added_by')
+          .eq('id', companyId)
+          .maybeSingle()
+
+        if (company) {
+          // Check: owner or investor who added it
+          if (company.user_id === user.id || company.added_by === user.id) {
+            canViewRestricted = true
+          }
+
+          // Check: team member of owner or adder
+          if (!canViewRestricted) {
+            const ownerIds = [company.user_id, company.added_by].filter(Boolean) as string[]
+            if (ownerIds.length > 0) {
+              const { data: profiles } = await supabase
+                .from('profiles')
+                .select('id')
+                .in('user_id', ownerIds)
+
+              if (profiles && profiles.length > 0) {
+                const profileIds = profiles.map(p => p.id)
+                const { data: membership } = await supabase
+                  .from('team_members')
+                  .select('id')
+                  .in('team_id', profileIds)
+                  .eq('member_user_id', user.id)
+                  .eq('status', 'accepted')
+                  .limit(1)
+                  .maybeSingle()
+                if (membership) canViewRestricted = true
+              }
+            }
+          }
+
+          // Check: pipeline investor (has deal for this company)
+          if (!canViewRestricted) {
+            const { data: deal } = await supabase
+              .from('deals')
+              .select('id')
+              .eq('created_by', user.id)
+              .eq('company_id', companyId)
+              .limit(1)
+              .maybeSingle()
+            if (deal) canViewRestricted = true
+          }
+
+          // Check: invited investor (document_access_log with invite_sent)
+          if (!canViewRestricted && user.email) {
+            const { data: invite } = await supabase
+              .from('document_access_log')
+              .select('id')
+              .eq('company_id', companyId)
+              .eq('viewer_email', user.email.toLowerCase())
+              .eq('access_type', 'invite_sent')
+              .limit(1)
+              .maybeSingle()
+            if (invite) canViewRestricted = true
+          }
+        }
+      }
+    } catch {
+      // Auth check failed — treat as unauthorized for restricted docs
+    }
+
+    // --- Fetch documents ---
     const { data: docs, error } = await supabase
       .from('dealroom_documents')
       .select('id, company_id, uploaded_by, file_name, file_url, file_size, file_type, category, description, is_public, created_at')
@@ -53,12 +131,15 @@ export async function GET(
       }
     }
 
+    // Strip file_url from restricted docs for unauthorized viewers
     const docsWithNames = (docs || []).map(d => ({
       ...d,
+      file_url: d.is_public || canViewRestricted ? d.file_url : null,
+      restricted: !d.is_public && !canViewRestricted,
       uploaded_by_name: uploaderNames[d.uploaded_by] || 'Unknown',
     }))
 
-    return NextResponse.json({ documents: docsWithNames })
+    return NextResponse.json({ documents: docsWithNames, canViewRestricted })
   } catch (error) {
     console.error('Dealroom GET error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
