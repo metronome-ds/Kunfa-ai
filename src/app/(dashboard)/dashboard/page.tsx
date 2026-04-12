@@ -207,6 +207,9 @@ function DashboardContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isStartup, setIsStartup] = useState(false);
 
+  // Permission: can the current user edit?
+  const [canEdit, setCanEdit] = useState(false);
+
   // Startup state
   const [company, setCompany] = useState<CompanyData | null>(null);
   const [paid, setPaid] = useState(paidParam);
@@ -233,7 +236,13 @@ function DashboardContent() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: profile } = await supabase.from('profiles').select('*').eq('user_id', user.id).single();
+        const [{ data: profile }, teamRes] = await Promise.all([
+          supabase.from('profiles').select('*').eq('user_id', user.id).single(),
+          fetch('/api/team-context').then(r => r.json()).catch(() => ({})),
+        ]);
+        const memberRole = teamRes?.context?.memberRole;
+        setCanEdit(memberRole === 'owner' || memberRole === 'admin');
+
         if (profile) {
           setUserProfile(profile);
           const startup = profile.role === 'founder' || profile.role === 'startup';
@@ -439,7 +448,7 @@ function DashboardContent() {
                   <p className="text-xs text-gray-500 mt-0.5">Upload your pitch deck to get your AI-powered investment readiness score.</p>
                 </div>
               </div>
-              {company && !company.overall_score && (
+              {canEdit && company && !company.overall_score && (
                 <button
                   onClick={() => setShowScoreModal(true)}
                   className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition flex-shrink-0"
@@ -545,13 +554,15 @@ function DashboardContent() {
                         : 'Improve your score to 75+ to unlock investor discovery. Update your pitch deck and financials, then re-score to see your new result.'}
                     </p>
                     <div className="flex items-center gap-2 mt-3">
-                      <button
-                        onClick={() => setShowScoreModal(true)}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                        {company.overall_score == null ? 'Get Your Score' : 'Re-score My Company'}
-                      </button>
+                      {canEdit && (
+                        <button
+                          onClick={() => setShowScoreModal(true)}
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                          {company.overall_score == null ? 'Get Your Score' : 'Re-score My Company'}
+                        </button>
+                      )}
                       <Link
                         href="/how-it-works"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
@@ -664,12 +675,14 @@ function DashboardContent() {
             <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><Star className="w-8 h-8 text-gray-400" /></div>
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Get Your Kunfa Score</h2>
             <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">Upload your pitch deck to get your AI-powered investment readiness score and create your company profile.</p>
-            <button
-              onClick={() => setShowScoreModal(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition"
-            >
-              Get Your Kunfa Score
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => setShowScoreModal(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition"
+              >
+                Get Your Kunfa Score
+              </button>
+            )}
           </div>
         )}
 

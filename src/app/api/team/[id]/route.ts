@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { requirePermission } from '@/lib/permissions';
 
 /**
  * PATCH /api/team/[id]
@@ -22,6 +23,14 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Permission check: only owner/admin can manage team
+    let teamCtx;
+    try {
+      teamCtx = await requirePermission(user.id, 'manage_team');
+    } catch {
+      return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { role } = body;
 
@@ -32,11 +41,11 @@ export async function PATCH(
       );
     }
 
-    // Verify ownership: team_id must match current user's profiles.id
+    // Get team owner's profile (uses effective user for team members)
     const { data: profile } = await supabase
       .from('profiles')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', teamCtx.effectiveUserId)
       .single();
 
     if (!profile) {
@@ -93,10 +102,19 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Permission check: only owner/admin can manage team
+    let teamCtx;
+    try {
+      teamCtx = await requirePermission(user.id, 'manage_team');
+    } catch {
+      return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 });
+    }
+
+    // Get team owner's profile (uses effective user for team members)
     const { data: profile } = await supabase
       .from('profiles')
       .select('id')
-      .eq('user_id', user.id)
+      .eq('user_id', teamCtx.effectiveUserId)
       .single();
 
     if (!profile) {

@@ -88,6 +88,13 @@ export async function PATCH(request: Request) {
     const body = await request.json();
     const db = getSupabase();
 
+    // Get team context to determine if user can edit company fields
+    const teamCtx = await getTeamContext(user.id, db);
+    const canEditCompany = teamCtx.memberRole === 'owner' || teamCtx.memberRole === 'admin';
+
+    // Company-synced fields that members cannot edit
+    const companyFieldKeys = Object.keys(COMPANY_SYNC_MAP);
+
     // Build profile updates (only whitelisted fields)
     const profileUpdates: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
@@ -95,6 +102,8 @@ export async function PATCH(request: Request) {
 
     for (const field of PROFILE_FIELDS) {
       if (field in body) {
+        // Silently skip company-synced fields for members
+        if (!canEditCompany && companyFieldKeys.includes(field)) continue;
         const val = body[field];
         if (field === 'team_size' || field === 'aum' || field === 'ticket_size_min' || field === 'ticket_size_max') {
           profileUpdates[field] = val ? Number(val) : null;
@@ -121,48 +130,41 @@ export async function PATCH(request: Request) {
     const role = updatedProfile?.role;
     const isStartup = role === 'startup' || role === 'founder';
 
-    if (isStartup) {
-      const teamCtx = await getTeamContext(user.id, db);
+    if (isStartup && canEditCompany) {
+      // Find the company page to sync to
+      const { data: companyPage } = await db
+        .from('company_pages')
+        .select('id')
+        .eq('user_id', teamCtx.effectiveUserId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      // Only sync if user is owner or admin
-      const canSync = teamCtx.memberRole === 'owner' || teamCtx.memberRole === 'admin';
+      if (companyPage) {
+        const companyUpdates: Record<string, unknown> = {};
+        let hasCompanyUpdates = false;
 
-      if (canSync) {
-        // Find the company page to sync to
-        const { data: companyPage } = await db
-          .from('company_pages')
-          .select('id')
-          .eq('user_id', teamCtx.effectiveUserId)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (companyPage) {
-          const companyUpdates: Record<string, unknown> = {};
-          let hasCompanyUpdates = false;
-
-          for (const [profileField, companyField] of Object.entries(COMPANY_SYNC_MAP)) {
-            if (profileField in body) {
-              const val = body[profileField];
-              if (profileField === 'team_size') {
-                companyUpdates[companyField] = val ? Number(val) : null;
-              } else {
-                companyUpdates[companyField] = val || null;
-              }
-              hasCompanyUpdates = true;
+        for (const [profileField, companyField] of Object.entries(COMPANY_SYNC_MAP)) {
+          if (profileField in body) {
+            const val = body[profileField];
+            if (profileField === 'team_size') {
+              companyUpdates[companyField] = val ? Number(val) : null;
+            } else {
+              companyUpdates[companyField] = val || null;
             }
+            hasCompanyUpdates = true;
           }
+        }
 
-          if (hasCompanyUpdates) {
-            const { error: companyError } = await db
-              .from('company_pages')
-              .update(companyUpdates)
-              .eq('id', companyPage.id);
+        if (hasCompanyUpdates) {
+          const { error: companyError } = await db
+            .from('company_pages')
+            .update(companyUpdates)
+            .eq('id', companyPage.id);
 
-            if (companyError) {
-              console.error('Company sync error:', companyError);
-              // Don't fail the whole request — profile was already updated
-            }
+          if (companyError) {
+            console.error('Company sync error:', companyError);
+            // Don't fail the whole request — profile was already updated
           }
         }
       }

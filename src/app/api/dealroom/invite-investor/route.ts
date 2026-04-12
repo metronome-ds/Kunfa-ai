@@ -3,6 +3,7 @@ import { getSupabase } from '@/lib/db'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { sendEmail } from '@/lib/email'
 import { investorReviewInviteEmail } from '@/lib/email-templates'
+import { requirePermission } from '@/lib/permissions'
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,6 +11,13 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await authClient.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Permission check: only owner/admin can invite investors
+    try {
+      await requirePermission(user.id, 'edit')
+    } catch {
+      return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 })
     }
 
     const body = await request.json().catch(() => ({}))

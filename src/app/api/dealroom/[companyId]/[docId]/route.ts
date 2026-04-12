@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { requirePermission } from '@/lib/permissions'
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -27,6 +28,13 @@ export async function PATCH(
     const { data: { user }, error: authError } = await authSupabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Permission check: only owner/admin can edit documents
+    try {
+      await requirePermission(user.id, 'edit')
+    } catch {
+      return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 })
     }
 
     const supabase = getServiceClient()
@@ -104,6 +112,13 @@ export async function DELETE(
     const { data: { user }, error: authError } = await authSupabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Permission check: only owner/admin can delete documents
+    try {
+      await requirePermission(user.id, 'edit')
+    } catch {
+      return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 })
     }
 
     const supabase = getServiceClient()

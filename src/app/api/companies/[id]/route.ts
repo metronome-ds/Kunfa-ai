@@ -1,4 +1,5 @@
 import { createServerSupabaseClient, getServerUser } from '@/lib/supabase-server'
+import { requirePermission } from '@/lib/permissions'
 import { NextRequest, NextResponse } from 'next/server'
 
 const EDITABLE_FIELDS = [
@@ -32,6 +33,13 @@ export async function PATCH(
     const user = await getServerUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Permission check: only owner/admin can edit
+    try {
+      await requirePermission(user.id, 'edit')
+    } catch {
+      return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 })
     }
 
     const { id } = await params

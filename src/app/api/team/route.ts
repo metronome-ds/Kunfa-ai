@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 import { sendEmail } from '@/lib/email';
 import { teamInviteEmail } from '@/lib/email-templates';
+import { requirePermission } from '@/lib/permissions';
 
 /**
  * GET /api/team
@@ -120,6 +121,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Permission check: only owner/admin can manage team
+    let teamCtx;
+    try {
+      teamCtx = await requirePermission(user.id, 'manage_team');
+    } catch {
+      return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 });
+    }
+
     const body = await request.json();
     const { name, email, role } = body;
 
@@ -137,11 +146,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get current user's profile.id for team_id
+    // Get team owner's profile.id for team_id (uses effective user for team members)
     const { data: profile } = await supabase
       .from('profiles')
       .select('id, full_name, fund_name, company_name')
-      .eq('user_id', user.id)
+      .eq('user_id', teamCtx.effectiveUserId)
       .single();
 
     if (!profile) {

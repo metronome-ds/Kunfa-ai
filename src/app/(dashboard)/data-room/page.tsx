@@ -14,6 +14,7 @@ export default function DataRoomPage() {
   const [currentScore, setCurrentScore] = useState<number | null>(null)
   const [userId, setUserId] = useState<string | null>(null)
   const [userEmail, setUserEmail] = useState('')
+  const [canUpload, setCanUpload] = useState(false)
   const [showRescore, setShowRescore] = useState(false)
 
   useEffect(() => {
@@ -36,6 +37,16 @@ export default function DataRoomPage() {
         setCompanyId(company.id)
         setCompanyName(company.company_name)
         setCurrentScore(company.overall_score)
+      }
+
+      // Fetch team context for permission check
+      try {
+        const teamRes = await fetch('/api/team-context')
+        const teamData = await teamRes.json()
+        const role = teamData?.context?.memberRole
+        setCanUpload(role === 'owner' || role === 'admin')
+      } catch {
+        // Default to false if fetch fails
       }
 
       setLoading(false)
@@ -78,7 +89,7 @@ export default function DataRoomPage() {
       <DealRoom
         companyId={companyId}
         companyName={companyName}
-        canUpload={true}
+        canUpload={canUpload}
         canShare={true}
         currentUserId={userId}
         onRequestRescore={() => setShowRescore(true)}

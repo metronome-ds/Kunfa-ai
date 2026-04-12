@@ -1,6 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getSupabase } from '@/lib/db'
 import { getTeamContext } from '@/lib/team-context'
+import { requirePermission } from '@/lib/permissions'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -72,6 +73,7 @@ export async function GET() {
 /**
  * PATCH /api/my-company
  * Updates editable fields on the user's company page.
+ * Uses team context so admin team members can also edit the team owner's company.
  */
 export async function PATCH(request: NextRequest) {
   try {
@@ -80,6 +82,14 @@ export async function PATCH(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Permission check: only owner/admin can edit
+    let teamCtx
+    try {
+      teamCtx = await requirePermission(user.id, 'edit')
+    } catch {
+      return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 })
     }
 
     const body = await request.json()
@@ -101,10 +111,12 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
     }
 
-    const { data: company, error } = await supabase
+    // Use effectiveUserId from team context (allows admin team members to edit)
+    const adminDb = getSupabase()
+    const { data: company, error } = await adminDb
       .from('company_pages')
       .update(updates)
-      .eq('user_id', user.id)
+      .eq('user_id', teamCtx.effectiveUserId)
       .select('*')
       .order('created_at', { ascending: false })
       .limit(1)

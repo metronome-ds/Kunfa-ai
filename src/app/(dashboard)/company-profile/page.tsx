@@ -92,6 +92,9 @@ export default function CompanyProfilePage() {
   // Re-scoring modal
   const [showRescore, setShowRescore] = useState(false)
 
+  // Permission: can the current user edit?
+  const [canEdit, setCanEdit] = useState(false)
+
   // Edit mode
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -121,11 +124,18 @@ export default function CompanyProfilePage() {
         const { data: { user } } = await supabase.auth.getUser()
         if (user?.email) setUserEmail(user.email)
 
-        const res = await window.fetch('/api/my-company')
-        const data = await res.json()
+        const [companyRes, teamRes] = await Promise.all([
+          window.fetch('/api/my-company'),
+          window.fetch('/api/team-context'),
+        ])
+        const data = await companyRes.json()
         setCompany(data.company || null)
         setPaid(!!data.paid)
         setHasReport(!!data.hasReport)
+
+        const teamData = await teamRes.json()
+        const role = teamData?.context?.memberRole
+        setCanEdit(role === 'owner' || role === 'admin')
       } catch {
         // ignore
       } finally {
@@ -395,29 +405,33 @@ export default function CompanyProfilePage() {
               View Public Profile
               <ExternalLink className="w-3.5 h-3.5" />
             </Link>
-            <button
-              onClick={() => setShowRescore(true)}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              Update My Score
-            </button>
-            <button
-              onClick={editing ? cancelEditing : startEditing}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
-            >
-              {editing ? (
-                <>
-                  <X className="w-3.5 h-3.5" />
-                  Cancel Editing
-                </>
-              ) : (
-                <>
-                  <Pencil className="w-3.5 h-3.5" />
-                  Edit Profile
-                </>
-              )}
-            </button>
+            {canEdit && (
+              <button
+                onClick={() => setShowRescore(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Update My Score
+              </button>
+            )}
+            {canEdit && (
+              <button
+                onClick={editing ? cancelEditing : startEditing}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+              >
+                {editing ? (
+                  <>
+                    <X className="w-3.5 h-3.5" />
+                    Cancel Editing
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="w-3.5 h-3.5" />
+                    Edit Profile
+                  </>
+                )}
+              </button>
+            )}
             <button
               onClick={handleCopyLink}
               className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-200 transition"

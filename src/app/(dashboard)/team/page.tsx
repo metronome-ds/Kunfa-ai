@@ -48,6 +48,7 @@ export default function TeamPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [canManage, setCanManage] = useState(false)
 
   // Resend cooldown: map of memberId → true if on cooldown
   const [resendCooldown, setResendCooldown] = useState<Record<string, boolean>>({})
@@ -76,6 +77,14 @@ export default function TeamPage() {
 
   useEffect(() => {
     fetchTeam()
+    // Fetch team context for permissions
+    fetch('/api/team-context')
+      .then(r => r.json())
+      .then(data => {
+        const role = data?.context?.memberRole
+        setCanManage(role === 'owner' || role === 'admin')
+      })
+      .catch(() => {})
   }, [])
 
   const handleInvite = async (e: React.FormEvent) => {
@@ -178,13 +187,15 @@ export default function TeamPage() {
             Manage your team members and permissions
           </p>
         </div>
-        <button
-          onClick={() => setShowInvite(true)}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#0168FE] text-white rounded-lg text-sm font-semibold hover:bg-[#0050CC] transition"
-        >
-          <UserPlus className="w-4 h-4" />
-          Invite Member
-        </button>
+        {canManage && (
+          <button
+            onClick={() => setShowInvite(true)}
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#0168FE] text-white rounded-lg text-sm font-semibold hover:bg-[#0050CC] transition"
+          >
+            <UserPlus className="w-4 h-4" />
+            Invite Member
+          </button>
+        )}
       </div>
 
       {/* Messages */}
@@ -239,9 +250,9 @@ export default function TeamPage() {
 
                   {/* Role */}
                   <td className="px-5 py-4">
-                    {member.id === 'owner' ? (
-                      <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${getRoleBadge('owner')}`}>
-                        Owner
+                    {member.id === 'owner' || !canManage ? (
+                      <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${getRoleBadge(member.role)}`}>
+                        {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                       </span>
                     ) : (
                       <select
@@ -265,28 +276,30 @@ export default function TeamPage() {
 
                   {/* Actions */}
                   <td className="px-5 py-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      {member.id !== 'owner' && member.status === 'pending' && (
-                        <button
-                          onClick={() => handleResend(member.id, member.email)}
-                          disabled={resending === member.id || resendCooldown[member.id]}
-                          className="px-2 py-1 text-xs font-medium text-[#0168FE] hover:bg-blue-50 transition rounded-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
-                          title="Resend invite"
-                        >
-                          <RefreshCw className={`w-3 h-3 ${resending === member.id ? 'animate-spin' : ''}`} />
-                          {resendCooldown[member.id] ? 'Sent' : 'Resend'}
-                        </button>
-                      )}
-                      {member.id !== 'owner' && (
-                        <button
-                          onClick={() => handleRemove(member.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 transition rounded-lg hover:bg-red-50"
-                          title="Remove member"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
+                    {canManage && (
+                      <div className="flex items-center justify-end gap-1">
+                        {member.id !== 'owner' && member.status === 'pending' && (
+                          <button
+                            onClick={() => handleResend(member.id, member.email)}
+                            disabled={resending === member.id || resendCooldown[member.id]}
+                            className="px-2 py-1 text-xs font-medium text-[#0168FE] hover:bg-blue-50 transition rounded-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                            title="Resend invite"
+                          >
+                            <RefreshCw className={`w-3 h-3 ${resending === member.id ? 'animate-spin' : ''}`} />
+                            {resendCooldown[member.id] ? 'Sent' : 'Resend'}
+                          </button>
+                        )}
+                        {member.id !== 'owner' && (
+                          <button
+                            onClick={() => handleRemove(member.id)}
+                            className="p-1.5 text-gray-400 hover:text-red-500 transition rounded-lg hover:bg-red-50"
+                            title="Remove member"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -296,13 +309,15 @@ export default function TeamPage() {
           {members.length === 0 && (
             <div className="text-center py-12 px-6">
               <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm mb-4">No team members yet. Invite your first member to get started.</p>
-              <button
-                onClick={() => setShowInvite(true)}
-                className="text-[#0168FE] text-sm font-semibold hover:underline"
-              >
-                Invite a team member
-              </button>
+              <p className="text-gray-500 text-sm mb-4">No team members yet.{canManage ? ' Invite your first member to get started.' : ''}</p>
+              {canManage && (
+                <button
+                  onClick={() => setShowInvite(true)}
+                  className="text-[#0168FE] text-sm font-semibold hover:underline"
+                >
+                  Invite a team member
+                </button>
+              )}
             </div>
           )}
         </div>
