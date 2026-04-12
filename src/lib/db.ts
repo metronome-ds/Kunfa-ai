@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { normalizeStage } from './constants'
+import { extractDomain, fetchLogoUrl } from './utils'
 
 // Use service role key to bypass RLS in API routes
 export function getSupabase() {
@@ -411,5 +412,21 @@ export async function createCompanyPage(data: {
     .single()
 
   if (error) console.error('Failed to create company page:', error)
+
+  // Auto-fetch logo if website_url provided
+  if (inserted?.id && data.websiteUrl) {
+    const domain = extractDomain(data.websiteUrl)
+    if (domain) {
+      fetchLogoUrl(domain).then(async (logoUrl) => {
+        if (logoUrl) {
+          await supabase
+            .from('company_pages')
+            .update({ logo_url: logoUrl })
+            .eq('id', inserted.id)
+        }
+      }).catch((err) => console.error('[FETCH-LOGO] Auto-fetch error:', err))
+    }
+  }
+
   return { slug, id: inserted?.id as string | undefined }
 }

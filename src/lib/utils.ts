@@ -379,6 +379,71 @@ export interface RaisingUrgency {
   daysUntil: number
 }
 
+/**
+ * Extracts the bare domain from a URL string.
+ * Handles URLs with or without protocol, with paths, query strings, etc.
+ * Returns null if the input is empty or unparseable.
+ */
+export function extractDomain(url: string | null | undefined): string | null {
+  if (!url || !url.trim()) return null
+
+  let cleaned = url.trim()
+
+  // Add protocol if missing so URL constructor can parse it
+  if (!/^https?:\/\//i.test(cleaned)) {
+    cleaned = 'https://' + cleaned
+  }
+
+  try {
+    const parsed = new URL(cleaned)
+    let hostname = parsed.hostname.toLowerCase()
+
+    // Strip www. prefix
+    if (hostname.startsWith('www.')) {
+      hostname = hostname.slice(4)
+    }
+
+    // Basic sanity check — must have at least one dot
+    if (!hostname.includes('.')) return null
+
+    return hostname
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Attempts to fetch a company logo URL from a domain.
+ * Strategy: Try Clearbit Logo API first, fall back to Google Favicon API.
+ * Returns the working logo URL or null if both fail.
+ * NOTE: This is a server-only function — do not import in client components.
+ */
+export async function fetchLogoUrl(domain: string): Promise<string | null> {
+  // Try Clearbit first (higher quality)
+  const clearbitUrl = `https://logo.clearbit.com/${domain}`
+  try {
+    const res = await fetch(clearbitUrl, { method: 'HEAD', redirect: 'follow' })
+    if (res.ok) {
+      return clearbitUrl
+    }
+  } catch {
+    // Clearbit failed, try fallback
+  }
+
+  // Fallback: Google Favicon API (128px)
+  const googleUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+  try {
+    const res = await fetch(googleUrl, { method: 'HEAD', redirect: 'follow' })
+    if (res.ok) {
+      return googleUrl
+    }
+  } catch {
+    // Both failed
+  }
+
+  return null
+}
+
 export function getRaisingUrgency(
   targetClose: string | null | undefined,
   isRaising: boolean | null | undefined,

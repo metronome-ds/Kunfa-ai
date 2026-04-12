@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { v4 as uuid } from 'uuid'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getSupabase } from '@/lib/db'
+import { extractDomain, fetchLogoUrl } from '@/lib/utils'
 
 export async function POST(request: NextRequest) {
   try {
@@ -113,6 +114,21 @@ export async function POST(request: NextRequest) {
       if (insertError) {
         console.error('[PROMOTE] Insert failed for:', companyName, '| code:', insertError.code, '| message:', insertError.message, '| details:', insertError.details)
         continue
+      }
+
+      // Auto-fetch logo if website_url provided
+      if (record.clean_website) {
+        const domain = extractDomain(record.clean_website)
+        if (domain) {
+          fetchLogoUrl(domain).then(async (logoUrl) => {
+            if (logoUrl) {
+              await supabase
+                .from('company_pages')
+                .update({ logo_url: logoUrl })
+                .eq('id', company.id)
+            }
+          }).catch((err) => console.error('[PROMOTE] Logo fetch error:', err))
+        }
       }
 
       // Update import record

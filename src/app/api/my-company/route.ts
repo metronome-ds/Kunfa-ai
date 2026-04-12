@@ -2,6 +2,7 @@ import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getSupabase } from '@/lib/db'
 import { getTeamContext } from '@/lib/team-context'
 import { requirePermission } from '@/lib/permissions'
+import { extractDomain, fetchLogoUrl } from '@/lib/utils'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -124,6 +125,21 @@ export async function PATCH(request: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: 'Failed to update company' }, { status: 500 })
+    }
+
+    // Auto-fetch logo when website_url is updated and logo_url is still null
+    if (updates.website_url && !company.logo_url) {
+      const domain = extractDomain(updates.website_url as string)
+      if (domain) {
+        fetchLogoUrl(domain).then(async (logoUrl) => {
+          if (logoUrl) {
+            await adminDb
+              .from('company_pages')
+              .update({ logo_url: logoUrl })
+              .eq('user_id', teamCtx.effectiveUserId)
+          }
+        }).catch((err) => console.error('[FETCH-LOGO] Auto-fetch error:', err))
+      }
     }
 
     return NextResponse.json({ company })

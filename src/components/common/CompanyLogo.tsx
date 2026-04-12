@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useState } from 'react'
 
 const SIZES = {
   sm: { container: 'w-8 h-8', text: 'text-xs', rounded: 'rounded-lg' },
@@ -45,8 +46,9 @@ interface CompanyLogoProps {
 
 export default function CompanyLogo({ name, logoUrl, size = 'md', className = '' }: CompanyLogoProps) {
   const s = SIZES[size]
+  const [imgError, setImgError] = useState(false)
 
-  if (logoUrl) {
+  if (logoUrl && !imgError) {
     return (
       <div className={`${s.container} ${s.rounded} overflow-hidden flex-shrink-0 bg-gray-100 ${className}`}>
         <Image
@@ -56,6 +58,7 @@ export default function CompanyLogo({ name, logoUrl, size = 'md', className = ''
           height={56}
           className="w-full h-full object-cover"
           unoptimized
+          onError={() => setImgError(true)}
         />
       </div>
     )

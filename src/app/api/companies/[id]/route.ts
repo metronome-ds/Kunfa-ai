@@ -1,5 +1,6 @@
 import { createServerSupabaseClient, getServerUser } from '@/lib/supabase-server'
 import { requirePermission } from '@/lib/permissions'
+import { extractDomain, fetchLogoUrl } from '@/lib/utils'
 import { NextRequest, NextResponse } from 'next/server'
 
 const EDITABLE_FIELDS = [
@@ -95,6 +96,21 @@ export async function PATCH(
     if (updateErr) {
       console.error('Failed to update company:', updateErr)
       return NextResponse.json({ error: 'Failed to update company' }, { status: 500 })
+    }
+
+    // Auto-fetch logo when website_url is updated and logo_url is still null
+    if (updates.website_url && !updated.logo_url) {
+      const domain = extractDomain(updates.website_url as string)
+      if (domain) {
+        fetchLogoUrl(domain).then(async (logoUrl) => {
+          if (logoUrl) {
+            await supabase
+              .from('company_pages')
+              .update({ logo_url: logoUrl })
+              .eq('id', id)
+          }
+        }).catch((err) => console.error('[FETCH-LOGO] Auto-fetch error:', err))
+      }
     }
 
     return NextResponse.json(updated)

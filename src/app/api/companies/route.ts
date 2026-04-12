@@ -2,6 +2,7 @@ import { createServerSupabaseClient, getServerUser } from '@/lib/supabase-server
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuid } from 'uuid'
 import crypto from 'crypto'
+import { extractDomain, fetchLogoUrl } from '@/lib/utils'
 
 export async function POST(request: NextRequest) {
   try {
@@ -92,6 +93,21 @@ export async function POST(request: NextRequest) {
         })
       } catch (drErr) {
         console.error('Failed to create dealroom doc (continuing):', drErr)
+      }
+    }
+
+    // Auto-fetch logo if website_url provided and no logo_url
+    if (website_url && !logo_url) {
+      const domain = extractDomain(website_url)
+      if (domain) {
+        fetchLogoUrl(domain).then(async (logoUrl) => {
+          if (logoUrl) {
+            await supabase
+              .from('company_pages')
+              .update({ logo_url: logoUrl })
+              .eq('id', companyPage.id)
+          }
+        }).catch((err) => console.error('[FETCH-LOGO] Auto-fetch error:', err))
       }
     }
 
