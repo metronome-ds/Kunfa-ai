@@ -5,6 +5,12 @@ import { NextRequest, NextResponse } from 'next/server';
  * GET /api/companies/browse
  * Browse all public companies on the platform (marketplace view).
  * Queries company_pages directly — NOT the deals table.
+ *
+ * Query params:
+ *   page, limit, sort (score|newest|raising), search,
+ *   industry[] OR sectors (comma-separated),
+ *   stage[] OR stages (comma-separated),
+ *   raising=true
  */
 export async function GET(request: NextRequest) {
   try {
@@ -13,11 +19,27 @@ export async function GET(request: NextRequest) {
 
     const page = Math.max(1, parseInt(searchParams.get('page') || '1'));
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20')));
-    const sort = searchParams.get('sort') || 'newest';
+    const sort = searchParams.get('sort') || 'score';
     const search = searchParams.get('search') || '';
-    const industries = searchParams.getAll('industry');
-    const stages = searchParams.getAll('stage');
     const raisingOnly = searchParams.get('raising') === 'true';
+
+    // Accept both industry[] (multi-value) and sectors (comma-separated)
+    let industries = searchParams.getAll('industry');
+    const sectorsParam = searchParams.get('sectors');
+    if (sectorsParam) {
+      industries = [...industries, ...sectorsParam.split(',').map(s => s.trim()).filter(Boolean)];
+    }
+
+    // Accept both stage[] (multi-value) and stages (comma-separated)
+    let stages = searchParams.getAll('stage');
+    const stagesParam = searchParams.get('stages');
+    if (stagesParam) {
+      stages = [...stages, ...stagesParam.split(',').map(s => s.trim()).filter(Boolean)];
+    }
+
+    // Deduplicate
+    industries = [...new Set(industries)];
+    stages = [...new Set(stages)];
 
     // Admin bypass: admins can see all companies regardless of score
     let isAdmin = false;
@@ -68,14 +90,16 @@ export async function GET(request: NextRequest) {
       query = query.eq('is_raising', true);
     }
 
-    // Sorting — always show actively raising companies first as a secondary sort
-    query = query.order('is_raising', { ascending: false, nullsFirst: false });
-    if (sort === 'score') {
-      query = query.order('overall_score', { ascending: false, nullsFirst: false });
-    } else if (sort === 'funding') {
-      query = query.order('raise_amount', { ascending: false, nullsFirst: false });
-    } else {
+    // Sorting
+    if (sort === 'raising') {
+      query = query
+        .order('is_raising', { ascending: false, nullsFirst: false })
+        .order('overall_score', { ascending: false, nullsFirst: false });
+    } else if (sort === 'newest') {
       query = query.order('created_at', { ascending: false });
+    } else {
+      // Default: score (highest first)
+      query = query.order('overall_score', { ascending: false, nullsFirst: false });
     }
 
     // Pagination

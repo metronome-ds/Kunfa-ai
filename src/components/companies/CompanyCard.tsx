@@ -1,6 +1,6 @@
 'use client';
 
-import { Bookmark } from 'lucide-react';
+import { Bookmark, PlusCircle, Check, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import CompanyLogo from '@/components/common/CompanyLogo';
@@ -26,6 +26,9 @@ interface CompanyCardProps {
   isWatchlisted?: boolean;
   showWatchlist?: boolean;
   onWatchlistToggle?: (companyId: string, watchlisted: boolean) => void;
+  recommended?: boolean;
+  inPipeline?: boolean;
+  onPipelineAdd?: (companyId: string) => void;
 }
 
 function getScoreColor(score: number) {
@@ -39,9 +42,14 @@ export function CompanyCard({
   isWatchlisted = false,
   showWatchlist = false,
   onWatchlistToggle,
+  recommended = false,
+  inPipeline: initialInPipeline = false,
+  onPipelineAdd,
 }: CompanyCardProps) {
   const [watchlisted, setWatchlisted] = useState(isWatchlisted);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isWatchlistLoading, setIsWatchlistLoading] = useState(false);
+  const [pipelineAdded, setPipelineAdded] = useState(initialInPipeline);
+  const [isPipelineLoading, setIsPipelineLoading] = useState(false);
 
   const blurb = company.one_liner || company.description || null;
   const truncatedBlurb = blurb && blurb.length > 100 ? blurb.slice(0, 100) + '...' : blurb;
@@ -70,7 +78,7 @@ export function CompanyCard({
     const wasWatchlisted = watchlisted;
     setWatchlisted(!wasWatchlisted); // optimistic
     onWatchlistToggle?.(company.id, !wasWatchlisted);
-    setIsLoading(true);
+    setIsWatchlistLoading(true);
 
     try {
       const method = wasWatchlisted ? 'DELETE' : 'POST';
@@ -89,7 +97,38 @@ export function CompanyCard({
       setWatchlisted(wasWatchlisted); // revert on error
       onWatchlistToggle?.(company.id, wasWatchlisted);
     } finally {
-      setIsLoading(false);
+      setIsWatchlistLoading(false);
+    }
+  };
+
+  const handlePipelineClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (pipelineAdded || isPipelineLoading) return;
+
+    setPipelineAdded(true); // optimistic
+    setIsPipelineLoading(true);
+
+    try {
+      const response = await fetch('/api/pipeline/add-company', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyId: company.id }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        // Don't revert if already in pipeline
+        if (data.error !== 'Already in pipeline') {
+          setPipelineAdded(false);
+        }
+      }
+      onPipelineAdd?.(company.id);
+    } catch (error) {
+      console.error('Error adding to pipeline:', error);
+      setPipelineAdded(false);
+    } finally {
+      setIsPipelineLoading(false);
     }
   };
 
@@ -100,6 +139,12 @@ export function CompanyCard({
           {/* Header: badges + watchlist */}
           <div className="flex items-start justify-between mb-3">
             <div className="flex flex-wrap items-center gap-2">
+              {recommended && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
+                  <Sparkles className="w-3 h-3" />
+                  Recommended
+                </span>
+              )}
               {company.is_raising && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -121,7 +166,7 @@ export function CompanyCard({
             {showWatchlist && (
               <button
                 onClick={handleWatchlistClick}
-                disabled={isLoading}
+                disabled={isWatchlistLoading}
                 className={`ml-2 p-2 rounded-lg transition-colors disabled:opacity-50 ${
                   watchlisted ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-100'
                 }`}
@@ -177,11 +222,36 @@ export function CompanyCard({
             )}
           </div>
 
-          {/* View Profile link */}
-          <div className="pt-3">
+          {/* Actions: Pipeline + View Profile */}
+          <div className="flex items-center justify-between pt-3">
             <span className="text-sm text-[#0168FE] font-medium hover:underline">
               View Profile &rarr;
             </span>
+
+            {showWatchlist && (
+              <button
+                onClick={handlePipelineClick}
+                disabled={pipelineAdded || isPipelineLoading}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  pipelineAdded
+                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
+                    : 'bg-[#0168FE]/10 text-[#0168FE] hover:bg-[#0168FE]/20 border border-transparent'
+                }`}
+                title={pipelineAdded ? 'Already in pipeline' : 'Add to pipeline'}
+              >
+                {pipelineAdded ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    In Pipeline
+                  </>
+                ) : (
+                  <>
+                    <PlusCircle className="w-3.5 h-3.5" />
+                    Add to Pipeline
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       </div>

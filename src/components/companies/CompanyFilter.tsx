@@ -1,29 +1,35 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Input } from '@/components/common/Input';
-import { X } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
 import { STAGES, INDUSTRIES } from '@/lib/constants';
 
 export interface CompanyFilterState {
   search: string;
   industries: string[];
   stages: string[];
-  sort: 'newest' | 'score' | 'funding';
+  sort: 'score' | 'newest' | 'raising';
   raisingOnly: boolean;
+}
+
+export interface InvestorPrefs {
+  sectorInterests: string[];
+  stageFocus: string[];
 }
 
 interface CompanyFilterProps {
   onFilterChange: (filters: CompanyFilterState) => void;
   activeFilterCount?: number;
+  investorPrefs?: InvestorPrefs;
 }
 
-export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: CompanyFilterProps) {
+export function CompanyFilter({ onFilterChange, activeFilterCount = 0, investorPrefs }: CompanyFilterProps) {
   const [filters, setFilters] = useState<CompanyFilterState>({
     search: '',
     industries: [],
     stages: [],
-    sort: 'newest',
+    sort: 'score',
     raisingOnly: false,
   });
 
@@ -31,6 +37,12 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
     industry: true,
     stage: true,
   });
+
+  // Emit initial filter state on mount so parent picks up default sort
+  useEffect(() => {
+    onFilterChange(filters);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateFilter = useCallback(
     (updates: Partial<CompanyFilterState>) => {
@@ -60,7 +72,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
       search: '',
       industries: [],
       stages: [],
-      sort: 'newest',
+      sort: 'score',
       raisingOnly: false,
     };
     setFilters(cleared);
@@ -70,6 +82,22 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
   };
+
+  // Sort industries: investor's preferred sectors first
+  const prefSectors = new Set(investorPrefs?.sectorInterests || []);
+  const sortedIndustries = [...INDUSTRIES].sort((a, b) => {
+    const aMatch = prefSectors.has(a) ? 0 : 1;
+    const bMatch = prefSectors.has(b) ? 0 : 1;
+    return aMatch - bMatch;
+  });
+
+  // Sort stages: investor's preferred stages first
+  const prefStages = new Set(investorPrefs?.stageFocus || []);
+  const sortedStages = [...STAGES].sort((a, b) => {
+    const aMatch = prefStages.has(a) ? 0 : 1;
+    const bMatch = prefStages.has(b) ? 0 : 1;
+    return aMatch - bMatch;
+  });
 
   return (
     <div className="w-64 bg-white border-r border-gray-200 p-6 space-y-6 overflow-y-auto">
@@ -123,9 +151,9 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
             onChange={(e) => updateFilter({ sort: e.target.value as CompanyFilterState['sort'] })}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#0168FE]"
           >
-            <option value="newest">Newest</option>
             <option value="score">Highest Score</option>
-            <option value="funding">Raise Amount</option>
+            <option value="newest">Newest</option>
+            <option value="raising">Actively Raising First</option>
           </select>
         </div>
       </div>
@@ -144,7 +172,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
       {/* Industry Filter */}
       <div className="space-y-3">
         <button onClick={() => toggleSection('industry')} className="flex items-center justify-between w-full">
-          <h4 className="font-semibold text-gray-900">Industry</h4>
+          <h4 className="font-semibold text-gray-900">Sector</h4>
           <span className={`text-gray-400 transition-transform ${expandedSections.industry ? 'rotate-180' : ''}`}>
             ▼
           </span>
@@ -152,7 +180,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
 
         {expandedSections.industry && (
           <div className="space-y-2 max-h-64 overflow-y-auto">
-            {INDUSTRIES.map((industry) => (
+            {sortedIndustries.map((industry) => (
               <label key={industry} className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -160,7 +188,12 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
                   onChange={() => toggleIndustry(industry)}
                   className="w-4 h-4 text-[#0168FE] rounded border-gray-300 cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">{industry}</span>
+                <span className="text-sm text-gray-700 flex items-center gap-1.5">
+                  {industry}
+                  {prefSectors.has(industry) && (
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                  )}
+                </span>
               </label>
             ))}
           </div>
@@ -178,7 +211,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
 
         {expandedSections.stage && (
           <div className="space-y-2">
-            {STAGES.map((stage) => (
+            {sortedStages.map((stage) => (
               <label key={stage} className="flex items-center gap-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -186,7 +219,12 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0 }: Company
                   onChange={() => toggleStage(stage)}
                   className="w-4 h-4 text-[#0168FE] rounded border-gray-300 cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">{stage}</span>
+                <span className="text-sm text-gray-700 flex items-center gap-1.5">
+                  {stage}
+                  {prefStages.has(stage) && (
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                  )}
+                </span>
               </label>
             ))}
           </div>

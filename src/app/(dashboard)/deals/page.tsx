@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { CompanyCard } from '@/components/companies/CompanyCard';
-import { CompanyFilter, CompanyFilterState } from '@/components/companies/CompanyFilter';
+import { CompanyFilter, CompanyFilterState, InvestorPrefs } from '@/components/companies/CompanyFilter';
 import { Button } from '@/components/common/Button';
 import { AlertCircle, Rocket } from 'lucide-react';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 
 interface PaginationData {
   page: number;
@@ -20,7 +21,7 @@ export default function BrowseCompaniesPage() {
     search: '',
     industries: [],
     stages: [],
-    sort: 'newest',
+    sort: 'score',
     raisingOnly: false,
   });
   const [pagination, setPagination] = useState<PaginationData>({
@@ -32,7 +33,16 @@ export default function BrowseCompaniesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [watchlistedIds, setWatchlistedIds] = useState<Set<string>>(new Set());
+  const [pipelineIds, setPipelineIds] = useState<Set<string>>(new Set());
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [investorPrefs, setInvestorPrefs] = useState<InvestorPrefs>({
+    sectorInterests: [],
+    stageFocus: [],
+  });
+
+  // Track whether initial load is done to avoid double-fetch
+  const filtersRef = useRef(filters);
+  filtersRef.current = filters;
 
   // Fetch companies from company_pages
   const fetchCompanies = useCallback(
@@ -41,22 +51,23 @@ export default function BrowseCompaniesPage() {
       setError(null);
 
       try {
+        const currentFilters = filtersRef.current;
         const params = new URLSearchParams();
         params.set('page', pageNum.toString());
         params.set('limit', pagination.limit.toString());
-        params.set('sort', filters.sort);
+        params.set('sort', currentFilters.sort);
 
-        if (filters.search) params.set('search', filters.search);
-        filters.industries.forEach((ind) => params.append('industry', ind));
-        filters.stages.forEach((stage) => params.append('stage', stage));
-        if (filters.raisingOnly) params.set('raising', 'true');
+        if (currentFilters.search) params.set('search', currentFilters.search);
+        currentFilters.industries.forEach((ind) => params.append('industry', ind));
+        currentFilters.stages.forEach((stage) => params.append('stage', stage));
+        if (currentFilters.raisingOnly) params.set('raising', 'true');
 
         const response = await fetch(`/api/companies/browse?${params.toString()}`);
         if (!response.ok) throw new Error('Failed to fetch companies');
 
         const data = await response.json();
         setCompanies(data.data || []);
-        setPagination(data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
+        setPagination(data.pagination || { page: pageNum, limit: 20, total: 0, totalPages: 0 });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
         setCompanies([]);
@@ -64,10 +75,10 @@ export default function BrowseCompaniesPage() {
         setIsLoading(false);
       }
     },
-    [filters, pagination.limit]
+    [pagination.limit]
   );
 
-  // Fetch watchlisted company IDs (only if logged in)
+  // Fetch watchlisted company IDs
   const fetchWatchlist = useCallback(async () => {
     try {
       const response = await fetch('/api/watchlist');
@@ -85,8 +96,49 @@ export default function BrowseCompaniesPage() {
         setIsLoggedIn(false);
       }
     } catch {
-      // Not logged in or error — don't show watchlist icons
       setIsLoggedIn(false);
+    }
+  }, []);
+
+  // Fetch pipeline deal company IDs
+  const fetchPipelineIds = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: deals } = await supabase
+        .from('deals')
+        .select('company_id')
+        .eq('created_by', user.id);
+
+      if (deals) {
+        setPipelineIds(new Set(deals.map(d => d.company_id).filter(Boolean)));
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Fetch investor preferences
+  const fetchInvestorPrefs = useCallback(async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('sector_interests, stage_focus')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profile) {
+        setInvestorPrefs({
+          sectorInterests: profile.sector_interests || [],
+          stageFocus: profile.stage_focus || [],
+        });
+      }
+    } catch {
+      // ignore — prefs are optional
     }
   }, []);
 
@@ -94,22 +146,58 @@ export default function BrowseCompaniesPage() {
   useEffect(() => {
     fetchCompanies(1);
     fetchWatchlist();
+    fetchPipelineIds();
+    fetchInvestorPrefs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Re-fetch when filters change (but not on initial mount — handled above)
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    fetchCompanies(1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters]);
 
   const handleFilterChange = (newFilters: CompanyFilterState) => {
     setFilters(newFilters);
   };
 
-  const handleWatchlistToggle = async () => {
-    // Re-fetch watchlist to stay in sync
-    await fetchWatchlist();
+  // Watchlist toggle: optimistic update in CompanyCard, just sync the set here
+  const handleWatchlistToggle = (companyId: string, nowWatchlisted: boolean) => {
+    setWatchlistedIds((prev) => {
+      const next = new Set(prev);
+      if (nowWatchlisted) next.add(companyId);
+      else next.delete(companyId);
+      return next;
+    });
+  };
+
+  // Pipeline add: optimistic update in CompanyCard, just sync the set here
+  const handlePipelineAdd = (companyId: string) => {
+    setPipelineIds((prev) => {
+      const next = new Set(prev);
+      next.add(companyId);
+      return next;
+    });
+  };
+
+  // Determine if a company matches investor preferences
+  const isRecommended = (company: any): boolean => {
+    if (!investorPrefs.sectorInterests.length && !investorPrefs.stageFocus.length) return false;
+    const sectorMatch = company.industry && investorPrefs.sectorInterests.includes(company.industry);
+    const stageMatch = company.stage && investorPrefs.stageFocus.includes(company.stage);
+    return !!(sectorMatch || stageMatch);
   };
 
   const activeFilterCount = [
     filters.search,
     ...filters.industries,
     ...filters.stages,
-    filters.sort !== 'newest' ? filters.sort : null,
+    filters.sort !== 'score' ? filters.sort : null,
     filters.raisingOnly ? 'raising' : null,
   ].filter(Boolean).length;
 
@@ -119,6 +207,7 @@ export default function BrowseCompaniesPage() {
       <CompanyFilter
         onFilterChange={handleFilterChange}
         activeFilterCount={activeFilterCount}
+        investorPrefs={investorPrefs}
       />
 
       {/* Main Content */}
@@ -129,7 +218,9 @@ export default function BrowseCompaniesPage() {
             <h1 className="text-3xl font-bold text-gray-900">Browse Companies</h1>
           </div>
           <p className="text-gray-600">
-            {isLoading ? 'Loading...' : `${pagination.total} companies on the platform`}
+            {isLoading
+              ? 'Loading...'
+              : `Showing ${companies.length} of ${pagination.total} companies`}
           </p>
         </div>
 
@@ -173,16 +264,20 @@ export default function BrowseCompaniesPage() {
                 <Rocket className="h-10 w-10 text-[#0168FE]" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                No companies yet
+                No companies found
               </h3>
               <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                Be the first to get scored! Submit your pitch deck and get an AI-powered investment analysis in minutes.
+                {activeFilterCount > 0
+                  ? 'Try adjusting your filters to see more companies.'
+                  : 'Be the first to get scored! Submit your pitch deck and get an AI-powered investment analysis in minutes.'}
               </p>
-              <Link href="/">
-                <Button variant="primary" size="lg">
-                  Get Your Kunfa Score
-                </Button>
-              </Link>
+              {activeFilterCount === 0 && (
+                <Link href="/">
+                  <Button variant="primary" size="lg">
+                    Get Your Kunfa Score
+                  </Button>
+                </Link>
+              )}
             </div>
           ) : (
             <>
@@ -195,6 +290,9 @@ export default function BrowseCompaniesPage() {
                     isWatchlisted={watchlistedIds.has(company.id)}
                     showWatchlist={isLoggedIn}
                     onWatchlistToggle={handleWatchlistToggle}
+                    recommended={isRecommended(company)}
+                    inPipeline={pipelineIds.has(company.id)}
+                    onPipelineAdd={handlePipelineAdd}
                   />
                 ))}
               </div>
