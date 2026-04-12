@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, Bell, LogOut, Settings, User, ChevronDown, Check, CheckCheck } from 'lucide-react';
@@ -14,6 +14,23 @@ interface Notification {
   read: boolean;
   link: string | null;
   created_at: string;
+}
+
+interface TeamOption {
+  teamId: string;
+  ownerName: string;
+  companyName: string | null;
+  fundName: string | null;
+  role: string;
+  memberRole: string;
+}
+
+interface TeamContext {
+  activeTeamId: string | null;
+  companyName: string | null;
+  fundName: string | null;
+  effectiveRole: string;
+  isTeamMember: boolean;
 }
 
 interface NavbarProps {
@@ -30,6 +47,13 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Team context state
+  const [teamContext, setTeamContext] = useState<TeamContext | null>(null);
+  const [availableTeams, setAvailableTeams] = useState<TeamOption[]>([]);
+  const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
+  const [isSwitching, setIsSwitching] = useState(false);
+  const teamDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -56,6 +80,18 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
           .eq('read', false);
 
         setNotificationCount(count || 0);
+
+        // Fetch team context
+        try {
+          const res = await fetch('/api/team-context');
+          if (res.ok) {
+            const data = await res.json();
+            setTeamContext(data.context || null);
+            setAvailableTeams(data.availableTeams || []);
+          }
+        } catch {
+          // Ignore — team context is optional
+        }
       }
     };
 
@@ -71,10 +107,27 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
+      if (teamDropdownRef.current && !teamDropdownRef.current.contains(event.target as Node)) {
+        setIsTeamDropdownOpen(false);
+      }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close team dropdown on Escape
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsTeamDropdownOpen(false);
+        setIsDropdownOpen(false);
+        setIsNotificationsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const fetchNotifications = async () => {
@@ -153,6 +206,23 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
     window.location.href = '/login';
   };
 
+  const handleSwitchTeam = useCallback(async (teamId: string | null) => {
+    setIsSwitching(true);
+    setIsTeamDropdownOpen(false);
+    try {
+      const res = await fetch('/api/team-context/switch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId }),
+      });
+      if (res.ok) {
+        window.location.href = '/dashboard';
+      }
+    } catch {
+      setIsSwitching(false);
+    }
+  }, []);
+
   const formatTimeAgo = (dateStr: string) => {
     const now = new Date();
     const date = new Date(dateStr);
@@ -185,6 +255,33 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
         return '🔔';
     }
   };
+
+  // Derive active team display name
+  const getActiveTeamDisplayName = (): string | null => {
+    if (!teamContext) return null;
+    return teamContext.companyName || teamContext.fundName || null;
+  };
+
+  const getTeamDisplayName = (team: TeamOption): string => {
+    return team.companyName || team.fundName || team.ownerName;
+  };
+
+  const isActiveTeam = (team: TeamOption): boolean => {
+    if (!teamContext) return false;
+    // If activeTeamId is null, the user is viewing their own data.
+    // The first team in availableTeams (memberRole === 'owner') is their own profile.
+    if (teamContext.activeTeamId === null) {
+      return team.memberRole === 'owner';
+    }
+    return team.teamId === teamContext.activeTeamId;
+  };
+
+  const hasMultipleTeams = availableTeams.length > 1;
+  const activeTeamName = getActiveTeamDisplayName();
+  const userName = userProfile?.full_name || 'User';
+
+  // What shows next to the user name
+  const contextLabel = activeTeamName || (userProfile?.role === 'investor' ? 'Investor' : userProfile?.role === 'startup' || userProfile?.role === 'founder' ? 'Startup' : userProfile?.role || '');
 
   return (
     <div className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-200 z-40">
@@ -292,6 +389,71 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
             )}
           </div>
 
+          {/* Team Switcher (only if multiple teams) */}
+          {hasMultipleTeams && (
+            <div className="relative hidden sm:block" ref={teamDropdownRef}>
+              <button
+                onClick={() => setIsTeamDropdownOpen(!isTeamDropdownOpen)}
+                disabled={isSwitching}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm disabled:opacity-50"
+              >
+                <span className="font-medium text-gray-700 max-w-[140px] truncate">
+                  {activeTeamName || contextLabel}
+                </span>
+                <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${isTeamDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isTeamDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 max-h-80 overflow-y-auto">
+                  <div className="px-3 py-2 border-b border-gray-100">
+                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Switch Workspace</p>
+                  </div>
+                  {availableTeams.map((team) => {
+                    const active = isActiveTeam(team);
+                    const displayName = getTeamDisplayName(team);
+                    const isOwn = team.memberRole === 'owner';
+                    return (
+                      <button
+                        key={team.teamId}
+                        onClick={() => {
+                          if (active) {
+                            setIsTeamDropdownOpen(false);
+                            return;
+                          }
+                          // For own profile: pass teamId (profile.id); the switch API handles it
+                          handleSwitchTeam(isOwn ? team.teamId : team.teamId);
+                        }}
+                        className={`w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors ${
+                          active ? 'bg-blue-50' : 'hover:bg-gray-50'
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm truncate ${active ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>
+                            {isOwn ? `My ${team.role === 'investor' ? 'Fund' : 'Company'}` : displayName}
+                          </p>
+                          <p className="text-xs text-gray-500 truncate">
+                            {isOwn ? displayName : team.ownerName}
+                            {!isOwn && (
+                              <span className="ml-1.5 text-gray-400">({team.memberRole})</span>
+                            )}
+                          </p>
+                        </div>
+                        <span className={`flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                          team.role === 'investor' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
+                        }`}>
+                          {team.role === 'investor' ? 'Investor' : 'Startup'}
+                        </span>
+                        {active && (
+                          <Check className="h-4 w-4 text-[#0168FE] flex-shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* User Avatar Dropdown */}
           <div className="relative border-l border-gray-200 pl-4" ref={dropdownRef}>
             <button
@@ -301,19 +463,21 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
               {userProfile?.avatar_url ? (
                 <img
                   src={userProfile.avatar_url}
-                  alt={userProfile?.full_name || 'User'}
+                  alt={userName}
                   className="h-8 w-8 rounded-full object-cover"
                 />
               ) : (
                 <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold">
-                  {(userProfile?.full_name || 'U').charAt(0).toUpperCase()}
+                  {userName.charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="hidden sm:block text-left">
                 <p className="text-sm font-medium text-gray-900 leading-none">
-                  {userProfile?.full_name || 'User'}
+                  {userName}
                 </p>
-                <p className="text-xs text-gray-500 leading-none">{userProfile?.role}</p>
+                <p className="text-xs text-gray-500 leading-none mt-0.5">
+                  {!hasMultipleTeams && contextLabel ? contextLabel : (userProfile?.role || '')}
+                </p>
               </div>
               <ChevronDown className="h-4 w-4 text-gray-400 hidden sm:block" />
             </button>
