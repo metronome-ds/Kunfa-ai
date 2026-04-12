@@ -3,12 +3,30 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Save, LogOut, Check, Lock, AlertTriangle } from 'lucide-react';
+import { Save, LogOut, Check, Lock, AlertTriangle, User, Building2, Briefcase } from 'lucide-react';
 import { STAGES, INDUSTRIES } from '@/lib/constants';
 
 const INPUT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#0168FE] focus:ring-2 focus:ring-[#0168FE]/20 outline-none transition-all';
 const SELECT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#0168FE] focus:ring-2 focus:ring-[#0168FE]/20 outline-none transition-all';
 const DISABLED_CLASS = 'w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed';
+const LABEL_CLASS = 'block text-sm font-medium text-gray-700 mb-1.5';
+
+function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
+  useEffect(() => {
+    const timer = setTimeout(onClose, 3000);
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  return (
+    <div className={`fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg transition-all ${
+      type === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-red-50 border border-red-200 text-red-700'
+    }`}>
+      {type === 'success' && <Check className="w-4 h-4" />}
+      {type === 'error' && <AlertTriangle className="w-4 h-4" />}
+      <p className="text-sm font-medium">{message}</p>
+    </div>
+  );
+}
 
 function ChangePasswordSection() {
   const [newPassword, setNewPassword] = useState('');
@@ -66,7 +84,7 @@ function ChangePasswordSection() {
 
       <form onSubmit={handleChangePassword} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">New Password</label>
+          <label className={LABEL_CLASS}>New Password</label>
           <input
             type="password"
             value={newPassword}
@@ -77,7 +95,7 @@ function ChangePasswordSection() {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Confirm Password</label>
+          <label className={LABEL_CLASS}>Confirm Password</label>
           <input
             type="password"
             value={confirmPassword}
@@ -104,26 +122,36 @@ function ChangePasswordSection() {
 export default function SettingsPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [user, setUser] = useState<{ id: string; email: string } | null>(null);
-  const [role, setRole] = useState<string>('');
-
-  // Common fields
-  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [role, setRole] = useState('');
+  const [memberSince, setMemberSince] = useState('');
+
+  // Toast state
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Team context
+  const [isTeamMember, setIsTeamMember] = useState(false);
+  const [memberRole, setMemberRole] = useState('owner');
+  const [hasCompany, setHasCompany] = useState(false);
+
+  // Section A — Personal Info
+  const [personalSaving, setPersonalSaving] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
 
-  // Startup fields
+  // Section B — Startup fields
+  const [companySaving, setCompanySaving] = useState(false);
   const [companyName, setCompanyName] = useState('');
   const [oneLiner, setOneLiner] = useState('');
   const [industry, setIndustry] = useState('');
   const [companyStage, setCompanyStage] = useState('');
   const [companyWebsite, setCompanyWebsite] = useState('');
   const [companyCountry, setCompanyCountry] = useState('');
-  const [jobTitle, setJobTitle] = useState('');
+  const [teamSize, setTeamSize] = useState('');
 
-  // Investor fields
+  // Section B — Investor fields
+  const [fundSaving, setFundSaving] = useState(false);
   const [fundName, setFundName] = useState('');
   const [aum, setAum] = useState('');
   const [ticketSizeMin, setTicketSizeMin] = useState('');
@@ -135,25 +163,25 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
+      try {
+        const res = await fetch('/api/profile');
+        if (res.status === 401) {
+          router.push('/login');
+          return;
+        }
+        if (!res.ok) throw new Error('Failed to load profile');
 
-      if (!authUser) {
-        router.push('/login');
-        return;
-      }
+        const data = await res.json();
+        const profile = data.profile;
+        const teamCtx = data.teamContext;
 
-      setUser({ id: authUser.id, email: authUser.email || '' });
-      setEmail(authUser.email || '');
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', authUser.id)
-        .single();
-
-      if (profile) {
+        setEmail(profile.email || '');
         setRole(profile.role || '');
+        setMemberSince(profile.created_at || '');
+
+        // Personal info
         setFullName(profile.full_name || '');
+        setJobTitle(profile.job_title || '');
         setLinkedinUrl(profile.linkedin_url || '');
 
         // Startup fields
@@ -163,7 +191,7 @@ export default function SettingsPage() {
         setCompanyStage(profile.company_stage || '');
         setCompanyWebsite(profile.company_website || '');
         setCompanyCountry(profile.company_country || '');
-        setJobTitle(profile.job_title || '');
+        setTeamSize(profile.team_size ? String(profile.team_size) : '');
 
         // Investor fields
         setFundName(profile.fund_name || '');
@@ -174,61 +202,86 @@ export default function SettingsPage() {
         setSectorInterests(profile.sector_interests || '');
         setGeoFocus(profile.geo_focus || '');
         setInvestmentThesis(profile.investment_thesis || '');
-      }
 
-      setIsLoading(false);
+        // Team context
+        setIsTeamMember(teamCtx.isTeamMember);
+        setMemberRole(teamCtx.memberRole);
+
+        // Determine if user has a company (startup with company_name or team context has one)
+        const isStartup = profile.role === 'startup' || profile.role === 'founder';
+        setHasCompany(isStartup && !!(profile.company_name || teamCtx.companyName));
+      } catch {
+        setToast({ message: 'Failed to load profile', type: 'error' });
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     fetchProfile();
   }, [router]);
 
-  const handleSave = async () => {
-    if (!user) return;
-    setIsSaving(true);
-    setSaveSuccess(false);
-
+  const saveSection = async (
+    fields: Record<string, unknown>,
+    setSaving: (v: boolean) => void,
+  ) => {
+    setSaving(true);
     try {
-      const updates: Record<string, unknown> = {
-        full_name: fullName,
-        linkedin_url: linkedinUrl || null,
-        updated_at: new Date().toISOString(),
-      };
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fields),
+      });
 
-      const isStartup = role === 'startup' || role === 'founder';
-
-      if (isStartup) {
-        updates.company_name = companyName || null;
-        updates.one_liner = oneLiner || null;
-        updates.industry = industry || null;
-        updates.company_stage = companyStage || null;
-        updates.company_website = companyWebsite || null;
-        updates.company_country = companyCountry || null;
-        updates.job_title = jobTitle || null;
-      } else {
-        updates.fund_name = fundName || null;
-        updates.aum = aum ? Number(aum) : null;
-        updates.ticket_size_min = ticketSizeMin ? Number(ticketSizeMin) : null;
-        updates.ticket_size_max = ticketSizeMax ? Number(ticketSizeMax) : null;
-        updates.stage_focus = stageFocus || null;
-        updates.sector_interests = sectorInterests || null;
-        updates.geo_focus = geoFocus || null;
-        updates.investment_thesis = investmentThesis || null;
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to save');
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('user_id', user.id);
-
-      if (error) throw error;
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (error) {
-      console.error('Error saving:', error);
-      alert('Failed to save. Please try again.');
+      setToast({ message: 'Profile updated', type: 'success' });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Failed to save. Please try again.';
+      setToast({ message: msg, type: 'error' });
     } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
+  };
+
+  const handleSavePersonal = () => {
+    saveSection(
+      { full_name: fullName, job_title: jobTitle, linkedin_url: linkedinUrl },
+      setPersonalSaving,
+    );
+  };
+
+  const handleSaveCompany = () => {
+    saveSection(
+      {
+        company_name: companyName,
+        one_liner: oneLiner,
+        industry,
+        company_stage: companyStage,
+        company_website: companyWebsite,
+        company_country: companyCountry,
+        team_size: teamSize,
+      },
+      setCompanySaving,
+    );
+  };
+
+  const handleSaveFund = () => {
+    saveSection(
+      {
+        fund_name: fundName,
+        aum,
+        ticket_size_min: ticketSizeMin,
+        ticket_size_max: ticketSizeMax,
+        stage_focus: stageFocus,
+        sector_interests: sectorInterests,
+        geo_focus: geoFocus,
+        investment_thesis: investmentThesis,
+      },
+      setFundSaving,
+    );
   };
 
   const handleLogout = async () => {
@@ -254,12 +307,20 @@ export default function SettingsPage() {
       router.push('/');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to delete account';
-      alert(message);
+      setToast({ message, type: 'error' });
       setIsDeleting(false);
     }
   };
 
   const isStartup = role === 'startup' || role === 'founder';
+  const isInvestor = role === 'investor';
+  const canEditCompany = memberRole === 'owner' || memberRole === 'admin';
+  const showCompanySection = isStartup && (hasCompany || !isTeamMember);
+  const showFundSection = isInvestor;
+
+  const formattedMemberSince = memberSince
+    ? new Date(memberSince).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : '';
 
   if (isLoading) {
     return (
@@ -274,122 +335,187 @@ export default function SettingsPage() {
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
+      {/* Toast */}
+      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
         <p className="text-gray-500 text-sm mt-1">Manage your account and profile information.</p>
       </div>
 
-      {/* Success Banner */}
-      {saveSuccess && (
-        <div className="mb-6 flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg p-3">
-          <Check className="w-4 h-4 text-green-600" />
-          <p className="text-sm text-green-700">Settings saved successfully.</p>
-        </div>
-      )}
-
-      {/* Account Section */}
+      {/* Section A — Personal Info */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-5">Account</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
+          <User className="w-5 h-5 text-gray-400" />
+          Personal Info
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
+            <label className={LABEL_CLASS}>Full Name</label>
             <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className={INPUT_CLASS} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <label className={LABEL_CLASS}>Email</label>
             <input type="email" value={email} disabled className={DISABLED_CLASS} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Role</label>
-            <input type="text" value={isStartup ? 'Startup' : role === 'investor' ? 'Investor' : role || '—'} disabled className={DISABLED_CLASS} />
+            <label className={LABEL_CLASS}>Job Title</label>
+            <input type="text" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="CEO & Co-Founder" className={INPUT_CLASS} />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">LinkedIn URL</label>
-            <input type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/..." className={INPUT_CLASS} />
+            <label className={LABEL_CLASS}>LinkedIn URL</label>
+            <input type="url" value={linkedinUrl} onChange={(e) => setLinkedinUrl(e.target.value)} placeholder="https://linkedin.com/in/yourname" className={INPUT_CLASS} />
           </div>
+          <div>
+            <label className={LABEL_CLASS}>Role</label>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                isStartup ? 'bg-purple-100 text-purple-700' : isInvestor ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+              }`}>
+                {isStartup ? 'Startup' : isInvestor ? 'Investor' : role || '—'}
+              </span>
+            </div>
+          </div>
+          <div>
+            <label className={LABEL_CLASS}>Member Since</label>
+            <p className="text-sm text-gray-600 mt-1">{formattedMemberSince || '—'}</p>
+          </div>
+        </div>
+        <div className="mt-5 pt-4 border-t border-gray-100">
+          <button
+            onClick={handleSavePersonal}
+            disabled={personalSaving}
+            className="inline-flex items-center gap-2 bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+          >
+            <Save className="w-4 h-4" />
+            {personalSaving ? 'Saving...' : 'Save Personal Info'}
+          </button>
         </div>
       </div>
 
-      {/* Startup-specific Section */}
-      {isStartup && (
+      {/* Section B — Startup: Company Information */}
+      {showCompanySection && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-5">Company Information</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-gray-400" />
+            Company Information
+          </h2>
+          {isTeamMember && !canEditCompany && (
+            <p className="text-xs text-amber-600 mb-4">You have view-only access. Contact your team owner to make changes.</p>
+          )}
+          {canEditCompany && (
+            <p className="text-xs text-gray-500 mb-5">Changes here will sync to your public company profile.</p>
+          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Company Name</label>
-              <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={INPUT_CLASS} />
+              <label className={LABEL_CLASS}>Company Name</label>
+              <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} disabled={!canEditCompany} className={canEditCompany ? INPUT_CLASS : DISABLED_CLASS} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Your Title</label>
-              <input type="text" value={jobTitle} onChange={(e) => setJobTitle(e.target.value)} placeholder="CEO & Co-Founder" className={INPUT_CLASS} />
+              <label className={LABEL_CLASS}>Website</label>
+              <input type="url" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} disabled={!canEditCompany} placeholder="https://yourcompany.com" className={canEditCompany ? INPUT_CLASS : DISABLED_CLASS} />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">One-Liner</label>
-              <input type="text" value={oneLiner} onChange={(e) => setOneLiner(e.target.value.slice(0, 160))} maxLength={160} placeholder="What does your company do?" className={INPUT_CLASS} />
+              <label className={LABEL_CLASS}>One-Liner</label>
+              <textarea
+                value={oneLiner}
+                onChange={(e) => setOneLiner(e.target.value.slice(0, 160))}
+                maxLength={160}
+                rows={2}
+                disabled={!canEditCompany}
+                placeholder="What does your company do in one sentence?"
+                className={canEditCompany ? INPUT_CLASS : DISABLED_CLASS}
+              />
+              <p className="text-xs text-gray-400 mt-1">{oneLiner.length}/160</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Industry</label>
-              <select value={industry} onChange={(e) => setIndustry(e.target.value)} className={SELECT_CLASS}>
+              <label className={LABEL_CLASS}>Industry</label>
+              <select value={industry} onChange={(e) => setIndustry(e.target.value)} disabled={!canEditCompany} className={canEditCompany ? SELECT_CLASS : DISABLED_CLASS}>
                 <option value="">Select...</option>
                 {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Stage</label>
-              <select value={companyStage} onChange={(e) => setCompanyStage(e.target.value)} className={SELECT_CLASS}>
+              <label className={LABEL_CLASS}>Stage</label>
+              <select value={companyStage} onChange={(e) => setCompanyStage(e.target.value)} disabled={!canEditCompany} className={canEditCompany ? SELECT_CLASS : DISABLED_CLASS}>
                 <option value="">Select...</option>
                 {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Country / HQ</label>
-              <input type="text" value={companyCountry} onChange={(e) => setCompanyCountry(e.target.value)} placeholder="United States" className={INPUT_CLASS} />
+              <label className={LABEL_CLASS}>Country / HQ</label>
+              <input type="text" value={companyCountry} onChange={(e) => setCompanyCountry(e.target.value)} disabled={!canEditCompany} placeholder="United States" className={canEditCompany ? INPUT_CLASS : DISABLED_CLASS} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Website</label>
-              <input type="url" value={companyWebsite} onChange={(e) => setCompanyWebsite(e.target.value)} placeholder="https://yourcompany.com" className={INPUT_CLASS} />
+              <label className={LABEL_CLASS}>Team Size</label>
+              <input type="number" value={teamSize} onChange={(e) => setTeamSize(e.target.value)} disabled={!canEditCompany} placeholder="e.g. 5" min={1} className={canEditCompany ? INPUT_CLASS : DISABLED_CLASS} />
             </div>
           </div>
+          {canEditCompany && (
+            <div className="mt-5 pt-4 border-t border-gray-100">
+              <button
+                onClick={handleSaveCompany}
+                disabled={companySaving}
+                className="inline-flex items-center gap-2 bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+              >
+                <Save className="w-4 h-4" />
+                {companySaving ? 'Saving...' : 'Save Company Info'}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Investor-specific Section */}
-      {role === 'investor' && (
+      {/* Section B — Investor: Fund Information */}
+      {showFundSection && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-5">Investment Profile</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
+            <Briefcase className="w-5 h-5 text-gray-400" />
+            Investment Profile
+          </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Fund Name</label>
+              <label className={LABEL_CLASS}>Fund Name</label>
               <input type="text" value={fundName} onChange={(e) => setFundName(e.target.value)} placeholder="Your fund or firm" className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">AUM ($)</label>
+              <label className={LABEL_CLASS}>AUM ($)</label>
               <input type="number" value={aum} onChange={(e) => setAum(e.target.value)} placeholder="Assets under management" className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Min Check Size ($)</label>
+              <label className={LABEL_CLASS}>Min Check Size ($)</label>
               <input type="number" value={ticketSizeMin} onChange={(e) => setTicketSizeMin(e.target.value)} placeholder="e.g. 50000" className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Max Check Size ($)</label>
+              <label className={LABEL_CLASS}>Max Check Size ($)</label>
               <input type="number" value={ticketSizeMax} onChange={(e) => setTicketSizeMax(e.target.value)} placeholder="e.g. 500000" className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Stage Focus</label>
+              <label className={LABEL_CLASS}>Stage Focus</label>
               <input type="text" value={stageFocus} onChange={(e) => setStageFocus(e.target.value)} placeholder="e.g. Seed, Series A" className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Sector Interests</label>
+              <label className={LABEL_CLASS}>Sector Interests</label>
               <input type="text" value={sectorInterests} onChange={(e) => setSectorInterests(e.target.value)} placeholder="e.g. FinTech, HealthTech" className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Geographic Focus</label>
+              <label className={LABEL_CLASS}>Geographic Focus</label>
               <input type="text" value={geoFocus} onChange={(e) => setGeoFocus(e.target.value)} placeholder="e.g. MENA, US, Global" className={INPUT_CLASS} />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Investment Thesis</label>
+              <label className={LABEL_CLASS}>Investment Thesis</label>
               <textarea value={investmentThesis} onChange={(e) => setInvestmentThesis(e.target.value)} rows={3} placeholder="Describe your investment strategy and thesis..." className={INPUT_CLASS} />
             </div>
+          </div>
+          <div className="mt-5 pt-4 border-t border-gray-100">
+            <button
+              onClick={handleSaveFund}
+              disabled={fundSaving}
+              className="inline-flex items-center gap-2 bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+            >
+              <Save className="w-4 h-4" />
+              {fundSaving ? 'Saving...' : 'Save Investment Profile'}
+            </button>
           </div>
         </div>
       )}
@@ -397,17 +523,8 @@ export default function SettingsPage() {
       {/* Change Password */}
       <ChangePasswordSection />
 
-      {/* Actions */}
-      <div className="flex items-center justify-between mb-10">
-        <button
-          onClick={handleSave}
-          disabled={isSaving}
-          className="inline-flex items-center gap-2 bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 text-white px-6 py-2.5 rounded-lg font-medium text-sm transition"
-        >
-          <Save className="w-4 h-4" />
-          {isSaving ? 'Saving...' : 'Save Changes'}
-        </button>
-
+      {/* Sign Out */}
+      <div className="flex items-center justify-end mb-6">
         <button
           onClick={handleLogout}
           className="inline-flex items-center gap-2 text-gray-500 hover:text-red-600 px-4 py-2.5 rounded-lg font-medium text-sm transition"
@@ -418,7 +535,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="rounded-xl border-2 border-red-300 p-6">
+      <div className="rounded-xl border-2 border-red-300 p-6 mb-10">
         <h2 className="text-lg font-semibold text-red-600 mb-2 flex items-center gap-2">
           <AlertTriangle className="w-5 h-5" />
           Danger Zone
