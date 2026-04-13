@@ -173,7 +173,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                     setCopiedId('new')
                     setTimeout(() => setCopiedId(null), 2000)
                   }}
-                  className="px-3 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition flex items-center gap-1"
+                  className="px-3 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition flex items-center gap-1"
                 >
                   {copiedId === 'new' ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   {copiedId === 'new' ? 'Copied' : 'Copy'}
@@ -199,7 +199,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Leave blank for no password"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -211,7 +211,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                     onChange={(e) => setExpiryDays(e.target.value)}
                     placeholder="Never"
                     min="1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
                   />
                 </div>
                 <div>
@@ -221,7 +221,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                     className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm w-full"
                   >
                     {allowDownload ? (
-                      <ToggleRight className="w-5 h-5 text-[#0168FE]" />
+                      <ToggleRight className="w-5 h-5 text-[#007CF8]" />
                     ) : (
                       <ToggleLeft className="w-5 h-5 text-gray-400" />
                     )}
@@ -234,7 +234,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
               <button
                 onClick={createLink}
                 disabled={creating}
-                className="w-full py-2.5 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition disabled:opacity-50"
+                className="w-full py-2.5 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition disabled:opacity-50"
               >
                 {creating ? 'Creating...' : 'Generate Share Link'}
               </button>
@@ -246,7 +246,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
             <h4 className="text-sm font-medium text-gray-900 mb-3">Shared Links</h4>
             {loading ? (
               <div className="flex items-center justify-center py-6">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#0168FE]" />
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#007CF8]" />
               </div>
             ) : links.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-4">No shared links yet</p>
@@ -285,7 +285,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => copyLink(link.token, link.id)}
-                          className="p-1.5 text-gray-400 hover:text-[#0168FE] transition"
+                          className="p-1.5 text-gray-400 hover:text-[#007CF8] transition"
                           title="Copy link"
                         >
                           {copiedId === link.id ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
@@ -294,7 +294,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                           href={`/room/${link.token}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 text-gray-400 hover:text-[#0168FE] transition"
+                          className="p-1.5 text-gray-400 hover:text-[#007CF8] transition"
                           title="Preview"
                         >
                           <ExternalLink className="w-4 h-4" />
@@ -305,7 +305,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                           title={link.is_active ? 'Deactivate' : 'Activate'}
                         >
                           {link.is_active ? (
-                            <ToggleRight className="w-4 h-4 text-[#0168FE]" />
+                            <ToggleRight className="w-4 h-4 text-[#007CF8]" />
                           ) : (
                             <ToggleLeft className="w-4 h-4" />
                           )}

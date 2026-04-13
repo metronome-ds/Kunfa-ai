@@ -16,10 +16,10 @@ interface StatsCardProps {
 }
 
 const colorClasses = {
-  blue: { bg: 'bg-blue-100', text: 'text-blue-600' },
-  green: { bg: 'bg-green-100', text: 'text-green-600' },
+  blue: { bg: 'bg-[#F0F7FF]', text: 'text-[#007CF8]' },
+  green: { bg: 'bg-emerald-100', text: 'text-emerald-600' },
   purple: { bg: 'bg-purple-100', text: 'text-purple-600' },
-  orange: { bg: 'bg-orange-100', text: 'text-orange-600' },
+  orange: { bg: 'bg-amber-100', text: 'text-amber-600' },
   red: { bg: 'bg-red-100', text: 'text-red-600' },
   indigo: { bg: 'bg-indigo-100', text: 'text-indigo-600' },
 };
@@ -35,7 +35,7 @@ export function StatsCard({
   const colors = colorClasses[color];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+    <div className="bg-white rounded-xl shadow-sm p-6 border border-[#E5E7EB]">
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <p className="text-sm font-medium text-gray-500">{label}</p>

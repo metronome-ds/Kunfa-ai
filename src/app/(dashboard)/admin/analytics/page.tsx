@@ -136,7 +136,7 @@ function activityIcon(type: ActivityItem['type']) {
     case 'signup':
       return <UserPlus className="w-4 h-4 text-emerald-600" />
     case 'score':
-      return <Sparkles className="w-4 h-4 text-[#0168FE]" />
+      return <Sparkles className="w-4 h-4 text-[#007CF8]" />
     case 'upload':
       return <FileText className="w-4 h-4 text-amber-600" />
     case 'pipeline':
@@ -222,7 +222,7 @@ export default function AdminAnalyticsPage() {
     return (
       <div className="max-w-7xl mx-auto px-6 py-10">
         <div className="flex items-center justify-center py-24">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0168FE]" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
         </div>
       </div>
     )
@@ -249,7 +249,7 @@ export default function AdminAnalyticsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <ShieldCheck className="w-6 h-6 text-[#0168FE]" />
+          <ShieldCheck className="w-6 h-6 text-[#007CF8]" />
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Platform Analytics</h1>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -260,7 +260,7 @@ export default function AdminAnalyticsPage() {
         <button
           onClick={() => fetchAnalytics(false)}
           disabled={refreshing}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 transition disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-[#F8F9FB] transition disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
@@ -322,7 +322,7 @@ export default function AdminAnalyticsPage() {
                 <Line
                   type="monotone"
                   dataKey="investors"
-                  stroke="#0168FE"
+                  stroke="#007CF8"
                   strokeWidth={2}
                   dot={false}
                   name="Investors"
@@ -357,7 +357,7 @@ export default function AdminAnalyticsPage() {
                     fontSize: '12px',
                   }}
                 />
-                <Bar dataKey="count" fill="#0168FE" radius={[4, 4, 0, 0]} name="Scores" />
+                <Bar dataKey="count" fill="#007CF8" radius={[4, 4, 0, 0]} name="Scores" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -378,7 +378,7 @@ export default function AdminAnalyticsPage() {
                     {c.slug ? (
                       <Link
                         href={`/company/${c.slug}`}
-                        className="text-sm text-gray-900 hover:text-[#0168FE] truncate"
+                        className="text-sm text-gray-900 hover:text-[#007CF8] truncate"
                       >
                         {c.company_name}
                       </Link>
@@ -409,7 +409,7 @@ export default function AdminAnalyticsPage() {
                   <div className="text-xs text-gray-500 mt-0.5">
                     viewed{' '}
                     {v.slug ? (
-                      <Link href={`/company/${v.slug}`} className="text-[#0168FE] hover:underline">
+                      <Link href={`/company/${v.slug}`} className="text-[#007CF8] hover:underline">
                         {v.company_name}
                       </Link>
                     ) : (
@@ -431,7 +431,7 @@ export default function AdminAnalyticsPage() {
           <div className="divide-y divide-gray-100">
             {data.recentActivity.map(item => (
               <div key={item.id} className="flex items-center gap-3 py-3">
-                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[#F8F9FB] flex items-center justify-center flex-shrink-0">
                   {activityIcon(item.type)}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -466,7 +466,7 @@ export default function AdminAnalyticsPage() {
                   </div>
                   <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#0168FE] rounded-full"
+                      className="h-full bg-[#007CF8] rounded-full"
                       style={{ width: `${row.pct}%` }}
                     />
                   </div>
@@ -523,7 +523,7 @@ interface MetricCardProps {
 
 function MetricCard({ icon, label, value, breakdown, accent }: MetricCardProps) {
   const accentClasses = {
-    blue: 'bg-blue-50 text-[#0168FE]',
+    blue: 'bg-blue-50 text-[#007CF8]',
     emerald: 'bg-emerald-50 text-emerald-600',
     purple: 'bg-purple-50 text-purple-600',
     amber: 'bg-amber-50 text-amber-600',
@@ -571,7 +571,7 @@ function StatRow({ label, value, accent }: StatRowProps) {
   const valueClass = {
     emerald: 'text-emerald-600',
     amber: 'text-amber-600',
-    blue: 'text-[#0168FE]',
+    blue: 'text-[#007CF8]',
     red: 'text-red-600',
   }[accent ?? 'blue']
 

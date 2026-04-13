@@ -131,7 +131,7 @@ export default function NotesTimeline({ dealId, currentUserId }: NotesTimelinePr
           value={newContent}
           onChange={(e) => setNewContent(e.target.value)}
           rows={2}
-          className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] resize-none"
+          className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] resize-none"
           placeholder="Add a note..."
           onKeyDown={(e) => {
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -142,7 +142,7 @@ export default function NotesTimeline({ dealId, currentUserId }: NotesTimelinePr
         <button
           onClick={handleAdd}
           disabled={submitting || !newContent.trim()}
-          className="self-end px-3 py-2 bg-[#0168FE] text-white rounded-lg hover:bg-[#0050CC] transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="self-end px-3 py-2 bg-[#007CF8] text-white rounded-lg hover:bg-[#0066D6] transition disabled:opacity-50 disabled:cursor-not-allowed"
           title="Add note"
         >
           <Send className="w-4 h-4" />
@@ -170,13 +170,13 @@ export default function NotesTimeline({ dealId, currentUserId }: NotesTimelinePr
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
                     rows={2}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] resize-none"
+                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] resize-none"
                     autoFocus
                   />
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEdit(note.id)}
-                      className="px-3 py-1 bg-[#0168FE] text-white rounded text-xs font-medium hover:bg-[#0050CC] transition"
+                      className="px-3 py-1 bg-[#007CF8] text-white rounded text-xs font-medium hover:bg-[#0066D6] transition"
                     >
                       Save
                     </button>

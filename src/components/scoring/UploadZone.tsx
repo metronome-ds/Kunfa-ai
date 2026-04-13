@@ -130,7 +130,7 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
         <div className="mt-2">
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
             required
-              ? 'bg-blue-100 text-[#0168FE]'
+              ? 'bg-blue-100 text-[#007CF8]'
               : 'bg-gray-100 text-gray-500'
           }`}>
             {required ? 'REQUIRED' : 'OPTIONAL'}

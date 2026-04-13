@@ -126,8 +126,8 @@ export default function LockedDealRoom({ companyId, companyName, onUnlock }: Loc
       {/* Header */}
       <div className="px-6 py-5 border-b border-gray-100">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#0168FE]/10 flex items-center justify-center">
-            <FolderOpen className="w-5 h-5 text-[#0168FE]" />
+          <div className="w-10 h-10 rounded-lg bg-[#007CF8]/10 flex items-center justify-center">
+            <FolderOpen className="w-5 h-5 text-[#007CF8]" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Deal Room</h2>
@@ -143,7 +143,7 @@ export default function LockedDealRoom({ companyId, companyName, onUnlock }: Loc
         <div className="p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0168FE]" />
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#007CF8]" />
             </div>
           ) : docs.length === 0 ? (
             <div className="text-center py-12">
@@ -181,8 +181,8 @@ export default function LockedDealRoom({ companyId, companyName, onUnlock }: Loc
           <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm">
             <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-6 max-w-md w-full mx-4">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-lg bg-[#0168FE]/10 flex items-center justify-center flex-shrink-0">
-                  <Lock className="w-5 h-5 text-[#0168FE]" />
+                <div className="w-10 h-10 rounded-lg bg-[#007CF8]/10 flex items-center justify-center flex-shrink-0">
+                  <Lock className="w-5 h-5 text-[#007CF8]" />
                 </div>
                 <div>
                   <h3 className="text-base font-semibold text-gray-900">Enter your email to access the deal room</h3>
@@ -198,7 +198,7 @@ export default function LockedDealRoom({ companyId, companyName, onUnlock }: Loc
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@fund.com"
-                    className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                    className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
                     required
                   />
                 </div>
@@ -208,7 +208,7 @@ export default function LockedDealRoom({ companyId, companyName, onUnlock }: Loc
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-2.5 rounded-lg text-sm font-medium bg-[#0168FE] text-white hover:bg-[#0050CC] transition disabled:opacity-50"
+                  className="w-full py-2.5 rounded-lg text-sm font-medium bg-[#007CF8] text-white hover:bg-[#0066D6] transition disabled:opacity-50"
                 >
                   {submitting ? 'Unlocking...' : 'View Documents'}
                 </button>

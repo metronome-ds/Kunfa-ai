@@ -182,7 +182,7 @@ export default function SavedDealsPage() {
                   onClick={() => setSortBy(option.value as SortBy)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     sortBy === option.value
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-[#007CF8] text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -251,7 +251,7 @@ export default function SavedDealsPage() {
                       {company.slug && (
                         <Link
                           href={`/company/${company.slug}`}
-                          className="flex items-center gap-1 text-sm text-[#0168FE] hover:text-[#0050CC] font-medium"
+                          className="flex items-center gap-1 text-sm text-[#007CF8] hover:text-[#0066D6] font-medium"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                           View Profile
@@ -260,7 +260,7 @@ export default function SavedDealsPage() {
                       <div className="flex-1" />
                       <button
                         onClick={() => handleAddToPipeline(item.company_id)}
-                        className="px-3 py-1 bg-blue-600 text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
+                        className="px-3 py-1 bg-[#007CF8] text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
                       >
                         Add to Pipeline
                       </button>

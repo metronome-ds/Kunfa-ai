@@ -100,7 +100,7 @@ export default function MyDealsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F8F9FB]">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 p-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
@@ -131,8 +131,8 @@ export default function MyDealsPage() {
               onClick={() => setStatusFilter(status)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 statusFilter === status
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                  ? 'bg-[#007CF8] text-white'
+                  : 'bg-white text-gray-700 border border-gray-200 hover:bg-[#F8F9FB]'
               }`}
             >
               {status === 'all' ? 'All Deals' : getDealStatusLabel(status as DealStatus)}
@@ -190,7 +190,7 @@ export default function MyDealsPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
+                <tr className="border-b border-gray-200 bg-[#F8F9FB]">
                   <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
                     Company
                   </th>
@@ -221,7 +221,7 @@ export default function MyDealsPage() {
                 {filteredDeals.map((deal) => (
                   <tr
                     key={deal.id}
-                    className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                    className="border-b border-gray-200 hover:bg-[#F8F9FB] transition-colors"
                   >
                     {/* Company */}
                     <td className="px-6 py-4">
@@ -306,7 +306,7 @@ export default function MyDealsPage() {
                           <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                             <Link
                               href={`/deals/${deal.id}`}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-700 transition-colors border-b border-gray-100"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F9FB] text-gray-700 transition-colors border-b border-gray-100"
                             >
                               <Eye className="h-4 w-4" />
                               View
@@ -314,7 +314,7 @@ export default function MyDealsPage() {
 
                             <Link
                               href={`/deals/${deal.id}/edit`}
-                              className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-gray-700 transition-colors border-b border-gray-100"
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-[#F8F9FB] text-gray-700 transition-colors border-b border-gray-100"
                             >
                               <Edit2 className="h-4 w-4" />
                               Edit
@@ -322,7 +322,7 @@ export default function MyDealsPage() {
 
                             <button
                               onClick={() => handleArchive(deal.id)}
-                              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-red-600 transition-colors"
+                              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#F8F9FB] text-red-600 transition-colors"
                             >
                               <Archive className="h-4 w-4" />
                               Archive

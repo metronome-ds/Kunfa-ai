@@ -145,7 +145,7 @@ export default function InviteInvestorModal({
             </p>
             <button
               onClick={handleClose}
-              className="px-6 py-2.5 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition"
+              className="px-6 py-2.5 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition"
             >
               Done
             </button>
@@ -167,7 +167,7 @@ export default function InviteInvestorModal({
                 placeholder="Search investors by name, email, or fund..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] outline-none"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] outline-none"
               />
             </div>
 
@@ -190,7 +190,7 @@ export default function InviteInvestorModal({
                   >
                     <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                       selected.has(inv.email)
-                        ? 'border-[#0168FE] bg-[#0168FE]'
+                        ? 'border-[#007CF8] bg-[#007CF8]'
                         : 'border-gray-300'
                     }`}>
                       {selected.has(inv.email) && (
@@ -227,7 +227,7 @@ export default function InviteInvestorModal({
                       addManualEmail()
                     }
                   }}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] outline-none"
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] outline-none"
                 />
                 <button
                   onClick={addManualEmail}
@@ -265,7 +265,7 @@ export default function InviteInvestorModal({
                 onChange={(e) => setPersonalMessage(e.target.value)}
                 rows={2}
                 maxLength={500}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] outline-none resize-none"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] outline-none resize-none"
               />
             </div>
 
@@ -280,7 +280,7 @@ export default function InviteInvestorModal({
             <button
               onClick={handleSend}
               disabled={totalSelected === 0 || sending}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
               {sending

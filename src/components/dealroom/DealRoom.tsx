@@ -243,12 +243,12 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
       {/* Toast */}
       {toast && (
         <div className="mx-6 mt-4 flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <RefreshCw className="w-4 h-4 text-[#0168FE] flex-shrink-0" />
+          <RefreshCw className="w-4 h-4 text-[#007CF8] flex-shrink-0" />
           <p className="text-sm text-blue-800 flex-1">{toast}</p>
           {onRequestRescore && (
             <button
               onClick={() => { setToast(null); onRequestRescore() }}
-              className="text-xs font-semibold text-[#0168FE] hover:underline whitespace-nowrap"
+              className="text-xs font-semibold text-[#007CF8] hover:underline whitespace-nowrap"
             >
               Re-Score Now
             </button>
@@ -263,8 +263,8 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
       <div className="px-6 py-5 border-b border-gray-100">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#0168FE]/10 flex items-center justify-center">
-              <FolderOpen className="w-5 h-5 text-[#0168FE]" />
+            <div className="w-10 h-10 rounded-lg bg-[#007CF8]/10 flex items-center justify-center">
+              <FolderOpen className="w-5 h-5 text-[#007CF8]" />
             </div>
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Deal Room</h2>
@@ -278,7 +278,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
             {canUpload && (
               <button
                 onClick={() => setUploadOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
               >
                 <Upload className="w-4 h-4" />
                 Upload
@@ -297,7 +297,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
             onClick={() => setFilter(c.value)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition ${
               filter === c.value
-                ? 'bg-[#0168FE] text-white'
+                ? 'bg-[#007CF8] text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -315,7 +315,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
       <div className="p-6">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0168FE]" />
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#007CF8]" />
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-12">
@@ -328,7 +328,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
             {canUpload && documents.length === 0 && (
               <button
                 onClick={() => setUploadOpen(true)}
-                className="mt-3 text-sm text-[#0168FE] font-medium hover:underline"
+                className="mt-3 text-sm text-[#007CF8] font-medium hover:underline"
               >
                 Upload your first document
               </button>
@@ -341,7 +341,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
               return (
                 <div
                   key={doc.id}
-                  className="group border border-gray-200 rounded-lg p-4 hover:border-[#0168FE]/30 hover:shadow-sm transition relative"
+                  className="group border border-gray-200 rounded-lg p-4 hover:border-[#007CF8]/30 hover:shadow-sm transition relative"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <span className="text-2xl">{getFileIcon(doc.file_type)}</span>
@@ -427,7 +427,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
                       onClick={() => trackDocumentView(doc.id)}
                       className="block"
                     >
-                      <p className="text-sm font-medium text-gray-900 truncate hover:text-[#0168FE] transition">
+                      <p className="text-sm font-medium text-gray-900 truncate hover:text-[#007CF8] transition">
                         {doc.file_name}
                       </p>
                     </a>
@@ -702,7 +702,7 @@ function UploadModal({
             )}
             <button
               onClick={handleDoneClose}
-              className="mt-6 px-8 py-2.5 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition"
+              className="mt-6 px-8 py-2.5 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition"
             >
               Done
             </button>
@@ -725,8 +725,8 @@ function UploadModal({
               onClick={openFilePicker}
               className={`border-2 border-dashed rounded-xl p-6 text-center transition cursor-pointer ${
                 dragOver
-                  ? 'border-[#0168FE] bg-blue-50'
-                  : 'border-gray-300 hover:border-[#0168FE]'
+                  ? 'border-[#007CF8] bg-blue-50'
+                  : 'border-gray-300 hover:border-[#007CF8]'
               }`}
             >
               <Upload className="w-7 h-7 text-gray-400 mx-auto mb-2" />
@@ -767,7 +767,7 @@ function UploadModal({
                       ) : item.status === 'error' || item.validationError ? (
                         <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
                       ) : item.status === 'uploading' ? (
-                        <div className="w-4 h-4 border-2 border-[#0168FE] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                        <div className="w-4 h-4 border-2 border-[#007CF8] border-t-transparent rounded-full animate-spin flex-shrink-0" />
                       ) : (
                         <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
                       )}
@@ -801,7 +801,7 @@ function UploadModal({
                         <select
                           value={item.category}
                           onChange={(e) => updateFile(item.id, { category: e.target.value })}
-                          className="px-2 py-1 border border-gray-200 rounded text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#0168FE] bg-white"
+                          className="px-2 py-1 border border-gray-200 rounded text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#007CF8] bg-white"
                         >
                           {UPLOAD_CATEGORIES.map((c) => (
                             <option key={c.value} value={c.value}>{c.label}</option>
@@ -812,7 +812,7 @@ function UploadModal({
                           value={item.description}
                           onChange={(e) => updateFile(item.id, { description: e.target.value })}
                           placeholder="Description (optional)"
-                          className="flex-1 px-2 py-1 border border-gray-200 rounded text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#0168FE]"
+                          className="flex-1 px-2 py-1 border border-gray-200 rounded text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#007CF8]"
                         />
                         <button
                           type="button"
@@ -838,7 +838,7 @@ function UploadModal({
             {queue.length > 0 && queue.length < MAX_BATCH_FILES && !uploading && (
               <button
                 onClick={openFilePicker}
-                className="mt-3 text-sm text-[#0168FE] font-medium hover:underline"
+                className="mt-3 text-sm text-[#007CF8] font-medium hover:underline"
               >
                 + Add more files
               </button>
@@ -856,7 +856,7 @@ function UploadModal({
               <button
                 onClick={handleUploadAll}
                 disabled={pendingCount === 0 || uploading}
-                className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[#0168FE] text-white hover:bg-[#0050CC] transition disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[#007CF8] text-white hover:bg-[#0066D6] transition disabled:opacity-50"
               >
                 {uploading
                   ? 'Uploading...'
@@ -992,7 +992,7 @@ function EditDocModal({
           <button
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[#0168FE] text-white hover:bg-[#0050CC] transition disabled:opacity-50"
+            className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[#007CF8] text-white hover:bg-[#0066D6] transition disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>
@@ -1083,7 +1083,7 @@ function ReplaceDocModal({
             input.click()
           }}
           className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition ${
-            file ? 'border-emerald-300 bg-emerald-50' : 'border-gray-300 hover:border-[#0168FE]'
+            file ? 'border-emerald-300 bg-emerald-50' : 'border-gray-300 hover:border-[#007CF8]'
           }`}
         >
           {file ? (
@@ -1103,7 +1103,7 @@ function ReplaceDocModal({
           <button
             onClick={handleReplace}
             disabled={!file || uploading}
-            className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[#0168FE] text-white hover:bg-[#0050CC] transition disabled:opacity-50"
+            className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[#007CF8] text-white hover:bg-[#0066D6] transition disabled:opacity-50"
           >
             {uploading ? 'Replacing...' : 'Replace'}
           </button>

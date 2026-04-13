@@ -55,7 +55,7 @@ export default function PaidReportBanner({ submissionId }: PaidReportBannerProps
         </div>
         <button
           onClick={() => router.push('/dashboard')}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
         >
           Go to Dashboard
           <ArrowRight className="w-4 h-4" />

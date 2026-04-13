@@ -87,7 +87,7 @@ export default function HowItWorksPage() {
       <nav className="border-b border-gray-200 bg-white">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#0168FE] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#007CF8] flex items-center justify-center">
               <span className="text-white font-bold text-lg">K</span>
             </div>
             <span className="font-bold text-lg text-gray-900">Kunfa.AI</span>
@@ -104,7 +104,7 @@ export default function HowItWorksPage() {
       <main className="max-w-4xl mx-auto px-6 py-16">
         {/* Hero */}
         <header className="mb-12">
-          <p className="text-xs font-semibold text-[#0168FE] uppercase tracking-wider mb-3">
+          <p className="text-xs font-semibold text-[#007CF8] uppercase tracking-wider mb-3">
             How it works
           </p>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -118,7 +118,7 @@ export default function HowItWorksPage() {
         </header>
 
         {/* 75+ callout */}
-        <section className="mb-12 rounded-2xl border border-[#0168FE]/20 bg-[#0168FE]/5 p-6">
+        <section className="mb-12 rounded-2xl border border-[#007CF8]/20 bg-[#007CF8]/5 p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
             The 75+ threshold
           </h2>
@@ -190,28 +190,28 @@ export default function HowItWorksPage() {
           </h2>
           <ul className="space-y-3 text-sm text-gray-700 leading-relaxed">
             <li className="flex gap-3">
-              <span className="text-[#0168FE] font-bold">1.</span>
+              <span className="text-[#007CF8] font-bold">1.</span>
               <span>
                 Upload a complete pitch deck and a financial model (not just a P&amp;L).
                 The scoring engine reads both documents end-to-end.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="text-[#0168FE] font-bold">2.</span>
+              <span className="text-[#007CF8] font-bold">2.</span>
               <span>
                 Fill in every profile field — founders, LinkedIn URLs, team size,
                 industry, stage, country, website. Gaps lower your score.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="text-[#0168FE] font-bold">3.</span>
+              <span className="text-[#007CF8] font-bold">3.</span>
               <span>
                 Address the weakest dimensions shown on your dashboard. Then re-score.
                 You can re-score as your company evolves.
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="text-[#0168FE] font-bold">4.</span>
+              <span className="text-[#007CF8] font-bold">4.</span>
               <span>
                 Be specific. Concrete numbers, named customers, and dated milestones
                 always beat adjectives.
@@ -221,7 +221,7 @@ export default function HowItWorksPage() {
         </section>
 
         {/* CTA */}
-        <section className="rounded-2xl bg-gradient-to-br from-[#0168FE] to-indigo-700 p-8 text-center text-white">
+        <section className="rounded-2xl bg-gradient-to-br from-[#007CF8] to-indigo-700 p-8 text-center text-white">
           <h2 className="text-2xl font-bold mb-2">Ready to get scored?</h2>
           <p className="text-sm text-white/80 mb-6 max-w-md mx-auto">
             Upload your pitch deck and get a full Kunfa Score across all six dimensions
@@ -229,7 +229,7 @@ export default function HowItWorksPage() {
           </p>
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#0168FE] rounded-lg text-sm font-semibold hover:bg-white/90 transition"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[#007CF8] rounded-lg text-sm font-semibold hover:bg-white/90 transition"
           >
             Get Your Kunfa Score
           </Link>

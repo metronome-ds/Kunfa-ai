@@ -1,65 +1,62 @@
 @import "tailwindcss";
 
 :root {
-  /* Primary Colors */
-  --primary-deep: #1a1f36;
-  --primary-accent: #3b82f6;
+  /* Noor Modern Design System */
+  --primary: #007CF8;
+  --primary-hover: #0066D6;
+  --primary-light: #F0F7FF;
 
-  /* Secondary Colors */
-  --sidebar-bg: #0f1419;
-  --card-bg: #ffffff;
+  --surface: #FFFFFF;
+  --surface-muted: #F8F9FB;
 
-  /* Status Colors */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-tertiary: #9CA3AF;
 
-  /* Neutral Colors */
-  --background: #ffffff;
-  --foreground: #171717;
-  --text-secondary: #6b7280;
-  --border: #e5e7eb;
+  --border: #E5E7EB;
+  --border-focus: #007CF8;
+
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+
+  --background: #FFFFFF;
+  --foreground: #111827;
+
+  --gray-badge-bg: #F3F4F6;
 }
 
 @theme inline {
-  --color-primary: var(--primary-deep);
-  --color-accent: var(--primary-accent);
+  --color-primary: var(--primary);
+  --color-accent: var(--primary);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-kunfa: #0168FE;
-  --color-kunfa-light: #3386FE;
-  --color-kunfa-dark: #0050CC;
-  --color-kunfa-green: #0168FE;
-  --color-kunfa-green-dark: #0050CC;
-  --color-kunfa-navy: #0F172A;
+  --color-kunfa: #007CF8;
+  --color-kunfa-light: #F0F7FF;
+  --color-kunfa-dark: #0066D6;
+  --color-kunfa-green: #10B981;
+  --color-kunfa-green-dark: #059669;
+  --color-kunfa-navy: #111827;
   --color-kunfa-card-dark: #1E293B;
-  --color-kunfa-text-primary: #0F172A;
-  --color-kunfa-text-secondary: #64748B;
-  --color-kunfa-light-bg: #F8FAFC;
+  --color-kunfa-text-primary: #111827;
+  --color-kunfa-text-secondary: #4B5563;
+  --color-kunfa-light-bg: #F8F9FB;
   --color-kunfa-orange: #F97316;
   --color-kunfa-indigo: #6366F1;
   --color-kunfa-yellow: #EAB308;
   --color-kunfa-red: #EF4444;
+  --color-surface-muted: #F8F9FB;
   --font-sans: 'Inter', system-ui, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --text-secondary: #9ca3af;
-    --border: #374151;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 * {
-  @apply border-gray-200;
+  @apply border-[#E5E7EB];
 }
 
 /* Smooth transitions for all interactive elements */
@@ -71,28 +68,30 @@ select {
   @apply transition-all duration-200;
 }
 
-/* ===== Landing Page Component Classes ===== */
+/* ===== Global Button Classes ===== */
 .btn-primary {
-  background-color: #0168FE;
+  background-color: #007CF8;
   color: white;
   font-weight: 600;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   transition: all 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 .btn-primary:hover {
-  background-color: #0050CC;
+  background-color: #0066D6;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 .btn-outline {
-  border: 1px solid #d1d5db;
-  color: #374151;
+  border: 1px solid #E5E7EB;
+  color: #111827;
   font-weight: 600;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   transition: all 0.2s;
 }
 .btn-outline:hover {
-  background-color: #f9fafb;
+  background-color: #F8F9FB;
 }
 .badge-green {
   display: inline-flex;
@@ -101,11 +100,11 @@ select {
   border-radius: 9999px;
   font-size: 0.875rem;
   font-weight: 500;
-  background-color: #eff6ff;
-  color: #0168FE;
+  background-color: #F0F7FF;
+  color: #007CF8;
 }
 .text-gradient-green {
-  background: linear-gradient(to right, #3386FE, #0050CC);
+  background: linear-gradient(to right, #007CF8, #0066D6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -128,12 +127,12 @@ select {
 
 /* Glow effect for score card */
 .card-glow {
-  box-shadow: 0 0 15px rgba(1, 104, 254, 0.3), 0 0 30px rgba(1, 104, 254, 0.1);
+  box-shadow: 0 0 15px rgba(0, 124, 248, 0.3), 0 0 30px rgba(0, 124, 248, 0.1);
   animation: glow 2s ease-in-out infinite alternate;
 }
 @keyframes glow {
-  0% { box-shadow: 0 0 10px rgba(1, 104, 254, 0.3), 0 0 20px rgba(1, 104, 254, 0.1); }
-  100% { box-shadow: 0 0 15px rgba(1, 104, 254, 0.5), 0 0 30px rgba(1, 104, 254, 0.2); }
+  0% { box-shadow: 0 0 10px rgba(0, 124, 248, 0.3), 0 0 20px rgba(0, 124, 248, 0.1); }
+  100% { box-shadow: 0 0 15px rgba(0, 124, 248, 0.5), 0 0 30px rgba(0, 124, 248, 0.2); }
 }
 
 /* Pulse animation for LIVE badge */
@@ -155,24 +154,25 @@ select {
 /* Score circle */
 .score-circle {
   background: conic-gradient(
-    #0168FE calc(var(--score) * 1%),
-    #e5e7eb calc(var(--score) * 1%)
+    #007CF8 calc(var(--score) * 1%),
+    #E5E7EB calc(var(--score) * 1%)
   );
 }
 
 /* Upload zone */
 .upload-zone {
-  border: 2px dashed #d1d5db;
-  border-radius: 0.75rem;
+  border: 2px dashed #E5E7EB;
+  border-radius: 0.5rem;
   padding: 1.5rem;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
+  background-color: #F8F9FB;
 }
 .upload-zone:hover,
 .upload-zone.dragover {
-  border-color: #0168FE;
-  background-color: #eff6ff;
+  border-color: #007CF8;
+  background-color: #F0F7FF;
 }
 
 /* Modal backdrop */

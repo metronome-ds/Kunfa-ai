@@ -16,11 +16,11 @@ interface TeamMember {
 function getRoleBadge(role: string) {
   switch (role) {
     case 'owner':
-      return 'bg-purple-100 text-purple-700'
+      return 'bg-[#F0F7FF] text-[#007CF8]'
     case 'admin':
       return 'bg-red-100 text-red-700'
     case 'member':
-      return 'bg-blue-100 text-blue-700'
+      return 'bg-emerald-100 text-emerald-700'
     case 'viewer':
       return 'bg-gray-100 text-gray-600'
     default:
@@ -172,7 +172,7 @@ export default function TeamPage() {
   }
 
   const inputClass =
-    'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]'
+    'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]'
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -180,7 +180,7 @@ export default function TeamPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Users className="w-6 h-6 text-[#0168FE]" />
+            <Users className="w-6 h-6 text-[#007CF8]" />
             Team
           </h1>
           <p className="text-gray-500 text-sm mt-1">
@@ -190,7 +190,7 @@ export default function TeamPage() {
         {canManage && (
           <button
             onClick={() => setShowInvite(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#0168FE] text-white rounded-lg text-sm font-semibold hover:bg-[#0050CC] transition"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#007CF8] text-white rounded-lg text-sm font-semibold hover:bg-[#0066D6] transition"
           >
             <UserPlus className="w-4 h-4" />
             Invite Member
@@ -213,7 +213,7 @@ export default function TeamPage() {
       {/* Loading */}
       {loading && (
         <div className="text-center py-16">
-          <div className="w-8 h-8 border-2 border-[#0168FE] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-8 h-8 border-2 border-[#007CF8] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-gray-500 text-sm">Loading team...</p>
         </div>
       )}
@@ -223,7 +223,7 @@ export default function TeamPage() {
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
+              <tr className="bg-[#F8F9FB] border-b border-gray-200">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Member</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
@@ -232,7 +232,7 @@ export default function TeamPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {members.map((member) => (
-                <tr key={member.id} className="hover:bg-gray-50 transition">
+                <tr key={member.id} className="hover:bg-[#F8F9FB] transition">
                   {/* Member info */}
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
@@ -258,7 +258,7 @@ export default function TeamPage() {
                       <select
                         value={member.role}
                         onChange={(e) => handleChangeRole(member.id, e.target.value)}
-                        className="text-xs font-medium px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#0168FE]"
+                        className="text-xs font-medium px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#007CF8]"
                       >
                         <option value="admin">Admin</option>
                         <option value="member">Member</option>
@@ -282,7 +282,7 @@ export default function TeamPage() {
                           <button
                             onClick={() => handleResend(member.id, member.email)}
                             disabled={resending === member.id || resendCooldown[member.id]}
-                            className="px-2 py-1 text-xs font-medium text-[#0168FE] hover:bg-blue-50 transition rounded-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                            className="px-2 py-1 text-xs font-medium text-[#007CF8] hover:bg-blue-50 transition rounded-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
                             title="Resend invite"
                           >
                             <RefreshCw className={`w-3 h-3 ${resending === member.id ? 'animate-spin' : ''}`} />
@@ -313,7 +313,7 @@ export default function TeamPage() {
               {canManage && (
                 <button
                   onClick={() => setShowInvite(true)}
-                  className="text-[#0168FE] text-sm font-semibold hover:underline"
+                  className="text-[#007CF8] text-sm font-semibold hover:underline"
                 >
                   Invite a team member
                 </button>
@@ -377,7 +377,7 @@ export default function TeamPage() {
                 <button
                   type="submit"
                   disabled={inviting || !inviteName || !inviteEmail}
-                  className="flex-1 py-2.5 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition disabled:opacity-50"
                 >
                   {inviting ? 'Sending...' : 'Send Invitation'}
                 </button>

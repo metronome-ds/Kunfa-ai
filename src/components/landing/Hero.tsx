@@ -32,7 +32,7 @@ export default function Hero({ onApplyNow }: HeroProps) {
           </button>
           <Link
             href="/signup"
-            className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold px-8 py-3.5 rounded-lg text-base transition-colors"
+            className="border border-gray-300 text-gray-700 hover:bg-[#F8F9FB] font-semibold px-8 py-3.5 rounded-lg text-base transition-colors"
           >
             I&apos;m an Investor
           </Link>

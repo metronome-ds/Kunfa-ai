@@ -135,7 +135,7 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
               <Link
                 href={`/company/${slug}`}
                 onClick={(e) => e.stopPropagation()}
-                className="text-sm text-[#0168FE] hover:text-[#0050CC] font-medium hover:underline"
+                className="text-sm text-[#007CF8] hover:text-[#0066D6] font-medium hover:underline"
               >
                 View Profile &rarr;
               </Link>

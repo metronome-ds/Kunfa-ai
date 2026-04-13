@@ -84,7 +84,7 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
           onClick={handleAnalyzeTermSheet}
           disabled={loading || !documentId}
           title={!documentId ? 'Upload a term sheet document first' : ''}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#007CF8] text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
         >
           {loading ? (
             <>

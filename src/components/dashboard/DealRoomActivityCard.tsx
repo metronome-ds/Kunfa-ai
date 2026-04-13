@@ -96,8 +96,8 @@ export default function DealRoomActivityCard({ companyId, companyName }: DealRoo
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#0168FE]/10 flex items-center justify-center">
-            <BarChart3 className="w-5 h-5 text-[#0168FE]" />
+          <div className="w-10 h-10 rounded-lg bg-[#007CF8]/10 flex items-center justify-center">
+            <BarChart3 className="w-5 h-5 text-[#007CF8]" />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-gray-900">Deal Room Activity</h2>
@@ -106,7 +106,7 @@ export default function DealRoomActivityCard({ companyId, companyName }: DealRoo
         </div>
         <button
           onClick={() => setShowInviteModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
         >
           <Send className="w-3.5 h-3.5" />
           Invite Investor
@@ -162,7 +162,7 @@ export default function DealRoomActivityCard({ companyId, companyName }: DealRoo
               <div key={day.date} className="flex-1 flex flex-col items-center gap-1 group relative">
                 <div className="w-full flex items-end h-full">
                   <div
-                    className="w-full bg-[#0168FE]/80 hover:bg-[#0168FE] rounded-t transition-all"
+                    className="w-full bg-[#007CF8]/80 hover:bg-[#007CF8] rounded-t transition-all"
                     style={{ height: `${Math.max(heightPct, day.views > 0 ? 8 : 2)}%` }}
                   />
                 </div>

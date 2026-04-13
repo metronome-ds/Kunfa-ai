@@ -113,7 +113,7 @@ export function DDChecklist() {
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
               <div
-                className="bg-blue-600 h-full transition-all duration-300"
+                className="bg-[#007CF8] h-full transition-all duration-300"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
@@ -150,7 +150,7 @@ export function DDChecklist() {
           onClick={() => setFilterPriority('all')}
           className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             filterPriority === 'all'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#007CF8] text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
@@ -180,7 +180,7 @@ export function DDChecklist() {
           onClick={() => setFilterPriority('low')}
           className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             filterPriority === 'low'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#007CF8] text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >

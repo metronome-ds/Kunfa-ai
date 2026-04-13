@@ -2,7 +2,7 @@ const providers = [
   {
     name: 'Silicon Valley Bank',
     type: 'Venture Debt',
-    typeColor: 'text-blue-600 bg-blue-50',
+    typeColor: 'text-[#007CF8] bg-[#F0F7FF]',
     capacity: '$50M — $500M',
     focus: 'Tech / Life Sciences',
     icon: '🏦',

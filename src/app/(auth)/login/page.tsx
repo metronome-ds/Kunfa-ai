@@ -10,8 +10,8 @@ import { RefreshCw } from 'lucide-react'
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0168FE]" />
+      <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
       </div>
     }>
       <LoginContent />
@@ -190,7 +190,7 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
@@ -211,8 +211,8 @@ function LoginContent() {
           {showForgot ? (
             forgotSent ? (
               <div className="text-center">
-                <div className="w-14 h-14 rounded-full bg-[#0168FE]/10 flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-7 h-7 text-[#0168FE]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-14 h-14 rounded-full bg-[#007CF8]/10 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-7 h-7 text-[#007CF8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
@@ -222,7 +222,7 @@ function LoginContent() {
                 </p>
                 <button
                   onClick={() => { setShowForgot(false); setForgotSent(false); setForgotEmail('') }}
-                  className="text-[#0168FE] text-sm font-medium hover:underline"
+                  className="text-[#007CF8] text-sm font-medium hover:underline"
                 >
                   Back to sign in
                 </button>
@@ -247,13 +247,13 @@ function LoginContent() {
                       onChange={(e) => setForgotEmail(e.target.value)}
                       placeholder="you@example.com"
                       required
-                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#0168FE] focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 transition-all"
+                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#007CF8] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 transition-all"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={forgotLoading || !forgotEmail}
-                    className="w-full rounded-lg bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 px-4 py-3 text-white font-semibold transition-all"
+                    className="w-full rounded-lg bg-[#007CF8] hover:bg-[#0066D6] disabled:opacity-50 px-4 py-3 text-white font-semibold transition-all"
                   >
                     {forgotLoading ? 'Sending...' : 'Send Reset Link'}
                   </button>
@@ -276,7 +276,7 @@ function LoginContent() {
                     <button
                       onClick={handleResendConfirmation}
                       disabled={resendCooldown > 0 || resending}
-                      className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#0168FE] hover:text-[#0050CC] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[#007CF8] hover:text-[#0066D6] transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <RefreshCw className={`w-3 h-3 ${resending ? 'animate-spin' : ''}`} />
                       {resending
@@ -302,7 +302,7 @@ function LoginContent() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     required
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#0168FE] focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 transition-all"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#007CF8] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 transition-all"
                   />
                 </div>
 
@@ -314,7 +314,7 @@ function LoginContent() {
                     <button
                       type="button"
                       onClick={() => { setShowForgot(true); setForgotEmail(email) }}
-                      className="text-xs text-[#0168FE] hover:underline font-medium"
+                      className="text-xs text-[#007CF8] hover:underline font-medium"
                     >
                       Forgot password?
                     </button>
@@ -327,14 +327,14 @@ function LoginContent() {
                     placeholder="Enter your password"
                     required
                     minLength={6}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#0168FE] focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 transition-all"
+                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#007CF8] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 transition-all"
                   />
                 </div>
 
                 <button
                   type="submit"
                   disabled={isLoading || !email || !password}
-                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 text-white font-semibold transition-all"
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-[#007CF8] hover:bg-[#0066D6] disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 text-white font-semibold transition-all"
                 >
                   {isLoading ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -346,7 +346,7 @@ function LoginContent() {
 
               <p className="text-center text-gray-500 text-sm mt-6">
                 Don&apos;t have an account?{' '}
-                <Link href="/signup" className="text-[#0168FE] font-medium hover:underline">
+                <Link href="/signup" className="text-[#007CF8] font-medium hover:underline">
                   Create one
                 </Link>
               </p>

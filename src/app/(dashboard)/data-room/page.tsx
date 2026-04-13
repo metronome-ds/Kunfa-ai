@@ -58,7 +58,7 @@ export default function DataRoomPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0168FE]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
       </div>
     )
   }
@@ -66,8 +66,8 @@ export default function DataRoomPage() {
   if (!companyId) {
     return (
       <div className="max-w-2xl mx-auto py-16 px-4 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-[#0168FE]/10 flex items-center justify-center mx-auto mb-6">
-          <FolderOpen className="w-8 h-8 text-[#0168FE]" />
+        <div className="w-16 h-16 rounded-2xl bg-[#007CF8]/10 flex items-center justify-center mx-auto mb-6">
+          <FolderOpen className="w-8 h-8 text-[#007CF8]" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">Your Deal Room</h1>
         <p className="text-gray-500 mb-8 max-w-md mx-auto">
@@ -75,7 +75,7 @@ export default function DataRoomPage() {
         </p>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[#007CF8] text-white rounded-lg font-semibold hover:bg-[#0066D6] transition"
         >
           <Rocket className="w-5 h-5" />
           Get Your Kunfa Score

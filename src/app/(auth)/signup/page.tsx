@@ -12,8 +12,8 @@ type SignupStep = 'form' | 'otp'
 export default function SignupPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0168FE]" />
+      <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
       </div>
     }>
       <SignupContent />
@@ -115,7 +115,7 @@ function OtpInput({
           onFocus={(e) => e.target.select()}
           disabled={disabled}
           autoComplete="one-time-code"
-          className="w-11 h-14 sm:w-12 sm:h-16 text-center text-2xl font-semibold bg-white border-2 border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-[#0168FE] focus:ring-2 focus:ring-[#0168FE]/20 disabled:bg-gray-50 disabled:text-gray-400 transition-all"
+          className="w-11 h-14 sm:w-12 sm:h-16 text-center text-2xl font-semibold bg-white border-2 border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 disabled:bg-gray-50 disabled:text-gray-400 transition-all"
         />
       ))}
     </div>
@@ -387,7 +387,7 @@ function SignupContent() {
   // ====== OTP STEP ======
   if (step === 'otp') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block mb-6">
@@ -413,7 +413,7 @@ function SignupContent() {
 
             {otpLoading && !otpSuccess && (
               <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-4">
-                <div className="w-4 h-4 border-2 border-[#0168FE] border-t-transparent rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-[#007CF8] border-t-transparent rounded-full animate-spin" />
                 Verifying...
               </div>
             )}
@@ -436,7 +436,7 @@ function SignupContent() {
                   type="button"
                   onClick={handleResendOtp}
                   disabled={resendCooldown > 0 || resending || otpLoading}
-                  className="inline-flex items-center gap-2 text-sm font-medium text-[#0168FE] hover:text-[#0050CC] disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-[#007CF8] hover:text-[#0066D6] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <RefreshCw className={`w-4 h-4 ${resending ? 'animate-spin' : ''}`} />
                   {resending
@@ -479,7 +479,7 @@ function SignupContent() {
       : null
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
@@ -487,8 +487,8 @@ function SignupContent() {
           </Link>
           {inviteHeading ? (
             <>
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#0168FE]/10 mb-3">
-                <Users className="w-6 h-6 text-[#0168FE]" />
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[#007CF8]/10 mb-3">
+                <Users className="w-6 h-6 text-[#007CF8]" />
               </div>
               <h1 className="text-2xl font-bold text-gray-900">{inviteHeading}</h1>
               {inviteSubheading && (
@@ -535,7 +535,7 @@ function SignupContent() {
                     onClick={() => setSelectedRole('startup')}
                     className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-medium transition ${
                       selectedRole === 'startup'
-                        ? 'border-[#0168FE] bg-[#0168FE]/5 text-[#0168FE]'
+                        ? 'border-[#007CF8] bg-[#007CF8]/5 text-[#007CF8]'
                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
                     }`}
                   >
@@ -547,7 +547,7 @@ function SignupContent() {
                     onClick={() => setSelectedRole('investor')}
                     className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-medium transition ${
                       selectedRole === 'investor'
-                        ? 'border-[#0168FE] bg-[#0168FE]/5 text-[#0168FE]'
+                        ? 'border-[#007CF8] bg-[#007CF8]/5 text-[#007CF8]'
                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
                     }`}
                   >
@@ -567,7 +567,7 @@ function SignupContent() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
                   placeholder="Jane Smith"
                 />
               </div>
@@ -581,7 +581,7 @@ function SignupContent() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 readOnly={inviteEmailLocked}
-                className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] ${inviteEmailLocked ? 'bg-gray-50' : 'bg-white'}`}
+                className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] ${inviteEmailLocked ? 'bg-gray-50' : 'bg-white'}`}
                 placeholder="you@company.com"
               />
             </div>
@@ -594,7 +594,7 @@ function SignupContent() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
                 placeholder="Min 6 characters"
               />
             </div>
@@ -609,7 +609,7 @@ function SignupContent() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
                   placeholder="Re-enter password"
                 />
               </div>
@@ -620,13 +620,13 @@ function SignupContent() {
                 type="checkbox"
                 checked={tosAgreed}
                 onChange={(e) => setTosAgreed(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#0168FE] focus:ring-[#0168FE]"
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#007CF8] focus:ring-[#007CF8]"
               />
               <span className="text-xs text-gray-600 leading-relaxed">
                 I agree to the{' '}
-                <Link href="/terms" target="_blank" className="text-[#0168FE] hover:underline">Terms of Service</Link>
+                <Link href="/terms" target="_blank" className="text-[#007CF8] hover:underline">Terms of Service</Link>
                 {' '}and{' '}
-                <Link href="/privacy" target="_blank" className="text-[#0168FE] hover:underline">Privacy Policy</Link>
+                <Link href="/privacy" target="_blank" className="text-[#007CF8] hover:underline">Privacy Policy</Link>
               </span>
             </label>
 
@@ -637,7 +637,7 @@ function SignupContent() {
             <button
               type="submit"
               disabled={loading || !tosAgreed || (!claimToken && !inviteId && !selectedRole)}
-              className="w-full py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition disabled:opacity-50"
+              className="w-full py-3 bg-[#007CF8] text-white rounded-lg font-semibold hover:bg-[#0066D6] transition disabled:opacity-50"
             >
               {loading
                 ? 'Creating account...'
@@ -651,7 +651,7 @@ function SignupContent() {
             Already have an account?{' '}
             <Link
               href={inviteId ? `/login?invite=${inviteId}` : '/login'}
-              className="text-[#0168FE] font-medium hover:underline"
+              className="text-[#007CF8] font-medium hover:underline"
             >
               Sign in
             </Link>

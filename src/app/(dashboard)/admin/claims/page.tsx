@@ -110,7 +110,7 @@ export default function AdminClaimsPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
       <div className="flex items-center gap-3 mb-8">
-        <ShieldCheck className="w-6 h-6 text-[#0168FE]" />
+        <ShieldCheck className="w-6 h-6 text-[#007CF8]" />
         <h1 className="text-2xl font-bold text-gray-900">Claim Requests</h1>
       </div>
 
@@ -133,7 +133,7 @@ export default function AdminClaimsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0168FE]" />
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#007CF8]" />
         </div>
       ) : claims.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
@@ -143,7 +143,7 @@ export default function AdminClaimsPage() {
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
+              <tr className="border-b border-gray-200 bg-[#F8F9FB]">
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Company</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Requester</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
@@ -156,11 +156,11 @@ export default function AdminClaimsPage() {
             </thead>
             <tbody>
               {claims.map((claim) => (
-                <tr key={claim.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={claim.id} className="border-b border-gray-100 hover:bg-[#F8F9FB]">
                   <td className="px-4 py-3">
                     <Link
                       href={`/company/${claim.company_pages.slug}`}
-                      className="text-[#0168FE] hover:underline font-medium"
+                      className="text-[#007CF8] hover:underline font-medium"
                     >
                       {claim.company_pages.company_name}
                     </Link>

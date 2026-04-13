@@ -6,9 +6,9 @@ import { supabase } from '@/lib/supabase';
 import { Save, LogOut, Check, Lock, AlertTriangle, User, Building2, Briefcase } from 'lucide-react';
 import { STAGES, INDUSTRIES } from '@/lib/constants';
 
-const INPUT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#0168FE] focus:ring-2 focus:ring-[#0168FE]/20 outline-none transition-all';
-const SELECT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#0168FE] focus:ring-2 focus:ring-[#0168FE]/20 outline-none transition-all';
-const DISABLED_CLASS = 'w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed';
+const INPUT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all';
+const SELECT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all';
+const DISABLED_CLASS = 'w-full rounded-lg border border-gray-200 bg-[#F8F9FB] px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed';
 const LABEL_CLASS = 'block text-sm font-medium text-gray-700 mb-1.5';
 
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
@@ -109,7 +109,7 @@ function ChangePasswordSection() {
           <button
             type="submit"
             disabled={saving || !newPassword || !confirmPassword}
-            className="inline-flex items-center gap-2 bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+            className="inline-flex items-center gap-2 bg-[#007CF8] hover:bg-[#0066D6] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
           >
             {saving ? 'Updating...' : 'Update Password'}
           </button>
@@ -326,7 +326,7 @@ export default function SettingsPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[#0168FE] mb-4" />
+          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[#007CF8] mb-4" />
           <p className="text-gray-500 text-sm">Loading settings...</p>
         </div>
       </div>
@@ -385,7 +385,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSavePersonal}
             disabled={personalSaving}
-            className="inline-flex items-center gap-2 bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+            className="inline-flex items-center gap-2 bg-[#007CF8] hover:bg-[#0066D6] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
           >
             <Save className="w-4 h-4" />
             {personalSaving ? 'Saving...' : 'Save Personal Info'}
@@ -456,7 +456,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleSaveCompany}
                 disabled={companySaving}
-                className="inline-flex items-center gap-2 bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+                className="inline-flex items-center gap-2 bg-[#007CF8] hover:bg-[#0066D6] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
               >
                 <Save className="w-4 h-4" />
                 {companySaving ? 'Saving...' : 'Save Company Info'}
@@ -511,7 +511,7 @@ export default function SettingsPage() {
             <button
               onClick={handleSaveFund}
               disabled={fundSaving}
-              className="inline-flex items-center gap-2 bg-[#0168FE] hover:bg-[#0050CC] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+              className="inline-flex items-center gap-2 bg-[#007CF8] hover:bg-[#0066D6] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
             >
               <Save className="w-4 h-4" />
               {fundSaving ? 'Saving...' : 'Save Investment Profile'}

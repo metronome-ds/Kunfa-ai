@@ -164,8 +164,8 @@ function SidebarSection({ title, items, pathname, collapsed }: SidebarSectionPro
               href={item.href || '#'}
               className={`flex items-center justify-center p-2.5 rounded-lg transition-all ${
                 isActive
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  ? 'bg-[#F0F7FF] text-[#007CF8]'
+                  : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
               }`}
               title={item.label}
             >
@@ -181,7 +181,7 @@ function SidebarSection({ title, items, pathname, collapsed }: SidebarSectionPro
     <div className="mb-4">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-2 text-xs font-semibold text-gray-400 hover:text-gray-300 transition-colors uppercase tracking-wider"
+        className="w-full flex items-center justify-between px-4 py-2 text-[11px] font-semibold text-[#9CA3AF] hover:text-[#4B5563] transition-colors uppercase tracking-wider"
       >
         <span>{title}</span>
         <ChevronDown
@@ -189,7 +189,7 @@ function SidebarSection({ title, items, pathname, collapsed }: SidebarSectionPro
         />
       </button>
       {isExpanded && (
-        <div className="space-y-1 mt-2">
+        <div className="space-y-1 mt-1">
           {items.map((item) => {
             const isActive =
               pathname === item.href ||
@@ -200,12 +200,12 @@ function SidebarSection({ title, items, pathname, collapsed }: SidebarSectionPro
                 href={item.href || '#'}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
                   isActive
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
+                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
                 }`}
               >
                 {item.icon}
-                <span className="text-sm font-medium">{item.label}</span>
+                <span className="text-sm">{item.label}</span>
               </Link>
             );
           })}
@@ -268,27 +268,27 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
   return (
     <div
-      className={`fixed left-0 top-0 h-screen bg-gray-900 border-r border-gray-800 flex flex-col overflow-hidden transition-all duration-200 ${
+      className={`fixed left-0 top-0 h-screen bg-white border-r border-[#E5E7EB] flex flex-col overflow-hidden transition-all duration-200 ${
         collapsed ? 'w-16' : 'w-64'
       }`}
     >
       {/* Logo */}
-      <div className={`border-b border-gray-800 ${collapsed ? 'p-3 flex items-center justify-center' : 'p-6'}`}>
+      <div className={`border-b border-[#E5E7EB] ${collapsed ? 'p-3 flex items-center justify-center' : 'p-6'}`}>
         <Link href="/dashboard" className="block hover:opacity-80 transition-opacity">
           {collapsed ? (
-            <span className="text-white font-bold text-lg">K</span>
+            <span className="text-[#111827] font-bold text-lg">K</span>
           ) : (
-            <KunfaLogo height={24} inverted />
+            <KunfaLogo height={24} />
           )}
         </Link>
-        {!collapsed && <p className="text-xs text-gray-400 mt-2">{tagline}</p>}
+        {!collapsed && <p className="text-xs text-[#9CA3AF] mt-2">{tagline}</p>}
       </div>
 
       {/* Navigation */}
       <div className={`flex-1 overflow-y-auto py-4 space-y-2 ${collapsed ? 'px-2' : 'px-3'}`}>
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-400"></div>
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#9CA3AF]"></div>
           </div>
         ) : (
           Object.entries(navigationSections).map(([title, items]) => (
@@ -298,20 +298,20 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       </div>
 
       {/* Bottom */}
-      <div className={`border-t border-gray-800 ${collapsed ? 'p-2' : 'p-3'} space-y-3`}>
+      <div className={`border-t border-[#E5E7EB] ${collapsed ? 'p-2' : 'p-3'} space-y-3`}>
         <div className="space-y-1">
           {isSuperAdminUser && (
             <Link
               href="/admin/analytics"
               className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
                 pathname === '/admin/analytics'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
+                  : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
               }`}
               title={collapsed ? 'Analytics' : undefined}
             >
               <BarChart3 className="h-5 w-5" />
-              {!collapsed && <span className="text-sm font-medium">Analytics</span>}
+              {!collapsed && <span className="text-sm">Analytics</span>}
             </Link>
           )}
           {isAdmin && (
@@ -320,25 +320,25 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 href="/admin/claims"
                 className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
                   pathname === '/admin/claims'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
+                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
                 }`}
                 title={collapsed ? 'Claims' : undefined}
               >
                 <ShieldCheck className="h-5 w-5" />
-                {!collapsed && <span className="text-sm font-medium">Claims</span>}
+                {!collapsed && <span className="text-sm">Claims</span>}
               </Link>
               <Link
                 href="/admin/imports"
                 className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
                   pathname === '/admin/imports'
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
+                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
                 }`}
                 title={collapsed ? 'Imports' : undefined}
               >
                 <Upload className="h-5 w-5" />
-                {!collapsed && <span className="text-sm font-medium">Imports</span>}
+                {!collapsed && <span className="text-sm">Imports</span>}
               </Link>
             </>
           )}
@@ -352,13 +352,13 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
                 href={item.href || '#'}
                 className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
                   isActive
-                    ? 'bg-blue-600 text-white shadow-md'
-                    : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
+                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
                 }`}
                 title={collapsed ? item.label : undefined}
               >
                 {item.icon}
-                {!collapsed && <span className="text-sm font-medium">{item.label}</span>}
+                {!collapsed && <span className="text-sm">{item.label}</span>}
               </Link>
             );
           })}
@@ -366,18 +366,18 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
         <button
           onClick={handleLogout}
-          className={`w-full flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg text-gray-300 hover:bg-red-600/10 hover:text-red-400 transition-all`}
+          className={`w-full flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg text-[#4B5563] hover:bg-red-50 hover:text-[#EF4444] transition-all`}
           title={collapsed ? 'Sign Out' : undefined}
         >
           <LogOut className="h-5 w-5" />
-          {!collapsed && <span className="text-sm font-medium">Sign Out</span>}
+          {!collapsed && <span className="text-sm">Sign Out</span>}
         </button>
 
         {/* Toggle button */}
         {onToggle && (
           <button
             onClick={onToggle}
-            className="w-full flex items-center justify-center p-2 rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800 transition-all"
+            className="w-full flex items-center justify-center p-2 rounded-lg text-[#9CA3AF] hover:text-[#111827] hover:bg-[#F8F9FB] transition-all"
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}

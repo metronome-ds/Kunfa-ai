@@ -86,7 +86,7 @@ export default function ClaimPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0168FE]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
       </div>
     )
   }
@@ -102,7 +102,7 @@ export default function ClaimPage() {
           <p className="text-gray-600 mb-6">
             This claim link is invalid or the company has already been claimed.
           </p>
-          <Link href="/" className="text-[#0168FE] hover:underline text-sm font-medium">
+          <Link href="/" className="text-[#007CF8] hover:underline text-sm font-medium">
             Go to Kunfa
           </Link>
         </div>
@@ -143,7 +143,7 @@ export default function ClaimPage() {
             <p className="text-gray-600 mb-6">
               Your email domain doesn&apos;t match the company website, so your claim has been submitted for admin review. You&apos;ll receive an email once it&apos;s been reviewed.
             </p>
-            <Link href="/dashboard" className="text-[#0168FE] hover:underline text-sm font-medium">
+            <Link href="/dashboard" className="text-[#007CF8] hover:underline text-sm font-medium">
               Go to Dashboard
             </Link>
           </div>
@@ -210,7 +210,7 @@ export default function ClaimPage() {
             <button
               onClick={handleClaim}
               disabled={claiming}
-              className="w-full py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition disabled:opacity-50"
+              className="w-full py-3 bg-[#007CF8] text-white rounded-lg font-semibold hover:bg-[#0066D6] transition disabled:opacity-50"
             >
               {claiming ? 'Claiming...' : 'Claim This Company'}
             </button>
@@ -224,7 +224,7 @@ export default function ClaimPage() {
 
             <Link
               href={`/signup?claim=${token}`}
-              className="w-full block text-center py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition"
+              className="w-full block text-center py-3 bg-[#007CF8] text-white rounded-lg font-semibold hover:bg-[#0066D6] transition"
             >
               Sign Up & Claim
             </Link>
@@ -233,7 +233,7 @@ export default function ClaimPage() {
               Already have an account?{' '}
               <Link
                 href={`/login?claim=${token}`}
-                className="text-[#0168FE] font-medium hover:underline"
+                className="text-[#007CF8] font-medium hover:underline"
               >
                 Sign in
               </Link>

@@ -129,7 +129,7 @@ export default function ViewProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-[#F8F9FB]">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4" />
           <p className="text-gray-600">Loading profile...</p>
@@ -140,7 +140,7 @@ export default function ViewProfilePage() {
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-[#F8F9FB]">
         <div className="text-center">
           <p className="text-gray-600 text-lg">Profile not found</p>
           <button
@@ -155,7 +155,7 @@ export default function ViewProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F8F9FB]">
       {/* Back Button */}
       <div className="p-8 max-w-4xl mx-auto">
         <button

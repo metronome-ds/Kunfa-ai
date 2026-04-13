@@ -137,7 +137,7 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
     return (
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
         <div className="flex items-center gap-3 mb-4">
-          <div className="w-8 h-8 border-3 border-[#0168FE] border-t-transparent rounded-full animate-spin flex-shrink-0" />
+          <div className="w-8 h-8 border-3 border-[#007CF8] border-t-transparent rounded-full animate-spin flex-shrink-0" />
           <div>
             <h3 className="text-lg font-bold text-gray-900">Generating your Kunfa Readiness Report...</h3>
             <p className="text-sm text-gray-500 mt-0.5">Building your AI-powered investment readiness report</p>
@@ -145,7 +145,7 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
         </div>
         <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
           <div
-            className="bg-[#0168FE] h-2.5 rounded-full transition-all duration-1000 ease-out"
+            className="bg-[#007CF8] h-2.5 rounded-full transition-all duration-1000 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -184,7 +184,7 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
         </div>
         <a
           href={`/report/${submissionId}`}
-          className="bg-[#0168FE] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition flex-shrink-0"
+          className="bg-[#007CF8] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition flex-shrink-0"
         >
           View Report
         </a>
@@ -202,7 +202,7 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
         </div>
         <a
           href={`/report/${submissionId}`}
-          className="bg-[#0168FE] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition flex-shrink-0"
+          className="bg-[#007CF8] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition flex-shrink-0"
         >
           View Your Readiness Report
         </a>
@@ -220,7 +220,7 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
       <button
         onClick={handleCheckout}
         disabled={unlocking}
-        className="bg-[#0168FE] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition flex-shrink-0 disabled:opacity-50 shadow-md"
+        className="bg-[#007CF8] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition flex-shrink-0 disabled:opacity-50 shadow-md"
       >
         {unlocking ? 'Redirecting...' : 'Unlock Report — $59'}
       </button>

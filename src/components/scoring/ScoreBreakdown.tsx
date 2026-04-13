@@ -49,7 +49,7 @@ const ORDER: (keyof DimensionScores)[] = [
 
 function getBarColor(score: number): string {
   // Raw dimension scores are 0-25
-  if (score >= 20) return 'bg-[#0168FE]'
+  if (score >= 20) return 'bg-[#007CF8]'
   if (score >= 15) return 'bg-blue-400'
   if (score >= 10) return 'bg-amber-400'
   return 'bg-red-400'
@@ -100,7 +100,7 @@ export default function ScoreBreakdown({
         <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
         {typeof overallScore === 'number' && (
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold text-[#0168FE]">{overallScore}</span>
+            <span className="text-2xl font-bold text-[#007CF8]">{overallScore}</span>
             <span className="text-xs text-gray-400">/100</span>
           </div>
         )}

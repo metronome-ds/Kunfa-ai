@@ -132,7 +132,7 @@ function getScoreColor(score: number | null) {
 }
 
 function getScoreBg(score: number | null) {
-  if (!score) return 'bg-gray-50 border-gray-200';
+  if (!score) return 'bg-[#F8F9FB] border-gray-200';
   if (score >= 80) return 'bg-emerald-50 border-emerald-200';
   if (score >= 60) return 'bg-blue-50 border-blue-200';
   if (score >= 40) return 'bg-yellow-50 border-yellow-200';
@@ -392,7 +392,7 @@ function DashboardContent() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#0168FE] mb-4" />
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#007CF8] mb-4" />
           <p className="text-gray-600">Loading dashboard...</p>
         </div>
       </div>
@@ -451,7 +451,7 @@ function DashboardContent() {
               {canEdit && company && !company.overall_score && (
                 <button
                   onClick={() => setShowScoreModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition flex-shrink-0"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition flex-shrink-0"
                 >
                   <Star className="w-4 h-4" /> Get Your Score
                 </button>
@@ -500,10 +500,10 @@ function DashboardContent() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 flex-shrink-0">
-                  <Link href={`/company/${company.slug}`} target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition">
+                  <Link href={`/company/${company.slug}`} target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition">
                     View Public Profile <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
-                  <Link href="/company-profile" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                  <Link href="/company-profile" className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
                     <RefreshCw className="w-3.5 h-3.5" /> Manage Profile
                   </Link>
                 </div>
@@ -514,7 +514,7 @@ function DashboardContent() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><Star className="w-5 h-5 text-[#0168FE]" /></div>
+                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><Star className="w-5 h-5 text-[#007CF8]" /></div>
                   <div><p className="text-xs text-gray-500 font-medium">Kunfa Score</p><p className={`text-2xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</p></div>
                 </div>
               </div>
@@ -557,7 +557,7 @@ function DashboardContent() {
                       {canEdit && (
                         <button
                           onClick={() => setShowScoreModal(true)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
                         >
                           <RefreshCw className="w-4 h-4" />
                           {company.overall_score == null ? 'Get Your Score' : 'Re-score My Company'}
@@ -565,7 +565,7 @@ function DashboardContent() {
                       )}
                       <Link
                         href="/how-it-works"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-[#F8F9FB] transition"
                       >
                         How scoring works
                       </Link>
@@ -612,12 +612,12 @@ function DashboardContent() {
                       <h3 className="text-sm font-semibold text-gray-900">Kunfa Readiness Report</h3>
                       <p className="text-xs text-gray-600 mt-0.5">Your full AI-powered investment analysis is ready.</p>
                     </div>
-                    <Link href={`/report/${company.submission_id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition">View Report</Link>
+                    <Link href={`/report/${company.submission_id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition">View Report</Link>
                   </div>
                 ) : paid ? (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Loader2 className="w-5 h-5 text-[#0168FE] animate-spin flex-shrink-0" />
+                      <Loader2 className="w-5 h-5 text-[#007CF8] animate-spin flex-shrink-0" />
                       <div>
                         <h3 className="text-sm font-semibold text-gray-900">Report Generating...</h3>
                         <p className="text-xs text-gray-600 mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
@@ -625,7 +625,7 @@ function DashboardContent() {
                     </div>
                     <button
                       onClick={() => loadStartupData()}
-                      className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+                      className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-[#F8F9FB] transition"
                     >
                       <RefreshCw className="w-4 h-4" /> Check Status
                     </button>
@@ -646,7 +646,7 @@ function DashboardContent() {
                         } catch { /* ignore */ } finally { setCheckoutLoading(false); }
                       }}
                       disabled={checkoutLoading}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition disabled:opacity-50"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition disabled:opacity-50"
                     >
                       {checkoutLoading ? 'Redirecting...' : 'Unlock Report — $59'}
                     </button>
@@ -678,7 +678,7 @@ function DashboardContent() {
             {canEdit && (
               <button
                 onClick={() => setShowScoreModal(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition"
               >
                 Get Your Kunfa Score
               </button>
@@ -700,7 +700,7 @@ function DashboardContent() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-[#0168FE] flex items-center justify-center text-white text-lg font-bold">
+          <div className="w-12 h-12 rounded-full bg-[#007CF8] flex items-center justify-center text-white text-lg font-bold">
             {(userProfile?.full_name || 'U').charAt(0).toUpperCase()}
           </div>
           <div>
@@ -713,10 +713,10 @@ function DashboardContent() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/companies/new" className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#0168FE] text-white rounded-lg text-sm font-semibold hover:bg-[#0050CC] transition">
+          <Link href="/companies/new" className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#007CF8] text-white rounded-lg text-sm font-semibold hover:bg-[#0066D6] transition">
             <PlusCircle className="w-4 h-4" /> Add Company
           </Link>
-          <Link href="/deals" className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-gray-50 transition">
+          <Link href="/deals" className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-[#F8F9FB] transition">
             <Compass className="w-4 h-4" /> Browse Companies
           </Link>
         </div>
@@ -830,7 +830,7 @@ function DashboardContent() {
             </div>
           </>
         ) : (
-          <p className="text-sm text-gray-400 py-4 text-center">No deals in pipeline yet. <Link href="/deals" className="text-[#0168FE] hover:underline">Browse companies</Link> to get started.</p>
+          <p className="text-sm text-gray-400 py-4 text-center">No deals in pipeline yet. <Link href="/deals" className="text-[#007CF8] hover:underline">Browse companies</Link> to get started.</p>
         )}
       </div>
 
@@ -840,7 +840,7 @@ function DashboardContent() {
         <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Top Deals by Score</h2>
-            <Link href="/pipeline" className="text-xs text-[#0168FE] font-medium hover:underline flex items-center gap-1">
+            <Link href="/pipeline" className="text-xs text-[#007CF8] font-medium hover:underline flex items-center gap-1">
               View Pipeline <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -857,7 +857,7 @@ function DashboardContent() {
               </thead>
               <tbody>
                 {topDeals.map(deal => (
-                  <tr key={deal.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition cursor-pointer" onClick={() => { if (deal.slug) window.location.href = `/company/${deal.slug}`; }}>
+                  <tr key={deal.id} className="border-b border-gray-50 last:border-0 hover:bg-[#F8F9FB] transition cursor-pointer" onClick={() => { if (deal.slug) window.location.href = `/company/${deal.slug}`; }}>
                     <td className="py-3 pr-3">
                       <span className="text-sm font-medium text-gray-900">{deal.company_name}</span>
                     </td>
@@ -895,7 +895,7 @@ function DashboardContent() {
               {activity.map(item => (
                 <div key={item.id} className="py-2.5 border-b border-gray-50 last:border-0">
                   {item.href ? (
-                    <Link href={item.href} className="text-sm text-gray-700 hover:text-[#0168FE] transition">{item.text}</Link>
+                    <Link href={item.href} className="text-sm text-gray-700 hover:text-[#007CF8] transition">{item.text}</Link>
                   ) : (
                     <p className="text-sm text-gray-700">{item.text}</p>
                   )}
@@ -907,7 +907,7 @@ function DashboardContent() {
             <div className="text-center py-8">
               <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
               <p className="text-sm text-gray-400">No recent activity</p>
-              <Link href="/deals" className="text-xs text-[#0168FE] hover:underline mt-2 inline-block">Browse companies to get started</Link>
+              <Link href="/deals" className="text-xs text-[#007CF8] hover:underline mt-2 inline-block">Browse companies to get started</Link>
             </div>
           )}
         </div>
@@ -925,7 +925,7 @@ function DashboardContent() {
                 value={pipelineSearch}
                 onChange={(e) => setPipelineSearch(e.target.value)}
                 placeholder="Search companies..."
-                className="pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] w-56"
+                className="pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] w-56"
               />
             </div>
           </div>
@@ -980,10 +980,10 @@ function DashboardContent() {
                   });
                   return sorted.map((deal) => (
                     <>
-                      <tr key={deal.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50 transition">
+                      <tr key={deal.id} className="border-b border-gray-50 last:border-0 hover:bg-[#F8F9FB] transition">
                         <td className="py-3 pr-3">
                           {deal.slug ? (
-                            <Link href={`/company/${deal.slug}`} className="text-sm font-medium text-gray-900 hover:text-[#0168FE] transition">
+                            <Link href={`/company/${deal.slug}`} className="text-sm font-medium text-gray-900 hover:text-[#007CF8] transition">
                               {deal.company_name}
                             </Link>
                           ) : (
@@ -1030,7 +1030,7 @@ function DashboardContent() {
                       </tr>
                       {expandedDealId === deal.id && currentUserId && (
                         <tr key={`${deal.id}-notes`}>
-                          <td colSpan={7} className="px-4 py-3 bg-gray-50 border-b border-gray-100">
+                          <td colSpan={7} className="px-4 py-3 bg-[#F8F9FB] border-b border-gray-100">
                             <NotesTimeline dealId={deal.id} currentUserId={currentUserId} />
                           </td>
                         </tr>

@@ -260,7 +260,7 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
         {canEdit && company && (
           <button
             onClick={() => setEditOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[#0168FE] text-[#0168FE] bg-white hover:bg-blue-50 transition"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[#007CF8] text-[#007CF8] bg-white hover:bg-blue-50 transition"
           >
             <Pencil className="w-4 h-4" />
             Edit Company
@@ -317,8 +317,8 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
               disabled={pipelineLoading || inPipeline}
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
                 inPipeline
-                  ? 'bg-blue-50 text-[#0168FE] border border-blue-200'
-                  : 'bg-[#0168FE] text-white hover:bg-[#0050CC]'
+                  ? 'bg-blue-50 text-[#007CF8] border border-blue-200'
+                  : 'bg-[#007CF8] text-white hover:bg-[#0066D6]'
               }`}
             >
               {inPipeline ? (
@@ -345,12 +345,12 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
             placeholder="founder@company.com"
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] w-64"
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] w-64"
           />
           <button
             onClick={handleSendInvite}
             disabled={inviteLoading || !inviteEmail}
-            className="px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition disabled:opacity-50"
+            className="px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition disabled:opacity-50"
           >
             {inviteLoading ? 'Sending...' : 'Send Invite'}
           </button>

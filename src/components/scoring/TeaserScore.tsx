@@ -85,7 +85,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
             <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" strokeWidth="8" />
             <circle
               cx="60" cy="60" r="54" fill="none"
-              stroke="#0168FE" strokeWidth="8"
+              stroke="#007CF8" strokeWidth="8"
               strokeLinecap="round"
               strokeDasharray={`${(result.overall_score / 100) * 339.292} 339.292`}
             />

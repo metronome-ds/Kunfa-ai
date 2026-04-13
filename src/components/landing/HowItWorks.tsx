@@ -33,7 +33,7 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-20 lg:py-28 bg-gray-50">
+    <section id="how-it-works" className="py-20 lg:py-28 bg-[#F8F9FB]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
@@ -53,7 +53,7 @@ export default function HowItWorks() {
               )}
 
               <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center relative">
-                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-5">
+                <div className="w-14 h-14 bg-[#F0F7FF] rounded-xl flex items-center justify-center mx-auto mb-5">
                   {step.icon}
                 </div>
                 <span className="text-xs font-bold text-kunfa tracking-widest uppercase mb-2 block">

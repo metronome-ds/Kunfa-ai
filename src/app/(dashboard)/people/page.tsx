@@ -147,7 +147,7 @@ export default function PeoplePage() {
                 }}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedRole === filter.value
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-[#007CF8] text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -301,7 +301,7 @@ export default function PeoplePage() {
                       onClick={() => setCurrentPage(pageNum)}
                       className={`px-3 py-2 rounded-lg font-medium transition-colors ${
                         currentPage === pageNum
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-[#007CF8] text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >

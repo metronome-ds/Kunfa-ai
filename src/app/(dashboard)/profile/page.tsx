@@ -80,7 +80,7 @@ export default function ProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-[#F8F9FB]">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
           <p className="text-gray-600">Loading...</p>
@@ -91,7 +91,7 @@ export default function ProfilePage() {
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-[#F8F9FB]">
         <div className="text-center">
           <p className="text-gray-600 text-lg">Profile not found</p>
           <button
@@ -106,7 +106,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F8F9FB]">
       {/* Header Background */}
       <div className="h-32 bg-gradient-to-r from-blue-600 to-blue-700"></div>
 
@@ -135,7 +135,7 @@ export default function ProfilePage() {
               {isOwnProfile && (
                 <button
                   onClick={handleEditProfile}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all mt-4"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] hover:bg-blue-700 text-white rounded-lg font-medium transition-all mt-4"
                 >
                   <Edit2 size={18} />
                   Edit Profile

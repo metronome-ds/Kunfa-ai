@@ -91,7 +91,7 @@ type DragItem =
   | { type: 'deal'; card: DealCard; fromStage: string };
 
 const PIPELINE_STAGES = [
-  { key: 'sourced', label: 'Sourced', color: 'bg-gray-500' },
+  { key: 'sourced', label: 'Sourced', color: 'bg-gray-400' },
   { key: 'screening', label: 'Screening', color: 'bg-blue-500' },
   { key: 'due_diligence', label: 'Due Diligence', color: 'bg-purple-500' },
   { key: 'term_sheet', label: 'Term Sheet', color: 'bg-amber-500' },
@@ -401,7 +401,7 @@ export default function PipelinePage() {
             <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 min-h-[400px]">
               <div className="h-6 bg-gray-200 rounded w-20 mb-4 animate-pulse" />
               {[1, 2].map((j) => (
-                <div key={j} className="bg-gray-50 rounded-lg p-3 mb-2 animate-pulse">
+                <div key={j} className="bg-[#F8F9FB] rounded-lg p-3 mb-2 animate-pulse">
                   <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
                   <div className="h-3 bg-gray-200 rounded w-1/2" />
                 </div>
@@ -425,7 +425,7 @@ export default function PipelinePage() {
         </div>
         <Link
           href="/deals"
-          className="flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+          className="flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
         >
           Browse Companies
           <ArrowRight className="w-4 h-4" />
@@ -449,7 +449,7 @@ export default function PipelinePage() {
             onClick={() => setDealFilter(f.key)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
               dealFilter === f.key
-                ? 'bg-[#0168FE] text-white'
+                ? 'bg-[#007CF8] text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -465,7 +465,7 @@ export default function PipelinePage() {
             onClick={() => setShowInvites(!showInvites)}
             className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 mb-3"
           >
-            <Mail className="w-4 h-4 text-[#0168FE]" />
+            <Mail className="w-4 h-4 text-[#007CF8]" />
             Pending Invites
             <span className="text-xs font-normal text-gray-500">({invites.length})</span>
             {showInvites ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -506,7 +506,7 @@ export default function PipelinePage() {
                           <button
                             onClick={() => handleResendInvite(invite)}
                             disabled={resendingId === invite.id || cancellingId === invite.id}
-                            className="flex items-center gap-1 text-[10px] text-[#0168FE] hover:text-[#0050CC] font-medium disabled:opacity-50"
+                            className="flex items-center gap-1 text-[10px] text-[#007CF8] hover:text-[#0066D6] font-medium disabled:opacity-50"
                           >
                             <RefreshCw className={`w-3 h-3 ${resendingId === invite.id ? 'animate-spin' : ''}`} />
                             {resendingId === invite.id ? 'Sending...' : 'Resend'}
@@ -524,7 +524,7 @@ export default function PipelinePage() {
                       {invite.claim_status === 'claimed' && invite.slug && (
                         <Link
                           href={`/company/${invite.slug}`}
-                          className="flex items-center gap-1 text-[10px] text-[#0168FE] hover:text-[#0050CC] font-medium"
+                          className="flex items-center gap-1 text-[10px] text-[#007CF8] hover:text-[#0066D6] font-medium"
                         >
                           <Check className="w-3 h-3" />
                           View
@@ -547,7 +547,7 @@ export default function PipelinePage() {
           onDragLeave={handleDragLeave}
           onDrop={handleDropOnWatchlist}
           className={`rounded-xl p-3 transition-colors ${
-            dragOverColumn === 'watchlist' ? 'bg-amber-50 ring-2 ring-amber-300' : 'bg-gray-100'
+            dragOverColumn === 'watchlist' ? 'bg-amber-50 ring-2 ring-amber-300/50' : 'bg-gray-100'
           }`}
         >
           <div className="flex items-center gap-2 mb-4 px-1">
@@ -654,7 +654,7 @@ export default function PipelinePage() {
                 <p className="text-gray-500 text-xs mb-3">No companies watchlisted yet.</p>
                 <Link
                   href="/deals"
-                  className="text-[#0168FE] text-xs hover:text-[#0050CC] underline"
+                  className="text-[#007CF8] text-xs hover:text-[#0066D6] underline"
                 >
                   Browse companies
                 </Link>
@@ -676,7 +676,7 @@ export default function PipelinePage() {
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDropOnPipelineStage(e, stage.key)}
               className={`rounded-xl p-3 transition-colors ${
-                isDragOver ? 'bg-blue-50 ring-2 ring-blue-300' : 'bg-gray-100'
+                isDragOver ? 'bg-[#F0F7FF] ring-2 ring-[#007CF8]/30' : 'bg-gray-100'
               }`}
             >
               <div className="flex items-center gap-2 mb-4 px-1">
@@ -695,7 +695,7 @@ export default function PipelinePage() {
                     onDragStart={() => handleDragStartDeal(deal, stage.key)}
                     onClick={(e) => handleDealClick(deal, e)}
                     className={`bg-white rounded-lg p-3 border hover:border-gray-300 cursor-pointer active:cursor-grabbing transition group shadow-sm ${
-                      selectedDeal?.id === deal.id ? 'border-[#0168FE] ring-1 ring-[#0168FE]/30' : 'border-gray-200'
+                      selectedDeal?.id === deal.id ? 'border-[#007CF8] ring-1 ring-[#007CF8]/30' : 'border-gray-200'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">

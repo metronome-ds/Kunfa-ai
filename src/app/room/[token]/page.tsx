@@ -161,7 +161,7 @@ export default function RoomPage() {
         {/* Loading */}
         {status === 'loading' && (
           <div className="flex items-center justify-center py-24">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0168FE]" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
           </div>
         )}
 
@@ -207,12 +207,12 @@ export default function RoomPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
                   autoFocus
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] mb-4"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] mb-4"
                 />
                 <button
                   type="submit"
                   disabled={!password || verifying}
-                  className="w-full py-3 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition disabled:opacity-50"
+                  className="w-full py-3 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition disabled:opacity-50"
                 >
                   {verifying ? 'Verifying...' : 'View Deal Room'}
                 </button>
@@ -262,7 +262,7 @@ export default function RoomPage() {
                 {documents.map(doc => (
                   <div
                     key={doc.id}
-                    className="bg-white border border-gray-200 rounded-xl p-5 hover:border-[#0168FE]/30 hover:shadow-md transition"
+                    className="bg-white border border-gray-200 rounded-xl p-5 hover:border-[#007CF8]/30 hover:shadow-md transition"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <span className="text-3xl">{getFileIcon(doc.file_type)}</span>
@@ -295,7 +295,7 @@ export default function RoomPage() {
                         <a
                           href={doc.file_url}
                           download={doc.file_name}
-                          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#0168FE] text-white rounded-lg text-xs font-medium hover:bg-[#0050CC] transition"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#007CF8] text-white rounded-lg text-xs font-medium hover:bg-[#0066D6] transition"
                         >
                           <Download className="w-3.5 h-3.5" />
                           Download
@@ -315,7 +315,7 @@ export default function RoomPage() {
         <div className="max-w-5xl mx-auto px-6 text-center">
           <p className="text-xs text-gray-400">
             Powered by{' '}
-            <Link href="/" className="text-[#0168FE] hover:underline font-medium">
+            <Link href="/" className="text-[#007CF8] hover:underline font-medium">
               Kunfa
             </Link>
             {' '}&mdash; Venture Intelligence

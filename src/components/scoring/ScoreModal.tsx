@@ -733,7 +733,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                   {/* Status indicator */}
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
                     {slugStatus === 'checking' && <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />}
-                    {slugStatus === 'available' && <Check className="h-4 w-4 text-[#0168FE]" />}
+                    {slugStatus === 'available' && <Check className="h-4 w-4 text-[#007CF8]" />}
                     {slugStatus === 'taken' && <X className="h-4 w-4 text-red-500" />}
                     {slugStatus === 'invalid' && <X className="h-4 w-4 text-red-500" />}
                   </div>
@@ -746,7 +746,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 <p className="text-xs text-red-500 mt-1">3-40 characters, lowercase letters, numbers, and hyphens only.</p>
               )}
               {slugStatus === 'available' && (
-                <p className="text-xs text-[#0168FE] mt-1">This URL is available!</p>
+                <p className="text-xs text-[#007CF8] mt-1">This URL is available!</p>
               )}
             </div>
 
@@ -958,7 +958,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                   className="h-full rounded-full transition-all duration-500 ease-out"
                   style={{
                     width: `${scoreStrength}%`,
-                    backgroundColor: scoreStrength >= 80 ? '#10b981' : scoreStrength >= 60 ? '#0168FE' : scoreStrength >= 40 ? '#f59e0b' : '#9ca3af',
+                    backgroundColor: scoreStrength >= 80 ? '#10b981' : scoreStrength >= 60 ? '#007CF8' : scoreStrength >= 40 ? '#f59e0b' : '#9ca3af',
                   }}
                 />
               </div>
@@ -984,7 +984,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             <div>
               <div className="flex items-center gap-2 mb-1.5">
                 <label className="block text-sm font-medium text-kunfa-navy">Financials & Metrics</label>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 text-[#0168FE]">RECOMMENDED</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 text-[#007CF8]">RECOMMENDED</span>
               </div>
               <UploadZone
                 label="Tap to upload"

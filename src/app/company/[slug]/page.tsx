@@ -174,7 +174,7 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
             {/* Tags row: industry, stage, HQ, website, linkedin */}
             <div className="flex flex-wrap items-center gap-2 mt-3">
               {company.industry && (
-                <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                <span className="px-3 py-1 rounded-full bg-[#F0F7FF] text-[#007CF8] text-xs font-medium">
                   {company.industry}
                 </span>
               )}

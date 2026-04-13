@@ -122,7 +122,7 @@ export default function ImprovementTips({ dimensions, onRescore }: ImprovementTi
               <ul className="space-y-1.5 mt-2">
                 {tip.tips.map((t, i) => (
                   <li key={i} className="flex items-start gap-2 text-xs text-gray-700 leading-relaxed">
-                    <span className="text-[#0168FE] mt-0.5">•</span>
+                    <span className="text-[#007CF8] mt-0.5">•</span>
                     <span>{t}</span>
                   </li>
                 ))}
@@ -136,7 +136,7 @@ export default function ImprovementTips({ dimensions, onRescore }: ImprovementTi
         {onRescore && (
           <button
             onClick={onRescore}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
           >
             <RefreshCw className="w-4 h-4" />
             Re-score My Company

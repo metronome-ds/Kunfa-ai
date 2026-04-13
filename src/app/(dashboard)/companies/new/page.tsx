@@ -270,7 +270,7 @@ export default function AddCompanyPage() {
           onClick={() => setTab('pdf')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
             tab === 'pdf'
-              ? 'bg-[#0168FE] text-white'
+              ? 'bg-[#007CF8] text-white'
               : 'bg-gray-100 text-gray-500 hover:text-gray-900 border border-gray-200'
           }`}
         >
@@ -281,7 +281,7 @@ export default function AddCompanyPage() {
           onClick={() => setTab('manual')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
             tab === 'manual'
-              ? 'bg-[#0168FE] text-white'
+              ? 'bg-[#007CF8] text-white'
               : 'bg-gray-100 text-gray-500 hover:text-gray-900 border border-gray-200'
           }`}
         >
@@ -292,7 +292,7 @@ export default function AddCompanyPage() {
           onClick={() => setTab('invite')}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition ${
             tab === 'invite'
-              ? 'bg-[#0168FE] text-white'
+              ? 'bg-[#007CF8] text-white'
               : 'bg-gray-100 text-gray-500 hover:text-gray-900 border border-gray-200'
           }`}
         >
@@ -310,7 +310,7 @@ export default function AddCompanyPage() {
       {/* Scoring Progress */}
       {status === 'scoring' && (
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6 text-center">
-          <div className="w-10 h-10 border-3 border-[#0168FE] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-10 h-10 border-3 border-[#007CF8] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm font-medium text-gray-900">AI is scoring this company...</p>
           <p className="text-xs text-gray-500 mt-1">Analyzing pitch deck and generating insights</p>
         </div>
@@ -321,11 +321,11 @@ export default function AddCompanyPage() {
         <div className="mb-6">
           <label
             htmlFor="pdf-upload"
-            className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-xl hover:border-[#0168FE] transition cursor-pointer bg-gray-50"
+            className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-xl hover:border-[#007CF8] transition cursor-pointer bg-[#F8F9FB]"
           >
             {status === 'extracting' ? (
               <>
-                <div className="w-8 h-8 border-2 border-[#0168FE] border-t-transparent rounded-full animate-spin mb-3" />
+                <div className="w-8 h-8 border-2 border-[#007CF8] border-t-transparent rounded-full animate-spin mb-3" />
                 <p className="text-sm text-gray-600">Extracting details from PDF...</p>
               </>
             ) : (
@@ -371,7 +371,7 @@ export default function AddCompanyPage() {
               value={inviteForm.companyName}
               onChange={(e) => setInviteForm(f => ({ ...f, companyName: e.target.value }))}
               required
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
               placeholder="Acme Corp"
             />
           </div>
@@ -383,7 +383,7 @@ export default function AddCompanyPage() {
               value={inviteForm.founderEmail}
               onChange={(e) => setInviteForm(f => ({ ...f, founderEmail: e.target.value }))}
               required
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
               placeholder="founder@company.com"
             />
           </div>
@@ -394,7 +394,7 @@ export default function AddCompanyPage() {
               type="text"
               value={inviteForm.founderName}
               onChange={(e) => setInviteForm(f => ({ ...f, founderName: e.target.value }))}
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
               placeholder="Jane Smith (optional)"
             />
           </div>
@@ -405,7 +405,7 @@ export default function AddCompanyPage() {
               value={inviteForm.message}
               onChange={(e) => setInviteForm(f => ({ ...f, message: e.target.value }))}
               rows={5}
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] resize-none"
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] resize-none"
             />
             <p className="text-xs text-gray-400 mt-1">This message will appear in the invite email. Edit freely or clear it.</p>
           </div>
@@ -413,7 +413,7 @@ export default function AddCompanyPage() {
           <button
             type="submit"
             disabled={inviteSending || !inviteForm.companyName || !inviteForm.founderEmail}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 py-3 bg-[#007CF8] text-white rounded-lg font-semibold hover:bg-[#0066D6] transition disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
             {inviteSending ? 'Sending...' : 'Send Invite'}
@@ -426,7 +426,7 @@ export default function AddCompanyPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {tab === 'pdf' && form.company_name && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-              <p className="text-sm text-[#0168FE]">
+              <p className="text-sm text-[#007CF8]">
                 Fields extracted from PDF. Review and edit as needed.
               </p>
             </div>
@@ -448,9 +448,9 @@ export default function AddCompanyPage() {
                     </div>
                   </div>
                 ) : (
-                  <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-[#0168FE] transition bg-gray-50">
+                  <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-[#007CF8] transition bg-[#F8F9FB]">
                     {logoUploading ? (
-                      <div className="w-5 h-5 border-2 border-[#0168FE] border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-[#007CF8] border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <Upload className="w-5 h-5 text-gray-400" />
                     )}
@@ -475,7 +475,7 @@ export default function AddCompanyPage() {
                 value={form.company_name}
                 onChange={(e) => updateField('company_name', e.target.value)}
                 required
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
                 placeholder="Acme Corp"
               />
             </div>
@@ -489,7 +489,7 @@ export default function AddCompanyPage() {
                 type="text"
                 value={form.website_url}
                 onChange={(e) => updateField('website_url', e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
                 placeholder="https://example.com"
               />
             </div>
@@ -499,7 +499,7 @@ export default function AddCompanyPage() {
                 type="text"
                 value={form.company_linkedin_url}
                 onChange={(e) => updateField('company_linkedin_url', e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
                 placeholder="https://linkedin.com/company/..."
               />
             </div>
@@ -511,7 +511,7 @@ export default function AddCompanyPage() {
               <select
                 value={form.sector}
                 onChange={(e) => updateField('sector', e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
               >
                 <option value="">Select industry</option>
                 {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
@@ -522,7 +522,7 @@ export default function AddCompanyPage() {
               <select
                 value={form.stage}
                 onChange={(e) => updateField('stage', e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
               >
                 <option value="">Select stage</option>
                 {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
@@ -537,7 +537,7 @@ export default function AddCompanyPage() {
                 type="number"
                 value={form.raise_amount}
                 onChange={(e) => updateField('raise_amount', e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
                 placeholder="e.g. 2000000"
               />
             </div>
@@ -547,7 +547,7 @@ export default function AddCompanyPage() {
                 type="number"
                 value={form.team_size}
                 onChange={(e) => updateField('team_size', e.target.value)}
-                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+                className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
                 placeholder="e.g. 12"
               />
             </div>
@@ -559,7 +559,7 @@ export default function AddCompanyPage() {
               type="number"
               value={form.founded_year}
               onChange={(e) => updateField('founded_year', e.target.value)}
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE]"
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
               placeholder="e.g. 2023"
             />
           </div>
@@ -570,7 +570,7 @@ export default function AddCompanyPage() {
               value={form.description}
               onChange={(e) => updateField('description', e.target.value)}
               rows={3}
-              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE]/20 focus:border-[#0168FE] resize-none"
+              className="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] resize-none"
               placeholder="Brief company description..."
             />
           </div>
@@ -578,7 +578,7 @@ export default function AddCompanyPage() {
           <button
             type="submit"
             disabled={isProcessing || !form.company_name}
-            className="w-full py-3 bg-[#0168FE] text-white rounded-lg font-semibold hover:bg-[#0050CC] transition disabled:opacity-50"
+            className="w-full py-3 bg-[#007CF8] text-white rounded-lg font-semibold hover:bg-[#0066D6] transition disabled:opacity-50"
           >
             {status === 'submitting'
               ? 'Creating...'

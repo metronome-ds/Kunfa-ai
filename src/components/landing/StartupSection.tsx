@@ -18,7 +18,7 @@ export default function StartupSection({ onApplyNow }: StartupSectionProps) {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left — Content */}
           <div>
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-[#0168FE] mb-4">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#F0F7FF] text-[#007CF8] mb-4">
               For Startups
             </span>
             <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
@@ -52,11 +52,11 @@ export default function StartupSection({ onApplyNow }: StartupSectionProps) {
           </div>
 
           {/* Right — Score Badge Visual */}
-          <div className="bg-gray-50 rounded-2xl p-8 lg:p-10 border border-gray-200">
+          <div className="bg-[#F8F9FB] rounded-2xl p-8 lg:p-10 border border-gray-200">
             {/* Score display */}
             <div className="text-center mb-8">
-              <div className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-white border-4 border-[#0168FE]/30 shadow-sm mb-4">
-                <span className="text-4xl font-bold text-[#0168FE]">78</span>
+              <div className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-white border-4 border-[#007CF8]/30 shadow-sm mb-4">
+                <span className="text-4xl font-bold text-[#007CF8]">78</span>
               </div>
               <p className="text-sm font-semibold text-kunfa-navy">Kunfa Score</p>
               <p className="text-xs text-gray-500 mt-1">Investment Readiness</p>
@@ -65,8 +65,8 @@ export default function StartupSection({ onApplyNow }: StartupSectionProps) {
             {/* Dimension breakdown */}
             <div className="space-y-3">
               {[
-                { label: 'Team & Founders', score: 82, color: 'bg-[#0168FE]' },
-                { label: 'Market Opportunity', score: 75, color: 'bg-blue-500' },
+                { label: 'Team & Founders', score: 82, color: 'bg-[#007CF8]' },
+                { label: 'Market Opportunity', score: 75, color: 'bg-[#F0F7FF]0' },
                 { label: 'Product & Traction', score: 80, color: 'bg-indigo-500' },
                 { label: 'Financials', score: 68, color: 'bg-amber-500' },
               ].map((dim) => (

@@ -245,7 +245,7 @@ export default function CreateDealPage() {
   const progressPercent = ((currentStepIndex + 1) / STEPS.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-[#F8F9FB] py-8 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -274,7 +274,7 @@ export default function CreateDealPage() {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-blue-600 h-full transition-all"
+              className="bg-[#007CF8] h-full transition-all"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -526,28 +526,28 @@ export default function CreateDealPage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-[#F8F9FB] rounded-lg p-4">
                   <p className="text-sm text-gray-600 mb-1">Company Name</p>
                   <p className="font-semibold text-gray-900">
                     {formData.company_name}
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-[#F8F9FB] rounded-lg p-4">
                   <p className="text-sm text-gray-600 mb-1">Industry</p>
                   <p className="font-semibold text-gray-900">
                     {formData.industry}
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-[#F8F9FB] rounded-lg p-4">
                   <p className="text-sm text-gray-600 mb-1">Deal Stage</p>
                   <p className="font-semibold text-gray-900">
                     {DEAL_STAGES.find((s) => s.value === formData.stage)?.label}
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-[#F8F9FB] rounded-lg p-4">
                   <p className="text-sm text-gray-600 mb-1">Funding Requested</p>
                   <p className="font-semibold text-gray-900">
                     {formData.funding_amount_requested
@@ -556,7 +556,7 @@ export default function CreateDealPage() {
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-[#F8F9FB] rounded-lg p-4">
                   <p className="text-sm text-gray-600 mb-1">Valuation</p>
                   <p className="font-semibold text-gray-900">
                     {formData.post_money_valuation
@@ -565,7 +565,7 @@ export default function CreateDealPage() {
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-[#F8F9FB] rounded-lg p-4">
                   <p className="text-sm text-gray-600 mb-1">Documents Uploaded</p>
                   <p className="font-semibold text-gray-900">
                     {formData.documents.length} file(s)

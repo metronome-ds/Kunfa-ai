@@ -50,7 +50,7 @@ const plans = [
       'API access',
     ],
     buttonText: 'Contact Us',
-    buttonStyle: 'border border-gray-300 text-gray-700 hover:bg-gray-50',
+    buttonStyle: 'border border-gray-300 text-gray-700 hover:bg-[#F8F9FB]',
     cardStyle: 'bg-white border border-gray-200',
     popular: false,
     action: 'contact',

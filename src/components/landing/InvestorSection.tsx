@@ -10,7 +10,7 @@ const bulletPoints = [
 ]
 
 const pipelineStages = [
-  { label: 'Sourcing', count: 12, color: 'bg-blue-500' },
+  { label: 'Sourcing', count: 12, color: 'bg-[#F0F7FF]0' },
   { label: 'Screening', count: 5, color: 'bg-purple-500' },
   { label: 'Diligence', count: 3, color: 'bg-amber-500' },
   { label: 'Close', count: 1, color: 'bg-green-500' },
@@ -18,7 +18,7 @@ const pipelineStages = [
 
 export default function InvestorSection() {
   return (
-    <section className="py-20 lg:py-28 bg-gray-50">
+    <section className="py-20 lg:py-28 bg-[#F8F9FB]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left — Pipeline Visual */}
@@ -44,10 +44,10 @@ export default function InvestorSection() {
                 { name: 'GreenLogi', score: 72, stage: 'Seed' },
                 { name: 'PayBridge', score: 91, stage: 'Series B' },
               ].map((deal) => (
-                <div key={deal.name} className="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-lg">
+                <div key={deal.name} className="flex items-center justify-between px-4 py-3 bg-[#F8F9FB] rounded-lg">
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <span className="text-xs font-bold text-[#0168FE]">{deal.score}</span>
+                      <span className="text-xs font-bold text-[#007CF8]">{deal.score}</span>
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{deal.name}</p>
@@ -62,7 +62,7 @@ export default function InvestorSection() {
 
           {/* Right — Content */}
           <div>
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 mb-4">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#F0F7FF] text-[#007CF8] mb-4">
               For Investors
             </span>
             <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
@@ -76,7 +76,7 @@ export default function InvestorSection() {
               {bulletPoints.map((point) => (
                 <li key={point} className="flex items-start gap-3">
                   <span className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mt-0.5 shrink-0">
-                    <svg className="w-3 h-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-3 h-3 text-[#007CF8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
                   </span>
@@ -86,7 +86,7 @@ export default function InvestorSection() {
             </ul>
             <Link
               href="/signup"
-              className="border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold px-6 py-3 rounded-lg transition-colors inline-flex items-center gap-2"
+              className="border border-gray-300 text-gray-700 hover:bg-[#F8F9FB] font-semibold px-6 py-3 rounded-lg transition-colors inline-flex items-center gap-2"
             >
               Create Investor Account
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

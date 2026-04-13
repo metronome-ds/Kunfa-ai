@@ -160,7 +160,7 @@ export default function AdminImportsPage() {
     <div className="max-w-6xl mx-auto px-6 py-10">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <ShieldCheck className="w-6 h-6 text-[#0168FE]" />
+          <ShieldCheck className="w-6 h-6 text-[#007CF8]" />
           <h1 className="text-2xl font-bold text-gray-900">Company Imports</h1>
         </div>
         <div className="flex items-center gap-3">
@@ -220,7 +220,7 @@ export default function AdminImportsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#0168FE]" />
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#007CF8]" />
         </div>
       ) : records.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
@@ -230,7 +230,7 @@ export default function AdminImportsPage() {
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 bg-gray-50">
+              <tr className="border-b border-gray-200 bg-[#F8F9FB]">
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Name</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Source</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
@@ -242,7 +242,7 @@ export default function AdminImportsPage() {
             </thead>
             <tbody>
               {records.map((rec) => (
-                <tr key={rec.id} className="border-b border-gray-100 hover:bg-gray-50">
+                <tr key={rec.id} className="border-b border-gray-100 hover:bg-[#F8F9FB]">
                   <td className="px-4 py-3">
                     <p className="font-medium text-gray-900">{rec.clean_name || rec.raw_name}</p>
                     {rec.rejection_reason && (

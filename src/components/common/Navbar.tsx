@@ -284,20 +284,20 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
   const contextLabel = activeTeamName || (userProfile?.role === 'investor' ? 'Investor' : userProfile?.role === 'startup' || userProfile?.role === 'founder' ? 'Startup' : userProfile?.role || '');
 
   return (
-    <div className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-gray-200 z-40">
+    <div className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-[#E5E7EB] z-40">
       <div className="h-full px-8 flex items-center justify-between">
         {/* Left: Title/Breadcrumb */}
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+        <h2 className="text-xl font-bold text-[#111827]">{title}</h2>
 
         {/* Right: Actions */}
         <div className="flex items-center gap-4">
           {/* Search Bar */}
-          <div className="hidden lg:flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 w-64 hover:bg-gray-100 transition-colors">
-            <Search className="h-4 w-4 text-gray-400" />
+          <div className="hidden lg:flex items-center gap-2 bg-[#F8F9FB] border border-[#E5E7EB] rounded-lg px-3 py-2 w-64 hover:bg-gray-100 transition-colors">
+            <Search className="h-4 w-4 text-[#9CA3AF]" />
             <input
               type="text"
               placeholder="Search deals, people, companies..."
-              className="bg-transparent outline-none text-sm text-gray-700 placeholder-gray-400 w-full"
+              className="bg-transparent outline-none text-sm text-[#111827] placeholder-[#9CA3AF] w-full"
             />
           </div>
 
@@ -305,7 +305,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
           <div className="relative" ref={notificationRef}>
             <button
               onClick={toggleNotifications}
-              className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="relative p-2 text-[#4B5563] hover:text-[#111827] hover:bg-[#F8F9FB] rounded-lg transition-colors"
             >
               <Bell className="h-5 w-5" />
               {notificationCount > 0 && (
@@ -317,14 +317,14 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
 
             {/* Notifications Dropdown */}
             {isNotificationsOpen && (
-              <div className="absolute right-0 mt-2 w-96 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-[480px] flex flex-col">
+              <div className="absolute right-0 mt-2 w-96 bg-white border border-[#E5E7EB] rounded-lg shadow-lg z-50 max-h-[480px] flex flex-col">
                 {/* Header */}
                 <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
                   <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
                   {notificationCount > 0 && (
                     <button
                       onClick={markAllAsRead}
-                      className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition-colors"
+                      className="flex items-center gap-1 text-xs text-[#007CF8] hover:text-[#0066D6] transition-colors"
                     >
                       <CheckCheck className="h-3.5 w-3.5" />
                       Mark all read
@@ -395,18 +395,18 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
               <button
                 onClick={() => setIsTeamDropdownOpen(!isTeamDropdownOpen)}
                 disabled={isSwitching}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors text-sm disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E5E7EB] hover:bg-[#F8F9FB] transition-colors text-sm disabled:opacity-50"
               >
-                <span className="font-medium text-gray-700 max-w-[140px] truncate">
+                <span className="font-medium text-[#4B5563] max-w-[140px] truncate">
                   {activeTeamName || contextLabel}
                 </span>
-                <ChevronDown className={`h-3.5 w-3.5 text-gray-400 transition-transform ${isTeamDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-3.5 w-3.5 text-[#9CA3AF] transition-transform ${isTeamDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isTeamDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50 max-h-80 overflow-y-auto">
-                  <div className="px-3 py-2 border-b border-gray-100">
-                    <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Switch Workspace</p>
+                <div className="absolute right-0 mt-2 w-64 bg-white border border-[#E5E7EB] rounded-lg shadow-lg py-1 z-50 max-h-80 overflow-y-auto">
+                  <div className="px-3 py-2 border-b border-[#E5E7EB]">
+                    <p className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider">Switch Workspace</p>
                   </div>
                   {availableTeams.map((team) => {
                     const active = isActiveTeam(team);
@@ -424,17 +424,17 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                           handleSwitchTeam(isOwn ? team.teamId : team.teamId);
                         }}
                         className={`w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors ${
-                          active ? 'bg-blue-50' : 'hover:bg-gray-50'
+                          active ? 'bg-[#F0F7FF]' : 'hover:bg-[#F8F9FB]'
                         }`}
                       >
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm truncate ${active ? 'font-semibold text-gray-900' : 'font-medium text-gray-700'}`}>
+                          <p className={`text-sm truncate ${active ? 'font-semibold text-[#111827]' : 'font-medium text-[#111827]'}`}>
                             {isOwn ? `My ${team.role === 'investor' ? 'Fund' : 'Company'}` : displayName}
                           </p>
-                          <p className="text-xs text-gray-500 truncate">
+                          <p className="text-xs text-[#4B5563] truncate">
                             {isOwn ? displayName : team.ownerName}
                             {!isOwn && (
-                              <span className="ml-1.5 text-gray-400">({team.memberRole})</span>
+                              <span className="ml-1.5 text-[#9CA3AF]">({team.memberRole})</span>
                             )}
                           </p>
                         </div>
@@ -444,7 +444,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                           {team.role === 'investor' ? 'Investor' : 'Startup'}
                         </span>
                         {active && (
-                          <Check className="h-4 w-4 text-[#0168FE] flex-shrink-0" />
+                          <Check className="h-4 w-4 text-[#007CF8] flex-shrink-0" />
                         )}
                       </button>
                     );
@@ -455,10 +455,10 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
           )}
 
           {/* User Avatar Dropdown */}
-          <div className="relative border-l border-gray-200 pl-4" ref={dropdownRef}>
+          <div className="relative border-l border-[#E5E7EB] pl-4" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[#F8F9FB] transition-colors"
             >
               {userProfile?.avatar_url ? (
                 <img
@@ -467,27 +467,27 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                   className="h-8 w-8 rounded-full object-cover"
                 />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-semibold">
+                <div className="h-8 w-8 rounded-full bg-[#007CF8] flex items-center justify-center text-white text-xs font-semibold">
                   {userName.charAt(0).toUpperCase()}
                 </div>
               )}
               <div className="hidden sm:block text-left">
-                <p className="text-sm font-medium text-gray-900 leading-none">
+                <p className="text-sm font-medium text-[#111827] leading-none">
                   {userName}
                 </p>
-                <p className="text-xs text-gray-500 leading-none mt-0.5">
+                <p className="text-xs text-[#4B5563] leading-none mt-0.5">
                   {!hasMultipleTeams && contextLabel ? contextLabel : (userProfile?.role || '')}
                 </p>
               </div>
-              <ChevronDown className="h-4 w-4 text-gray-400 hidden sm:block" />
+              <ChevronDown className="h-4 w-4 text-[#9CA3AF] hidden sm:block" />
             </button>
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E5E7EB] rounded-lg shadow-lg py-1 z-50">
                 <Link
                   href="/profile"
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-3 px-4 py-2 text-sm text-[#111827] hover:bg-[#F8F9FB] transition-colors"
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <User className="h-4 w-4" />
@@ -495,13 +495,13 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                 </Link>
                 <Link
                   href="/settings"
-                  className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-3 px-4 py-2 text-sm text-[#111827] hover:bg-[#F8F9FB] transition-colors"
                   onClick={() => setIsDropdownOpen(false)}
                 >
                   <Settings className="h-4 w-4" />
                   Settings
                 </Link>
-                <div className="border-t border-gray-100 my-1" />
+                <div className="border-t border-[#E5E7EB] my-1" />
                 <button
                   onClick={() => {
                     setIsDropdownOpen(false);

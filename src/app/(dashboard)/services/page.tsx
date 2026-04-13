@@ -168,7 +168,7 @@ export default function ServicesPage() {
                 }}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedType === type.value
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-[#007CF8] text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -308,7 +308,7 @@ export default function ServicesPage() {
                   onClick={() => setCurrentPage(page)}
                   className={`px-3 py-2 rounded-lg font-medium transition-colors ${
                     currentPage === page
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-[#007CF8] text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >

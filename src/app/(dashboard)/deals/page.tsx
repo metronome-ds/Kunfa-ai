@@ -202,7 +202,7 @@ export default function BrowseCompaniesPage() {
   ].filter(Boolean).length;
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-[#F8F9FB]">
       {/* Sidebar Filter */}
       <CompanyFilter
         onFilterChange={handleFilterChange}
@@ -260,8 +260,8 @@ export default function BrowseCompaniesPage() {
           ) : companies.length === 0 ? (
             /* Empty state */
             <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center h-20 w-20 bg-blue-50 rounded-full mb-6">
-                <Rocket className="h-10 w-10 text-[#0168FE]" />
+              <div className="inline-flex items-center justify-center h-20 w-20 bg-[#F0F7FF] rounded-full mb-6">
+                <Rocket className="h-10 w-10 text-[#007CF8]" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 No companies found
@@ -320,8 +320,8 @@ export default function BrowseCompaniesPage() {
                           onClick={() => fetchCompanies(pageNum)}
                           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                             pagination.page === pageNum
-                              ? 'bg-[#0168FE] text-white'
-                              : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
+                              ? 'bg-[#007CF8] text-white'
+                              : 'bg-white text-gray-700 border border-gray-200 hover:bg-[#F8F9FB]'
                           }`}
                         >
                           {pageNum}

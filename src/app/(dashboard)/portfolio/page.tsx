@@ -375,7 +375,7 @@ export default function PortfolioPage() {
                   };
 
                   return (
-                    <tr key={holding.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <tr key={holding.id} className="border-b border-gray-100 hover:bg-[#F8F9FB]">
                       <td className="py-4 px-4">
                         <div>
                           <p className="font-semibold text-gray-900">{deal?.company_name}</p>
@@ -483,7 +483,7 @@ export default function PortfolioPage() {
                     <button
                       key={deal.id}
                       onClick={() => setSelectedDeal(deal.id)}
-                      className={`w-full text-left p-4 hover:bg-gray-50 ${
+                      className={`w-full text-left p-4 hover:bg-[#F8F9FB] ${
                         selectedDeal === deal.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
                       }`}
                     >
@@ -580,7 +580,7 @@ export default function PortfolioPage() {
           </div>
 
           {editingHolding && (
-            <div className="bg-gray-50 rounded-lg p-4">
+            <div className="bg-[#F8F9FB] rounded-lg p-4">
               <p className="text-xs text-gray-500 mb-2">Original Investment</p>
               <p className="text-lg font-semibold text-gray-900">
                 {formatCurrency(editingHolding.investment_amount)}

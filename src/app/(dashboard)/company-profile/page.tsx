@@ -58,7 +58,7 @@ function getScoreColor(score: number | null) {
 }
 
 function getScoreBg(score: number | null) {
-  if (!score) return 'bg-gray-50 border-gray-200'
+  if (!score) return 'bg-[#F8F9FB] border-gray-200'
   if (score >= 80) return 'bg-emerald-50 border-emerald-200'
   if (score >= 60) return 'bg-blue-50 border-blue-200'
   if (score >= 40) return 'bg-yellow-50 border-yellow-200'
@@ -78,8 +78,8 @@ function daysSince(dateStr: string) {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
 }
 
-const INPUT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#0168FE] focus:border-transparent'
-const SELECT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#0168FE] focus:border-transparent'
+const INPUT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8] focus:border-transparent'
+const SELECT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8] focus:border-transparent'
 
 export default function CompanyProfilePage() {
   const [company, setCompany] = useState<CompanyData | null>(null)
@@ -287,7 +287,7 @@ export default function CompanyProfilePage() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#0168FE] text-white rounded-lg font-semibold text-sm hover:bg-[#0050CC] transition"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition"
           >
             Get Your Kunfa Score
           </Link>
@@ -400,7 +400,7 @@ export default function CompanyProfilePage() {
             <Link
               href={`/company/${company.slug}`}
               target="_blank"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
             >
               View Public Profile
               <ExternalLink className="w-3.5 h-3.5" />
@@ -408,7 +408,7 @@ export default function CompanyProfilePage() {
             {canEdit && (
               <button
                 onClick={() => setShowRescore(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Update My Score
@@ -438,7 +438,7 @@ export default function CompanyProfilePage() {
             >
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-[#0168FE]" />
+                  <Check className="w-3.5 h-3.5 text-[#007CF8]" />
                   Copied!
                 </>
               ) : (
@@ -455,7 +455,7 @@ export default function CompanyProfilePage() {
       {/* Save success */}
       {saveSuccess && (
         <div className="rounded-xl p-3 mb-6 bg-green-50 border border-green-200 flex items-center gap-2">
-          <Check className="w-4 h-4 text-[#0168FE]" />
+          <Check className="w-4 h-4 text-[#007CF8]" />
           <p className="text-sm text-green-700">Profile updated successfully.</p>
         </div>
       )}
@@ -470,7 +470,7 @@ export default function CompanyProfilePage() {
             <label className="block text-xs font-medium text-gray-500 mb-1">Company Logo</label>
             <div className="flex items-center gap-3">
               <CompanyLogo name={editForm.company_name || 'C'} logoUrl={editForm.logo_url || null} size="lg" />
-              <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer">
+              <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-300 text-gray-700 bg-white hover:bg-[#F8F9FB] transition cursor-pointer">
                 <Upload className="w-3.5 h-3.5" />
                 {editForm.logo_url ? 'Change Logo' : 'Upload Logo'}
                 <input
@@ -596,7 +596,7 @@ export default function CompanyProfilePage() {
                 <button
                   type="button"
                   onClick={() => setEditTeam([...editTeam, { name: '', title: '', email: '', linkedin: '' }])}
-                  className="text-sm text-[#0168FE] font-medium hover:text-[#0050CC] transition"
+                  className="text-sm text-[#007CF8] font-medium hover:text-[#0066D6] transition"
                 >
                   + Add Co-Founder
                 </button>
@@ -604,7 +604,7 @@ export default function CompanyProfilePage() {
             </div>
             <div className="space-y-3">
               {editTeam.map((member, i) => (
-                <div key={i} className="bg-gray-50 rounded-lg p-3 relative">
+                <div key={i} className="bg-[#F8F9FB] rounded-lg p-3 relative">
                   {i > 0 && (
                     <button
                       type="button"
@@ -653,7 +653,7 @@ export default function CompanyProfilePage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition disabled:opacity-50"
+              className="px-6 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
@@ -682,7 +682,7 @@ export default function CompanyProfilePage() {
               </div>
               <Link
                 href={`/report/${company.submission_id}`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#0168FE] text-white rounded-lg text-sm font-medium hover:bg-[#0050CC] transition"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
               >
                 View Report
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -691,7 +691,7 @@ export default function CompanyProfilePage() {
           ) : paid ? (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Loader2 className="w-5 h-5 text-[#0168FE] animate-spin flex-shrink-0" />
+                <Loader2 className="w-5 h-5 text-[#007CF8] animate-spin flex-shrink-0" />
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900">Report Generating...</h3>
                   <p className="text-xs text-gray-500 mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
@@ -770,7 +770,7 @@ export default function CompanyProfilePage() {
             {teamMembers.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
                 {teamMembers.map((member, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                  <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-[#F8F9FB] border border-gray-200">
                     <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
                       <span className="text-xs font-semibold text-gray-600">
                         {member.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}

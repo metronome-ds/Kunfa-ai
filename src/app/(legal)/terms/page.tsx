@@ -12,7 +12,7 @@ export default function TermsPage() {
       <nav className="border-b border-gray-200 bg-white">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#0168FE] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-[#007CF8] flex items-center justify-center">
               <span className="text-white font-bold text-lg">K</span>
             </div>
             <span className="font-bold text-lg text-gray-900">Kunfa.AI</span>
@@ -133,7 +133,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">10. Termination and Account Deletion</h2>
             <p>
-              You may request deletion of your account and associated data at any time by contacting us at <a href="mailto:invest@kunfa.ai" className="text-[#0168FE] hover:underline">invest@kunfa.ai</a>. We reserve the right to suspend or terminate accounts that violate these Terms, without prior notice.
+              You may request deletion of your account and associated data at any time by contacting us at <a href="mailto:invest@kunfa.ai" className="text-[#007CF8] hover:underline">invest@kunfa.ai</a>. We reserve the right to suspend or terminate accounts that violate these Terms, without prior notice.
             </p>
             <p className="mt-3">
               Upon account deletion, your personal data and uploaded documents will be removed from the Platform within 30 days, except where retention is required by law or for legitimate business purposes (such as maintaining generated reports for paying customers).
@@ -162,7 +162,7 @@ export default function TermsPage() {
             <p className="mt-2">
               <strong>Alif Fund LLC</strong><br />
               Dubai, United Arab Emirates<br />
-              Email: <a href="mailto:invest@kunfa.ai" className="text-[#0168FE] hover:underline">invest@kunfa.ai</a>
+              Email: <a href="mailto:invest@kunfa.ai" className="text-[#007CF8] hover:underline">invest@kunfa.ai</a>
             </p>
           </section>
         </div>

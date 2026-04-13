@@ -106,7 +106,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0, investorP
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold text-gray-900">Filters</h3>
           {activeFilterCount > 0 && (
-            <span className="px-2 py-1 bg-blue-100 text-[#0168FE] text-xs font-semibold rounded-full">
+            <span className="px-2 py-1 bg-blue-100 text-[#007CF8] text-xs font-semibold rounded-full">
               {activeFilterCount}
             </span>
           )}
@@ -131,7 +131,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0, investorP
             role="switch"
             aria-checked={filters.raisingOnly}
             onClick={() => updateFilter({ raisingOnly: !filters.raisingOnly })}
-            className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0168FE]/30 focus:ring-offset-2 ${
+            className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#007CF8]/30 focus:ring-offset-2 ${
               filters.raisingOnly ? 'bg-emerald-500' : 'bg-gray-300'
             }`}
           >
@@ -149,7 +149,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0, investorP
           <select
             value={filters.sort}
             onChange={(e) => updateFilter({ sort: e.target.value as CompanyFilterState['sort'] })}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#0168FE]"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-1 focus:ring-[#007CF8]"
           >
             <option value="score">Highest Score</option>
             <option value="newest">Newest</option>
@@ -186,7 +186,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0, investorP
                   type="checkbox"
                   checked={filters.industries.includes(industry)}
                   onChange={() => toggleIndustry(industry)}
-                  className="w-4 h-4 text-[#0168FE] rounded border-gray-300 cursor-pointer"
+                  className="w-4 h-4 text-[#007CF8] rounded border-gray-300 cursor-pointer"
                 />
                 <span className="text-sm text-gray-700 flex items-center gap-1.5">
                   {industry}
@@ -217,7 +217,7 @@ export function CompanyFilter({ onFilterChange, activeFilterCount = 0, investorP
                   type="checkbox"
                   checked={filters.stages.includes(stage)}
                   onChange={() => toggleStage(stage)}
-                  className="w-4 h-4 text-[#0168FE] rounded border-gray-300 cursor-pointer"
+                  className="w-4 h-4 text-[#007CF8] rounded border-gray-300 cursor-pointer"
                 />
                 <span className="text-sm text-gray-700 flex items-center gap-1.5">
                   {stage}

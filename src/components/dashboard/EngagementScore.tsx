@@ -179,7 +179,7 @@ export function EngagementScore() {
                 {/* Mini progress bar */}
                 <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-600 rounded-full transition-all"
+                    className="h-full bg-[#007CF8] rounded-full transition-all"
                     style={{ width: `${Math.min(percentOfTotal, 100)}%` }}
                   />
                 </div>

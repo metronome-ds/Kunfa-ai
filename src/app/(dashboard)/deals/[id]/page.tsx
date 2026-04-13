@@ -96,7 +96,7 @@ export default function DealDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+      <div className="flex items-center justify-center min-h-screen bg-[#F8F9FB]">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
           <p className="text-gray-600">Loading deal details...</p>
@@ -107,7 +107,7 @@ export default function DealDetailPage() {
 
   if (error || !deal) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-6">
+      <div className="flex items-center justify-center min-h-screen bg-[#F8F9FB] p-6">
         <div className="max-w-md bg-white rounded-lg border border-red-200 p-6">
           <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-gray-900 text-center mb-2">
@@ -141,7 +141,7 @@ export default function DealDetailPage() {
     .join(' ');
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F8F9FB]">
       {/* Hero Section */}
       <div className="bg-white border-b border-gray-200 p-8">
         <div className="max-w-6xl mx-auto">
@@ -194,7 +194,7 @@ export default function DealDetailPage() {
                 {company.slug && (
                   <Link
                     href={`/company/${company.slug}`}
-                    className="flex items-center gap-2 text-[#0168FE] hover:text-[#0050CC]"
+                    className="flex items-center gap-2 text-[#007CF8] hover:text-[#0066D6]"
                   >
                     <ExternalLink className="h-4 w-4" />
                     View Full Profile
