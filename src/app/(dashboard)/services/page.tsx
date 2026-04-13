@@ -120,6 +120,23 @@ const SERVICES: Service[] = [
     ],
   },
   {
+    id: 'branding-design',
+    title: 'Branding & Design',
+    category: 'Design',
+    categoryColor: 'bg-[#F0F7FF] text-[#007CF8]',
+    price: '$5,000',
+    description: 'Professional brand identity, website design, and product UI that positions your startup as investor-ready.',
+    dimensions: ['Product', 'Market'],
+    includes: [
+      'Brand strategy and positioning workshop',
+      'Logo design and visual identity system',
+      'Brand guidelines document (colors, typography, usage rules)',
+      'Marketing website design (up to 5 pages)',
+      'Pitch deck visual redesign (template)',
+      'Product UI/UX audit with actionable recommendations',
+    ],
+  },
+  {
     id: 'esg-reporting',
     title: 'ESG Reporting & Impact Assessment',
     category: 'ESG & Compliance',
