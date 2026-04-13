@@ -106,7 +106,7 @@ export async function GET(
     // --- Fetch documents ---
     const { data: docs, error } = await supabase
       .from('dealroom_documents')
-      .select('id, company_id, uploaded_by, file_name, file_url, file_size, file_type, category, description, is_public, created_at')
+      .select('id, company_id, uploaded_by, file_name, file_url, file_size, file_type, category, description, is_public, is_private, created_at')
       .eq('company_id', companyId)
       .order('created_at', { ascending: false })
 
@@ -131,8 +131,13 @@ export async function GET(
       }
     }
 
+    // Filter out private docs for non-owners (investors never see private docs)
+    const visibleDocs = canViewRestricted
+      ? (docs || [])
+      : (docs || []).filter(d => !d.is_private)
+
     // Strip file_url from restricted docs for unauthorized viewers
-    const docsWithNames = (docs || []).map(d => ({
+    const docsWithNames = visibleDocs.map(d => ({
       ...d,
       file_url: d.is_public || canViewRestricted ? d.file_url : null,
       restricted: !d.is_public && !canViewRestricted,
@@ -180,6 +185,7 @@ export async function POST(
     let category: string
     let description: string | null
     let isPublic = true
+    let isPrivate = false
 
     if (contentType.includes('application/json')) {
       // Client already uploaded to Supabase Storage directly
@@ -191,6 +197,7 @@ export async function POST(
       category = body.category || 'other'
       description = body.description || null
       if (body.isPublic !== undefined) isPublic = body.isPublic
+      isPrivate = body.isPrivate === true
 
       if (!fileUrl || !fileName) {
         return NextResponse.json({ error: 'fileUrl and fileName are required' }, { status: 400 })
@@ -249,6 +256,7 @@ export async function POST(
         category,
         description,
         is_public: isPublic,
+        is_private: isPrivate,
       })
       .select()
       .single()

@@ -46,6 +46,7 @@ interface DealRoomDocument {
   category: string
   description: string | null
   is_public: boolean
+  is_private?: boolean
   restricted?: boolean
   created_at: string
   uploaded_by_name: string
@@ -58,6 +59,7 @@ interface DealRoomProps {
   canShare: boolean
   currentUserId: string | null
   publicOnly?: boolean
+  isOwnerView?: boolean
   onRequestRescore?: () => void
   sessionId?: string | null
   trackingEnabled?: boolean
@@ -79,6 +81,22 @@ const CATEGORIES = [
 
 const UPLOAD_CATEGORIES = CATEGORIES.filter(c => c.value !== 'all')
 
+const PRIVATE_CATEGORIES = [
+  { value: 'all', label: 'All' },
+  { value: 'term_sheet', label: 'Term Sheet' },
+  { value: 'term_sheet_analysis', label: 'Term Sheet Analysis' },
+  { value: 'board_minutes', label: 'Board Minutes' },
+  { value: 'internal_financials', label: 'Internal Financials' },
+  { value: 'legal_draft', label: 'Legal Draft' },
+  { value: 'cap_table_draft', label: 'Cap Table Draft' },
+  { value: 'notes', label: 'Notes' },
+  { value: 'other', label: 'Other' },
+]
+
+const PRIVATE_UPLOAD_CATEGORIES = PRIVATE_CATEGORIES.filter(c => c.value !== 'all')
+
+const ALL_CATEGORIES = [...CATEGORIES, ...PRIVATE_CATEGORIES.filter(pc => !CATEGORIES.find(c => c.value === pc.value))]
+
 function getCategoryColor(category: string) {
   const colors: Record<string, string> = {
     pitch_deck: 'bg-blue-100 text-blue-700',
@@ -90,13 +108,19 @@ function getCategoryColor(category: string) {
     investment_memo: 'bg-teal-100 text-teal-700',
     internal_memo: 'bg-slate-100 text-slate-700',
     product: 'bg-indigo-100 text-indigo-700',
+    term_sheet_analysis: 'bg-violet-100 text-violet-700',
+    board_minutes: 'bg-orange-100 text-orange-700',
+    internal_financials: 'bg-emerald-100 text-emerald-700',
+    legal_draft: 'bg-amber-100 text-amber-700',
+    cap_table_draft: 'bg-purple-100 text-purple-700',
+    notes: 'bg-slate-100 text-slate-700',
     other: 'bg-gray-100 text-gray-700',
   }
   return colors[category] || colors.other
 }
 
 function getCategoryLabel(category: string) {
-  return CATEGORIES.find(c => c.value === category)?.label || category
+  return ALL_CATEGORIES.find(c => c.value === category)?.label || category
 }
 
 function getFileIcon(fileType: string) {
@@ -126,10 +150,11 @@ function timeAgo(dateStr: string) {
   return new Date(dateStr).toLocaleDateString()
 }
 
-export default function DealRoom({ companyId, companyName, canUpload, canShare, currentUserId, publicOnly = false, onRequestRescore, sessionId = null, trackingEnabled = false }: DealRoomProps) {
+export default function DealRoom({ companyId, companyName, canUpload, canShare, currentUserId, publicOnly = false, isOwnerView = false, onRequestRescore, sessionId = null, trackingEnabled = false }: DealRoomProps) {
   const [documents, setDocuments] = useState<DealRoomDocument[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const [activeTab, setActiveTab] = useState<'investor' | 'private'>('investor')
   const [uploadOpen, setUploadOpen] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
@@ -232,11 +257,18 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
     }).catch(() => { /* ignore */ })
   }
 
-  const filtered = filter === 'all' ? documents : documents.filter(d => d.category === filter)
-  const activeCounts = CATEGORIES.reduce((acc, c) => {
-    acc[c.value] = c.value === 'all' ? documents.length : documents.filter(d => d.category === c.value).length
+  const isPrivateTab = isOwnerView && activeTab === 'private'
+  const tabDocs = isOwnerView
+    ? documents.filter(d => isPrivateTab ? d.is_private : !d.is_private)
+    : documents
+  const currentCategories = isPrivateTab ? PRIVATE_CATEGORIES : CATEGORIES
+  const filtered = filter === 'all' ? tabDocs : tabDocs.filter(d => d.category === filter)
+  const activeCounts = currentCategories.reduce((acc, c) => {
+    acc[c.value] = c.value === 'all' ? tabDocs.length : tabDocs.filter(d => d.category === c.value).length
     return acc
   }, {} as Record<string, number>)
+  const investorCount = documents.filter(d => !d.is_private).length
+  const privateCount = documents.filter(d => d.is_private).length
 
   return (
     <div id="deal-room" className="bg-white rounded-xl border border-gray-200 shadow-sm">
@@ -267,12 +299,20 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
               <FolderOpen className="w-5 h-5 text-[#007CF8]" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Deal Room</h2>
-              <p className="text-xs text-gray-500">{documents.length} document{documents.length !== 1 ? 's' : ''}</p>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {isOwnerView ? (isPrivateTab ? 'Private Documents' : 'Investor Room') : 'Deal Room'}
+              </h2>
+              <p className="text-xs text-gray-500">
+                {isOwnerView
+                  ? (isPrivateTab
+                    ? 'Internal documents only visible to you and your team. Never shared with investors or used in AI scoring.'
+                    : 'Documents visible to investors who view your company profile.')
+                  : `${documents.length} document${documents.length !== 1 ? 's' : ''}`}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            {canShare && (
+            {canShare && !isPrivateTab && (
               <ShareDealRoom companyId={companyId} companyName={companyName} />
             )}
             {canUpload && (
@@ -286,12 +326,48 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
             )}
           </div>
         </div>
+
+        {/* Tabs — only show for owner view */}
+        {isOwnerView && (
+          <div className="flex gap-1 mt-4">
+            <button
+              onClick={() => { setActiveTab('investor'); setFilter('all') }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                activeTab === 'investor'
+                  ? 'bg-[#007CF8] text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Investor Room
+              {investorCount > 0 && (
+                <span className={`ml-1.5 ${activeTab === 'investor' ? 'text-blue-200' : 'text-gray-400'}`}>
+                  {investorCount}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => { setActiveTab('private'); setFilter('all') }}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
+                activeTab === 'private'
+                  ? 'bg-[#007CF8] text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Private Docs
+              {privateCount > 0 && (
+                <span className={`ml-1.5 ${activeTab === 'private' ? 'text-blue-200' : 'text-gray-400'}`}>
+                  {privateCount}
+                </span>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Category Filters */}
       <div className="px-6 py-3 border-b border-gray-100 flex items-center gap-2 overflow-x-auto">
         <Filter className="w-4 h-4 text-gray-400 flex-shrink-0" />
-        {CATEGORIES.map(c => (
+        {currentCategories.map(c => (
           <button
             key={c.value}
             onClick={() => setFilter(c.value)}
@@ -321,11 +397,11 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
           <div className="text-center py-12">
             <FolderOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
             <p className="text-sm text-gray-500">
-              {documents.length === 0
-                ? 'No documents yet'
+              {tabDocs.length === 0
+                ? (isPrivateTab ? 'No private documents yet' : 'No documents yet')
                 : 'No documents in this category'}
             </p>
-            {canUpload && documents.length === 0 && (
+            {canUpload && tabDocs.length === 0 && (
               <button
                 onClick={() => setUploadOpen(true)}
                 className="mt-3 text-sm text-[#007CF8] font-medium hover:underline"
@@ -346,8 +422,8 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
                   <div className="flex items-start justify-between mb-3">
                     <span className="text-2xl">{getFileIcon(doc.file_type)}</span>
                     <div className="flex items-center gap-1">
-                      {/* Access level indicator */}
-                      {!publicOnly && (
+                      {/* Access level indicator — hidden for private docs */}
+                      {!publicOnly && !isPrivateTab && (
                         canManage ? (
                           <button
                             onClick={() => handleTogglePublic(doc)}
@@ -467,6 +543,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
         onClose={() => setUploadOpen(false)}
         companyId={companyId}
         onUploaded={handleUploaded}
+        isPrivateTab={isPrivateTab}
       />
 
       {/* Edit Modal */}
@@ -474,6 +551,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
         <EditDocModal
           doc={editingDoc}
           companyId={companyId}
+          isPrivateTab={isPrivateTab}
           onClose={() => setEditingDoc(null)}
           onSaved={(updated) => {
             setDocuments(prev => prev.map(d => d.id === updated.id ? { ...d, ...updated } : d))
@@ -521,11 +599,13 @@ function UploadModal({
   onClose,
   companyId,
   onUploaded,
+  isPrivateTab = false,
 }: {
   isOpen: boolean
   onClose: () => void
   companyId: string
   onUploaded: (count?: number) => void
+  isPrivateTab?: boolean
 }) {
   const [queue, setQueue] = useState<QueuedFile[]>([])
   const [uploading, setUploading] = useState(false)
@@ -632,6 +712,7 @@ function UploadModal({
           category: item.category,
           description: item.description || null,
           isPublic: item.isPublic,
+          isPrivate: isPrivateTab,
         }),
       })
 
@@ -803,7 +884,7 @@ function UploadModal({
                           onChange={(e) => updateFile(item.id, { category: e.target.value })}
                           className="px-2 py-1 border border-gray-200 rounded text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#007CF8] bg-white"
                         >
-                          {UPLOAD_CATEGORIES.map((c) => (
+                          {(isPrivateTab ? PRIVATE_UPLOAD_CATEGORIES : UPLOAD_CATEGORIES).map((c) => (
                             <option key={c.value} value={c.value}>{c.label}</option>
                           ))}
                         </select>
@@ -814,19 +895,21 @@ function UploadModal({
                           placeholder="Description (optional)"
                           className="flex-1 px-2 py-1 border border-gray-200 rounded text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#007CF8]"
                         />
-                        <button
-                          type="button"
-                          onClick={() => updateFile(item.id, { isPublic: !item.isPublic })}
-                          className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium border transition flex-shrink-0 ${
-                            item.isPublic
-                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                              : 'bg-amber-50 text-amber-700 border-amber-200'
-                          }`}
-                          title={item.isPublic ? 'Open — visible to all visitors' : 'Restricted — authorized investors only'}
-                        >
-                          {item.isPublic ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                          {item.isPublic ? 'Open' : 'Restricted'}
-                        </button>
+                        {!isPrivateTab && (
+                          <button
+                            type="button"
+                            onClick={() => updateFile(item.id, { isPublic: !item.isPublic })}
+                            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-medium border transition flex-shrink-0 ${
+                              item.isPublic
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : 'bg-amber-50 text-amber-700 border-amber-200'
+                            }`}
+                            title={item.isPublic ? 'Open — visible to all visitors' : 'Restricted — authorized investors only'}
+                          >
+                            {item.isPublic ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                            {item.isPublic ? 'Open' : 'Restricted'}
+                          </button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -886,11 +969,13 @@ function EditDocModal({
   companyId,
   onClose,
   onSaved,
+  isPrivateTab = false,
 }: {
   doc: DealRoomDocument
   companyId: string
   onClose: () => void
   onSaved: (updated: Partial<DealRoomDocument> & { id: string }) => void
+  isPrivateTab?: boolean
 }) {
   const [category, setCategory] = useState(doc.category)
   const [description, setDescription] = useState(doc.description || '')
@@ -936,7 +1021,7 @@ function EditDocModal({
               onChange={(e) => setCategory(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
             >
-              {UPLOAD_CATEGORIES.map(c => (
+              {(isPrivateTab ? PRIVATE_UPLOAD_CATEGORIES : UPLOAD_CATEGORIES).map(c => (
                 <option key={c.value} value={c.value}>{c.label}</option>
               ))}
             </select>
@@ -951,6 +1036,7 @@ function EditDocModal({
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400"
             />
           </div>
+          {!isPrivateTab && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Access Level</label>
             <div className="flex gap-2">
@@ -983,6 +1069,7 @@ function EditDocModal({
               {isPublic ? 'Visible to all visitors' : 'Only authorized investors can download'}
             </p>
           </div>
+          )}
         </div>
 
         <div className="flex gap-3 mt-6">

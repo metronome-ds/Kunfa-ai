@@ -166,6 +166,7 @@ export async function POST(request: NextRequest) {
           .select('id, file_name, file_url, category')
           .in('id', documentIds!)
           .eq('company_id', companyPageId!)
+          .eq('is_private', false)
 
         if (docsErr || !docs || docs.length === 0) {
           return NextResponse.json(
@@ -210,6 +211,7 @@ export async function POST(request: NextRequest) {
             .select('id, file_name, file_url')
             .eq('company_id', companyPageId!)
             .eq('category', 'pitch_deck')
+            .eq('is_private', false)
             .order('created_at', { ascending: false })
             .limit(1)
             .maybeSingle()

@@ -76,8 +76,17 @@ export async function extractTextFromSpreadsheet(buffer: Buffer): Promise<string
 }
 
 /**
+ * Extract text from a Word document (.docx) using mammoth.
+ */
+export async function extractTextFromDocx(buffer: Buffer): Promise<string> {
+  const mammoth = await import('mammoth')
+  const result = await mammoth.extractRawText({ buffer })
+  return result.value
+}
+
+/**
  * Given a Blob URL and the original filename, fetch the file and extract its
- * text content. PDFs use pdf-parse, spreadsheets use xlsx, CSVs read as UTF-8.
+ * text content. PDFs use pdf-parse, spreadsheets use xlsx, DOCX uses mammoth, CSVs read as UTF-8.
  * Throws on failure instead of returning empty string.
  */
 export async function extractTextFromBlobUrl(
@@ -93,6 +102,16 @@ export async function extractTextFromBlobUrl(
       throw new Error(
         `Could not extract meaningful text from PDF "${filename}". ` +
         `The file may be image-based (scanned). Please upload a text-based PDF.`
+      )
+    }
+    return text
+  }
+
+  if (lower.endsWith('.docx') || lower.endsWith('.doc')) {
+    const text = await extractTextFromDocx(buffer)
+    if (!text || text.trim().length < 20) {
+      throw new Error(
+        `Could not extract meaningful text from Word document "${filename}". The file may be empty.`
       )
     }
     return text

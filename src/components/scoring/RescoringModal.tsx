@@ -151,7 +151,9 @@ export default function RescoringModal({
     fetch(`/api/dealroom/${companyPageId}`)
       .then(res => res.json())
       .then(data => {
-        const docs = (data.documents || []) as DealRoomDoc[]
+        // Only show non-private docs for scoring
+        const docs = ((data.documents || []) as (DealRoomDoc & { is_private?: boolean })[])
+          .filter(d => !d.is_private)
         setDocuments(docs)
         // Auto-select all documents by default
         setSelectedIds(new Set(docs.map(d => d.id)))

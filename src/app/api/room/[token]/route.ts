@@ -50,12 +50,13 @@ export async function GET(
       .eq('id', link.company_id)
       .single()
 
-    // Fetch public documents
+    // Fetch public documents (exclude private docs)
     const { data: docs } = await supabase
       .from('dealroom_documents')
       .select('id, file_name, file_url, file_size, file_type, category, description, created_at')
       .eq('company_id', link.company_id)
       .eq('is_public', true)
+      .eq('is_private', false)
       .order('created_at', { ascending: false })
 
     // Increment view count
@@ -118,12 +119,13 @@ export async function POST(
       return NextResponse.json({ error: 'Incorrect password' }, { status: 401 })
     }
 
-    // Fetch documents
+    // Fetch documents (exclude private docs)
     const { data: docs } = await supabase
       .from('dealroom_documents')
       .select('id, file_name, file_url, file_size, file_type, category, description, created_at')
       .eq('company_id', link.company_id)
       .eq('is_public', true)
+      .eq('is_private', false)
       .order('created_at', { ascending: false })
 
     return NextResponse.json({

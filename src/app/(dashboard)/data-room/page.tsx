@@ -92,6 +92,7 @@ export default function DataRoomPage() {
         canUpload={canUpload}
         canShare={true}
         currentUserId={userId}
+        isOwnerView={true}
         onRequestRescore={() => setShowRescore(true)}
       />
       <RescoringModal

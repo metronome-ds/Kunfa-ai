@@ -25,6 +25,7 @@ import {
   ShieldCheck,
   BarChart3,
   Briefcase,
+  FileSearch,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import KunfaLogo from '@/components/common/KunfaLogo';
@@ -132,6 +133,13 @@ const startupNavSections: Record<string, NavItem[]> = {
       label: 'Services',
       icon: <Briefcase className="h-5 w-5" />,
       href: '/services',
+    },
+  ],
+  TOOLS: [
+    {
+      label: 'Term Sheet Analyzer',
+      icon: <FileSearch className="h-5 w-5" />,
+      href: '/term-sheet-analyzer',
     },
   ],
 };
