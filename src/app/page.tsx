@@ -7,6 +7,7 @@ import HowItWorks from '@/components/landing/HowItWorks'
 import StartupSection from '@/components/landing/StartupSection'
 import InvestorSection from '@/components/landing/InvestorSection'
 import PricingSection from '@/components/landing/PricingSection'
+import ExpertServicesSection from '@/components/landing/ExpertServicesSection'
 import Footer from '@/components/landing/Footer'
 import ScoreModal from '@/components/scoring/ScoreModal'
 
@@ -24,6 +25,7 @@ export default function Home() {
       <StartupSection onApplyNow={openModal} />
       <InvestorSection />
       <PricingSection onApplyNow={openModal} />
+      <ExpertServicesSection />
       <Footer />
       <ScoreModal isOpen={isModalOpen} onClose={closeModal} />
     </main>

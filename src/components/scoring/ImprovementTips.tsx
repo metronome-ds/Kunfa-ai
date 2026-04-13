@@ -8,7 +8,7 @@
  */
 
 import Link from 'next/link'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, ArrowRight } from 'lucide-react'
 
 interface ImprovementTipsProps {
   dimensions: Record<string, unknown> | null | undefined
@@ -74,6 +74,18 @@ const TIPS: Record<string, { label: string; icon: string; tips: string[] }> = {
 
 const ORDER = ['team', 'market', 'product', 'traction', 'financial', 'fundraise_readiness'] as const
 
+// Threshold: 70% of 25 = 17.5 — below this, show upsell link
+const UPSELL_THRESHOLD = 17.5
+
+const DIMENSION_SERVICE_LABEL: Record<string, string> = {
+  team: 'team building',
+  market: 'market research',
+  product: 'product strategy',
+  traction: 'growth',
+  financial: 'financial modeling',
+  fundraise_readiness: 'fundraise readiness',
+}
+
 export default function ImprovementTips({ dimensions, onRescore }: ImprovementTipsProps) {
   if (!dimensions || typeof dimensions !== 'object') return null
 
@@ -127,6 +139,15 @@ export default function ImprovementTips({ dimensions, onRescore }: ImprovementTi
                   </li>
                 ))}
               </ul>
+              {score < UPSELL_THRESHOLD && (
+                <Link
+                  href="/services"
+                  className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-[#007CF8] hover:text-[#0066D6] transition-colors"
+                >
+                  Need help improving {DIMENSION_SERVICE_LABEL[key] || 'this'}?
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              )}
             </div>
           )
         })}

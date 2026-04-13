@@ -24,6 +24,7 @@ import {
   Bookmark,
   ShieldCheck,
   BarChart3,
+  Briefcase,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import KunfaLogo from '@/components/common/KunfaLogo';
@@ -124,6 +125,13 @@ const startupNavSections: Record<string, NavItem[]> = {
       label: 'Rewards Catalog',
       icon: <Gift className="h-5 w-5" />,
       href: '/rewards',
+    },
+  ],
+  GROW: [
+    {
+      label: 'Services',
+      icon: <Briefcase className="h-5 w-5" />,
+      href: '/services',
     },
   ],
 };
