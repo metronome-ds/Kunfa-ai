@@ -80,8 +80,6 @@ const investorNavSections: Record<string, NavItem[]> = {
       label: 'Communities',
       icon: <Users className="h-5 w-5" />,
       href: '/communities',
-      requiredTier: 'create_community',
-      tierBadge: 'FUND',
     },
   ],
 };

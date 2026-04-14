@@ -154,6 +154,9 @@ function SignupContent() {
   const [promoCode, setPromoCode] = useState('')
   const [showPromoField, setShowPromoField] = useState(false)
 
+  // Community invite state
+  const [communitySlug, setCommunitySlug] = useState<string | null>(null)
+
   // OTP state
   const [signupEmail, setSignupEmail] = useState('')
   const [otpCode, setOtpCode] = useState('')
@@ -186,6 +189,11 @@ function SignupContent() {
     if (promo) {
       setPromoCode(promo.toUpperCase())
       setShowPromoField(true)
+    }
+
+    const community = searchParams.get('community')
+    if (community) {
+      setCommunitySlug(community)
     }
 
     const invite = searchParams.get('invite')
@@ -346,6 +354,27 @@ function SignupContent() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code: promoCode.trim() }),
         }).catch(() => {})
+      }
+
+      // Activate community membership if signing up via community invite
+      if (communitySlug) {
+        try {
+          const cmRes = await fetch('/api/communities/join-on-signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ communitySlug }),
+          })
+          if (cmRes.ok) {
+            // Fire welcome email (fire-and-forget)
+            fetch('/api/auth/welcome', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ role: result.role || signupRole || 'investor' }),
+            }).catch(() => {})
+            window.location.href = `/communities/${communitySlug}`
+            return
+          }
+        } catch { /* fall through to normal redirect */ }
       }
 
       // Fire welcome email (fire-and-forget)
