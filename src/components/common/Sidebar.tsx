@@ -14,7 +14,6 @@ import {
   Users,
   Building2,
   FolderOpen,
-  Handshake,
   Gift,
   Star,
   Upload,
@@ -26,15 +25,21 @@ import {
   BarChart3,
   Briefcase,
   FileSearch,
+  PieChart,
+  Calculator,
+  Tag,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import KunfaLogo from '@/components/common/KunfaLogo';
 import { isSuperAdmin } from '@/lib/super-admins';
+import { canAccessFeature } from '@/lib/subscription';
 
 interface NavItem {
   label: string;
   icon: React.ReactNode;
   href?: string;
+  requiredTier?: string;
+  tierBadge?: string;
 }
 
 // Investor navigation — clean and focused
@@ -68,6 +73,15 @@ const investorNavSections: Record<string, NavItem[]> = {
       label: 'Saved Deals',
       icon: <Bookmark className="h-5 w-5" />,
       href: '/saved-deals',
+    },
+  ],
+  COMMUNITIES: [
+    {
+      label: 'Communities',
+      icon: <Users className="h-5 w-5" />,
+      href: '/communities',
+      requiredTier: 'create_community',
+      tierBadge: 'FUND',
     },
   ],
 };
@@ -141,6 +155,20 @@ const startupNavSections: Record<string, NavItem[]> = {
       icon: <FileSearch className="h-5 w-5" />,
       href: '/term-sheet-analyzer',
     },
+    {
+      label: 'Cap Table',
+      icon: <PieChart className="h-5 w-5" />,
+      href: '/cap-table',
+      requiredTier: 'cap_table',
+      tierBadge: 'GROWTH',
+    },
+    {
+      label: 'Valuation Calculator',
+      icon: <Calculator className="h-5 w-5" />,
+      href: '/valuation-calculator',
+      requiredTier: 'valuation_calculator',
+      tierBadge: 'GROWTH',
+    },
   ],
 };
 
@@ -157,14 +185,23 @@ const startupBottomSections: NavItem[] = [
   },
 ];
 
+function TierBadge({ text }: { text: string }) {
+  return (
+    <span className="bg-[#007CF8] text-white text-[10px] rounded px-1.5 py-0.5 font-medium leading-none">
+      {text}
+    </span>
+  );
+}
+
 interface SidebarSectionProps {
   title: string;
   items: NavItem[];
   pathname: string;
   collapsed: boolean;
+  userTier: string;
 }
 
-function SidebarSection({ title, items, pathname, collapsed }: SidebarSectionProps) {
+function SidebarSection({ title, items, pathname, collapsed, userTier }: SidebarSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   if (collapsed) {
@@ -210,6 +247,7 @@ function SidebarSection({ title, items, pathname, collapsed }: SidebarSectionPro
             const isActive =
               pathname === item.href ||
               (item.href !== '/' && pathname.startsWith(item.href + '/'));
+            const showBadge = item.requiredTier && !canAccessFeature(userTier, item.requiredTier);
             return (
               <Link
                 key={item.label}
@@ -221,7 +259,8 @@ function SidebarSection({ title, items, pathname, collapsed }: SidebarSectionPro
                 }`}
               >
                 {item.icon}
-                <span className="text-sm">{item.label}</span>
+                <span className="text-sm flex-1">{item.label}</span>
+                {showBadge && item.tierBadge && <TierBadge text={item.tierBadge} />}
               </Link>
             );
           })}
@@ -239,12 +278,13 @@ interface SidebarProps {
 export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userTier, setUserTier] = useState('free');
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUserRole = async () => {
+    const loadUserData = async () => {
       try {
         const {
           data: { user },
@@ -260,16 +300,27 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           setUserRole(profile?.role || 'investor');
           setIsAdmin(profile?.is_admin === true);
           setIsSuperAdminUser(isSuperAdmin(user.email));
+
+          // Fetch tier
+          try {
+            const tierRes = await fetch('/api/subscription');
+            if (tierRes.ok) {
+              const tierData = await tierRes.json();
+              setUserTier(tierData.tier || 'free');
+            }
+          } catch {
+            // Default to free
+          }
         }
       } catch (err) {
-        console.error('Error loading user role:', err);
+        console.error('Error loading user data:', err);
         setUserRole('investor');
       } finally {
         setLoading(false);
       }
     };
 
-    loadUserRole();
+    loadUserData();
   }, []);
 
   const handleLogout = async () => {
@@ -308,7 +359,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           </div>
         ) : (
           Object.entries(navigationSections).map(([title, items]) => (
-            <SidebarSection key={title} title={title} items={items} pathname={pathname} collapsed={collapsed} />
+            <SidebarSection key={title} title={title} items={items} pathname={pathname} collapsed={collapsed} userTier={userTier} />
           ))
         )}
       </div>
@@ -355,6 +406,18 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               >
                 <Upload className="h-5 w-5" />
                 {!collapsed && <span className="text-sm">Imports</span>}
+              </Link>
+              <Link
+                href="/admin/promo-codes"
+                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
+                  pathname === '/admin/promo-codes'
+                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
+                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
+                }`}
+                title={collapsed ? 'Promo Codes' : undefined}
+              >
+                <Tag className="h-5 w-5" />
+                {!collapsed && <span className="text-sm">Promo Codes</span>}
               </Link>
             </>
           )}

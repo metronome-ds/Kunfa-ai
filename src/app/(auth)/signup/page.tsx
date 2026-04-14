@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Building2, TrendingUp, RefreshCw, Users } from 'lucide-react'
+import { Building2, TrendingUp, RefreshCw, Users, Tag, ChevronDown } from 'lucide-react'
 import KunfaLogo from '@/components/common/KunfaLogo'
 
 type SignupStep = 'form' | 'otp'
@@ -150,6 +150,10 @@ function SignupContent() {
   const [claimToken, setClaimToken] = useState<string | null>(null)
   const [claimCompanyName, setClaimCompanyName] = useState<string | null>(null)
 
+  // Promo code state
+  const [promoCode, setPromoCode] = useState('')
+  const [showPromoField, setShowPromoField] = useState(false)
+
   // OTP state
   const [signupEmail, setSignupEmail] = useState('')
   const [otpCode, setOtpCode] = useState('')
@@ -176,6 +180,12 @@ function SignupContent() {
           }
         })
         .catch(() => {})
+    }
+
+    const promo = searchParams.get('promo')
+    if (promo) {
+      setPromoCode(promo.toUpperCase())
+      setShowPromoField(true)
     }
 
     const invite = searchParams.get('invite')
@@ -328,6 +338,15 @@ function SignupContent() {
       }
 
       const result = await res.json()
+
+      // Redeem promo code if provided (fire-and-forget, silently ignore errors)
+      if (promoCode.trim()) {
+        fetch('/api/subscription/redeem-promo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: promoCode.trim() }),
+        }).catch(() => {})
+      }
 
       // Fire welcome email (fire-and-forget)
       fetch('/api/auth/welcome', {
@@ -629,6 +648,28 @@ function SignupContent() {
                 <Link href="/privacy" target="_blank" className="text-[#007CF8] hover:underline">Privacy Policy</Link>
               </span>
             </label>
+
+            {/* Promo code — collapsible */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowPromoField(!showPromoField)}
+                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition"
+              >
+                <Tag className="w-3.5 h-3.5" />
+                Have a promo code?
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showPromoField ? 'rotate-180' : ''}`} />
+              </button>
+              {showPromoField && (
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                  className="mt-2 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] uppercase tracking-wider"
+                  placeholder="PROMO CODE"
+                />
+              )}
+            </div>
 
             {error && (
               <div className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg p-3">{error}</div>
