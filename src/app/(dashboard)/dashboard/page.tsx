@@ -29,6 +29,8 @@ import ScoreModal from '@/components/scoring/ScoreModal';
 import ScoreBreakdown from '@/components/scoring/ScoreBreakdown';
 import ImprovementTips from '@/components/scoring/ImprovementTips';
 import DealRoomActivityCard from '@/components/dashboard/DealRoomActivityCard';
+import WwipDashboard from '@/components/dashboard/WwipDashboard';
+import { useTenant } from '@/components/TenantProvider';
 
 interface UserProfile {
   id: string;
@@ -197,6 +199,7 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
+  const { isTenantContext, isLoading: tenantLoading } = useTenant();
   const searchParams = useSearchParams();
   const paidParam = searchParams.get('paid') === 'true';
   const claimedParam = searchParams.get('claimed') === 'true';
@@ -388,7 +391,7 @@ function DashboardContent() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || tenantLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
@@ -397,6 +400,11 @@ function DashboardContent() {
         </div>
       </div>
     );
+  }
+
+  // ─── TENANT (WWIP) DASHBOARD ───────────────────────────
+  if (isTenantContext) {
+    return <WwipDashboard />;
   }
 
   // ─── STARTUP DASHBOARD ───────────────────────────────────
