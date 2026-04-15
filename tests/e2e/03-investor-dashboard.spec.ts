@@ -17,17 +17,16 @@ test.describe('Investor Dashboard', () => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    await expect(page.getByRole('link', { name: /Browse Companies/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /Pipeline/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Browse Companies/i }).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: /Pipeline/i }).first()).toBeVisible();
   });
 
   test('sidebar does NOT have Services link', async ({ page }) => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    // Services is a startup-only section
-    const servicesLink = page.locator('nav >> text=Services, aside >> text=Services').first();
-    await expect(servicesLink).not.toBeVisible();
+    // Services is a startup-only section — should NOT appear for investors
+    await expect(page.getByRole('link', { name: /^Services$/i })).not.toBeVisible();
   });
 
   test('deals page loads', async ({ page }) => {

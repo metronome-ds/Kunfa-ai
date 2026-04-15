@@ -19,9 +19,8 @@ test.describe('Startup Dashboard', () => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    // Sidebar should be present
-    const sidebar = page.locator('nav, [class*="sidebar"], aside').first();
-    await expect(sidebar).toBeVisible();
+    // Sidebar should be present (uses div elements, detect via collapse button)
+    await expect(page.getByRole('button', { name: /Collapse sidebar/i })).toBeVisible();
 
     // Startup-specific links
     await expect(page.getByRole('link', { name: /Services/i })).toBeVisible();

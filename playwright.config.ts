@@ -4,6 +4,7 @@ export default defineConfig({
   testDir: './tests/e2e',
   timeout: 60000,
   retries: 1,
+  workers: 1,
   use: {
     baseURL: 'https://www.kunfa.ai',
     screenshot: 'only-on-failure',
