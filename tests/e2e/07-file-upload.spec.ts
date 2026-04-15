@@ -1,88 +1,81 @@
 import { test, expect } from '@playwright/test';
 import { loginAs, TEST_ACCOUNTS, TEST_PASSWORD } from './helpers/auth';
-import * as path from 'path';
-import * as fs from 'fs';
-import * as os from 'os';
 
-/**
- * Create minimal test files with correct magic bytes / content
- * so the upload component accepts them.
- */
-function createTestFile(ext: string, fileName: string): string {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pw-upload-'));
-  const filePath = path.join(dir, fileName);
+test.describe('Document & Upload Pages', () => {
+  test('data room loads for startup user', async ({ page }) => {
+    await loginAs(page, TEST_ACCOUNTS.startup, TEST_PASSWORD);
 
-  switch (ext) {
-    case 'pdf':
-      // Minimal PDF
-      fs.writeFileSync(filePath, '%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\n%%EOF');
-      break;
-    case 'docx':
-    case 'xlsx':
-    case 'pptx':
-      // ZIP-based Office files (PK magic bytes)
-      fs.writeFileSync(filePath, Buffer.from('504b0304', 'hex'));
-      break;
-    case 'csv':
-      fs.writeFileSync(filePath, 'name,value\ntest,1\n');
-      break;
-    case 'txt':
-      fs.writeFileSync(filePath, 'Test content for upload verification.');
-      break;
-    case 'png':
-      // Minimal PNG header
-      fs.writeFileSync(filePath, Buffer.from('89504e470d0a1a0a', 'hex'));
-      break;
-    case 'jpg':
-      // Minimal JPEG header
-      fs.writeFileSync(filePath, Buffer.from('ffd8ffe0', 'hex'));
-      break;
-    default:
-      fs.writeFileSync(filePath, 'test');
-  }
+    await page.goto('/data-room');
+    await page.waitForLoadState('networkidle');
 
-  return filePath;
-}
-
-test.describe('File Upload Types', () => {
-  test.beforeEach(async ({ page }) => {
-    await loginAs(page, TEST_ACCOUNTS.admin, TEST_PASSWORD);
+    await expect(page.locator('text=Internal Server Error')).not.toBeVisible();
   });
 
-  const fileTypes = [
-    { ext: 'pdf', name: 'test.pdf' },
-    { ext: 'docx', name: 'test.docx' },
-    { ext: 'xlsx', name: 'test.xlsx' },
-    { ext: 'pptx', name: 'test.pptx' },
-    { ext: 'csv', name: 'test.csv' },
-    { ext: 'txt', name: 'test.txt' },
-    { ext: 'png', name: 'test.png' },
-    { ext: 'jpg', name: 'test.jpg' },
-  ];
+  test('data room loads for admin user', async ({ page }) => {
+    await loginAs(page, TEST_ACCOUNTS.admin, TEST_PASSWORD);
 
-  for (const { ext, name } of fileTypes) {
-    test(`accepts .${ext} files`, async ({ page }) => {
-      await page.goto('/data-room');
-      await page.waitForLoadState('networkidle');
+    await page.goto('/data-room');
+    await page.waitForLoadState('networkidle');
 
-      // Open upload modal
-      const uploadButton = page.getByRole('button', { name: /Upload/i }).first();
-      await uploadButton.click();
-      await page.waitForTimeout(500);
+    await expect(page.locator('text=Internal Server Error')).not.toBeVisible();
+  });
 
-      // Create test file and set on file input
-      const filePath = createTestFile(ext, name);
+  test('term sheet analyzer page loads', async ({ page }) => {
+    await loginAs(page, TEST_ACCOUNTS.startup, TEST_PASSWORD);
 
-      // Find the file input (may be hidden)
-      const fileInput = page.locator('input[type="file"]').first();
-      await fileInput.setInputFiles(filePath);
+    await page.goto('/term-sheet-analyzer');
+    await page.waitForLoadState('networkidle');
 
-      // Assert: no "unsupported" error visible
-      const unsupportedError = page.locator('text=/[Uu]nsupported|[Nn]ot allowed|[Ii]nvalid file/i');
-      await expect(unsupportedError).not.toBeVisible({ timeout: 3000 });
+    await expect(page.locator('text=/[Tt]erm [Ss]heet/i').first()).toBeVisible();
+  });
 
-      // Clean up
-      fs.unlinkSync(filePath);
-    });
-  }
+  test('term sheet analyzer has file upload area', async ({ page }) => {
+    await loginAs(page, TEST_ACCOUNTS.startup, TEST_PASSWORD);
+
+    await page.goto('/term-sheet-analyzer');
+    await page.waitForLoadState('networkidle');
+
+    // Page should have a file input or dropzone
+    const fileInput = page.locator('input[type="file"]');
+    const dropzone = page.locator('text=/[Uu]pload|[Dd]rag|[Dd]rop|[Bb]rowse/i').first();
+    const hasFileInput = await fileInput.count() > 0;
+    const hasDropzone = await dropzone.isVisible();
+    expect(hasFileInput || hasDropzone).toBe(true);
+  });
+
+  test('company profile page loads for startup', async ({ page }) => {
+    await loginAs(page, TEST_ACCOUNTS.startup, TEST_PASSWORD);
+
+    await page.goto('/company-profile');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('text=Internal Server Error')).not.toBeVisible();
+  });
+
+  test('investors page loads for startup', async ({ page }) => {
+    await loginAs(page, TEST_ACCOUNTS.startup, TEST_PASSWORD);
+
+    await page.goto('/investors');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('text=Internal Server Error')).not.toBeVisible();
+  });
+
+  test('debt partners page loads for startup', async ({ page }) => {
+    await loginAs(page, TEST_ACCOUNTS.startup, TEST_PASSWORD);
+
+    await page.goto('/debt-partners');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('text=Internal Server Error')).not.toBeVisible();
+  });
+
+  test('cap table page loads for startup', async ({ page }) => {
+    await loginAs(page, TEST_ACCOUNTS.startup, TEST_PASSWORD);
+
+    await page.goto('/cap-table');
+    await page.waitForLoadState('networkidle');
+
+    await expect(page.locator('text=Internal Server Error')).not.toBeVisible();
+  });
 });

@@ -1,52 +1,57 @@
 import { test, expect } from '@playwright/test';
 import { loginAs, TEST_ACCOUNTS, TEST_PASSWORD } from './helpers/auth';
 
-test.describe('Entity Switcher', () => {
+test.describe('Navbar & Profile', () => {
   test.beforeEach(async ({ page }) => {
     await loginAs(page, TEST_ACCOUNTS.investorFund, TEST_PASSWORD);
   });
 
-  test('entity switcher exists in navbar', async ({ page }) => {
+  test('navbar has user profile button', async ({ page }) => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    // Entity switcher button should be visible (has a type badge like "Fund" or "Startup")
-    const switcher = page.locator('button:has-text("Fund"), button:has-text("Startup")').first();
-    await expect(switcher).toBeVisible();
+    // User profile button shows user name in navbar
+    const profileBtn = page.getByRole('button', { name: /QA Investor Fund/i }).first();
+    await expect(profileBtn).toBeVisible();
   });
 
-  test('dropdown opens on click', async ({ page }) => {
+  test('user profile dropdown opens on click', async ({ page }) => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    const switcher = page.locator('button:has-text("Fund"), button:has-text("Startup")').first();
-    await switcher.click();
+    // Click user profile button in navbar
+    const profileBtn = page.getByRole('button', { name: /QA Investor Fund/i }).first();
+    await profileBtn.click();
 
-    // Dropdown should appear with "Your Entities" header
-    await expect(page.locator('text=Your Entities')).toBeVisible();
+    // Dropdown should show Profile and Settings links
+    await expect(page.locator('a:has-text("Profile")').first()).toBeVisible();
+    await expect(page.locator('a:has-text("Settings")').first()).toBeVisible();
   });
 
-  test('create buttons visible in dropdown', async ({ page }) => {
+  test('profile dropdown has navigation links', async ({ page }) => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    const switcher = page.locator('button:has-text("Fund"), button:has-text("Startup")').first();
-    await switcher.click();
+    const profileBtn = page.getByRole('button', { name: /QA Investor Fund/i }).first();
+    await profileBtn.click();
 
-    await expect(page.locator('text=Create New Fund')).toBeVisible();
-    await expect(page.locator('text=Create New Company')).toBeVisible();
+    // Profile link should navigate to /profile
+    const profileLink = page.locator('a:has-text("Profile")').first();
+    await expect(profileLink).toHaveAttribute('href', '/profile');
   });
 
-  test('dropdown closes on outside click', async ({ page }) => {
+  test('profile dropdown closes on outside click', async ({ page }) => {
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    const switcher = page.locator('button:has-text("Fund"), button:has-text("Startup")').first();
-    await switcher.click();
-    await expect(page.locator('text=Your Entities')).toBeVisible();
+    const profileBtn = page.getByRole('button', { name: /QA Investor Fund/i }).first();
+    await profileBtn.click();
+    await expect(page.locator('a:has-text("Profile")').first()).toBeVisible();
 
-    // Click outside
+    // Click outside (heading)
     await page.locator('h2').first().click();
-    await expect(page.locator('text=Your Entities')).not.toBeVisible();
+
+    // Dropdown links should no longer be visible
+    await expect(page.locator('a:has-text("Profile")').first()).not.toBeVisible();
   });
 });

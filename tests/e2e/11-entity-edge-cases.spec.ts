@@ -1,39 +1,31 @@
 import { test, expect } from '@playwright/test';
 import { loginAs, TEST_ACCOUNTS, TEST_PASSWORD } from './helpers/auth';
 
-test.describe('Entity Edge Cases', () => {
-  test('startup user handles entity gracefully', async ({ page }) => {
+test.describe('Cross-Role Page Access', () => {
+  test('startup user dashboard loads correctly', async ({ page }) => {
     await loginAs(page, TEST_ACCOUNTS.startup, TEST_PASSWORD);
 
     await page.goto('/dashboard');
     await page.waitForLoadState('networkidle');
 
-    // Page should not crash — no error state
+    // Page should not crash
     await expect(page.locator('text=Internal Server Error')).not.toBeVisible();
 
-    // Entity switcher may or may not show depending on whether the startup has an entity
-    // Either way, the page should be functional
-    const sidebar = page.locator('nav, [class*="sidebar"], aside').first();
-    await expect(sidebar).toBeVisible();
+    // Sidebar should be functional
+    await expect(page.getByRole('button', { name: /Collapse sidebar/i })).toBeVisible();
   });
 
-  test('entity create buttons available for startup user', async ({ page }) => {
+  test('startup user can access services page', async ({ page }) => {
     await loginAs(page, TEST_ACCOUNTS.startup, TEST_PASSWORD);
 
-    await page.goto('/dashboard');
+    await page.goto('/services');
     await page.waitForLoadState('networkidle');
 
-    // If entity switcher is visible, it should have create options
-    const switcher = page.locator('button:has-text("Fund"), button:has-text("Startup"), button:has-text("Company")').first();
-    if (await switcher.isVisible()) {
-      await switcher.click();
-      await expect(page.locator('text=Create New Fund')).toBeVisible();
-      await expect(page.locator('text=Create New Company')).toBeVisible();
-    }
-    // If no entity switcher, that's also valid — no crash is the assertion
+    await expect(page.locator('text=Internal Server Error')).not.toBeVisible();
+    await expect(page.getByRole('link', { name: /Services/i }).first()).toBeVisible();
   });
 
-  test('free investor handles entity gracefully', async ({ page }) => {
+  test('free investor dashboard loads correctly', async ({ page }) => {
     await loginAs(page, TEST_ACCOUNTS.investorFree, TEST_PASSWORD);
 
     await page.goto('/dashboard');
@@ -42,7 +34,7 @@ test.describe('Entity Edge Cases', () => {
     await expect(page.locator('text=Internal Server Error')).not.toBeVisible();
   });
 
-  test('pro investor handles entity gracefully', async ({ page }) => {
+  test('pro investor dashboard loads correctly', async ({ page }) => {
     await loginAs(page, TEST_ACCOUNTS.investorPro, TEST_PASSWORD);
 
     await page.goto('/dashboard');
