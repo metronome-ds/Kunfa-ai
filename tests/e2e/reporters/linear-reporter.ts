@@ -28,6 +28,7 @@ const TICKET_MAP: Record<string, string> = {
   '12-subscription-promo.spec.ts': 'KUN-118',
   '13-communities.spec.ts': 'KUN-115',
   '14-admin-panel.spec.ts': 'KUN-115',
+  '15-tenant-wwip.spec.ts': 'KUN-30',
 };
 
 interface TestFileResult {
