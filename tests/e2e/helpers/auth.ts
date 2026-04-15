@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const SUPABASE_URL = 'https://akvjxobgnbbljmtvrlhk.supabase.co';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://akvjxobgnbbljmtvrlhk.supabase.co';
 const STORAGE_KEY = 'sb-akvjxobgnbbljmtvrlhk-auth-token';
 
 function getAnonKey(): string {
@@ -11,15 +11,29 @@ function getAnonKey(): string {
     return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   }
 
-  // Fall back to .env.local
-  const envPath = path.resolve(__dirname, '../../../.env.local');
-  if (fs.existsSync(envPath)) {
-    const content = fs.readFileSync(envPath, 'utf-8');
-    const match = content.match(/NEXT_PUBLIC_SUPABASE_ANON_KEY=(.+)/);
-    if (match) return match[1].trim();
+  // Fall back to .env.local / .env files in the repo root
+  // Use process.cwd() (Playwright runs from repo root) with __dirname as backup
+  const roots = [process.cwd(), path.resolve(__dirname, '../../..')];
+  const envFiles = ['.env.local', '.env'];
+
+  for (const root of roots) {
+    for (const file of envFiles) {
+      try {
+        const envPath = path.join(root, file);
+        if (fs.existsSync(envPath)) {
+          const content = fs.readFileSync(envPath, 'utf-8');
+          const match = content.match(/NEXT_PUBLIC_SUPABASE_ANON_KEY=(.+)/);
+          if (match) return match[1].trim();
+        }
+      } catch {
+        // Silently continue to next fallback
+      }
+    }
   }
 
-  throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY not found in env or .env.local');
+  throw new Error(
+    'NEXT_PUBLIC_SUPABASE_ANON_KEY not found. Set it as an environment variable or in .env.local',
+  );
 }
 
 /**
