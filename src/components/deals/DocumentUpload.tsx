@@ -26,6 +26,12 @@ const ACCEPTED_TYPES = [
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv',
+  'text/plain',
+  'image/png',
+  'image/jpeg',
 ];
 
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB — aligned with AI scoring pipeline ceiling
@@ -44,7 +50,7 @@ export function DocumentUpload({
 
   const validateFile = (file: File): string | null => {
     if (!acceptedTypes.includes(file.type)) {
-      return 'Please upload a PDF, PowerPoint, or Word file. Other file types are not supported.';
+      return 'Please upload a PDF, PowerPoint, Word, Excel, CSV, TXT, or image file. Other file types are not supported.';
     }
 
     if (file.size > maxSize) {

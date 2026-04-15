@@ -8,7 +8,7 @@ import ShareDealRoom from './ShareDealRoom'
 import UploadErrorBanner from '@/components/common/UploadErrorBanner'
 
 const DEAL_ROOM_MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB
-const DEAL_ROOM_ACCEPTED_EXTENSIONS = ['.pdf', '.ppt', '.pptx', '.key', '.xlsx', '.xls', '.csv', '.doc', '.docx'] as const
+const DEAL_ROOM_ACCEPTED_EXTENSIONS = ['.pdf', '.ppt', '.pptx', '.key', '.xlsx', '.xls', '.csv', '.doc', '.docx', '.txt', '.png', '.jpg', '.jpeg'] as const
 const DEAL_ROOM_ACCEPT_ATTR = DEAL_ROOM_ACCEPTED_EXTENSIONS.join(',')
 
 type DealRoomUploadErrorKind = 'size' | 'type' | 'network' | 'generic'
@@ -23,7 +23,7 @@ function validateDealRoomFile(file: File): DealRoomUploadError | null {
   if (!extOk) {
     return {
       kind: 'type',
-      message: 'Please upload a PDF, PowerPoint, Word, Excel, or CSV file. Other file types are not supported.',
+      message: 'Please upload a PDF, PowerPoint, Word, Excel, CSV, TXT, or image file. Other file types are not supported.',
     }
   }
   if (file.size > DEAL_ROOM_MAX_FILE_SIZE) {
