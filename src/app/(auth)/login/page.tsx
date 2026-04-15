@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import KunfaLogo from '@/components/common/KunfaLogo'
 import { RefreshCw } from 'lucide-react'
+import { useTenantBranding } from '@/lib/use-tenant-branding'
 
 export default function LoginPage() {
   return (
@@ -21,6 +22,7 @@ export default function LoginPage() {
 
 function LoginContent() {
   const searchParams = useSearchParams()
+  const { tenant, isTenantContext } = useTenantBranding()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -194,15 +196,23 @@ function LoginContent() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <KunfaLogo height={32} />
+            {isTenantContext && tenant?.logo_url ? (
+              <img src={tenant.logo_url} alt={tenant.display_name || tenant.name} className="h-8 mx-auto" />
+            ) : (
+              <KunfaLogo height={32} />
+            )}
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isTenantContext ? `Welcome to ${tenant?.display_name || tenant?.name}` : 'Welcome back'}
+          </h1>
           <p className="text-gray-500 mt-2">
-            {inviteId
-              ? 'Sign in to accept your team invitation'
-              : claimToken
-                ? 'Sign in to claim your company profile'
-                : 'Sign in to your account'}
+            {isTenantContext && tenant?.tagline
+              ? tenant.tagline
+              : inviteId
+                ? 'Sign in to accept your team invitation'
+                : claimToken
+                  ? 'Sign in to claim your company profile'
+                  : 'Sign in to your account'}
           </p>
         </div>
 
@@ -344,15 +354,28 @@ function LoginContent() {
                 </button>
               </form>
 
-              <p className="text-center text-gray-500 text-sm mt-6">
-                Don&apos;t have an account?{' '}
-                <Link href="/signup" className="text-[#007CF8] font-medium hover:underline">
-                  Create one
-                </Link>
-              </p>
+              {/* Hide signup link for invitation-only tenants */}
+              {!(isTenantContext && tenant?.signup_mode === 'invitation_only') && (
+                <p className="text-center text-gray-500 text-sm mt-6">
+                  Don&apos;t have an account?{' '}
+                  <Link href="/signup" className="text-[#007CF8] font-medium hover:underline">
+                    Create one
+                  </Link>
+                </p>
+              )}
             </>
           )}
         </div>
+
+        {/* Powered by Kunfa */}
+        {isTenantContext && tenant?.show_powered_by && (
+          <p className="text-center text-gray-400 text-xs mt-6">
+            Powered by{' '}
+            <a href="https://kunfa.ai" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-700 font-medium">
+              Kunfa
+            </a>
+          </p>
+        )}
       </div>
     </div>
   )

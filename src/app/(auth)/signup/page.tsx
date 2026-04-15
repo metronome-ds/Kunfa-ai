@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { Building2, TrendingUp, RefreshCw, Users, Tag, ChevronDown } from 'lucide-react'
 import KunfaLogo from '@/components/common/KunfaLogo'
+import { useTenantBranding } from '@/lib/use-tenant-branding'
 
 type SignupStep = 'form' | 'otp'
 
@@ -124,6 +125,7 @@ function OtpInput({
 
 function SignupContent() {
   const searchParams = useSearchParams()
+  const { tenant, isTenantContext } = useTenantBranding()
 
   // Step state
   const [step, setStep] = useState<SignupStep>('form')
@@ -439,7 +441,11 @@ function SignupContent() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block mb-6">
-              <KunfaLogo height={32} />
+              {isTenantContext && tenant?.logo_url ? (
+                <img src={tenant.logo_url} alt={tenant.display_name || tenant.name} className="h-8 mx-auto" />
+              ) : (
+                <KunfaLogo height={32} />
+              )}
             </Link>
           </div>
 
@@ -531,7 +537,11 @@ function SignupContent() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <KunfaLogo height={32} />
+            {isTenantContext && tenant?.logo_url ? (
+              <img src={tenant.logo_url} alt={tenant.display_name || tenant.name} className="h-8 mx-auto" />
+            ) : (
+              <KunfaLogo height={32} />
+            )}
           </Link>
           {inviteHeading ? (
             <>
@@ -545,9 +555,15 @@ function SignupContent() {
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {isTenantContext ? `Join ${tenant?.display_name || tenant?.name}` : 'Create your account'}
+              </h1>
               <p className="text-gray-500 mt-2">
-                {claimCompanyName ? `Sign up to claim ${claimCompanyName}` : 'Get your startup scored by AI'}
+                {isTenantContext && tenant?.tagline
+                  ? tenant.tagline
+                  : claimCompanyName
+                    ? `Sign up to claim ${claimCompanyName}`
+                    : 'Get your startup scored by AI'}
               </p>
             </>
           )}
@@ -727,6 +743,16 @@ function SignupContent() {
             </Link>
           </p>
         </div>
+
+        {/* Powered by Kunfa */}
+        {isTenantContext && tenant?.show_powered_by && (
+          <p className="text-center text-gray-400 text-xs mt-6">
+            Powered by{' '}
+            <a href="https://kunfa.ai" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-700 font-medium">
+              Kunfa
+            </a>
+          </p>
+        )}
       </div>
     </div>
   )

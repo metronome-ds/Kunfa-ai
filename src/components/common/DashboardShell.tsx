@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Sidebar } from '@/components/common/Sidebar';
 import { Navbar } from '@/components/common/Navbar';
+import { TenantProvider } from '@/components/TenantProvider';
 
 const STORAGE_KEY = 'kunfa-sidebar-collapsed';
 
@@ -27,6 +28,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
+    <TenantProvider>
     <div className="flex h-screen bg-[#F8F9FB]">
       {/* Desktop sidebar */}
       <div className="hidden md:block">
@@ -66,5 +68,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     </div>
+    </TenantProvider>
   );
 }

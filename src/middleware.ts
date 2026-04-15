@@ -1,5 +1,83 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
+
+// ---------------------------------------------------------------------------
+// Lightweight tenant resolution for middleware (Edge Runtime compatible)
+// ---------------------------------------------------------------------------
+
+interface TenantHeader {
+  id: string;
+  slug: string;
+  name: string;
+}
+
+// Simple in-memory cache (per-instance, resets on cold start)
+const tenantCache = new Map<string, { data: TenantHeader | null; expiresAt: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
+
+async function lookupTenant(key: string, column: string, value: string): Promise<TenantHeader | null> {
+  const cacheKey = `${key}:${value}`;
+  const cached = tenantCache.get(cacheKey);
+  if (cached && Date.now() < cached.expiresAt) return cached.data;
+
+  try {
+    const db = getServiceClient();
+    const { data } = await db
+      .from("tenants")
+      .select("id, slug, name")
+      .eq(column, value)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    const result = data ? { id: data.id, slug: data.slug, name: data.name } : null;
+    tenantCache.set(cacheKey, { data: result, expiresAt: Date.now() + CACHE_TTL });
+    return result;
+  } catch {
+    return null;
+  }
+}
+
+async function resolveTenant(request: NextRequest): Promise<TenantHeader | null> {
+  // 1. Dev mode: ?tenant=slug override
+  const tenantParam = request.nextUrl.searchParams.get("tenant");
+  if (tenantParam) {
+    return lookupTenant("slug", "slug", tenantParam);
+  }
+
+  const host = request.headers.get("host")?.split(":")[0] || "";
+
+  // 2. Skip main platform domains
+  if (host === "kunfa.ai" || host === "www.kunfa.ai") return null;
+  if (host === "localhost" || host === "127.0.0.1") return null;
+
+  // 3. Subdomain of kunfa.ai (e.g., acme.kunfa.ai)
+  if (host.endsWith(".kunfa.ai")) {
+    const subdomain = host.replace(".kunfa.ai", "");
+    if (subdomain && subdomain !== "www") {
+      return lookupTenant("subdomain", "subdomain", subdomain);
+    }
+    return null;
+  }
+
+  // 4. Vercel preview deploys — no tenant
+  if (host.endsWith(".vercel.app")) return null;
+
+  // 5. Custom domain
+  return lookupTenant("domain", "custom_domain", host);
+}
+
+// ---------------------------------------------------------------------------
+// Main middleware
+// ---------------------------------------------------------------------------
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -64,6 +142,16 @@ export async function middleware(request: NextRequest) {
     pathname.includes(".")
   ) {
     return supabaseResponse;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Tenant resolution — inject headers for downstream consumption
+  // ---------------------------------------------------------------------------
+  const tenant = await resolveTenant(request);
+  if (tenant) {
+    supabaseResponse.headers.set("x-tenant-id", tenant.id);
+    supabaseResponse.headers.set("x-tenant-slug", tenant.slug);
+    supabaseResponse.headers.set("x-tenant-name", tenant.name);
   }
 
   // Protected routes

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Search, Bell, LogOut, Settings, User, ChevronDown, Check, CheckCheck, Plus, Building2, Landmark, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useTenant } from '@/components/TenantProvider';
 
 interface Notification {
   id: string;
@@ -30,6 +31,7 @@ interface NavbarProps {
 
 export function Navbar({ title = 'Dashboard' }: NavbarProps) {
   const router = useRouter();
+  const { tenant, isTenantContext } = useTenant();
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
@@ -316,7 +318,9 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
     <div className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-[#E5E7EB] z-40">
       <div className="h-full px-8 flex items-center justify-between">
         {/* Left: Title/Breadcrumb */}
-        <h2 className="text-xl font-bold text-[#111827]">{title}</h2>
+        <h2 className="text-xl font-bold text-[#111827]">
+          {isTenantContext && tenant ? (tenant.display_name || tenant.name) : title}
+        </h2>
 
         {/* Right: Actions */}
         <div className="flex items-center gap-4">

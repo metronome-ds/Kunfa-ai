@@ -33,6 +33,7 @@ import { supabase } from '@/lib/supabase';
 import KunfaLogo from '@/components/common/KunfaLogo';
 import { isSuperAdmin } from '@/lib/super-admins';
 import { canAccessFeature } from '@/lib/subscription';
+import { useTenant, useTenantFeature } from '@/components/TenantProvider';
 
 interface NavItem {
   label: string;
@@ -275,6 +276,7 @@ interface SidebarProps {
 
 export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const { tenant, isTenantContext } = useTenant();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userTier, setUserTier] = useState('free');
   const [isAdmin, setIsAdmin] = useState(false);
@@ -341,12 +343,24 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       <div className={`border-b border-[#E5E7EB] ${collapsed ? 'p-3 flex items-center justify-center' : 'p-6'}`}>
         <Link href="/dashboard" className="block hover:opacity-80 transition-opacity">
           {collapsed ? (
-            <span className="text-[#111827] font-bold text-lg">K</span>
+            isTenantContext && tenant?.logo_url ? (
+              <img src={tenant.logo_url} alt={tenant.display_name || tenant.name} className="h-6 w-6 object-contain" />
+            ) : (
+              <span className="text-[#111827] font-bold text-lg">K</span>
+            )
           ) : (
-            <KunfaLogo height={24} />
+            isTenantContext && tenant?.logo_url ? (
+              <img src={tenant.logo_url} alt={tenant.display_name || tenant.name} className="h-6 object-contain" />
+            ) : (
+              <KunfaLogo height={24} />
+            )
           )}
         </Link>
-        {!collapsed && <p className="text-xs text-[#9CA3AF] mt-2">{tagline}</p>}
+        {!collapsed && (
+          <p className="text-xs text-[#9CA3AF] mt-2">
+            {isTenantContext ? (tenant?.display_name || tenant?.name || tagline) : tagline}
+          </p>
+        )}
       </div>
 
       {/* Navigation */}
@@ -366,18 +380,32 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       <div className={`border-t border-[#E5E7EB] ${collapsed ? 'p-2' : 'p-3'} space-y-3`}>
         <div className="space-y-1">
           {isSuperAdminUser && (
-            <Link
-              href="/admin/analytics"
-              className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
-                pathname === '/admin/analytics'
-                  ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
-                  : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
-              }`}
-              title={collapsed ? 'Analytics' : undefined}
-            >
-              <BarChart3 className="h-5 w-5" />
-              {!collapsed && <span className="text-sm">Analytics</span>}
-            </Link>
+            <>
+              <Link
+                href="/admin/analytics"
+                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
+                  pathname === '/admin/analytics'
+                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
+                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
+                }`}
+                title={collapsed ? 'Analytics' : undefined}
+              >
+                <BarChart3 className="h-5 w-5" />
+                {!collapsed && <span className="text-sm">Analytics</span>}
+              </Link>
+              <Link
+                href="/admin/tenants"
+                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
+                  pathname.startsWith('/admin/tenants')
+                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
+                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
+                }`}
+                title={collapsed ? 'Tenants' : undefined}
+              >
+                <Building2 className="h-5 w-5" />
+                {!collapsed && <span className="text-sm">Tenants</span>}
+              </Link>
+            </>
           )}
           {isAdmin && (
             <>
