@@ -1,4 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getSupabase } from '@/lib/db';
+import { getTenantFromHeaders } from '@/lib/tenant-context';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -57,6 +59,19 @@ export async function GET(request: NextRequest) {
       // Non-auth or lookup failure — treat as non-admin
     }
 
+    // Tenant context: scope to tenant's entity_id
+    const tenantHeader = getTenantFromHeaders(request.headers);
+    let tenantEntityId: string | null = null;
+    if (tenantHeader) {
+      const db = getSupabase();
+      const { data: tenant } = await db
+        .from('tenants')
+        .select('entity_id')
+        .eq('id', tenantHeader.id)
+        .single();
+      tenantEntityId = tenant?.entity_id || null;
+    }
+
     let query = supabase
       .from('company_pages')
       .select(
@@ -65,8 +80,13 @@ export async function GET(request: NextRequest) {
       )
       .eq('is_public', true);
 
+    if (tenantEntityId) {
+      query = query.eq('entity_id', tenantEntityId);
+    }
+
     // KUN-21: Only show companies with Kunfa Score >= 75 to non-admins
-    if (!isAdmin) {
+    // Skip this gate in tenant context (tenant admins see all their companies)
+    if (!isAdmin && !tenantEntityId) {
       query = query.gte('overall_score', 75);
     }
 
