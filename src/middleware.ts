@@ -146,12 +146,29 @@ export async function middleware(request: NextRequest) {
 
   // ---------------------------------------------------------------------------
   // Tenant resolution — inject headers for downstream consumption
+  //
+  // Headers must be set on the REQUEST (not the response) so that downstream
+  // API routes can read them via `request.headers`. We rebuild the response
+  // with the mutated request headers, and also mirror them onto the response
+  // for client-side visibility if needed.
   // ---------------------------------------------------------------------------
   const tenant = await resolveTenant(request);
   if (tenant) {
-    supabaseResponse.headers.set("x-tenant-id", tenant.id);
-    supabaseResponse.headers.set("x-tenant-slug", tenant.slug);
-    supabaseResponse.headers.set("x-tenant-name", tenant.name);
+    request.headers.set("x-tenant-id", tenant.id);
+    request.headers.set("x-tenant-slug", tenant.slug);
+    request.headers.set("x-tenant-name", tenant.name);
+
+    // Rebuild the response so the mutated request headers are forwarded.
+    const newHeaders = new Headers(request.headers);
+    const rebuilt = NextResponse.next({ request: { headers: newHeaders } });
+    // Preserve cookies that Supabase may have set on the original response.
+    supabaseResponse.cookies.getAll().forEach((c) => {
+      rebuilt.cookies.set(c.name, c.value);
+    });
+    rebuilt.headers.set("x-tenant-id", tenant.id);
+    rebuilt.headers.set("x-tenant-slug", tenant.slug);
+    rebuilt.headers.set("x-tenant-name", tenant.name);
+    supabaseResponse = rebuilt;
   }
 
   // Protected routes

@@ -84,7 +84,10 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 
     async function loadTenant() {
       try {
-        const res = await fetch('/api/tenant');
+        const params = new URLSearchParams(window.location.search);
+        const tenantParam = params.get('tenant');
+        const url = tenantParam ? `/api/tenant?tenant=${encodeURIComponent(tenantParam)}` : '/api/tenant';
+        const res = await fetch(url);
         if (!res.ok) {
           // No tenant context — main platform
           setTenant(null);
