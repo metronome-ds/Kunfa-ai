@@ -28,12 +28,15 @@ import {
   PieChart,
   Calculator,
   Tag,
+  Rocket,
+  UserPlus,
+  Ticket,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import KunfaLogo from '@/components/common/KunfaLogo';
 import { isSuperAdmin } from '@/lib/super-admins';
 import { canAccessFeature } from '@/lib/subscription';
-import { useTenant, useTenantFeature } from '@/components/TenantProvider';
+import { useTenant } from '@/components/TenantProvider';
 
 interface NavItem {
   label: string;
@@ -281,6 +284,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const [userTier, setUserTier] = useState('free');
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
+  const [isTenantAdmin, setIsTenantAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -300,6 +304,16 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           setUserRole(profile?.role || 'investor');
           setIsAdmin(profile?.is_admin === true);
           setIsSuperAdminUser(isSuperAdmin(user.email));
+
+          if (isTenantContext && tenant?.id) {
+            try {
+              const res = await fetch('/api/tenant/admin-check');
+              if (res.ok) {
+                const d = await res.json();
+                setIsTenantAdmin(!!d.isAdmin);
+              }
+            } catch { /* ignore */ }
+          }
 
           // Fetch tier
           try {
@@ -321,7 +335,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     };
 
     loadUserData();
-  }, []);
+  }, [isTenantContext, tenant?.id]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -329,8 +343,54 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   };
 
   const isStartup = userRole === 'founder' || userRole === 'startup';
-  const navigationSections = isStartup ? startupNavSections : investorNavSections;
-  const bottomSections = isStartup ? startupBottomSections : investorBottomSections;
+
+  // Tenant nav mode: when in tenant context, show tenant-specific navigation
+  const tenantFeatures = tenant?.features || {};
+  const tenantNavSections: Record<string, NavItem[]> = isTenantContext
+    ? (() => {
+        const sections: Record<string, NavItem[]> = {
+          OVERVIEW: [
+            { label: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" />, href: '/dashboard' },
+          ],
+        };
+        const networkItems: NavItem[] = [];
+        if (tenantFeatures.deals_browse !== false)
+          networkItems.push({ label: 'Deals', icon: <Compass className="h-5 w-5" />, href: '/deals' });
+        if (tenantFeatures.startup_directory !== false)
+          networkItems.push({ label: 'Startups', icon: <Rocket className="h-5 w-5" />, href: '/startups' });
+        if (tenantFeatures.investor_directory !== false)
+          networkItems.push({ label: 'Investors', icon: <Users className="h-5 w-5" />, href: '/investors-directory' });
+        if (networkItems.length > 0) sections.NETWORK = networkItems;
+
+        if (isTenantAdmin) {
+          const manageItems: NavItem[] = [];
+          if (tenantFeatures.onboard_startup !== false)
+            manageItems.push({ label: 'Onboard Startup', icon: <PlusCircle className="h-5 w-5" />, href: '/admin/onboard-startup' });
+          if (tenantFeatures.onboard_investor !== false)
+            manageItems.push({ label: 'Onboard Investor', icon: <UserPlus className="h-5 w-5" />, href: '/admin/onboard-investor' });
+          if (tenantFeatures.invitation_codes !== false)
+            manageItems.push({ label: 'Invitations', icon: <Ticket className="h-5 w-5" />, href: '/admin/invitations' });
+          manageItems.push({ label: 'Analytics', icon: <BarChart3 className="h-5 w-5" />, href: '/admin/tenant-analytics' });
+          if (manageItems.length > 0) sections.MANAGE = manageItems;
+        }
+        return sections;
+      })()
+    : {};
+
+  const tenantBottomSections: NavItem[] = isTenantAdmin
+    ? [{ label: 'Settings', icon: <Settings className="h-5 w-5" />, href: '/settings/tenant' }]
+    : [];
+
+  const navigationSections = isTenantContext
+    ? tenantNavSections
+    : isStartup
+      ? startupNavSections
+      : investorNavSections;
+  const bottomSections = isTenantContext
+    ? tenantBottomSections
+    : isStartup
+      ? startupBottomSections
+      : investorBottomSections;
   const tagline = isStartup ? 'Startup Growth Platform' : 'Deal Flow Intelligence';
 
   return (
@@ -379,7 +439,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
       {/* Bottom */}
       <div className={`border-t border-[#E5E7EB] ${collapsed ? 'p-2' : 'p-3'} space-y-3`}>
         <div className="space-y-1">
-          {isSuperAdminUser && (
+          {isSuperAdminUser && !isTenantContext && (
             <>
               <Link
                 href="/admin/analytics"
@@ -407,7 +467,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               </Link>
             </>
           )}
-          {isAdmin && (
+          {isAdmin && !isTenantContext && (
             <>
               <Link
                 href="/admin/claims"
@@ -468,6 +528,12 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             );
           })}
         </div>
+
+        {isTenantContext && tenant?.show_powered_by && !collapsed && (
+          <div className="px-4 py-2 text-[10px] text-[#9CA3AF] text-center border-t border-[#F3F4F6]">
+            Powered by <span className="font-semibold text-[#4B5563]">Kunfa</span>
+          </div>
+        )}
 
         <button
           onClick={handleLogout}
