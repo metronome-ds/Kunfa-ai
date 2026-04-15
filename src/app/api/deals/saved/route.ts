@@ -1,9 +1,10 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getEntityContextByAuthId } from '@/lib/entity-context';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * GET /api/deals/saved
- * Get user's watchlisted companies (via watchlist_items)
+ * Get user's/entity's watchlisted companies (via watchlist_items)
  * Returns company_pages data joined for display
  */
 export async function GET(request: NextRequest) {
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Look up profile id (investor_id in watchlist_items is profiles.id, not auth.uid())
+    // Look up profile id
     const { data: profile } = await supabase
       .from('profiles')
       .select('id')
@@ -30,7 +31,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
     }
 
-    const { data: watchlistItems, error } = await supabase
+    // Resolve entity context for dual-read
+    const entityCtx = await getEntityContextByAuthId(user.id);
+
+    let watchlistQuery = supabase
       .from('watchlist_items')
       .select(`
         id,
@@ -50,8 +54,15 @@ export async function GET(request: NextRequest) {
           country
         )
       `)
-      .eq('investor_id', profile.id)
       .order('created_at', { ascending: false });
+
+    if (entityCtx.effectiveEntityId) {
+      watchlistQuery = watchlistQuery.eq('entity_id', entityCtx.effectiveEntityId);
+    } else {
+      watchlistQuery = watchlistQuery.eq('investor_id', profile.id);
+    }
+
+    const { data: watchlistItems, error } = await watchlistQuery;
 
     if (error) {
       console.error('Error fetching watchlist items:', error);

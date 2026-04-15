@@ -39,7 +39,7 @@ export async function GET(
         // Fetch company owner info
         const { data: company } = await supabase
           .from('company_pages')
-          .select('user_id, added_by')
+          .select('user_id, added_by, entity_id')
           .eq('id', companyId)
           .maybeSingle()
 
@@ -49,7 +49,27 @@ export async function GET(
             canViewRestricted = true
           }
 
-          // Check: team member of owner or adder
+          // Check: entity member (new path) — if company has entity_id, check entity membership
+          if (!canViewRestricted && company.entity_id) {
+            const { data: userProfile } = await supabase
+              .from('profiles')
+              .select('id')
+              .eq('user_id', user.id)
+              .maybeSingle()
+            if (userProfile) {
+              const { data: entityMembership } = await supabase
+                .from('entity_members')
+                .select('id')
+                .eq('entity_id', company.entity_id)
+                .eq('user_id', userProfile.id)
+                .eq('status', 'active')
+                .limit(1)
+                .maybeSingle()
+              if (entityMembership) canViewRestricted = true
+            }
+          }
+
+          // Check: team member of owner or adder (legacy path)
           if (!canViewRestricted) {
             const ownerIds = [company.user_id, company.added_by].filter(Boolean) as string[]
             if (ownerIds.length > 0) {

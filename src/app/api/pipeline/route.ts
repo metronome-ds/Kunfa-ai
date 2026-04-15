@@ -1,9 +1,11 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getEntityContextByAuthId } from '@/lib/entity-context';
 import { NextResponse } from 'next/server';
 
 /**
  * GET /api/pipeline
- * Returns investor's watchlist items AND deals, both joined with company_pages
+ * Returns investor's watchlist items AND deals, both joined with company_pages.
+ * Uses entity context (new) with fallback to user-scoped queries (legacy).
  */
 export async function GET() {
   try {
@@ -18,7 +20,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Look up profile id (investor_id in watchlist_items is profiles.id, not auth.uid())
+    // Look up profile id
     const { data: profile } = await supabase
       .from('profiles')
       .select('id')
@@ -27,8 +29,12 @@ export async function GET() {
 
     const profileId = profile?.id;
 
-    // Fetch watchlist items joined with company_pages
-    const { data: watchlistItems, error: wlError } = await supabase
+    // Resolve entity context for dual-read
+    const entityCtx = await getEntityContextByAuthId(user.id);
+    const entityId = entityCtx.effectiveEntityId;
+
+    // Fetch watchlist items: entity-scoped or user-scoped
+    let watchlistQuery = supabase
       .from('watchlist_items')
       .select(`
         id,
@@ -46,15 +52,22 @@ export async function GET() {
           raising_target_close
         )
       `)
-      .eq('investor_id', profileId || '')
       .order('created_at', { ascending: false });
+
+    if (entityId) {
+      watchlistQuery = watchlistQuery.eq('entity_id', entityId);
+    } else {
+      watchlistQuery = watchlistQuery.eq('investor_id', profileId || '');
+    }
+
+    const { data: watchlistItems, error: wlError } = await watchlistQuery;
 
     if (wlError) {
       console.error('Error fetching watchlist:', wlError);
     }
 
-    // Fetch deals joined with company_pages (include all management fields)
-    const { data: deals, error: dealsError } = await supabase
+    // Fetch deals: entity-scoped or user-scoped
+    let dealsQuery = supabase
       .from('deals')
       .select(`
         id,
@@ -96,8 +109,15 @@ export async function GET() {
           raising_target_close
         )
       `)
-      .eq('created_by', user.id)
       .order('created_at', { ascending: false });
+
+    if (entityId) {
+      dealsQuery = dealsQuery.eq('entity_id', entityId);
+    } else {
+      dealsQuery = dealsQuery.eq('created_by', user.id);
+    }
+
+    const { data: deals, error: dealsError } = await dealsQuery;
 
     if (dealsError) {
       console.error('Error fetching pipeline deals:', dealsError);

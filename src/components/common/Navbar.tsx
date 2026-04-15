@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Search, Bell, LogOut, Settings, User, ChevronDown, Check, CheckCheck } from 'lucide-react';
+import { Search, Bell, LogOut, Settings, User, ChevronDown, Check, CheckCheck, Plus, Building2, Landmark, X } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 interface Notification {
@@ -16,21 +16,12 @@ interface Notification {
   created_at: string;
 }
 
-interface TeamOption {
-  teamId: string;
-  ownerName: string;
-  companyName: string | null;
-  fundName: string | null;
-  role: string;
-  memberRole: string;
-}
-
-interface TeamContext {
-  activeTeamId: string | null;
-  companyName: string | null;
-  fundName: string | null;
-  effectiveRole: string;
-  isTeamMember: boolean;
+interface EntityOption {
+  id: string;
+  name: string;
+  type: string; // 'startup' | 'fund' | 'family_office' | 'angel' | 'lender'
+  logo_url: string | null;
+  memberRole: string; // 'owner' | 'admin' | 'member' | 'observer'
 }
 
 interface NavbarProps {
@@ -48,12 +39,18 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
   const notificationRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Team context state
-  const [teamContext, setTeamContext] = useState<TeamContext | null>(null);
-  const [availableTeams, setAvailableTeams] = useState<TeamOption[]>([]);
-  const [isTeamDropdownOpen, setIsTeamDropdownOpen] = useState(false);
+  // Entity context state
+  const [entities, setEntities] = useState<EntityOption[]>([]);
+  const [activeEntityId, setActiveEntityId] = useState<string | null>(null);
+  const [isEntityDropdownOpen, setIsEntityDropdownOpen] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
-  const teamDropdownRef = useRef<HTMLDivElement>(null);
+  const entityDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Create entity modal state
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [createEntityType, setCreateEntityType] = useState<'fund' | 'startup'>('fund');
+  const [createEntityName, setCreateEntityName] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -81,16 +78,29 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
 
         setNotificationCount(count || 0);
 
-        // Fetch team context
+        // Fetch entity context
         try {
-          const res = await fetch('/api/team-context');
+          const res = await fetch('/api/entities');
           if (res.ok) {
             const data = await res.json();
-            setTeamContext(data.context || null);
-            setAvailableTeams(data.availableTeams || []);
+            const entityList: EntityOption[] = (data.entities || []).map((e: any) => ({
+              id: e.id,
+              name: e.name,
+              type: e.type,
+              logo_url: e.logo_url,
+              memberRole: e.memberRole,
+            }));
+            setEntities(entityList);
+
+            // Determine active entity from profile
+            if (profile?.active_entity_id) {
+              setActiveEntityId(profile.active_entity_id);
+            } else if (entityList.length > 0) {
+              setActiveEntityId(entityList[0].id);
+            }
           }
         } catch {
-          // Ignore — team context is optional
+          // Ignore — entity context is optional
         }
       }
     };
@@ -107,8 +117,8 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
-      if (teamDropdownRef.current && !teamDropdownRef.current.contains(event.target as Node)) {
-        setIsTeamDropdownOpen(false);
+      if (entityDropdownRef.current && !entityDropdownRef.current.contains(event.target as Node)) {
+        setIsEntityDropdownOpen(false);
       }
     };
 
@@ -116,13 +126,14 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Close team dropdown on Escape
+  // Close dropdowns on Escape
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setIsTeamDropdownOpen(false);
+        setIsEntityDropdownOpen(false);
         setIsDropdownOpen(false);
         setIsNotificationsOpen(false);
+        setIsCreateModalOpen(false);
       }
     };
 
@@ -206,22 +217,49 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
     window.location.href = '/login';
   };
 
-  const handleSwitchTeam = useCallback(async (teamId: string | null) => {
+  const handleSwitchEntity = useCallback(async (entityId: string) => {
     setIsSwitching(true);
-    setIsTeamDropdownOpen(false);
+    setIsEntityDropdownOpen(false);
     try {
-      const res = await fetch('/api/team-context/switch', {
+      const res = await fetch(`/api/entities/${entityId}/switch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamId }),
       });
       if (res.ok) {
         window.location.href = '/dashboard';
+      } else {
+        setIsSwitching(false);
       }
     } catch {
       setIsSwitching(false);
     }
   }, []);
+
+  const handleCreateEntity = async () => {
+    if (!createEntityName.trim()) return;
+    setIsCreating(true);
+    try {
+      const res = await fetch('/api/entities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: createEntityName.trim(),
+          type: createEntityType,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setIsCreateModalOpen(false);
+        setCreateEntityName('');
+        // Switch to the new entity
+        await handleSwitchEntity(data.entity.id);
+      }
+    } catch {
+      // Error creating entity
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   const formatTimeAgo = (dateStr: string) => {
     const now = new Date();
@@ -256,32 +294,23 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
     }
   };
 
-  // Derive active team display name
-  const getActiveTeamDisplayName = (): string | null => {
-    if (!teamContext) return null;
-    return teamContext.companyName || teamContext.fundName || null;
-  };
-
-  const getTeamDisplayName = (team: TeamOption): string => {
-    return team.companyName || team.fundName || team.ownerName;
-  };
-
-  const isActiveTeam = (team: TeamOption): boolean => {
-    if (!teamContext) return false;
-    // If activeTeamId is null, the user is viewing their own data.
-    // The first team in availableTeams (memberRole === 'owner') is their own profile.
-    if (teamContext.activeTeamId === null) {
-      return team.memberRole === 'owner';
+  const getEntityTypeBadge = (type: string) => {
+    switch (type) {
+      case 'fund': return { label: 'Fund', className: 'bg-blue-100 text-blue-700' };
+      case 'startup': return { label: 'Startup', className: 'bg-purple-100 text-purple-700' };
+      case 'family_office': return { label: 'Family Office', className: 'bg-emerald-100 text-emerald-700' };
+      case 'angel': return { label: 'Angel', className: 'bg-amber-100 text-amber-700' };
+      case 'lender': return { label: 'Lender', className: 'bg-teal-100 text-teal-700' };
+      default: return { label: type, className: 'bg-gray-100 text-gray-700' };
     }
-    return team.teamId === teamContext.activeTeamId;
   };
 
-  const hasMultipleTeams = availableTeams.length > 1;
-  const activeTeamName = getActiveTeamDisplayName();
+  const activeEntity = entities.find(e => e.id === activeEntityId) || entities[0] || null;
+  const hasEntities = entities.length > 0;
   const userName = userProfile?.full_name || 'User';
 
   // What shows next to the user name
-  const contextLabel = activeTeamName || (userProfile?.role === 'investor' ? 'Investor' : userProfile?.role === 'startup' || userProfile?.role === 'founder' ? 'Startup' : userProfile?.role || '');
+  const contextLabel = activeEntity?.name || (userProfile?.role === 'investor' ? 'Investor' : userProfile?.role === 'startup' || userProfile?.role === 'founder' ? 'Startup' : userProfile?.role || '');
 
   return (
     <div className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-[#E5E7EB] z-40">
@@ -389,66 +418,93 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
             )}
           </div>
 
-          {/* Team Switcher (only if multiple teams) */}
-          {hasMultipleTeams && (
-            <div className="relative hidden sm:block" ref={teamDropdownRef}>
+          {/* Entity Switcher */}
+          {hasEntities && (
+            <div className="relative hidden sm:block" ref={entityDropdownRef}>
               <button
-                onClick={() => setIsTeamDropdownOpen(!isTeamDropdownOpen)}
+                onClick={() => setIsEntityDropdownOpen(!isEntityDropdownOpen)}
                 disabled={isSwitching}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E5E7EB] hover:bg-[#F8F9FB] transition-colors text-sm disabled:opacity-50"
               >
+                {activeEntity && (
+                  <span className={`flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded ${getEntityTypeBadge(activeEntity.type).className}`}>
+                    {getEntityTypeBadge(activeEntity.type).label}
+                  </span>
+                )}
                 <span className="font-medium text-[#4B5563] max-w-[140px] truncate">
-                  {activeTeamName || contextLabel}
+                  {activeEntity?.name || contextLabel}
                 </span>
-                <ChevronDown className={`h-3.5 w-3.5 text-[#9CA3AF] transition-transform ${isTeamDropdownOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-3.5 w-3.5 text-[#9CA3AF] transition-transform ${isEntityDropdownOpen ? 'rotate-180' : ''}`} />
               </button>
 
-              {isTeamDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white border border-[#E5E7EB] rounded-lg shadow-lg py-1 z-50 max-h-80 overflow-y-auto">
+              {isEntityDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-72 bg-white border border-[#E5E7EB] rounded-lg shadow-lg py-1 z-50 max-h-96 overflow-y-auto">
                   <div className="px-3 py-2 border-b border-[#E5E7EB]">
-                    <p className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider">Switch Workspace</p>
+                    <p className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider">Your Entities</p>
                   </div>
-                  {availableTeams.map((team) => {
-                    const active = isActiveTeam(team);
-                    const displayName = getTeamDisplayName(team);
-                    const isOwn = team.memberRole === 'owner';
+                  {entities.map((entity) => {
+                    const isActive = entity.id === activeEntityId;
+                    const badge = getEntityTypeBadge(entity.type);
                     return (
                       <button
-                        key={team.teamId}
+                        key={entity.id}
                         onClick={() => {
-                          if (active) {
-                            setIsTeamDropdownOpen(false);
+                          if (isActive) {
+                            setIsEntityDropdownOpen(false);
                             return;
                           }
-                          // For own profile: pass teamId (profile.id); the switch API handles it
-                          handleSwitchTeam(isOwn ? team.teamId : team.teamId);
+                          handleSwitchEntity(entity.id);
                         }}
                         className={`w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors ${
-                          active ? 'bg-[#F0F7FF]' : 'hover:bg-[#F8F9FB]'
+                          isActive ? 'bg-[#F0F7FF]' : 'hover:bg-[#F8F9FB]'
                         }`}
                       >
                         <div className="flex-1 min-w-0">
-                          <p className={`text-sm truncate ${active ? 'font-semibold text-[#111827]' : 'font-medium text-[#111827]'}`}>
-                            {isOwn ? `My ${team.role === 'investor' ? 'Fund' : 'Company'}` : displayName}
+                          <p className={`text-sm truncate ${isActive ? 'font-semibold text-[#111827]' : 'font-medium text-[#111827]'}`}>
+                            {entity.name}
                           </p>
-                          <p className="text-xs text-[#4B5563] truncate">
-                            {isOwn ? displayName : team.ownerName}
-                            {!isOwn && (
-                              <span className="ml-1.5 text-[#9CA3AF]">({team.memberRole})</span>
-                            )}
-                          </p>
+                          {entity.memberRole !== 'owner' && (
+                            <p className="text-xs text-[#9CA3AF]">{entity.memberRole}</p>
+                          )}
                         </div>
-                        <span className={`flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                          team.role === 'investor' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700'
-                        }`}>
-                          {team.role === 'investor' ? 'Investor' : 'Startup'}
+                        <span className={`flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded ${badge.className}`}>
+                          {badge.label}
                         </span>
-                        {active && (
+                        {isActive && (
                           <Check className="h-4 w-4 text-[#007CF8] flex-shrink-0" />
                         )}
                       </button>
                     );
                   })}
+                  {/* Create new entity options */}
+                  <div className="border-t border-[#E5E7EB] mt-1 pt-1">
+                    <button
+                      onClick={() => {
+                        setIsEntityDropdownOpen(false);
+                        setCreateEntityType('fund');
+                        setCreateEntityName('');
+                        setIsCreateModalOpen(true);
+                      }}
+                      className="w-full text-left px-3 py-2 flex items-center gap-2 text-sm text-[#4B5563] hover:bg-[#F8F9FB] transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <Landmark className="h-3.5 w-3.5" />
+                      Create New Fund
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEntityDropdownOpen(false);
+                        setCreateEntityType('startup');
+                        setCreateEntityName('');
+                        setIsCreateModalOpen(true);
+                      }}
+                      className="w-full text-left px-3 py-2 flex items-center gap-2 text-sm text-[#4B5563] hover:bg-[#F8F9FB] transition-colors"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <Building2 className="h-3.5 w-3.5" />
+                      Create New Company
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -476,7 +532,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                   {userName}
                 </p>
                 <p className="text-xs text-[#4B5563] leading-none mt-0.5">
-                  {!hasMultipleTeams && contextLabel ? contextLabel : (userProfile?.role || '')}
+                  {!hasEntities && contextLabel ? contextLabel : (userProfile?.role || '')}
                 </p>
               </div>
               <ChevronDown className="h-4 w-4 text-[#9CA3AF] hidden sm:block" />
@@ -517,6 +573,60 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
           </div>
         </div>
       </div>
+
+      {/* Create Entity Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-[#111827]">
+                Create New {createEntityType === 'fund' ? 'Fund' : 'Company'}
+              </h3>
+              <button
+                onClick={() => setIsCreateModalOpen(false)}
+                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-[#4B5563]" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[#374151] mb-1">
+                  {createEntityType === 'fund' ? 'Fund Name' : 'Company Name'}
+                </label>
+                <input
+                  type="text"
+                  value={createEntityName}
+                  onChange={(e) => setCreateEntityName(e.target.value)}
+                  placeholder={createEntityType === 'fund' ? 'e.g. Acme Ventures' : 'e.g. My Startup Inc.'}
+                  className="w-full px-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8] focus:border-transparent"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && createEntityName.trim()) {
+                      handleCreateEntity();
+                    }
+                  }}
+                />
+              </div>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-[#4B5563] hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateEntity}
+                  disabled={!createEntityName.trim() || isCreating}
+                  className="px-4 py-2 text-sm font-medium text-white bg-[#007CF8] hover:bg-[#0066D6] rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {isCreating ? 'Creating...' : 'Create'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,9 +1,10 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
+import { getEntityContextByAuthId } from '@/lib/entity-context';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
  * GET /api/deals/my-deals
- * Get deals created by the current user
+ * Get deals created by the current user/entity
  */
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +22,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const { data: deals, error: dealsError } = await supabase
+    // Resolve entity context for dual-read
+    const entityCtx = await getEntityContextByAuthId(user.id);
+
+    let dealsQuery = supabase
       .from('deals')
       .select(
         `
@@ -51,8 +55,15 @@ export async function GET(request: NextRequest) {
         )
       `
       )
-      .eq('created_by', user.id)
       .order('created_at', { ascending: false });
+
+    if (entityCtx.effectiveEntityId) {
+      dealsQuery = dealsQuery.eq('entity_id', entityCtx.effectiveEntityId);
+    } else {
+      dealsQuery = dealsQuery.eq('created_by', user.id);
+    }
+
+    const { data: deals, error: dealsError } = await dealsQuery;
 
     if (dealsError) {
       console.error('Error fetching my deals:', dealsError);

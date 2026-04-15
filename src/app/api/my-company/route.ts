@@ -1,14 +1,15 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getSupabase } from '@/lib/db'
 import { getTeamContext } from '@/lib/team-context'
+import { getEntityContextByAuthId } from '@/lib/entity-context'
 import { requirePermission } from '@/lib/permissions'
 import { extractDomain, fetchLogoUrl } from '@/lib/utils'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * GET /api/my-company
- * Returns the company_pages record for the user's effective team context.
- * For team members, this returns the team owner's company instead of their own.
+ * Returns the company_pages record for the user's effective team/entity context.
+ * Supports both entity-scoped (new) and user-scoped (legacy) queries.
  */
 export async function GET() {
   try {
@@ -19,19 +20,35 @@ export async function GET() {
       return NextResponse.json({ company: null }, { status: 200 })
     }
 
-    // Resolve team context — team members see the team owner's company
-    const context = await getTeamContext(user.id)
-    console.log('[MY-COMPANY] userId:', user.id, 'effectiveUserId:', context.effectiveUserId, 'isTeamMember:', context.isTeamMember)
-
-    // Use service role to read the team owner's company (bypasses RLS for team members)
     const adminDb = getSupabase()
-    const { data: company } = await adminDb
-      .from('company_pages')
-      .select('*')
-      .eq('user_id', context.effectiveUserId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+
+    // Try entity context first (new path)
+    const entityCtx = await getEntityContextByAuthId(user.id)
+    let company = null
+
+    if (entityCtx.effectiveEntityId) {
+      const { data } = await adminDb
+        .from('company_pages')
+        .select('*')
+        .eq('entity_id', entityCtx.effectiveEntityId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      company = data
+    }
+
+    // Fallback: legacy team context path
+    if (!company) {
+      const context = await getTeamContext(user.id)
+      const { data } = await adminDb
+        .from('company_pages')
+        .select('*')
+        .eq('user_id', context.effectiveUserId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      company = data
+    }
 
     if (!company) {
       return NextResponse.json({ company: null })
