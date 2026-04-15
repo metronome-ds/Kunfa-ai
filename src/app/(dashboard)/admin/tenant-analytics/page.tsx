@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { BarChart3, Users, Rocket, Briefcase, DollarSign, Download } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { useTenant } from '@/components/TenantProvider';
+import { tenantFetch } from '@/lib/tenant-fetch';
 
 interface Overview {
   total_members: number;
@@ -61,7 +62,7 @@ export default function TenantAnalyticsPage() {
 
   useEffect(() => {
     if (!isTenantContext) { setIsAdmin(false); return; }
-    fetch('/api/tenant/admin-check')
+    tenantFetch('/api/tenant/admin-check')
       .then((r) => r.ok ? r.json() : { isAdmin: false })
       .then((d) => setIsAdmin(!!d.isAdmin))
       .catch(() => setIsAdmin(false));
@@ -69,7 +70,7 @@ export default function TenantAnalyticsPage() {
 
   useEffect(() => {
     if (!isAdmin) return;
-    fetch('/api/tenant/analytics')
+    tenantFetch('/api/tenant/analytics')
       .then((r) => r.ok ? r.json() : null)
       .then((d) => { if (d) setData(d); })
       .finally(() => setLoading(false));

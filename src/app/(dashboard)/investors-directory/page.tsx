@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Search, Users, MapPin, Linkedin, CheckCircle2 } from 'lucide-react';
 import { useTenant, useTenantFeature } from '@/components/TenantProvider';
+import { tenantFetch } from '@/lib/tenant-fetch';
 
 interface Investor {
   user_id: string;
@@ -45,7 +46,7 @@ export default function InvestorsDirectoryPage() {
       if (search) params.set('search', search);
       if (sector) params.set('sector', sector);
       try {
-        const res = await fetch(`/api/tenant/investors?${params.toString()}`);
+        const res = await tenantFetch(`/api/tenant/investors?${params.toString()}`);
         if (res.ok) {
           const d = await res.json();
           setInvestors(d.data || []);

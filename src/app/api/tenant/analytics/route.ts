@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/db';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { getTenantFromHeaders } from '@/lib/tenant-context';
+import { isTenantAdminForEntity } from '@/lib/tenant-auth';
 
 interface Bucket { month: string; count: number }
 
@@ -18,13 +19,7 @@ export async function GET(request: NextRequest) {
   const entityId = tenant?.entity_id;
   if (!entityId) return NextResponse.json({ error: 'Tenant has no entity' }, { status: 400 });
 
-  const { data: member } = await db
-    .from('entity_members')
-    .select('role')
-    .eq('entity_id', entityId)
-    .eq('user_id', user.id)
-    .maybeSingle();
-  if (member?.role !== 'owner' && member?.role !== 'admin') {
+  if (!(await isTenantAdminForEntity(user.id, entityId))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 

@@ -35,6 +35,7 @@ import {
 import { supabase } from '@/lib/supabase';
 import KunfaLogo from '@/components/common/KunfaLogo';
 import { isSuperAdmin } from '@/lib/super-admins';
+import { tenantFetch } from '@/lib/tenant-fetch';
 import { canAccessFeature } from '@/lib/subscription';
 import { useTenant } from '@/components/TenantProvider';
 
@@ -307,7 +308,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
           if (isTenantContext && tenant?.id) {
             try {
-              const res = await fetch('/api/tenant/admin-check');
+              const res = await tenantFetch('/api/tenant/admin-check');
               if (res.ok) {
                 const d = await res.json();
                 setIsTenantAdmin(!!d.isAdmin);

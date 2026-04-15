@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/db';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { getTenantFromHeaders } from '@/lib/tenant-context';
+import { isTenantAdminForEntity } from '@/lib/tenant-auth';
 
 export async function GET(request: NextRequest) {
   const supabase = await createServerSupabaseClient();
@@ -20,13 +21,6 @@ export async function GET(request: NextRequest) {
 
   if (!tenant?.entity_id) return NextResponse.json({ isAdmin: false });
 
-  const { data: member } = await db
-    .from('entity_members')
-    .select('role')
-    .eq('entity_id', tenant.entity_id)
-    .eq('user_id', user.id)
-    .maybeSingle();
-
-  const isAdmin = member?.role === 'owner' || member?.role === 'admin';
+  const isAdmin = await isTenantAdminForEntity(user.id, tenant.entity_id);
   return NextResponse.json({ isAdmin });
 }

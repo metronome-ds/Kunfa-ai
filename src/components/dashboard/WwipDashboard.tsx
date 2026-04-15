@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { DollarSign, TrendingUp, Users, UserPlus, Clock, Rocket, Briefcase } from 'lucide-react';
 import { useTenant } from '@/components/TenantProvider';
+import { tenantFetch } from '@/lib/tenant-fetch';
 
 interface Stats {
   capital_deployed: number;
@@ -52,7 +53,7 @@ export default function WwipDashboard() {
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await fetch('/api/tenant/dashboard');
+        const res = await tenantFetch('/api/tenant/dashboard');
         if (res.ok) {
           const d = await res.json();
           setStats(d.stats);

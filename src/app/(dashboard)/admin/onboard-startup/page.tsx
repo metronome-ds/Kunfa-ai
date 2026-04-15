@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Check, ChevronLeft, ChevronRight, Rocket } from 'lucide-react';
 import { useTenant, useTenantFeature } from '@/components/TenantProvider';
+import { tenantFetch } from '@/lib/tenant-fetch';
 
 interface FormData {
   company_name: string;
@@ -52,7 +53,7 @@ export default function OnboardStartupPage() {
 
   useEffect(() => {
     if (!isTenantContext) { setIsAdmin(false); return; }
-    fetch('/api/tenant/admin-check')
+    tenantFetch('/api/tenant/admin-check')
       .then((r) => r.ok ? r.json() : { isAdmin: false })
       .then((d) => setIsAdmin(!!d.isAdmin))
       .catch(() => setIsAdmin(false));
@@ -64,7 +65,7 @@ export default function OnboardStartupPage() {
     setSubmitting(true);
     setError(null);
     try {
-      const res = await fetch('/api/tenant/onboard-startup', {
+      const res = await tenantFetch('/api/tenant/onboard-startup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),

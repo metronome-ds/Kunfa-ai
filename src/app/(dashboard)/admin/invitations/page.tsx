@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Ticket, Copy, Check, X, Plus, Package } from 'lucide-react';
 import { useTenant, useTenantFeature } from '@/components/TenantProvider';
+import { tenantFetch } from '@/lib/tenant-fetch';
 
 interface Invitation {
   id: string;
@@ -48,7 +49,7 @@ export default function InvitationsPage() {
 
   useEffect(() => {
     if (!isTenantContext) { setIsAdmin(false); return; }
-    fetch('/api/tenant/admin-check')
+    tenantFetch('/api/tenant/admin-check')
       .then((r) => r.ok ? r.json() : { isAdmin: false })
       .then((d) => setIsAdmin(!!d.isAdmin))
       .catch(() => setIsAdmin(false));
@@ -57,7 +58,7 @@ export default function InvitationsPage() {
   const load = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/tenant/invitations');
+      const res = await tenantFetch('/api/tenant/invitations');
       if (res.ok) {
         const d = await res.json();
         setInvitations(d.data || []);
@@ -77,14 +78,14 @@ export default function InvitationsPage() {
 
   const deactivate = async (inv: Invitation) => {
     if (!confirm(`Deactivate code ${inv.code}?`)) return;
-    const res = await fetch(`/api/tenant/invitations/${inv.id}`, { method: 'DELETE' });
+    const res = await tenantFetch(`/api/tenant/invitations/${inv.id}`, { method: 'DELETE' });
     if (res.ok) load();
   };
 
   const createOne = async () => {
     setCreating(true);
     try {
-      const res = await fetch('/api/tenant/invitations', {
+      const res = await tenantFetch('/api/tenant/invitations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, count: 1 }),
@@ -102,7 +103,7 @@ export default function InvitationsPage() {
   const createBulk = async () => {
     setCreating(true);
     try {
-      const res = await fetch('/api/tenant/invitations', {
+      const res = await tenantFetch('/api/tenant/invitations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: bulkForm.type, max_uses: 1, expires_at: bulkForm.expires_at, count: bulkForm.count }),

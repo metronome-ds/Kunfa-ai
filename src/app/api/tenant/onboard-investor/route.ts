@@ -3,6 +3,7 @@ import { getSupabase } from '@/lib/db';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { getTenantFromHeaders } from '@/lib/tenant-context';
 import { sendEmail } from '@/lib/email';
+import { isTenantAdminForEntity } from '@/lib/tenant-auth';
 
 function randomCode(len = 8): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -28,13 +29,7 @@ export async function POST(request: NextRequest) {
   const entityId = tenant?.entity_id;
   if (!entityId) return NextResponse.json({ error: 'Tenant has no entity' }, { status: 400 });
 
-  const { data: member } = await db
-    .from('entity_members')
-    .select('role')
-    .eq('entity_id', entityId)
-    .eq('user_id', user.id)
-    .maybeSingle();
-  if (member?.role !== 'owner' && member?.role !== 'admin') {
+  if (!(await isTenantAdminForEntity(user.id, entityId))) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -51,11 +46,12 @@ export async function POST(request: NextRequest) {
   // Upsert profile by email
   const { data: existingProfile } = await db
     .from('profiles')
-    .select('user_id, email')
+    .select('id, user_id, email')
     .eq('email', email)
     .maybeSingle();
 
-  let profileUserId: string | null = existingProfile?.user_id || null;
+  // entity_members.user_id references profiles.id (profile PK)
+  const profileId: string | null = existingProfile?.id || null;
 
   if (existingProfile) {
     await db.from('profiles').update({
@@ -89,10 +85,10 @@ export async function POST(request: NextRequest) {
   });
 
   // Create entity_members row (pending if no profile yet)
-  if (profileUserId) {
+  if (profileId) {
     await db.from('entity_members').upsert({
       entity_id: entityId,
-      user_id: profileUserId,
+      user_id: profileId,
       role: 'member',
       status: 'pending',
     }, { onConflict: 'entity_id,user_id' });

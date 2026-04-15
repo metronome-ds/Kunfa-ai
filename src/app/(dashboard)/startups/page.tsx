@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Search, Rocket, MapPin } from 'lucide-react';
 import { useTenant, useTenantFeature } from '@/components/TenantProvider';
+import { tenantFetch } from '@/lib/tenant-fetch';
 
 interface Startup {
   id: string;
@@ -57,7 +58,7 @@ export default function StartupsPage() {
       if (stage) params.set('stage', stage);
       if (sort) params.set('sort', sort);
       try {
-        const res = await fetch(`/api/tenant/startups?${params.toString()}`);
+        const res = await tenantFetch(`/api/tenant/startups?${params.toString()}`);
         if (res.ok) {
           const d = await res.json();
           setStartups(d.data || []);
