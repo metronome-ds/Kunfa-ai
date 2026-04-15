@@ -172,6 +172,8 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith("/company-profile") ||
       pathname.startsWith("/data-room") ||
       pathname.startsWith("/investors") ||
+      pathname.startsWith("/investors-directory") ||
+      pathname.startsWith("/startups") ||
       pathname.startsWith("/debt-partners") ||
       pathname.startsWith("/points") ||
       pathname.startsWith("/rewards") ||
