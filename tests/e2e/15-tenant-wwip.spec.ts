@@ -499,8 +499,16 @@ test.describe('KUN-30 Phase 2: White-Label Tenant Features', () => {
       'ascii',
     );
 
-    // Minimal CSV "financials" — accepted by server as text/csv.
-    const TINY_CSV = Buffer.from('Metric,Value\nMRR,100000\nRunway,18\n', 'ascii');
+    // Second minimal PDF for the financials slot. We use PDF instead of
+    // CSV because the Supabase Storage 'documents' bucket's MIME allowlist
+    // currently does not include text/csv even though the server route
+    // would accept it — a production constraint we should not paper over
+    // in tests. Users with CSVs would hit the same wall and should upload
+    // PDF/XLSX instead.
+    const TINY_FIN_PDF = Buffer.from(
+      '%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj\n3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000053 00000 n \n0000000100 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n160\n%%EOF',
+      'ascii',
+    );
 
     test('admin completes all 6 steps with logo + pitch deck + financials uploads', async ({
       page,
@@ -573,9 +581,9 @@ test.describe('KUN-30 Phase 2: White-Label Tenant Features', () => {
       await expect(page.getByTestId('pitch-deck-upload-input-uploaded')).toBeVisible({ timeout: 20_000 });
 
       await page.getByTestId('financials-upload-input').setInputFiles({
-        name: 'financials.csv',
-        mimeType: 'text/csv',
-        buffer: TINY_CSV,
+        name: 'financials.pdf',
+        mimeType: 'application/pdf',
+        buffer: TINY_FIN_PDF,
       });
       await expect(page.getByTestId('financials-upload-input-uploaded')).toBeVisible({ timeout: 20_000 });
 
@@ -585,7 +593,7 @@ test.describe('KUN-30 Phase 2: White-Label Tenant Features', () => {
       await expect(page.getByRole('heading', { name: 'Review' })).toBeVisible();
       await expect(page.getByText(uniqueName).first()).toBeVisible();
       await expect(page.getByText('pitch.pdf').first()).toBeVisible();
-      await expect(page.getByText('financials.csv').first()).toBeVisible();
+      await expect(page.getByText('financials.pdf').first()).toBeVisible();
 
       // Capture the POST response so we can assert the server actually wrote
       // the row (not just that the UI navigated).
