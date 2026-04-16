@@ -540,11 +540,11 @@ function Field({
   helpText?: string
 }) {
   return (
-    <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">
+    <label className="block">
+      <span className="block text-xs font-medium text-gray-700 mb-1">
         {label}
         {required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
+      </span>
       <input
         type={type}
         value={value}
@@ -553,7 +553,7 @@ function Field({
         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
       />
       {helpText && <p className="text-[11px] text-gray-500 mt-1">{helpText}</p>}
-    </div>
+    </label>
   )
 }
 
@@ -567,15 +567,15 @@ function TextareaField({
   onChange: (v: string) => void
 }) {
   return (
-    <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+    <label className="block">
+      <span className="block text-xs font-medium text-gray-700 mb-1">{label}</span>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
         className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
       />
-    </div>
+    </label>
   )
 }
 
@@ -591,8 +591,8 @@ function Select({
   options: string[]
 }) {
   return (
-    <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+    <label className="block">
+      <span className="block text-xs font-medium text-gray-700 mb-1">{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -604,7 +604,7 @@ function Select({
           </option>
         ))}
       </select>
-    </div>
+    </label>
   )
 }
 
