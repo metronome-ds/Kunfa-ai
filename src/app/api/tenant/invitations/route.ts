@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/db';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { getTenantFromHeaders } from '@/lib/tenant-context';
-import { isTenantAdminForEntity } from '@/lib/tenant-auth';
+import { isTenantAdminForEntity, getProfileIdForAuthUser } from '@/lib/tenant-auth';
 
 function randomCode(len = 8): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -28,7 +28,12 @@ async function requireTenantAdmin(request: NextRequest) {
     return { error: NextResponse.json({ error: 'Forbidden' }, { status: 403 }) };
   }
 
-  return { user, tenantId: tenantHeader.id, db };
+  const profileId = await getProfileIdForAuthUser(user.id);
+  if (!profileId) {
+    return { error: NextResponse.json({ error: 'Profile not found' }, { status: 400 }) };
+  }
+
+  return { user, profileId, tenantId: tenantHeader.id, db };
 }
 
 export async function GET(request: NextRequest) {
@@ -65,7 +70,7 @@ export async function POST(request: NextRequest) {
     uses_count: 0,
     expires_at: expires_at || null,
     is_active: true,
-    created_by: ctx.user.id,
+    created_by: ctx.profileId,
     notes: notes || null,
   }));
 
