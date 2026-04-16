@@ -151,7 +151,10 @@ export function LogoUpload({
       <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
 
       {value ? (
-        <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+        <div
+          data-testid={testId ? `${testId}-uploaded` : undefined}
+          className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200"
+        >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={value}

@@ -538,8 +538,8 @@ test.describe('KUN-30 Phase 2: White-Label Tenant Features', () => {
         buffer: TINY_PNG,
       });
 
-      // Wait for the "Logo uploaded" state to replace the dropzone
-      await expect(page.getByText('Logo uploaded')).toBeVisible({ timeout: 20_000 });
+      // Wait for the uploaded-state marker to render (proves upload completed).
+      await expect(page.getByTestId('logo-upload-input-uploaded')).toBeVisible({ timeout: 20_000 });
 
       await page.getByRole('button', { name: /^Next/ }).click();
 
@@ -568,15 +568,16 @@ test.describe('KUN-30 Phase 2: White-Label Tenant Features', () => {
         mimeType: 'application/pdf',
         buffer: TINY_PDF,
       });
-      // Wait for the uploaded-file row (CheckCircle2 icon + file name) to render.
-      await expect(page.getByText('pitch.pdf')).toBeVisible({ timeout: 20_000 });
+      // Wait for the uploaded-state marker — distinct from the transient
+      // "Uploading <name>…" banner which would also match by file name.
+      await expect(page.getByTestId('pitch-deck-upload-input-uploaded')).toBeVisible({ timeout: 20_000 });
 
       await page.getByTestId('financials-upload-input').setInputFiles({
         name: 'financials.csv',
         mimeType: 'text/csv',
         buffer: TINY_CSV,
       });
-      await expect(page.getByText('financials.csv')).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByTestId('financials-upload-input-uploaded')).toBeVisible({ timeout: 20_000 });
 
       await page.getByRole('button', { name: /^Next/ }).click();
 

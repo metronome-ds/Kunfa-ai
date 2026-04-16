@@ -194,7 +194,10 @@ export function SingleDocumentUpload({
       </label>
 
       {value ? (
-        <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+        <div
+          data-testid={testId ? `${testId}-uploaded` : undefined}
+          className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200"
+        >
           <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
             {fileTypeIcon(value.type)}
           </div>
