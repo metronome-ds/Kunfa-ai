@@ -35,7 +35,6 @@ import {
 import { supabase } from '@/lib/supabase';
 import KunfaLogo from '@/components/common/KunfaLogo';
 import { isSuperAdmin } from '@/lib/super-admins';
-import { tenantFetch } from '@/lib/tenant-fetch';
 import { canAccessFeature } from '@/lib/subscription';
 import { useTenant } from '@/components/TenantProvider';
 
@@ -306,16 +305,6 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           setIsAdmin(profile?.is_admin === true);
           setIsSuperAdminUser(isSuperAdmin(user.email));
 
-          if (isTenantContext && tenant?.id) {
-            try {
-              const res = await tenantFetch('/api/tenant/admin-check');
-              if (res.ok) {
-                const d = await res.json();
-                setIsTenantAdmin(!!d.isAdmin);
-              }
-            } catch { /* ignore */ }
-          }
-
           // Fetch tier
           try {
             const tierRes = await fetch('/api/subscription');
@@ -336,6 +325,32 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     };
 
     loadUserData();
+  }, []);
+
+  // Tenant admin check — isolated effect so it re-fires cleanly whenever the
+  // tenant context resolves, independent of the main user-data load.
+  useEffect(() => {
+    if (!isTenantContext || !tenant?.id) {
+      setIsTenantAdmin(false);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        // Forward ?tenant= from window.location.search so middleware can
+        // resolve the tenant in dev mode and inject x-tenant-* headers.
+        const params = new URLSearchParams(window.location.search);
+        const tenantParam = params.get('tenant');
+        const url = tenantParam
+          ? `/api/tenant/admin-check?tenant=${encodeURIComponent(tenantParam)}`
+          : '/api/tenant/admin-check';
+        const res = await fetch(url, { credentials: 'include' });
+        if (!res.ok) return;
+        const d = await res.json();
+        if (!cancelled) setIsTenantAdmin(!!d.isAdmin);
+      } catch { /* ignore */ }
+    })();
+    return () => { cancelled = true; };
   }, [isTenantContext, tenant?.id]);
 
   const handleLogout = async () => {
