@@ -195,15 +195,25 @@ function TierBadge({ text }: { text: string }) {
   );
 }
 
+// Append ?tenant=<slug> to a path when a tenant query param is active in the
+// current URL. This keeps dev-mode tenant context alive across navigations
+// (on subdomain deploys, tenantParam is null and hrefs are unchanged).
+function withTenantParam(path: string, tenantParam: string | null): string {
+  if (!tenantParam) return path;
+  const sep = path.includes('?') ? '&' : '?';
+  return `${path}${sep}tenant=${encodeURIComponent(tenantParam)}`;
+}
+
 interface SidebarSectionProps {
   title: string;
   items: NavItem[];
   pathname: string;
   collapsed: boolean;
   userTier: string;
+  tenantParam: string | null;
 }
 
-function SidebarSection({ title, items, pathname, collapsed, userTier }: SidebarSectionProps) {
+function SidebarSection({ title, items, pathname, collapsed, userTier, tenantParam }: SidebarSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   if (collapsed) {
@@ -216,7 +226,7 @@ function SidebarSection({ title, items, pathname, collapsed, userTier }: Sidebar
           return (
             <Link
               key={item.label}
-              href={item.href || '#'}
+              href={withTenantParam(item.href || '#', tenantParam)}
               className={`flex items-center justify-center p-2.5 rounded-lg transition-all ${
                 isActive
                   ? 'bg-[#F0F7FF] text-[#007CF8]'
@@ -253,7 +263,7 @@ function SidebarSection({ title, items, pathname, collapsed, userTier }: Sidebar
             return (
               <Link
                 key={item.label}
-                href={item.href || '#'}
+                href={withTenantParam(item.href || '#', tenantParam)}
                 className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
                   isActive
                     ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
@@ -286,6 +296,14 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const [isSuperAdminUser, setIsSuperAdminUser] = useState(false);
   const [isTenantAdmin, setIsTenantAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [tenantParam, setTenantParam] = useState<string | null>(null);
+
+  // Snapshot ?tenant= from the URL on mount and whenever pathname changes, so
+  // sidebar hrefs can preserve it across navigations (dev mode).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    setTenantParam(new URLSearchParams(window.location.search).get('tenant'));
+  }, [pathname]);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -417,7 +435,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     >
       {/* Logo */}
       <div className={`border-b border-[#E5E7EB] ${collapsed ? 'p-3 flex items-center justify-center' : 'p-6'}`}>
-        <Link href="/dashboard" className="block hover:opacity-80 transition-opacity">
+        <Link href={withTenantParam('/dashboard', tenantParam)} className="block hover:opacity-80 transition-opacity">
           {collapsed ? (
             isTenantContext && tenant?.logo_url ? (
               <img src={tenant.logo_url} alt={tenant.display_name || tenant.name} className="h-6 w-6 object-contain" />
@@ -447,7 +465,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           </div>
         ) : (
           Object.entries(navigationSections).map(([title, items]) => (
-            <SidebarSection key={title} title={title} items={items} pathname={pathname} collapsed={collapsed} userTier={userTier} />
+            <SidebarSection key={title} title={title} items={items} pathname={pathname} collapsed={collapsed} userTier={userTier} tenantParam={tenantParam} />
           ))
         )}
       </div>
@@ -530,7 +548,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
             return (
               <Link
                 key={item.label}
-                href={item.href || '#'}
+                href={withTenantParam(item.href || '#', tenantParam)}
                 className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
                   isActive
                     ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
