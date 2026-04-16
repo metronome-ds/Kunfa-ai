@@ -47,7 +47,7 @@ test.describe('KUN-30 Phase 2: White-Label Tenant Features', () => {
       await page.goto(`/dashboard${TENANT_PARAM}`);
       await page.waitForLoadState('networkidle');
 
-      await expect(page.locator('text=NETWORK')).toBeVisible();
+      await expect(page.getByRole('button', { name: 'NETWORK', exact: true })).toBeVisible();
       await expect(page.getByRole('link', { name: /Deals/i }).first()).toBeVisible();
       await expect(page.getByRole('link', { name: /Startups/i }).first()).toBeVisible();
       await expect(page.getByRole('link', { name: /Investors/i }).first()).toBeVisible();
