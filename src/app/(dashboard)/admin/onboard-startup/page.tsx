@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Check, ChevronLeft, ChevronRight, Rocket, Loader2 } from 'lucide-react'
+import Link from 'next/link'
 import { useTenant, useTenantFeature } from '@/components/TenantProvider'
 import { tenantFetch } from '@/lib/tenant-fetch'
 import LogoUpload from '@/components/common/LogoUpload'
@@ -88,6 +89,18 @@ export default function OnboardStartupPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [stepError, setStepError] = useState<string | null>(null)
+
+  // Success state + claim invite
+  const [createdCompany, setCreatedCompany] = useState<{
+    id: string
+    slug: string
+    company_name: string
+  } | null>(null)
+  const [claimEmail, setClaimEmail] = useState('')
+  const [claimMessage, setClaimMessage] = useState('')
+  const [claimSending, setClaimSending] = useState(false)
+  const [claimSent, setClaimSent] = useState(false)
+  const [claimError, setClaimError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isTenantContext) {
@@ -198,18 +211,47 @@ export default function OnboardStartupPage() {
         return
       }
       const d = await res.json()
-      // Preserve tenant context across the redirect in dev mode.
-      const tenantParam =
-        typeof window !== 'undefined'
-          ? new URLSearchParams(window.location.search).get('tenant')
-          : null
-      const target = tenantParam
-        ? `/company/${d.company.slug}?tenant=${encodeURIComponent(tenantParam)}`
-        : `/company/${d.company.slug}`
-      router.push(target)
+      setCreatedCompany(d.company)
+      // Pre-fill claim email from form
+      if (form.founder_email.trim()) {
+        setClaimEmail(form.founder_email.trim())
+      }
+      setSubmitting(false)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to submit')
       setSubmitting(false)
+    }
+  }
+
+  const sendClaimInvite = async () => {
+    if (!createdCompany || !claimEmail.trim()) return
+    if (!isEmail(claimEmail)) {
+      setClaimError('Please enter a valid email address')
+      return
+    }
+    setClaimSending(true)
+    setClaimError(null)
+    try {
+      const res = await tenantFetch('/api/tenant/claim-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          companyPageId: createdCompany.id,
+          founderEmail: claimEmail.trim(),
+          personalMessage: claimMessage.trim() || undefined,
+        }),
+      })
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        setClaimError(d.error || 'Failed to send invitation')
+        setClaimSending(false)
+        return
+      }
+      setClaimSent(true)
+    } catch (e) {
+      setClaimError(e instanceof Error ? e.message : 'Failed to send')
+    } finally {
+      setClaimSending(false)
     }
   }
 
@@ -240,6 +282,126 @@ export default function OnboardStartupPage() {
         <p className="text-sm text-gray-500 mt-2">
           Only tenant admins can onboard startups.
         </p>
+      </div>
+    )
+  }
+
+  // ── Success state with claim invite ────────────────────────────────────
+  if (createdCompany) {
+    const tenantParam =
+      typeof window !== 'undefined'
+        ? new URLSearchParams(window.location.search).get('tenant')
+        : null
+    const companyUrl = tenantParam
+      ? `/company/${createdCompany.slug}?tenant=${encodeURIComponent(tenantParam)}`
+      : `/company/${createdCompany.slug}`
+
+    return (
+      <div className="p-8 max-w-xl mx-auto">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+              <Check className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Company created</h2>
+              <p className="text-sm text-gray-500">
+                {createdCompany.company_name}
+                {form.industry ? ` · ${form.industry}` : ''}
+                {form.stage ? ` · ${form.stage}` : ''}
+              </p>
+            </div>
+          </div>
+
+          {claimSent ? (
+            <div className="rounded-lg bg-emerald-50 border border-emerald-200 p-4 mb-4">
+              <div className="flex items-center gap-2">
+                <Check className="w-5 h-5 text-emerald-600" />
+                <p className="text-sm font-medium text-emerald-800">
+                  Invitation sent to {claimEmail}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="border-t border-gray-100 pt-4 mt-4">
+              <h3 className="text-sm font-semibold text-gray-900 mb-1">
+                Send claim invitation to founder
+              </h3>
+              <p className="text-xs text-gray-500 mb-3">
+                The founder will receive an email with a link to claim this company profile.
+              </p>
+              <label className="block">
+                <span className="block text-xs font-medium text-gray-700 mb-1">
+                  Founder email
+                </span>
+                <input
+                  type="email"
+                  value={claimEmail}
+                  onChange={(e) => setClaimEmail(e.target.value)}
+                  placeholder="founder@startup.com"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                />
+              </label>
+              <label className="block mt-3">
+                <span className="block text-xs font-medium text-gray-700 mb-1">
+                  Personal message <span className="text-gray-400">(optional)</span>
+                </span>
+                <textarea
+                  value={claimMessage}
+                  onChange={(e) => setClaimMessage(e.target.value)}
+                  rows={2}
+                  placeholder="Hi — we've added your company to our network…"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                />
+              </label>
+              {claimError && (
+                <div className="mt-2 text-sm text-red-700 p-2.5 rounded bg-red-50 border border-red-200">
+                  {claimError}
+                </div>
+              )}
+              <button
+                onClick={sendClaimInvite}
+                disabled={claimSending || !claimEmail.trim()}
+                className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] disabled:opacity-50"
+              >
+                {claimSending && <Loader2 className="w-4 h-4 animate-spin" />}
+                {claimSending ? 'Sending…' : 'Send Claim Invitation'}
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-100">
+            <Link
+              href={companyUrl}
+              className="flex-1 text-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              View Company
+            </Link>
+            <button
+              onClick={() => {
+                setCreatedCompany(null)
+                setStep(0)
+                setForm(EMPTY)
+                setClaimEmail('')
+                setClaimMessage('')
+                setClaimSent(false)
+                setClaimError(null)
+              }}
+              className="flex-1 text-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Onboard Another
+            </button>
+          </div>
+
+          {!claimSent && (
+            <button
+              onClick={() => router.push(companyUrl)}
+              className="mt-3 w-full text-xs text-gray-400 hover:text-gray-600 text-center"
+            >
+              Skip — I&apos;ll send the invite later
+            </button>
+          )}
+        </div>
       </div>
     )
   }
