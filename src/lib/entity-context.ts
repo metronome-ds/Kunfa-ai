@@ -477,14 +477,14 @@ export async function inviteToEntity(
     return member
   }
 
-  // User doesn't exist — create pending invite
-  // We need a user_id for the FK. Use the inviter's profile as placeholder
-  // (will be updated when they sign up, similar to community invite pattern).
+  // User doesn't exist — create pending invite with user_id = NULL.
+  // user_id is nullable; it gets set to the new user's profile.id when they
+  // sign up and accept the invite (see /api/auth/complete-signup).
   const { data: member, error } = await db
     .from('entity_members')
     .insert({
       entity_id: entityId,
-      user_id: invitedByProfileId, // placeholder
+      user_id: null,
       role,
       status: 'pending',
       invited_email: email.toLowerCase(),
