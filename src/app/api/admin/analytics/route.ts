@@ -242,16 +242,16 @@ export async function GET() {
       return { date, count: b.count, avg: b.count > 0 ? Math.round(b.sum / b.count) : 0 }
     })
 
-    // --- Team members ---
-    const { data: teamMembers, error: teamErr } = await supabase
-      .from('team_members')
+    // --- Entity members (replaces legacy team_members) ---
+    const { data: entityMembersAll, error: entityMemErr } = await supabase
+      .from('entity_members')
       .select('id, status, created_at, invited_by, invited_email')
-    if (teamErr) throw teamErr
+    if (entityMemErr) throw entityMemErr
 
-    const totalInvites = teamMembers?.length ?? 0
+    const totalInvites = entityMembersAll?.length ?? 0
     let acceptedInvites = 0
     let pendingInvites = 0
-    for (const t of teamMembers ?? []) {
+    for (const t of entityMembersAll ?? []) {
       const s = (t.status || '').toLowerCase()
       if (s === 'active' || s === 'accepted') acceptedInvites++
       else if (s === 'pending' || s === 'invited') pendingInvites++
@@ -336,7 +336,7 @@ export async function GET() {
       })
     }
 
-    for (const t of (teamMembers ?? []).slice().sort((a, b) => (b.created_at || '').localeCompare(a.created_at || '')).slice(0, 20)) {
+    for (const t of (entityMembersAll ?? []).slice().sort((a, b) => (b.created_at || '').localeCompare(a.created_at || '')).slice(0, 20)) {
       if (!t.created_at) continue
       const actor = t.invited_by ? profileByUserId.get(t.invited_by) : null
       activity.push({

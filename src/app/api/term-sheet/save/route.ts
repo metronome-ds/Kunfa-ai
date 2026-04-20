@@ -98,17 +98,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Company not found' }, { status: 404 })
     }
 
-    // Check if user is owner or team member
+    // Check if user is owner or entity member with access
     let isAuthorized = company.user_id === user.id
     if (!isAuthorized) {
-      const { data: member } = await supabase
-        .from('team_members')
-        .select('id')
-        .eq('company_id', companyId)
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .maybeSingle()
-      isAuthorized = !!member
+      // Check entity membership: if company has entity_id, check if user
+      // is a member of that entity
+      const { data: companyEntity } = await supabase
+        .from('company_pages')
+        .select('entity_id')
+        .eq('id', companyId)
+        .single()
+
+      if (companyEntity?.entity_id) {
+        const { data: userProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single()
+
+        if (userProfile) {
+          const { data: member } = await supabase
+            .from('entity_members')
+            .select('id')
+            .eq('entity_id', companyEntity.entity_id)
+            .eq('user_id', userProfile.id)
+            .eq('status', 'active')
+            .maybeSingle()
+          isAuthorized = !!member
+        }
+      }
     }
 
     if (!isAuthorized) {

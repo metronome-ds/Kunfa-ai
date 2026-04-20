@@ -69,29 +69,9 @@ export async function GET(
             }
           }
 
-          // Check: team member of owner or adder (legacy path)
-          if (!canViewRestricted) {
-            const ownerIds = [company.user_id, company.added_by].filter(Boolean) as string[]
-            if (ownerIds.length > 0) {
-              const { data: profiles } = await supabase
-                .from('profiles')
-                .select('id')
-                .in('user_id', ownerIds)
-
-              if (profiles && profiles.length > 0) {
-                const profileIds = profiles.map(p => p.id)
-                const { data: membership } = await supabase
-                  .from('team_members')
-                  .select('id')
-                  .in('team_id', profileIds)
-                  .eq('member_user_id', user.id)
-                  .eq('status', 'accepted')
-                  .limit(1)
-                  .maybeSingle()
-                if (membership) canViewRestricted = true
-              }
-            }
-          }
+          // Legacy team_members check removed — entity_members above is the
+          // sole membership source. If user has access via entity membership,
+          // it was already resolved above.
 
           // Check: pipeline investor (has deal for this company)
           if (!canViewRestricted) {

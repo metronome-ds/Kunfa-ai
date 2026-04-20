@@ -27,9 +27,9 @@ interface FormattedMember {
 // ---------------------------------------------------------------------------
 
 /**
- * Look up the caller's profile and determine whether they're in entity mode.
- * Returns `entityId` if the caller has `active_entity_id` set AND is an active
- * member of that entity, otherwise null (fall through to legacy team_members).
+ * Resolve the caller's profile and active entity.
+ * Entity is the SOLE source of truth for team membership. Falls back to no
+ * entity only if the user genuinely has no entity_members rows.
  */
 async function resolveEntityContext(
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
@@ -43,12 +43,11 @@ async function resolveEntityContext(
 
   if (!profile) return { profile: null, entityId: null }
 
-  const entityId = profile.active_entity_id || null
+  const db = getSupabase()
+  let entityId = profile.active_entity_id || null
 
-  // Quick membership verification (owner/admin/member/observer) so we don't
-  // accidentally show entity data to a non-member.
+  // If active_entity_id is set, verify membership
   if (entityId) {
-    const db = getSupabase()
     const { data: mem } = await db
       .from('entity_members')
       .select('role')
@@ -57,9 +56,24 @@ async function resolveEntityContext(
       .in('status', ['active', 'pending'])
       .maybeSingle()
 
-    if (!mem) {
-      // Not a member — fall back to legacy
-      return { profile, entityId: null }
+    if (!mem) entityId = null // stale — clear it
+  }
+
+  // If no active entity, try to auto-resolve from entity_members
+  if (!entityId) {
+    const { data: firstMem } = await db
+      .from('entity_members')
+      .select('entity_id')
+      .eq('user_id', profile.id)
+      .eq('status', 'active')
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+
+    if (firstMem) {
+      entityId = firstMem.entity_id
+      // Persist so future calls resolve instantly
+      await db.from('profiles').update({ active_entity_id: entityId }).eq('id', profile.id)
     }
   }
 

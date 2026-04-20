@@ -37,27 +37,30 @@ export async function POST(request: NextRequest) {
     console.log('[COMPLETE-SIGNUP] user:', user.id, user.email, '| role:', requestedRole, '| inviteId:', inviteId)
 
     // Detect if this is an invite signup — prefer explicit inviteId, fall back to
-    // any pending invite for this email (source of truth).
+    // Check entity_members for a pending invite for this email.
+    // entity_members is now the sole source of truth for team membership.
     let invite:
-      | { id: string; team_id: string; role: string }
+      | { id: string; entity_id: string; role: string }
       | null = null
 
+    // First: look up by invite ID in entity_members
     if (inviteId) {
       const { data } = await adminDb
-        .from('team_members')
-        .select('id, team_id, role, status, invited_email')
+        .from('entity_members')
+        .select('id, entity_id, role, status, invited_email')
         .eq('id', inviteId)
         .maybeSingle()
-      if (data && data.status !== 'accepted' && data.invited_email === user.email) {
-        invite = { id: data.id, team_id: data.team_id, role: data.role }
+      if (data && data.status === 'pending' && data.invited_email === user.email) {
+        invite = { id: data.id, entity_id: data.entity_id, role: data.role }
       }
     }
 
+    // Fallback: search by email across all pending entity_members
     if (!invite && user.email) {
       const { data } = await adminDb
-        .from('team_members')
-        .select('id, team_id, role')
-        .eq('invited_email', user.email)
+        .from('entity_members')
+        .select('id, entity_id, role')
+        .eq('invited_email', user.email.toLowerCase())
         .eq('status', 'pending')
         .limit(1)
         .maybeSingle()
@@ -67,17 +70,18 @@ export async function POST(request: NextRequest) {
     const isInvite = !!invite
 
     // Determine role to assign on profile.
-    // - Invite signups inherit the team owner's role (source of truth)
+    // - Invite signups: look up entity.type to derive role
     // - Normal signups use whatever the form passed
     let role: string | undefined = requestedRole
     if (invite) {
-      const { data: ownerProfile } = await adminDb
-        .from('profiles')
-        .select('role')
-        .eq('id', invite.team_id)
+      const { data: entity } = await adminDb
+        .from('entities')
+        .select('type')
+        .eq('id', invite.entity_id)
         .single()
-      role = ownerProfile?.role || 'investor'
-      console.log('[COMPLETE-SIGNUP] invite detected — team owner role:', role)
+      const entityType = entity?.type || 'fund'
+      role = entityType === 'fund' || entityType === 'vc' || entityType === 'investor' ? 'investor' : 'startup'
+      console.log('[COMPLETE-SIGNUP] invite detected — entity type:', entityType, '→ role:', role)
     }
 
     // Ensure a profile exists. Create one if missing.
@@ -112,32 +116,43 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Accept the team invite + set active_team_id
+    // Accept entity invite: activate membership + set active_entity_id
     if (invite && user.email) {
-      const { error: acceptErr } = await adminDb
-        .from('team_members')
-        .update({
-          member_user_id: user.id,
-          status: 'accepted',
-          updated_at: new Date().toISOString(),
-        })
-        .eq('invited_email', user.email)
-        .eq('status', 'pending')
-
-      if (acceptErr) {
-        console.error('[COMPLETE-SIGNUP] invite accept failed:', acceptErr.message)
-      }
-
-      const { error: activeTeamErr } = await adminDb
+      // Get the profile.id of the new user to use as entity_members.user_id
+      const { data: newProfile } = await adminDb
         .from('profiles')
-        .update({ active_team_id: invite.team_id })
+        .select('id')
         .eq('user_id', user.id)
+        .single()
 
-      if (activeTeamErr) {
-        console.error('[COMPLETE-SIGNUP] active_team_id set failed:', activeTeamErr.message)
+      if (newProfile) {
+        // Update the pending entity_members row: set user_id to the new user's
+        // profile.id (it was the inviter's profile.id as placeholder) and activate.
+        const { error: acceptErr } = await adminDb
+          .from('entity_members')
+          .update({
+            user_id: newProfile.id,
+            status: 'active',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', invite.id)
+
+        if (acceptErr) {
+          console.error('[COMPLETE-SIGNUP] entity invite accept failed:', acceptErr.message)
+        }
+
+        // Set active_entity_id so they land in entity context
+        const { error: entityErr } = await adminDb
+          .from('profiles')
+          .update({ active_entity_id: invite.entity_id })
+          .eq('user_id', user.id)
+
+        if (entityErr) {
+          console.error('[COMPLETE-SIGNUP] active_entity_id set failed:', entityErr.message)
+        }
+
+        console.log('[COMPLETE-SIGNUP] entity invite accepted, active_entity_id set to:', invite.entity_id)
       }
-
-      console.log('[COMPLETE-SIGNUP] invite accepted, active_team_id set to:', invite.team_id)
     }
 
     // Determine redirect

@@ -34,9 +34,9 @@ export async function DELETE() {
     // Delete in order to respect foreign keys
     if (profileId) {
       await sb.from('watchlist_items').delete().eq('investor_id', profileId);
-      await sb.from('team_members').delete().eq('team_id', profileId);
+      // Remove from all entity memberships
+      await sb.from('entity_members').delete().eq('user_id', profileId);
     }
-    await sb.from('team_members').delete().eq('member_user_id', userId);
     await sb.from('portfolio').delete().eq('investor_user_id', userId);
     await sb.from('deals').delete().eq('created_by', userId);
     await sb.from('notifications').delete().eq('user_id', userId);

@@ -1,52 +1,42 @@
-/**
- * Team Context Helper
- *
- * Determines the effective workspace/team context for a user.
- * Users can be members of multiple teams (via team_members) and switch
- * between them. The "active team" determines whose data their dashboard shows.
- *
- * - active_team_id NULL = viewing own data
- * - active_team_id set  = viewing that team's data (the team owner's user_id)
- *
- * Uses the service role client for all queries — team context needs to read
- * across profiles and team_members regardless of RLS.
- */
+// DEPRECATED: All logic now delegates to entity_members via active_entity_id.
+// This file exists as an alias layer to preserve function signatures for callers.
+// The legacy team_members table is no longer read or written by this module.
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { getSupabase } from './db'
 
 export interface TeamContext {
-  effectiveUserId: string       // The user_id to use in dashboard queries
+  effectiveUserId: string       // The auth user_id of the caller (always their own)
   effectiveRole: string         // 'startup' or 'investor' — drives dashboard/sidebar
-  isTeamMember: boolean         // true if viewing someone else's data
-  teamOwnerName: string | null  // Name of the team owner
-  companyName: string | null    // Company name (for startups)
-  fundName: string | null       // Fund name (for investors)
-  memberRole: string            // 'owner' | 'admin' | 'member' | 'viewer'
-  activeTeamId: string | null   // The profile.id of the active team (null = own data)
+  isTeamMember: boolean         // true if viewing an entity they don't own
+  teamOwnerName: string | null  // Name of the entity (mapped from entities.name)
+  companyName: string | null    // entity.name (for startups) or null
+  fundName: string | null       // entity.name (for funds) or null
+  memberRole: string            // 'owner' | 'admin' | 'member' | 'observer'
+  activeTeamId: string | null   // entity_id of the active entity (null = no entity context)
 }
 
 export interface TeamOption {
-  teamId: string                // profile.id of the team owner
-  ownerName: string
+  teamId: string                // entity_id
+  ownerName: string             // entity name
   companyName: string | null
   fundName: string | null
-  role: string                  // 'startup' or 'investor'
-  memberRole: string            // 'owner' | 'admin' | 'member' | 'viewer'
+  role: string                  // entity.type or 'fund' / 'startup'
+  memberRole: string            // entity_members.role
 }
 
 type DbClient = SupabaseClient
 
 /**
- * Build a TeamContext for the user viewing their OWN data.
+ * Minimal own-context when user has no entity.
  */
 async function buildOwnContext(
   userId: string,
-  ownProfile: { id: string; role: string | null; full_name: string | null; fund_name: string | null; company_name: string | null },
+  profile: { id: string; role: string | null; full_name: string | null; fund_name: string | null; company_name: string | null },
   db: DbClient,
 ): Promise<TeamContext> {
-  let companyName = ownProfile.company_name || null
-  if (ownProfile.role === 'startup' || ownProfile.role === 'founder') {
+  let companyName = profile.company_name || null
+  if (profile.role === 'startup' || profile.role === 'founder') {
     const { data: company } = await db
       .from('company_pages')
       .select('company_name')
@@ -59,67 +49,58 @@ async function buildOwnContext(
 
   return {
     effectiveUserId: userId,
-    effectiveRole: ownProfile.role || 'startup',
+    effectiveRole: profile.role || 'startup',
     isTeamMember: false,
-    teamOwnerName: ownProfile.full_name || null,
+    teamOwnerName: profile.full_name || null,
     companyName,
-    fundName: ownProfile.fund_name || null,
+    fundName: profile.fund_name || null,
     memberRole: 'owner',
     activeTeamId: null,
   }
 }
 
 /**
- * Build a TeamContext for the user viewing a TEAM (someone else's data).
+ * Build context for user viewing an ENTITY.
  */
-async function buildContextForTeam(
+async function buildEntityContext(
   userId: string,
-  teamId: string,
+  profileId: string,
+  entityId: string,
   db: DbClient,
 ): Promise<TeamContext | null> {
-  const { data: ownerProfile } = await db
-    .from('profiles')
-    .select('id, user_id, role, full_name, fund_name, company_name')
-    .eq('id', teamId)
+  // Look up entity info
+  const { data: entity } = await db
+    .from('entities')
+    .select('id, name, type, one_liner')
+    .eq('id', entityId)
     .single()
 
-  if (!ownerProfile) return null
+  if (!entity) return null
 
-  const isOwner = ownerProfile.user_id === userId
+  // Look up user's role in entity_members
+  const { data: membership } = await db
+    .from('entity_members')
+    .select('role')
+    .eq('entity_id', entityId)
+    .eq('user_id', profileId)
+    .in('status', ['active', 'pending'])
+    .maybeSingle()
 
-  let memberRole = 'owner'
-  if (!isOwner) {
-    const { data: membership } = await db
-      .from('team_members')
-      .select('role')
-      .eq('team_id', teamId)
-      .eq('member_user_id', userId)
-      .eq('status', 'accepted')
-      .maybeSingle()
-    memberRole = membership?.role || 'member'
-  }
+  if (!membership) return null
 
-  let companyName = ownerProfile.company_name || null
-  if (ownerProfile.role === 'startup' || ownerProfile.role === 'founder') {
-    const { data: company } = await db
-      .from('company_pages')
-      .select('company_name')
-      .eq('user_id', ownerProfile.user_id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-    if (company?.company_name) companyName = company.company_name
-  }
+  const isOwner = membership.role === 'owner'
+  const entityType = entity.type || 'fund'
+  const isFund = entityType === 'fund' || entityType === 'vc' || entityType === 'investor'
 
   return {
-    effectiveUserId: ownerProfile.user_id,
-    effectiveRole: ownerProfile.role || 'investor',
+    effectiveUserId: userId,
+    effectiveRole: isFund ? 'investor' : 'startup',
     isTeamMember: !isOwner,
-    teamOwnerName: ownerProfile.full_name || null,
-    companyName,
-    fundName: ownerProfile.fund_name || null,
-    memberRole,
-    activeTeamId: teamId,
+    teamOwnerName: entity.name || null,
+    companyName: isFund ? null : entity.name || null,
+    fundName: isFund ? entity.name || null : null,
+    memberRole: membership.role,
+    activeTeamId: entityId,
   }
 }
 
@@ -127,11 +108,9 @@ async function buildContextForTeam(
  * Returns the effective team context for a user.
  *
  * Resolution order:
- *  1. If active_team_id is set → use it (the team they explicitly selected)
- *  2. If active_team_id is NULL and user owns content (company_pages entry) → own context
- *  3. If active_team_id is NULL and user has accepted team memberships → auto-bootstrap
- *     to their first accepted team and persist that selection
- *  4. Otherwise → own context (empty dashboard)
+ *  1. If active_entity_id is set → use it
+ *  2. If user has active entity memberships → auto-bootstrap to first one
+ *  3. Otherwise → own context (solo user)
  */
 export async function getTeamContext(
   userId: string,
@@ -141,12 +120,11 @@ export async function getTeamContext(
 
   const { data: profile } = await db
     .from('profiles')
-    .select('id, user_id, role, full_name, fund_name, company_name, active_team_id')
+    .select('id, user_id, role, full_name, fund_name, company_name, active_entity_id')
     .eq('user_id', userId)
     .single()
 
   if (!profile) {
-    // No profile yet — return a minimal own context
     return {
       effectiveUserId: userId,
       effectiveRole: 'startup',
@@ -159,54 +137,40 @@ export async function getTeamContext(
     }
   }
 
-  // 1. Explicit team selection
-  if (profile.active_team_id) {
-    const ctx = await buildContextForTeam(userId, profile.active_team_id, db)
+  // 1. Explicit entity selection via active_entity_id
+  if (profile.active_entity_id) {
+    const ctx = await buildEntityContext(userId, profile.id, profile.active_entity_id, db)
     if (ctx) return ctx
-    // Active team not found → fall back to own context
+    // Entity not found or no membership — fall through
   }
 
-  // 2. Check if user owns a company (preserves zero-change for company owners)
-  const { data: ownCompany } = await db
-    .from('company_pages')
-    .select('id')
-    .eq('user_id', userId)
-    .limit(1)
-    .maybeSingle()
-
-  if (ownCompany) {
-    return buildOwnContext(userId, profile, db)
-  }
-
-  // 3. Auto-bootstrap to first accepted team membership
+  // 2. Auto-bootstrap: find first entity membership
   const { data: memberships } = await db
-    .from('team_members')
-    .select('team_id, created_at')
-    .eq('member_user_id', userId)
-    .eq('status', 'accepted')
+    .from('entity_members')
+    .select('entity_id')
+    .eq('user_id', profile.id)
+    .eq('status', 'active')
     .order('created_at', { ascending: true })
     .limit(1)
 
   if (memberships && memberships.length > 0) {
-    const firstTeamId = memberships[0].team_id
-    // Persist the auto-selection so subsequent calls are stable
+    const entityId = memberships[0].entity_id
+    // Persist the auto-selection
     await db
       .from('profiles')
-      .update({ active_team_id: firstTeamId })
+      .update({ active_entity_id: entityId })
       .eq('user_id', userId)
 
-    const ctx = await buildContextForTeam(userId, firstTeamId, db)
+    const ctx = await buildEntityContext(userId, profile.id, entityId, db)
     if (ctx) return ctx
   }
 
-  // 4. No teams, no company → own (empty) context
+  // 3. No entity membership → own solo context
   return buildOwnContext(userId, profile, db)
 }
 
 /**
- * Returns all teams the user can switch to:
- *  - Their own profile (memberRole = 'owner')
- *  - All accepted team memberships
+ * Returns all entities the user can switch to.
  */
 export async function getAvailableTeams(
   userId: string,
@@ -215,77 +179,43 @@ export async function getAvailableTeams(
   const db = client || getSupabase()
   const teams: TeamOption[] = []
 
-  // Own profile (always included)
-  const { data: ownProfile } = await db
+  const { data: profile } = await db
     .from('profiles')
-    .select('id, role, full_name, fund_name, company_name')
+    .select('id')
     .eq('user_id', userId)
     .single()
 
-  if (ownProfile) {
-    let companyName = ownProfile.company_name || null
-    if (ownProfile.role === 'startup' || ownProfile.role === 'founder') {
-      const { data: company } = await db
-        .from('company_pages')
-        .select('company_name')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (company?.company_name) companyName = company.company_name
-    }
+  if (!profile) return teams
 
-    teams.push({
-      teamId: ownProfile.id,
-      ownerName: ownProfile.full_name || 'You',
-      companyName,
-      fundName: ownProfile.fund_name || null,
-      role: ownProfile.role || 'startup',
-      memberRole: 'owner',
-    })
-  }
-
-  // Accepted team memberships
+  // All entity memberships (active)
   const { data: memberships } = await db
-    .from('team_members')
-    .select('team_id, role')
-    .eq('member_user_id', userId)
-    .eq('status', 'accepted')
+    .from('entity_members')
+    .select('entity_id, role')
+    .eq('user_id', profile.id)
+    .eq('status', 'active')
 
-  if (memberships && memberships.length > 0) {
-    const teamIds = memberships.map((m) => m.team_id)
-    const { data: ownerProfiles } = await db
-      .from('profiles')
-      .select('id, user_id, role, full_name, fund_name, company_name')
-      .in('id', teamIds)
+  if (!memberships || memberships.length === 0) return teams
 
-    if (ownerProfiles) {
-      for (const owner of ownerProfiles) {
-        // Skip if this is the user's own profile (already added above)
-        if (ownProfile && owner.id === ownProfile.id) continue
+  const entityIds = memberships.map((m) => m.entity_id)
+  const { data: entities } = await db
+    .from('entities')
+    .select('id, name, type, one_liner')
+    .in('id', entityIds)
 
-        const membership = memberships.find((m) => m.team_id === owner.id)
-        let companyName = owner.company_name || null
-        if (owner.role === 'startup' || owner.role === 'founder') {
-          const { data: company } = await db
-            .from('company_pages')
-            .select('company_name')
-            .eq('user_id', owner.user_id)
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle()
-          if (company?.company_name) companyName = company.company_name
-        }
+  if (entities) {
+    for (const entity of entities) {
+      const membership = memberships.find((m) => m.entity_id === entity.id)
+      const entityType = entity.type || 'fund'
+      const isFund = entityType === 'fund' || entityType === 'vc' || entityType === 'investor'
 
-        teams.push({
-          teamId: owner.id,
-          ownerName: owner.full_name || '',
-          companyName,
-          fundName: owner.fund_name || null,
-          role: owner.role || 'investor',
-          memberRole: membership?.role || 'member',
-        })
-      }
+      teams.push({
+        teamId: entity.id,
+        ownerName: entity.name || 'Entity',
+        companyName: isFund ? null : entity.name || null,
+        fundName: isFund ? entity.name || null : null,
+        role: isFund ? 'investor' : 'startup',
+        memberRole: membership?.role || 'member',
+      })
     }
   }
 
@@ -293,11 +223,7 @@ export async function getAvailableTeams(
 }
 
 /**
- * Switch the user's active team context.
- *  - teamId = null → switch to own data
- *  - teamId set   → switch to that team (validates membership first)
- *
- * Throws if the user is not a member of the requested team.
+ * Switch the user's active entity context.
  */
 export async function switchTeamContext(
   userId: string,
@@ -309,35 +235,34 @@ export async function switchTeamContext(
   if (teamId === null) {
     await db
       .from('profiles')
-      .update({ active_team_id: null })
+      .update({ active_entity_id: null })
       .eq('user_id', userId)
     return
   }
 
-  // Allow switching to own profile
-  const { data: ownProfile } = await db
+  // Validate membership
+  const { data: profile } = await db
     .from('profiles')
     .select('id')
     .eq('user_id', userId)
     .single()
 
-  if (ownProfile?.id !== teamId) {
-    // Must be an accepted member
-    const { data: membership } = await db
-      .from('team_members')
-      .select('id')
-      .eq('team_id', teamId)
-      .eq('member_user_id', userId)
-      .eq('status', 'accepted')
-      .maybeSingle()
+  if (!profile) throw new Error('Profile not found')
 
-    if (!membership) {
-      throw new Error('Not a member of this team')
-    }
+  const { data: membership } = await db
+    .from('entity_members')
+    .select('id')
+    .eq('entity_id', teamId)
+    .eq('user_id', profile.id)
+    .eq('status', 'active')
+    .maybeSingle()
+
+  if (!membership) {
+    throw new Error('Not a member of this entity')
   }
 
   await db
     .from('profiles')
-    .update({ active_team_id: teamId })
+    .update({ active_entity_id: teamId })
     .eq('user_id', userId)
 }

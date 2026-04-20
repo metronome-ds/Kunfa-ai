@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSupabase } from '@/lib/db'
 
 /**
- * GET /api/auth/invite?id=[team_member_id]
+ * GET /api/auth/invite?id=[entity_member_id]
  * Look up invite details for pre-filling signup form.
  * Public endpoint (no auth required).
- * Returns the team owner's user role so the new member inherits it.
+ * Returns the entity type so the new member gets the appropriate role.
  */
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get('id')
@@ -14,9 +14,11 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = getSupabase()
+
+  // Look up from entity_members (sole source of truth)
   const { data: invite } = await supabase
-    .from('team_members')
-    .select('id, team_id, invited_email, invited_name, role, status')
+    .from('entity_members')
+    .select('id, entity_id, invited_email, invited_name, role, status')
     .eq('id', id)
     .single()
 
@@ -24,23 +26,24 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Invite not found' }, { status: 404 })
   }
 
-  if (invite.status === 'accepted') {
+  if (invite.status === 'active') {
     return NextResponse.json({ error: 'Invite already accepted' }, { status: 410 })
   }
 
-  // Look up the team owner's profile to inherit their user role
-  const { data: ownerProfile } = await supabase
-    .from('profiles')
-    .select('role, full_name, fund_name, company_name')
-    .eq('id', invite.team_id)
+  // Look up the entity to derive the user role
+  const { data: entity } = await supabase
+    .from('entities')
+    .select('name, type')
+    .eq('id', invite.entity_id)
     .single()
 
-  const teamOwnerRole = ownerProfile?.role || 'investor'
-  const teamOwnerName = ownerProfile?.full_name || null
-  const fundName = ownerProfile?.fund_name || ownerProfile?.company_name || null
+  const entityType = entity?.type || 'fund'
+  const isFund = entityType === 'fund' || entityType === 'vc' || entityType === 'investor'
+  const teamOwnerRole = isFund ? 'investor' : 'startup'
+  const teamOwnerName = entity?.name || null
+  const fundName = isFund ? entity?.name || null : null
 
   // Check if a Supabase auth user already exists with this email.
-  // If so, the UI should prompt them to sign in instead of signing up.
   let existingUser = false
   if (invite.invited_email) {
     try {
@@ -54,8 +57,8 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     email: invite.invited_email,
     name: invite.invited_name,
-    role: invite.role, // team role (admin/member/viewer)
-    teamOwnerRole, // user role (startup/investor/etc) — new member inherits this
+    role: invite.role,
+    teamOwnerRole,
     teamOwnerName,
     fundName,
     existingUser,
