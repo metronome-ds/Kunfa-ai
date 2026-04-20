@@ -15,6 +15,13 @@ interface CompanyInfo {
   stage?: string | null
   claim_invited_email?: string | null
   claim_status?: string
+  tenant_slug?: string | null
+  tenant_branding?: {
+    name: string | null
+    display_name: string | null
+    logo_url: string | null
+    primary_color: string | null
+  } | null
 }
 
 function getScoreColor(score: number | null | undefined) {
@@ -32,7 +39,7 @@ export default function ClaimPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<{ id: string; email?: string } | null>(null)
   const [claiming, setClaiming] = useState(false)
-  const [result, setResult] = useState<{ approved?: boolean; pending?: boolean; slug?: string } | null>(null)
+  const [result, setResult] = useState<{ approved?: boolean; pending?: boolean; slug?: string; tenantSlug?: string | null } | null>(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -73,8 +80,9 @@ export default function ClaimPage() {
       setResult(data)
 
       if (data.approved) {
+        const tenantSuffix = data.tenantSlug ? `&tenant=${data.tenantSlug}` : ''
         setTimeout(() => {
-          window.location.href = '/dashboard?claimed=true'
+          window.location.href = `/dashboard?claimed=true${tenantSuffix}`
         }, 1500)
       }
     } catch {
@@ -152,15 +160,26 @@ export default function ClaimPage() {
     }
   }
 
+  const tenantSlug = companyInfo.tenant_slug
+  const branding = companyInfo.tenant_branding
+  const networkName = branding?.display_name || branding?.name || 'Kunfa'
+  const signupQuery = tenantSlug ? `claim=${token}&tenant=${tenantSlug}` : `claim=${token}`
+  const loginQuery = tenantSlug ? `claim=${token}&tenant=${tenantSlug}` : `claim=${token}`
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
-            <KunfaLogo height={32} />
+            {branding?.logo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={branding.logo_url} alt={networkName} className="h-8 object-contain mx-auto" />
+            ) : (
+              <KunfaLogo height={32} />
+            )}
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">
-            Claim {companyInfo.company_name} on Kunfa
+            Claim {companyInfo.company_name}{tenantSlug ? ` on ${networkName}` : ' on Kunfa'}
           </h1>
           <p className="text-gray-500 mt-2">
             Take ownership of your company profile, update your information, and connect with investors.
@@ -223,7 +242,7 @@ export default function ClaimPage() {
             </p>
 
             <Link
-              href={`/signup?claim=${token}`}
+              href={`/signup?${signupQuery}`}
               className="w-full block text-center py-3 bg-[#007CF8] text-white rounded-lg font-semibold hover:bg-[#0066D6] transition"
             >
               Sign Up & Claim
@@ -232,7 +251,7 @@ export default function ClaimPage() {
             <p className="text-center text-gray-600 text-sm mt-4">
               Already have an account?{' '}
               <Link
-                href={`/login?claim=${token}`}
+                href={`/login?${loginQuery}`}
                 className="text-[#007CF8] font-medium hover:underline"
               >
                 Sign in

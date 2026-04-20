@@ -2,6 +2,7 @@ import { getServerUser } from '@/lib/supabase-server'
 import { getSupabase } from '@/lib/db'
 import { sendEmail } from '@/lib/email'
 import { companyClaimedNotificationEmail } from '@/lib/email-templates'
+import { getProfileIdForAuthUser } from '@/lib/tenant-auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     // Look up company by claim_token
     const { data: company, error: compError } = await supabase
       .from('company_pages')
-      .select('id, company_name, slug, claim_status, website_url, added_by, overall_score')
+      .select('id, company_name, slug, claim_status, website_url, added_by, overall_score, entity_id')
       .eq('claim_token', token)
       .single()
 
@@ -103,7 +104,55 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      return NextResponse.json({ approved: true, slug: company.slug })
+      // If company belongs to a tenant entity, add the claimer as a member
+      if (company.entity_id) {
+        const claimerProfileId = await getProfileIdForAuthUser(user.id)
+        if (claimerProfileId) {
+          // Check not already a member
+          const { data: existingMem } = await supabase
+            .from('entity_members')
+            .select('id, status')
+            .eq('entity_id', company.entity_id)
+            .eq('user_id', claimerProfileId)
+            .maybeSingle()
+
+          if (!existingMem) {
+            await supabase.from('entity_members').insert({
+              entity_id: company.entity_id,
+              user_id: claimerProfileId,
+              role: 'member',
+              status: 'active',
+              invited_email: user.email || null,
+              invited_name: null,
+            })
+          } else if (existingMem.status === 'removed' || existingMem.status === 'pending') {
+            await supabase
+              .from('entity_members')
+              .update({ status: 'active' })
+              .eq('id', existingMem.id)
+          }
+
+          // Set active_entity_id on profile so they land in entity context
+          await supabase
+            .from('profiles')
+            .update({ active_entity_id: company.entity_id })
+            .eq('id', claimerProfileId)
+        }
+      }
+
+      // Resolve tenant slug for redirect (client uses this to add ?tenant=)
+      let tenantSlug: string | null = null
+      if (company.entity_id) {
+        const { data: t } = await supabase
+          .from('tenants')
+          .select('slug')
+          .eq('entity_id', company.entity_id)
+          .eq('is_active', true)
+          .maybeSingle()
+        tenantSlug = t?.slug || null
+      }
+
+      return NextResponse.json({ approved: true, slug: company.slug, tenantSlug })
     }
 
     // No domain match — submit for admin review
