@@ -1,88 +1,193 @@
-import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { NextRequest, NextResponse } from 'next/server';
-import { sendEmail } from '@/lib/email';
-import { teamInviteEmail } from '@/lib/email-templates';
-import { requirePermission } from '@/lib/permissions';
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { getSupabase } from '@/lib/db'
+import { NextRequest, NextResponse } from 'next/server'
+import { sendEmail } from '@/lib/email'
+import { teamInviteEmail } from '@/lib/email-templates'
+import { requirePermission } from '@/lib/permissions'
+import { getEntityMembers, inviteToEntity } from '@/lib/entity-context'
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface FormattedMember {
+  id: string
+  name: string
+  email: string
+  role: string
+  status: string
+  member_user_id: string | null
+  created_at: string | null
+  title: string | null
+  source: 'entity' | 'team'
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
 /**
- * GET /api/team
- * List team members for current user's team
- * team_id = current user's profiles.id
+ * Look up the caller's profile and determine whether they're in entity mode.
+ * Returns `entityId` if the caller has `active_entity_id` set AND is an active
+ * member of that entity, otherwise null (fall through to legacy team_members).
  */
+async function resolveEntityContext(
+  supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
+  authUserId: string,
+) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, full_name, email, fund_name, company_name, active_entity_id')
+    .eq('user_id', authUserId)
+    .single()
+
+  if (!profile) return { profile: null, entityId: null }
+
+  const entityId = profile.active_entity_id || null
+
+  // Quick membership verification (owner/admin/member/observer) so we don't
+  // accidentally show entity data to a non-member.
+  if (entityId) {
+    const db = getSupabase()
+    const { data: mem } = await db
+      .from('entity_members')
+      .select('role')
+      .eq('entity_id', entityId)
+      .eq('user_id', profile.id)
+      .in('status', ['active', 'pending'])
+      .maybeSingle()
+
+    if (!mem) {
+      // Not a member — fall back to legacy
+      return { profile, entityId: null }
+    }
+  }
+
+  return { profile, entityId }
+}
+
+// ---------------------------------------------------------------------------
+// GET /api/team — list members (entity or legacy team)
+// ---------------------------------------------------------------------------
+
 export async function GET() {
   try {
-    const supabase = await createServerSupabaseClient();
-
+    const supabase = await createServerSupabaseClient()
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get current user's profile
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, full_name, email')
-      .eq('user_id', user.id)
-      .single();
-
+    const { profile, entityId } = await resolveEntityContext(supabase, user.id)
     if (!profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    // team_id = profiles.id of the owner
-    const teamId = profile.id;
+    // ── Entity mode ──────────────────────────────────────────────────────
+    if (entityId) {
+      const raw = await getEntityMembers(entityId)
 
-    // Fetch team members
+      // Determine the current user's role in the entity (for canManage)
+      const db = getSupabase()
+      const { data: selfMem } = await db
+        .from('entity_members')
+        .select('role')
+        .eq('entity_id', entityId)
+        .eq('user_id', profile.id)
+        .in('status', ['active'])
+        .maybeSingle()
+
+      const selfRole = selfMem?.role || 'member'
+
+      type RawMember = (typeof raw)[number]
+
+      const formatted: FormattedMember[] = raw
+        .filter((m: RawMember) => m.status !== 'removed')
+        .map((m: RawMember) => {
+          const p = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles
+          const isOwner = m.role === 'owner' && m.user_id === profile.id
+          return {
+            id: m.id,
+            name: p?.full_name || m.invited_name || 'Pending',
+            email: p?.email || m.invited_email || '',
+            role: m.role,
+            status: m.status === 'active' ? 'accepted' : m.status,
+            member_user_id: p?.id || null,
+            created_at: m.joined_at || null,
+            title: m.title || null,
+            source: 'entity' as const,
+            _isCurrentUser: isOwner,
+          }
+        })
+
+      // Sort: owners first, then admin, then others
+      const roleOrder: Record<string, number> = { owner: 0, admin: 1, member: 2, observer: 3 }
+      formatted.sort(
+        (a, b) => (roleOrder[a.role] ?? 99) - (roleOrder[b.role] ?? 99),
+      )
+
+      return NextResponse.json({
+        data: formatted,
+        entityMode: true,
+        entityId,
+        selfRole,
+      })
+    }
+
+    // ── Legacy team_members mode ─────────────────────────────────────────
+    const teamId = profile.id
+
     const { data: members, error } = await supabase
       .from('team_members')
       .select('id, member_user_id, invited_email, invited_name, role, status, created_at')
       .eq('team_id', teamId)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true })
 
     if (error) {
-      console.error('Error fetching team members:', error);
-      return NextResponse.json({ error: 'Failed to fetch team members' }, { status: 500 });
+      console.error('Error fetching team members:', error)
+      return NextResponse.json({ error: 'Failed to fetch team members' }, { status: 500 })
     }
 
-    // For accepted members with member_user_id, fetch their profile name
     const acceptedUserIds = (members || [])
-      .filter(m => m.member_user_id)
-      .map(m => m.member_user_id);
+      .filter((m) => m.member_user_id)
+      .map((m) => m.member_user_id)
 
-    let profileMap: Record<string, { full_name: string; email: string }> = {};
+    let profileMap: Record<string, { full_name: string; email: string }> = {}
     if (acceptedUserIds.length > 0) {
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, full_name, email')
-        .in('user_id', acceptedUserIds);
+        .in('user_id', acceptedUserIds)
 
       if (profiles) {
         for (const p of profiles) {
-          profileMap[p.user_id] = { full_name: p.full_name || '', email: p.email || '' };
+          profileMap[p.user_id] = { full_name: p.full_name || '', email: p.email || '' }
         }
       }
     }
 
-    // Format response: owner first, then members
-    const formatted = (members || []).map(m => ({
+    const formatted: FormattedMember[] = (members || []).map((m) => ({
       id: m.id,
-      name: m.member_user_id && profileMap[m.member_user_id]?.full_name
-        ? profileMap[m.member_user_id].full_name
-        : m.invited_name || '',
-      email: m.member_user_id && profileMap[m.member_user_id]?.email
-        ? profileMap[m.member_user_id].email
-        : m.invited_email,
+      name:
+        m.member_user_id && profileMap[m.member_user_id]?.full_name
+          ? profileMap[m.member_user_id].full_name
+          : m.invited_name || '',
+      email:
+        m.member_user_id && profileMap[m.member_user_id]?.email
+          ? profileMap[m.member_user_id].email
+          : m.invited_email,
       role: m.role,
       status: m.status,
       member_user_id: m.member_user_id,
       created_at: m.created_at,
-    }));
+      title: null,
+      source: 'team' as const,
+    }))
 
-    // Include the owner as a virtual entry at the top
     const result = [
       {
         id: 'owner',
@@ -92,144 +197,198 @@ export async function GET() {
         status: 'accepted',
         member_user_id: user.id,
         created_at: null,
+        title: null,
+        source: 'team' as const,
       },
       ...formatted,
-    ];
+    ]
 
-    return NextResponse.json({ data: result }, { status: 200 });
+    return NextResponse.json({ data: result, entityMode: false })
   } catch (error) {
-    console.error('Unexpected error in GET /api/team:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Unexpected error in GET /api/team:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-/**
- * POST /api/team
- * Invite a team member
- * Body: { name, email, role }
- */
+// ---------------------------------------------------------------------------
+// POST /api/team — invite member (entity or legacy team)
+// ---------------------------------------------------------------------------
+
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createServerSupabaseClient();
-
+    const supabase = await createServerSupabaseClient()
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
+    } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Permission check: only owner/admin can manage team
-    let teamCtx;
-    try {
-      teamCtx = await requirePermission(user.id, 'manage_team');
-    } catch {
-      return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 });
-    }
-
-    const body = await request.json();
-    const { name, email, role } = body;
+    const body = await request.json()
+    const { name, email, role } = body
 
     if (!email || !name) {
+      return NextResponse.json({ error: 'Name and email are required' }, { status: 400 })
+    }
+
+    const { profile, entityId } = await resolveEntityContext(supabase, user.id)
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    // ── Entity mode ──────────────────────────────────────────────────────
+    if (entityId) {
+      const validRoles = ['admin', 'member', 'observer']
+      if (!validRoles.includes(role || '')) {
+        return NextResponse.json(
+          { error: `Invalid role. Must be one of: ${validRoles.join(', ')}` },
+          { status: 400 },
+        )
+      }
+
+      // Permission: only owner/admin can invite
+      const db = getSupabase()
+      const { data: selfMem } = await db
+        .from('entity_members')
+        .select('role')
+        .eq('entity_id', entityId)
+        .eq('user_id', profile.id)
+        .eq('status', 'active')
+        .maybeSingle()
+
+      if (selfMem?.role !== 'owner' && selfMem?.role !== 'admin') {
+        return NextResponse.json({ error: 'Only owners and admins can invite members' }, { status: 403 })
+      }
+
+      // Check if already an active/pending member by email
+      const { data: existing } = await db
+        .from('entity_members')
+        .select('id, status')
+        .eq('entity_id', entityId)
+        .eq('invited_email', email.toLowerCase())
+        .in('status', ['active', 'pending'])
+        .maybeSingle()
+
+      if (existing) {
+        return NextResponse.json(
+          { error: 'This email already has a membership in this entity' },
+          { status: 409 },
+        )
+      }
+
+      const result = await inviteToEntity(entityId, email, role || 'member', profile.id, name)
+
+      // Send invitation email for pending invites (AWAITED)
+      if (result.status === 'pending') {
+        const inviterName = profile.full_name || 'A team member'
+        const teamName = profile.fund_name || profile.company_name || 'their team'
+        console.log(`[Entity Invite] Sending invite email to ${email} from ${inviterName} (${teamName})`)
+        const emailContent = teamInviteEmail({
+          inviterName,
+          teamName,
+          role: role || 'member',
+          teamMemberId: result.id,
+        })
+        await sendEmail({ to: email, ...emailContent })
+      }
+
       return NextResponse.json(
-        { error: 'Name and email are required' },
-        { status: 400 },
-      );
+        {
+          data: { id: result.id, status: result.status },
+          message:
+            result.status === 'active'
+              ? `${name} already has an account and has been added`
+              : `Invitation sent to ${email}`,
+        },
+        { status: 201 },
+      )
+    }
+
+    // ── Legacy team_members mode ─────────────────────────────────────────
+    let teamCtx
+    try {
+      teamCtx = await requirePermission(user.id, 'manage_team')
+    } catch {
+      return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 })
     }
 
     if (!['admin', 'member', 'viewer'].includes(role || '')) {
       return NextResponse.json(
         { error: 'Invalid role. Must be admin, member, or viewer' },
         { status: 400 },
-      );
+      )
     }
 
-    // Get team owner's profile.id for team_id (uses effective user for team members)
-    const { data: profile } = await supabase
+    const { data: effectiveProfile } = await supabase
       .from('profiles')
       .select('id, full_name, fund_name, company_name')
       .eq('user_id', teamCtx.effectiveUserId)
-      .single();
+      .single()
 
-    if (!profile) {
-      return NextResponse.json({ error: 'Profile not found' }, { status: 404 });
+    if (!effectiveProfile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    // Check if already invited
     const { data: existing } = await supabase
       .from('team_members')
       .select('id')
-      .eq('team_id', profile.id)
+      .eq('team_id', effectiveProfile.id)
       .eq('invited_email', email)
-      .maybeSingle();
+      .maybeSingle()
 
     if (existing) {
       return NextResponse.json(
         { error: 'This email has already been invited to your team' },
         { status: 409 },
-      );
+      )
     }
 
-    // Check if the invited email already has a profile (auto-link)
-    const { data: existingProfile } = await supabase
+    const { data: existingProfileByEmail } = await supabase
       .from('profiles')
       .select('user_id')
       .eq('email', email)
-      .maybeSingle();
+      .maybeSingle()
 
     const { data: member, error: insertError } = await supabase
       .from('team_members')
       .insert({
-        team_id: profile.id,
+        team_id: effectiveProfile.id,
         invited_email: email,
         invited_name: name,
         role: role || 'member',
-        status: existingProfile ? 'accepted' : 'pending',
-        member_user_id: existingProfile?.user_id || null,
+        status: existingProfileByEmail ? 'accepted' : 'pending',
+        member_user_id: existingProfileByEmail?.user_id || null,
         invited_by: user.id,
       })
       .select()
-      .single();
+      .single()
 
     if (insertError) {
-      console.error('Error inviting team member:', insertError);
-      return NextResponse.json({ error: 'Failed to invite team member' }, { status: 500 });
+      console.error('Error inviting team member:', insertError)
+      return NextResponse.json({ error: 'Failed to invite team member' }, { status: 500 })
     }
 
-    // Send invitation email (don't block on failure)
     if (member.status === 'pending') {
-      const inviterName = profile.full_name || 'A team member';
-      const teamName = profile.fund_name || profile.company_name || 'their team';
-      console.log(`[Team Invite] Sending invite email to ${email} from ${inviterName} (${teamName})`);
+      const inviterName = effectiveProfile.full_name || 'A team member'
+      const teamName = effectiveProfile.fund_name || effectiveProfile.company_name || 'their team'
       const emailContent = teamInviteEmail({
         inviterName,
         teamName,
         role: role || 'member',
         teamMemberId: member.id,
-      });
-      sendEmail({ to: email, ...emailContent })
-        .then(sent => {
-          if (sent) {
-            console.log(`[Team Invite] Email sent successfully to ${email}`);
-          } else {
-            console.error(`[Team Invite] Email FAILED to send to ${email} — check RESEND_API_KEY`);
-          }
-        })
-        .catch(err => {
-          console.error(`[Team Invite] Email error for ${email}:`, err instanceof Error ? err.message : err);
-        });
-    } else {
-      console.log(`[Team Invite] Skipping email for ${email} — status is ${member.status} (auto-accepted)`);
+      })
+      // AWAITED — don't fire-and-forget
+      await sendEmail({ to: email, ...emailContent })
     }
 
     return NextResponse.json(
       { data: member, message: `Invitation sent to ${email}` },
       { status: 201 },
-    );
+    )
   } catch (error) {
-    console.error('Unexpected error in POST /api/team:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Unexpected error in POST /api/team:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -11,6 +11,8 @@ interface TeamMember {
   status: string
   member_user_id: string | null
   created_at: string | null
+  title: string | null
+  source?: 'entity' | 'team'
 }
 
 function getRoleBadge(role: string) {
@@ -21,6 +23,7 @@ function getRoleBadge(role: string) {
       return 'bg-red-100 text-red-700'
     case 'member':
       return 'bg-emerald-100 text-emerald-700'
+    case 'observer':
     case 'viewer':
       return 'bg-gray-100 text-gray-600'
     default:
@@ -28,10 +31,32 @@ function getRoleBadge(role: string) {
   }
 }
 
+function getRoleLabel(role: string) {
+  return role.charAt(0).toUpperCase() + role.slice(1)
+}
+
 function getStatusBadge(status: string) {
-  return status === 'accepted'
-    ? 'bg-emerald-100 text-emerald-700'
-    : 'bg-yellow-100 text-yellow-700'
+  switch (status) {
+    case 'accepted':
+    case 'active':
+      return 'bg-emerald-100 text-emerald-700'
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-700'
+    default:
+      return 'bg-gray-100 text-gray-600'
+  }
+}
+
+function getStatusLabel(status: string) {
+  switch (status) {
+    case 'accepted':
+    case 'active':
+      return 'Active'
+    case 'pending':
+      return 'Pending'
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1)
+  }
 }
 
 function getInitials(name: string) {
@@ -49,8 +74,9 @@ export default function TeamPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [canManage, setCanManage] = useState(false)
+  const [entityMode, setEntityMode] = useState(false)
 
-  // Resend cooldown: map of memberId → true if on cooldown
+  // Resend cooldown
   const [resendCooldown, setResendCooldown] = useState<Record<string, boolean>>({})
   const [resending, setResending] = useState<string | null>(null)
 
@@ -58,15 +84,23 @@ export default function TeamPage() {
   const [showInvite, setShowInvite] = useState(false)
   const [inviteName, setInviteName] = useState('')
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole, setInviteRole] = useState<'admin' | 'member' | 'viewer'>('member')
+  const [inviteRole, setInviteRole] = useState('member')
   const [inviting, setInviting] = useState(false)
 
   const fetchTeam = async () => {
     try {
       const res = await fetch('/api/team')
       if (!res.ok) throw new Error('Failed to load team')
-      const { data } = await res.json()
-      setMembers(data || [])
+      const json = await res.json()
+      setMembers(json.data || [])
+      setEntityMode(!!json.entityMode)
+
+      if (json.entityMode) {
+        // In entity mode, selfRole comes from the API
+        const selfRole = json.selfRole
+        setCanManage(selfRole === 'owner' || selfRole === 'admin')
+      }
+
       setError('')
     } catch {
       setError('Failed to load team members')
@@ -77,12 +111,15 @@ export default function TeamPage() {
 
   useEffect(() => {
     fetchTeam()
-    // Fetch team context for permissions
+
+    // Legacy team-context for non-entity mode
     fetch('/api/team-context')
       .then(r => r.json())
       .then(data => {
         const role = data?.context?.memberRole
-        setCanManage(role === 'owner' || role === 'admin')
+        // Only set canManage from team-context if NOT in entity mode
+        // (entity mode sets it in fetchTeam)
+        setCanManage(prev => prev || role === 'owner' || role === 'admin')
       })
       .catch(() => {})
   }, [])
@@ -103,7 +140,7 @@ export default function TeamPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Failed to invite')
 
-      setSuccess(`Invitation sent to ${inviteEmail}`)
+      setSuccess(data.message || `Invitation sent to ${inviteEmail}`)
       setInviteName('')
       setInviteEmail('')
       setInviteRole('member')
@@ -124,12 +161,13 @@ export default function TeamPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: newRole }),
       })
-      if (!res.ok) throw new Error('Failed to update role')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to update role')
       setSuccess('Role updated')
       fetchTeam()
       setTimeout(() => setSuccess(''), 2000)
-    } catch {
-      setError('Failed to update role')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to update role')
     }
   }
 
@@ -137,12 +175,13 @@ export default function TeamPage() {
     if (!confirm('Remove this team member?')) return
     try {
       const res = await fetch(`/api/team/${memberId}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to remove')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to remove')
       setSuccess('Member removed')
       fetchTeam()
       setTimeout(() => setSuccess(''), 2000)
-    } catch {
-      setError('Failed to remove member')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove member')
     }
   }
 
@@ -159,7 +198,6 @@ export default function TeamPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to resend')
       setSuccess(`Invite resent to ${email}`)
       setTimeout(() => setSuccess(''), 3000)
-      // Start 30s cooldown
       setResendCooldown((prev) => ({ ...prev, [memberId]: true }))
       setTimeout(() => {
         setResendCooldown((prev) => ({ ...prev, [memberId]: false }))
@@ -171,12 +209,34 @@ export default function TeamPage() {
     }
   }
 
+  // Role options differ between entity mode and legacy
+  const roleOptions = entityMode
+    ? [
+        { value: 'admin', label: 'Admin — Full access' },
+        { value: 'member', label: 'Member — Can view and manage deals' },
+        { value: 'observer', label: 'Observer — Read-only access' },
+      ]
+    : [
+        { value: 'admin', label: 'Admin — Full access' },
+        { value: 'member', label: 'Member — Can view and manage deals' },
+        { value: 'viewer', label: 'Viewer — Read-only access' },
+      ]
+
+  // Role options for the inline select (shorter labels)
+  const inlineRoleOptions = entityMode
+    ? ['owner', 'admin', 'member', 'observer']
+    : ['admin', 'member', 'viewer']
+
+  // Owner row: in entity mode, the owner comes from the data directly (no
+  // synthetic "owner" row). In legacy mode, it's the first entry with id='owner'.
+  const isOwnerRow = (m: TeamMember) =>
+    entityMode ? m.role === 'owner' : m.id === 'owner'
+
   const inputClass =
     'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]'
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
@@ -198,7 +258,6 @@ export default function TeamPage() {
         )}
       </div>
 
-      {/* Messages */}
       {success && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-6">
           <p className="text-sm text-emerald-700">{success}</p>
@@ -210,7 +269,6 @@ export default function TeamPage() {
         </div>
       )}
 
-      {/* Loading */}
       {loading && (
         <div className="text-center py-16">
           <div className="w-8 h-8 border-2 border-[#007CF8] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
@@ -218,7 +276,6 @@ export default function TeamPage() {
         </div>
       )}
 
-      {/* Team Members Table */}
       {!loading && (
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
           <table className="w-full">
@@ -233,7 +290,6 @@ export default function TeamPage() {
             <tbody className="divide-y divide-gray-100">
               {members.map((member) => (
                 <tr key={member.id} className="hover:bg-[#F8F9FB] transition">
-                  {/* Member info */}
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
@@ -244,15 +300,17 @@ export default function TeamPage() {
                       <div>
                         <p className="text-sm font-medium text-gray-900">{member.name || 'Pending'}</p>
                         <p className="text-xs text-gray-500">{member.email}</p>
+                        {member.title && (
+                          <p className="text-xs text-gray-400">{member.title}</p>
+                        )}
                       </div>
                     </div>
                   </td>
 
-                  {/* Role */}
                   <td className="px-5 py-4">
-                    {member.id === 'owner' || !canManage ? (
+                    {isOwnerRow(member) || !canManage ? (
                       <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${getRoleBadge(member.role)}`}>
-                        {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
+                        {getRoleLabel(member.role)}
                       </span>
                     ) : (
                       <select
@@ -260,25 +318,25 @@ export default function TeamPage() {
                         onChange={(e) => handleChangeRole(member.id, e.target.value)}
                         className="text-xs font-medium px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#007CF8]"
                       >
-                        <option value="admin">Admin</option>
-                        <option value="member">Member</option>
-                        <option value="viewer">Viewer</option>
+                        {inlineRoleOptions.map((r) => (
+                          <option key={r} value={r}>
+                            {getRoleLabel(r)}
+                          </option>
+                        ))}
                       </select>
                     )}
                   </td>
 
-                  {/* Status */}
                   <td className="px-5 py-4">
                     <span className={`inline-block text-xs font-medium px-2.5 py-1 rounded-full ${getStatusBadge(member.status)}`}>
-                      {member.status === 'accepted' ? 'Active' : 'Pending'}
+                      {getStatusLabel(member.status)}
                     </span>
                   </td>
 
-                  {/* Actions */}
                   <td className="px-5 py-4 text-right">
                     {canManage && (
                       <div className="flex items-center justify-end gap-1">
-                        {member.id !== 'owner' && member.status === 'pending' && (
+                        {!isOwnerRow(member) && member.status === 'pending' && (
                           <button
                             onClick={() => handleResend(member.id, member.email)}
                             disabled={resending === member.id || resendCooldown[member.id]}
@@ -289,7 +347,7 @@ export default function TeamPage() {
                             {resendCooldown[member.id] ? 'Sent' : 'Resend'}
                           </button>
                         )}
-                        {member.id !== 'owner' && (
+                        {!isOwnerRow(member) && (
                           <button
                             onClick={() => handleRemove(member.id)}
                             className="p-1.5 text-gray-400 hover:text-red-500 transition rounded-lg hover:bg-red-50"
@@ -309,7 +367,9 @@ export default function TeamPage() {
           {members.length === 0 && (
             <div className="text-center py-12 px-6">
               <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm mb-4">No team members yet.{canManage ? ' Invite your first member to get started.' : ''}</p>
+              <p className="text-gray-500 text-sm mb-4">
+                No team members yet.{canManage ? ' Invite your first member to get started.' : ''}
+              </p>
               {canManage && (
                 <button
                   onClick={() => setShowInvite(true)}
@@ -323,7 +383,6 @@ export default function TeamPage() {
         </div>
       )}
 
-      {/* Invite Modal */}
       {showInvite && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowInvite(false)} />
@@ -364,12 +423,14 @@ export default function TeamPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
                 <select
                   value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value as 'admin' | 'member' | 'viewer')}
+                  onChange={(e) => setInviteRole(e.target.value)}
                   className={inputClass}
                 >
-                  <option value="member">Member — Can view and manage deals</option>
-                  <option value="admin">Admin — Full access</option>
-                  <option value="viewer">Viewer — Read-only access</option>
+                  {roleOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
