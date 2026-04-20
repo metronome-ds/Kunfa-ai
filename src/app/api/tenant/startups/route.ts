@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getSupabase } from '@/lib/db';
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { getTenantFromHeaders } from '@/lib/tenant-context';
+import { isTenantAdminForEntity } from '@/lib/tenant-auth';
 
 export async function GET(request: NextRequest) {
   const supabase = await createServerSupabaseClient();
@@ -26,9 +27,16 @@ export async function GET(request: NextRequest) {
   const stage = searchParams.get('stage') || '';
   const sort = searchParams.get('sort') || 'score';
 
+  // Admins see claim status; regular members don't (data isolation)
+  const isAdmin = await isTenantAdminForEntity(user.id, entityId);
+
+  const selectCols = isAdmin
+    ? 'id, company_name, slug, logo_url, one_liner, industry, stage, founder_name, country, overall_score, is_raising, raise_amount, created_at, claim_status, claim_invited_email'
+    : 'id, company_name, slug, logo_url, one_liner, industry, stage, founder_name, country, overall_score, is_raising, raise_amount, created_at';
+
   let query = db
     .from('company_pages')
-    .select('id, company_name, slug, logo_url, one_liner, industry, stage, founder_name, country, overall_score, is_raising, raise_amount, created_at')
+    .select(selectCols)
     .eq('entity_id', entityId);
 
   if (search) query = query.or(`company_name.ilike.%${search}%,one_liner.ilike.%${search}%`);

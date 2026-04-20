@@ -20,6 +20,8 @@ interface Startup {
   is_raising: boolean | null;
   raise_amount: number | null;
   created_at: string;
+  claim_status?: string | null;
+  claim_invited_email?: string | null;
 }
 
 function ScoreRing({ score }: { score: number | null }) {
@@ -155,6 +157,17 @@ export default function StartupsPage() {
                 {s.industry && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">{s.industry}</span>}
                 {s.stage && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">{s.stage}</span>}
                 {s.is_raising && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Raising</span>}
+                {s.claim_status && s.claim_status !== 'claimed' && (
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                    s.claim_status === 'invite_sent' ? 'bg-blue-50 text-blue-700'
+                    : s.claim_status === 'pending' ? 'bg-yellow-50 text-yellow-700'
+                    : 'bg-orange-50 text-orange-700'
+                  }`}>
+                    {s.claim_status === 'invite_sent' ? 'Invite Sent'
+                     : s.claim_status === 'pending' ? 'Pending Review'
+                     : 'Unclaimed'}
+                  </span>
+                )}
               </div>
               <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
                 <span className="truncate">{s.founder_name || '—'}</span>
