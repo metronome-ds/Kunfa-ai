@@ -8,6 +8,7 @@ import { CompanyNav } from '@/components/company/CompanyNav'
 import { ReportBanner } from '@/components/company/ReportBanner'
 import { ScoreTooltip } from '@/components/ui/ScoreTooltip'
 import { OptionalSidebarLayout } from '@/components/common/OptionalSidebarLayout'
+import { SourceBadge } from '@/components/common/SourceBadge'
 import DealRoomSection from '@/components/dealroom/DealRoomSection'
 import PaidReportBanner from '@/components/company/PaidReportBanner'
 import { getRaisingUrgency } from '@/lib/utils'
@@ -183,6 +184,7 @@ export default async function CompanyPublicPage({ params }: { params: Promise<{ 
                   {company.stage}
                 </span>
               )}
+              <SourceBadge source={company.source} />
               {hq && (
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
                   {/* Map pin icon */}

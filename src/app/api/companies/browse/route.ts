@@ -75,7 +75,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('company_pages')
       .select(
-        'id, company_name, slug, description, one_liner, industry, stage, overall_score, raise_amount, country, headquarters, logo_url, created_at, is_raising, raising_amount, raising_instrument, raising_target_close',
+        'id, company_name, slug, description, one_liner, industry, stage, overall_score, raise_amount, country, headquarters, logo_url, created_at, is_raising, raising_amount, raising_instrument, raising_target_close, source',
         { count: 'exact' }
       )
       .eq('is_public', true)

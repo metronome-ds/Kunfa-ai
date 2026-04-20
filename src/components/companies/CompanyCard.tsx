@@ -4,6 +4,7 @@ import { Bookmark, PlusCircle, Check, Sparkles, Clock } from 'lucide-react';
 import { useState } from 'react';
 import Link from 'next/link';
 import CompanyLogo from '@/components/common/CompanyLogo';
+import { SourceBadge } from '@/components/common/SourceBadge';
 import { getRaisingUrgency } from '@/lib/utils';
 
 interface CompanyCardProps {
@@ -24,6 +25,7 @@ interface CompanyCardProps {
     raising_amount?: string | null;
     raising_instrument?: string | null;
     raising_target_close?: string | null;
+    source?: string | null;
   };
   isWatchlisted?: boolean;
   showWatchlist?: boolean;
@@ -170,6 +172,7 @@ export function CompanyCard({
                   {stageLabel}
                 </span>
               )}
+              <SourceBadge source={company.source} />
             </div>
 
             {showWatchlist && (

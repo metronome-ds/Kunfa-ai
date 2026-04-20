@@ -31,8 +31,8 @@ export async function GET(request: NextRequest) {
   const isAdmin = await isTenantAdminForEntity(user.id, entityId);
 
   const selectCols = isAdmin
-    ? 'id, company_name, slug, logo_url, one_liner, industry, stage, founder_name, country, overall_score, is_raising, raise_amount, created_at, claim_status, claim_invited_email'
-    : 'id, company_name, slug, logo_url, one_liner, industry, stage, founder_name, country, overall_score, is_raising, raise_amount, created_at';
+    ? 'id, company_name, slug, logo_url, one_liner, industry, stage, founder_name, country, overall_score, is_raising, raise_amount, created_at, source, claim_status, claim_invited_email'
+    : 'id, company_name, slug, logo_url, one_liner, industry, stage, founder_name, country, overall_score, is_raising, raise_amount, created_at, source';
 
   let query = db
     .from('company_pages')
