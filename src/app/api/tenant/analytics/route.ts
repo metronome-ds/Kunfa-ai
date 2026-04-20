@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 
   const [membersRes, companiesRes, dealsRes, memberGrowthRes] = await Promise.all([
     db.from('entity_members').select('id', { count: 'exact', head: true }).eq('entity_id', entityId).eq('status', 'active'),
-    db.from('company_pages').select('id, industry, stage, overall_score, company_name, raise_amount, slug').eq('entity_id', entityId),
+    db.from('company_pages').select('id, industry, stage, overall_score, company_name, raise_amount, slug').eq('entity_id', entityId).is('deleted_at', null),
     db.from('deals').select('id, stage, raise_amount').eq('entity_id', entityId),
     db.from('entity_members').select('created_at').eq('entity_id', entityId).gte('created_at', twelveMonthsAgo.toISOString()),
   ]);

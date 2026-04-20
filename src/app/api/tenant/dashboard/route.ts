@@ -38,11 +38,11 @@ export async function GET(request: NextRequest) {
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
 
   const [companiesRes, raisingRes, membersRes, newMembersRes, recentCompaniesRes, recentMembersRes] = await Promise.all([
-    db.from('company_pages').select('raise_amount').eq('entity_id', entityId),
-    db.from('company_pages').select('id', { count: 'exact', head: true }).eq('entity_id', entityId).eq('is_raising', true),
+    db.from('company_pages').select('raise_amount').eq('entity_id', entityId).is('deleted_at', null),
+    db.from('company_pages').select('id', { count: 'exact', head: true }).eq('entity_id', entityId).eq('is_raising', true).is('deleted_at', null),
     db.from('entity_members').select('id', { count: 'exact', head: true }).eq('entity_id', entityId).eq('status', 'active'),
     db.from('entity_members').select('id', { count: 'exact', head: true }).eq('entity_id', entityId).gte('created_at', monthStart),
-    db.from('company_pages').select('id, slug, company_name, created_at, is_raising').eq('entity_id', entityId).order('created_at', { ascending: false }).limit(10),
+    db.from('company_pages').select('id, slug, company_name, created_at, is_raising').eq('entity_id', entityId).is('deleted_at', null).order('created_at', { ascending: false }).limit(10),
     db.from('entity_members').select('id, user_id, created_at, profiles:profiles(full_name, role)').eq('entity_id', entityId).order('created_at', { ascending: false }).limit(10),
   ]);
 

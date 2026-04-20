@@ -78,7 +78,8 @@ export async function GET(request: NextRequest) {
         'id, company_name, slug, description, one_liner, industry, stage, overall_score, raise_amount, country, headquarters, logo_url, created_at, is_raising, raising_amount, raising_instrument, raising_target_close',
         { count: 'exact' }
       )
-      .eq('is_public', true);
+      .eq('is_public', true)
+      .is('deleted_at', null);
 
     if (tenantEntityId) {
       query = query.eq('entity_id', tenantEntityId);

@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUser } from '@/lib/supabase';
 import { supabase } from '@/lib/supabase';
-import { Heart, HeartOff, Plus, Check, Pencil, Send, Copy, Clock, CheckCircle2, Circle, Loader2 } from 'lucide-react';
+import { Heart, HeartOff, Plus, Check, Pencil, Send, Copy, Clock, CheckCircle2, Circle, Loader2, Trash2 } from 'lucide-react';
 import EditCompanyModal from './EditCompanyModal';
+import { DeleteCompanyModal } from './DeleteCompanyModal';
 import { useTenant } from '@/components/TenantProvider';
 import { tenantFetch } from '@/lib/tenant-fetch';
 
@@ -58,6 +59,7 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
   const [watchlistLoading, setWatchlistLoading] = useState(false);
   const [pipelineLoading, setPipelineLoading] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   // Claim UI state
   const [currentClaimStatus, setCurrentClaimStatus] = useState(initialClaimStatus || 'unclaimed');
@@ -293,6 +295,17 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
           </button>
         )}
 
+        {/* Delete button — entity admins only */}
+        {isTenantAdmin && company && (
+          <button
+            onClick={() => setDeleteOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-red-200 text-red-700 bg-white hover:bg-red-50 transition"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete
+          </button>
+        )}
+
         {/* Claim invite actions — for investor who added OR tenant admin, when not yet claimed */}
         {(isAddedBy || isTenantAdmin) && currentClaimStatus !== 'claimed' && (
           <>
@@ -394,6 +407,20 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
           onSaved={() => {
             setEditOpen(false);
             window.location.reload();
+          }}
+        />
+      )}
+
+      {/* Delete Modal */}
+      {isTenantAdmin && company && (
+        <DeleteCompanyModal
+          companyId={companyId}
+          companyName={company.company_name}
+          isOpen={deleteOpen}
+          onClose={() => setDeleteOpen(false)}
+          onDeleted={() => {
+            setDeleteOpen(false);
+            window.location.href = '/deals';
           }}
         />
       )}

@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Search, Rocket, MapPin } from 'lucide-react';
+import { Search, Rocket, MapPin, Trash2 } from 'lucide-react';
 import { useTenant, useTenantFeature } from '@/components/TenantProvider';
 import { tenantFetch } from '@/lib/tenant-fetch';
+import { DeleteCompanyModal } from '@/components/company/DeleteCompanyModal';
 
 interface Startup {
   id: string;
@@ -49,6 +50,16 @@ export default function StartupsPage() {
   const [industry, setIndustry] = useState('');
   const [stage, setStage] = useState('');
   const [sort, setSort] = useState('score');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+
+  useEffect(() => {
+    if (!isTenantContext) return;
+    tenantFetch('/api/tenant/admin-check')
+      .then((r) => r.ok ? r.json() : { isAdmin: false })
+      .then((d) => setIsAdmin(!!d.isAdmin))
+      .catch(() => {});
+  }, [isTenantContext]);
 
   useEffect(() => {
     if (!isTenantContext) return;
@@ -171,11 +182,35 @@ export default function StartupsPage() {
               </div>
               <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
                 <span className="truncate">{s.founder_name || '—'}</span>
-                {s.country && <span className="flex items-center gap-1 flex-shrink-0"><MapPin className="w-3 h-3" />{s.country}</span>}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {s.country && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{s.country}</span>}
+                  {isAdmin && (
+                    <button
+                      onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget({ id: s.id, name: s.company_name }); }}
+                      className="p-1 text-gray-300 hover:text-red-500 transition rounded"
+                      title="Delete company"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
             </Link>
           ))}
         </div>
+      )}
+
+      {deleteTarget && (
+        <DeleteCompanyModal
+          companyId={deleteTarget.id}
+          companyName={deleteTarget.name}
+          isOpen={true}
+          onClose={() => setDeleteTarget(null)}
+          onDeleted={() => {
+            setStartups((prev) => prev.filter((s) => s.id !== deleteTarget.id));
+            setDeleteTarget(null);
+          }}
+        />
       )}
     </div>
   );

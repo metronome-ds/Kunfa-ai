@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
   let query = db
     .from('company_pages')
     .select(selectCols)
-    .eq('entity_id', entityId);
+    .eq('entity_id', entityId)
+    .is('deleted_at', null);
 
   if (search) query = query.or(`company_name.ilike.%${search}%,one_liner.ilike.%${search}%`);
   if (industry) query = query.eq('industry', industry);
