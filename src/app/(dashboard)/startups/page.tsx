@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Search, Rocket, MapPin, Trash2 } from 'lucide-react';
+import { Search, Rocket, MapPin, Trash2, Lock } from 'lucide-react';
 import { useTenant, useTenantFeature } from '@/components/TenantProvider';
 import { tenantFetch } from '@/lib/tenant-fetch';
 import { DeleteCompanyModal } from '@/components/company/DeleteCompanyModal';
@@ -23,6 +23,7 @@ interface Startup {
   raise_amount: number | null;
   created_at: string;
   source?: string | null;
+  is_public?: boolean | null;
   claim_status?: string | null;
   claim_invited_email?: string | null;
 }
@@ -171,6 +172,11 @@ export default function StartupsPage() {
                 {s.stage && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">{s.stage}</span>}
                 {s.is_raising && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Raising</span>}
                 <SourceBadge source={s.source} />
+                {s.is_public === false && (
+                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                    <Lock className="w-3 h-3" />Private
+                  </span>
+                )}
                 {s.claim_status && s.claim_status !== 'claimed' && (
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                     s.claim_status === 'invite_sent' ? 'bg-blue-50 text-blue-700'

@@ -28,6 +28,7 @@ interface CompanyData {
   raising_amount?: string | null
   raising_instrument?: string | null
   raising_target_close?: string | null
+  is_public?: boolean | null
 }
 
 const RAISING_INSTRUMENTS = [
@@ -67,6 +68,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
     raising_amount: company.raising_amount || '',
     raising_instrument: company.raising_instrument || '',
     raising_target_close: company.raising_target_close || '',
+    is_public: company.is_public !== false,
   })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -143,6 +145,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
           raising_amount: form.is_raising ? (form.raising_amount || null) : null,
           raising_instrument: form.is_raising ? (form.raising_instrument || null) : null,
           raising_target_close: form.is_raising ? (form.raising_target_close || null) : null,
+          is_public: form.is_public,
         }),
       })
 
@@ -457,6 +460,31 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
                 </div>
               </div>
             )}
+          </div>
+
+          {/* Profile Visibility */}
+          <div className="border-t border-gray-100 pt-4">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <p className="text-sm font-medium text-gray-900">Profile Visibility</p>
+                <p className="text-xs text-gray-500 mt-0.5">
+                  {form.is_public
+                    ? 'Public — appears in Browse Companies and can be viewed by all investors.'
+                    : 'Private — only visible to your organization\'s team.'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                <span className={`text-xs font-medium ${form.is_public ? 'text-gray-400' : 'text-gray-700'}`}>Private</span>
+                <button
+                  type="button"
+                  onClick={() => updateField('is_public', !form.is_public)}
+                  className={`relative w-10 h-5 rounded-full transition ${form.is_public ? 'bg-[#007CF8]' : 'bg-gray-300'}`}
+                >
+                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.is_public ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </button>
+                <span className={`text-xs font-medium ${form.is_public ? 'text-gray-700' : 'text-gray-400'}`}>Public</span>
+              </div>
+            </label>
           </div>
 
           {/* Actions */}
