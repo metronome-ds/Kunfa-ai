@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUser } from '@/lib/supabase';
 import { supabase } from '@/lib/supabase';
-import { Heart, HeartOff, Plus, Check, Pencil, Send, Copy, Clock, CheckCircle2, Circle } from 'lucide-react';
+import { Heart, HeartOff, Plus, Check, Pencil, Send, Copy, Clock, CheckCircle2, Circle, Loader2 } from 'lucide-react';
 import EditCompanyModal from './EditCompanyModal';
+import { useTenant } from '@/components/TenantProvider';
+import { tenantFetch } from '@/lib/tenant-fetch';
 
 interface CompanyData {
   id: string
@@ -42,11 +44,13 @@ interface CompanyActionsProps {
 }
 
 export function CompanyActions({ companyId, company, claimStatus: initialClaimStatus, claimToken, claimInvitedEmail, overallScore }: CompanyActionsProps) {
+  const { isTenantContext } = useTenant();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isInvestor, setIsInvestor] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isOwner, setIsOwner] = useState(false);
   const [isAddedBy, setIsAddedBy] = useState(false);
+  const [isTenantAdmin, setIsTenantAdmin] = useState(false);
   const [canEdit, setCanEdit] = useState(false);
   const [isWatchlisted, setIsWatchlisted] = useState(false);
   const [inPipeline, setInPipeline] = useState(false);
@@ -104,6 +108,14 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
 
       if (profile?.is_admin === true) {
         setIsAdmin(true);
+      }
+
+      // Tenant admin check — any entity admin can manage claim invites
+      if (isTenantContext) {
+        tenantFetch('/api/tenant/admin-check')
+          .then((r) => r.ok ? r.json() : { isAdmin: false })
+          .then((d) => setIsTenantAdmin(!!d.isAdmin))
+          .catch(() => {});
       }
 
       // Check if this user owns this company page
@@ -210,15 +222,29 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
     if (!inviteEmail) return;
     setInviteLoading(true);
     try {
-      const res = await fetch(`/api/companies/${companyId}/claim-invite`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: inviteEmail }),
-      });
+      let res: Response;
+      if (isTenantAdmin && isTenantContext) {
+        // Use tenant claim invite API — works for any entity admin
+        res = await tenantFetch('/api/tenant/claim-invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ companyPageId: companyId, founderEmail: inviteEmail }),
+        });
+      } else {
+        // Legacy investor-added claim invite
+        res = await fetch(`/api/companies/${companyId}/claim-invite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: inviteEmail }),
+        });
+      }
       if (res.ok) {
         setCurrentClaimStatus('invite_sent');
         setShowInviteForm(false);
         setInviteEmail('');
+      } else {
+        const d = await res.json().catch(() => ({}));
+        console.error('Send invite failed:', d.error || res.status);
       }
     } catch (err) {
       console.error('Send invite error:', err);
@@ -248,8 +274,8 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
   return (
     <>
       <div className="flex flex-wrap items-center gap-3">
-        {/* Claim status badge — visible to investor who added the company */}
-        {isAddedBy && claimToken && (
+        {/* Claim status badge — visible to investor who added the company OR tenant admin */}
+        {(isAddedBy || isTenantAdmin) && (claimToken || isTenantAdmin) && (
           <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border ${claimBadge.color}`}>
             {claimBadge.icon}
             {claimBadge.label}
@@ -267,23 +293,25 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
           </button>
         )}
 
-        {/* Claim invite actions — for investor who added, when not yet claimed */}
-        {isAddedBy && claimToken && currentClaimStatus !== 'claimed' && (
+        {/* Claim invite actions — for investor who added OR tenant admin, when not yet claimed */}
+        {(isAddedBy || isTenantAdmin) && currentClaimStatus !== 'claimed' && (
           <>
             <button
               onClick={() => setShowInviteForm(!showInviteForm)}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"
             >
               <Send className="w-4 h-4 text-gray-500" />
-              Invite Founder
+              {currentClaimStatus === 'invite_sent' ? 'Resend Invite' : 'Send Claim Invite'}
             </button>
-            <button
-              onClick={handleCopyLink}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"
-            >
-              <Copy className="w-4 h-4 text-gray-500" />
-              {copied ? 'Copied!' : 'Copy Invite Link'}
-            </button>
+            {claimToken && (
+              <button
+                onClick={handleCopyLink}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"
+              >
+                <Copy className="w-4 h-4 text-gray-500" />
+                {copied ? 'Copied!' : 'Copy Invite Link'}
+              </button>
+            )}
           </>
         )}
 
