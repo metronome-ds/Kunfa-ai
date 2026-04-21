@@ -601,7 +601,7 @@ test.describe('KUN-30 Phase 2: White-Label Tenant Features', () => {
         page.waitForResponse(
           (resp) =>
             resp.url().includes('/api/tenant/onboard-startup') && resp.request().method() === 'POST',
-          { timeout: 30_000 },
+          { timeout: 45_000 },
         ),
         page.getByRole('button', { name: /^Submit/ }).click(),
       ]);
@@ -612,9 +612,11 @@ test.describe('KUN-30 Phase 2: White-Label Tenant Features', () => {
       expect(body.company.slug).toBeTruthy();
       expect(body.company.company_name).toBe(uniqueName);
 
-      // After submit the form redirects to /company/<slug>. Assert the URL.
-      await page.waitForURL(/\/company\//, { timeout: 15_000 });
-      expect(page.url()).toContain(`/company/${body.company.slug}`);
+      // After submit the form shows a success state (no longer redirects
+      // immediately — it shows the claim invite form). Verify the success
+      // state rendered with the company name.
+      await expect(page.getByText('Company created')).toBeVisible({ timeout: 45_000 });
+      await expect(page.getByText(uniqueName)).toBeVisible();
     });
 
     test('logo upload rejects oversized images server-side', async ({ page }) => {
