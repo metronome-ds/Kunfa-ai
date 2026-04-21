@@ -55,12 +55,13 @@ export default function AddCompanyPage() {
     supabase.auth.getUser().then(async ({ data }) => {
       if (data.user?.email) setUserEmail(data.user.email)
       if (data.user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('full_name, fund_name')
-          .eq('user_id', data.user.id)
-          .single()
-        const investorLabel = profile?.fund_name || profile?.full_name || 'our team'
+        // Fetch team-context for entity name (primary) + profile as fallback
+        const [profileRes, ctxRes] = await Promise.all([
+          supabase.from('profiles').select('full_name, fund_name').eq('user_id', data.user.id).single(),
+          fetch('/api/team-context').then(r => r.ok ? r.json() : null).catch(() => null),
+        ])
+        const entityName = ctxRes?.context?.fundName || ctxRes?.context?.teamOwnerName || null
+        const investorLabel = entityName || profileRes.data?.fund_name || profileRes.data?.full_name || 'our team'
         setInviteForm(f => ({
           ...f,
           message: `The team at ${investorLabel} is excited to invite you to our private deal room. Simply upload your key documents and your profile will be auto-generated — no lengthy forms required. This is your first step in our due diligence process.\n\nWe're looking forward to partnering on this journey with you.`,

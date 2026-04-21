@@ -82,7 +82,10 @@ export async function POST(request: NextRequest) {
       }
 
       const inviterName = callerProfile.full_name || 'A team member'
-      const teamName = callerProfile.fund_name || callerProfile.company_name || 'their team'
+      // Use entity name from the active entity, not stale profile.fund_name
+      const db2 = getSupabase()
+      const { data: entityRow } = await db2.from('entities').select('name').eq('id', callerProfile.active_entity_id).single()
+      const teamName = entityRow?.name || callerProfile.fund_name || callerProfile.company_name || 'their team'
       const emailContent = teamInviteEmail({
         inviterName,
         teamName,

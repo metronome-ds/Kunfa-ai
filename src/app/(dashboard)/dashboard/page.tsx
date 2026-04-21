@@ -212,6 +212,7 @@ function DashboardContent() {
 
   // Permission: can the current user edit?
   const [canEdit, setCanEdit] = useState(false);
+  const [activeEntityName, setActiveEntityName] = useState<string | null>(null);
 
   // Startup state
   const [company, setCompany] = useState<CompanyData | null>(null);
@@ -244,7 +245,9 @@ function DashboardContent() {
           fetch('/api/team-context').then(r => r.json()).catch(() => ({})),
         ]);
         const memberRole = teamRes?.context?.memberRole;
+        const entityName = teamRes?.context?.fundName || teamRes?.context?.teamOwnerName || null;
         setCanEdit(memberRole === 'owner' || memberRole === 'admin');
+        if (entityName) setActiveEntityName(entityName);
 
         if (profile) {
           setUserProfile(profile);
@@ -713,7 +716,7 @@ function DashboardContent() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {userProfile?.fund_name || `${userProfile?.full_name || 'Investor'}'s Dashboard`}
+              {activeEntityName || userProfile?.fund_name || `${userProfile?.full_name || 'Investor'}'s Dashboard`}
             </h1>
             <p className="text-gray-500 text-sm mt-0.5">
               Welcome back{userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}

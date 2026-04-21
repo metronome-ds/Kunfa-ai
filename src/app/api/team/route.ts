@@ -297,7 +297,9 @@ export async function POST(request: NextRequest) {
       // Send invitation email for pending invites (AWAITED)
       if (result.status === 'pending') {
         const inviterName = profile.full_name || 'A team member'
-        const teamName = profile.fund_name || profile.company_name || 'their team'
+        // Use entity name for emails, not stale profile.fund_name
+        const { data: entityRow } = await db.from('entities').select('name').eq('id', entityId).single()
+        const teamName = entityRow?.name || profile.fund_name || profile.company_name || 'their team'
         console.log(`[Entity Invite] Sending invite email to ${email} from ${inviterName} (${teamName})`)
         const emailContent = teamInviteEmail({
           inviterName,
