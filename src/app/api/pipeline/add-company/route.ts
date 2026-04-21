@@ -64,6 +64,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Resolve entity context
+    const { data: adderProfile } = await supabase
+      .from('profiles')
+      .select('active_entity_id')
+      .eq('user_id', user.id)
+      .single();
+    const entityId = adderProfile?.active_entity_id || null;
+
     const { data: deal, error } = await supabase
       .from('deals')
       .insert({
@@ -73,11 +81,20 @@ export async function POST(request: NextRequest) {
         ai_score: company?.overall_score || null,
         sector: company?.industry || null,
         raise_amount: company?.raise_amount || null,
+        entity_id: entityId,
+        stage_changed_at: new Date().toISOString(),
       })
       .select()
       .single();
 
     if (error) {
+      // Unique constraint: company already in entity's pipeline
+      if (error.code === '23505') {
+        return NextResponse.json(
+          { error: 'This company is already in your pipeline' },
+          { status: 409 },
+        );
+      }
       console.error('Error creating pipeline deal:', error);
       return NextResponse.json({ error: 'Failed to add to pipeline' }, { status: 500 });
     }

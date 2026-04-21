@@ -66,8 +66,19 @@ export default function BrowseCompaniesPage() {
         if (!response.ok) throw new Error('Failed to fetch companies');
 
         const data = await response.json();
-        setCompanies(data.data || []);
+        const fetched = data.data || [];
+        setCompanies(fetched);
         setPagination(data.pagination || { page: pageNum, limit: 20, total: 0, totalPages: 0 });
+
+        // Use API-provided entity-scoped flags to seed local state
+        const apiPipelineIds = new Set<string>();
+        const apiWatchlistIds = new Set<string>();
+        for (const c of fetched) {
+          if (c.in_pipeline) apiPipelineIds.add(c.id);
+          if (c.is_watchlisted) apiWatchlistIds.add(c.id);
+        }
+        if (apiPipelineIds.size > 0) setPipelineIds(prev => new Set([...prev, ...apiPipelineIds]));
+        if (apiWatchlistIds.size > 0) setWatchlistedIds(prev => new Set([...prev, ...apiWatchlistIds]));
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
         setCompanies([]);

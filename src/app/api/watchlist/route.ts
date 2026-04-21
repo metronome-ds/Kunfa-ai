@@ -117,15 +117,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Resolve entity context for entity-scoped uniqueness
+    const { data: wlProfile } = await supabase
+      .from('profiles')
+      .select('active_entity_id')
+      .eq('id', profileId)
+      .single();
+    const entityId = wlProfile?.active_entity_id || null;
+
     const { data, error } = await supabase
       .from('watchlist_items')
-      .insert({ investor_id: profileId, company_id: companyId })
+      .insert({ investor_id: profileId, company_id: companyId, entity_id: entityId })
       .select()
       .single();
 
     if (error) {
       if (error.code === '23505') {
-        return NextResponse.json({ error: 'Already watchlisted' }, { status: 400 });
+        return NextResponse.json({ error: 'This company is already watchlisted by your team' }, { status: 409 });
       }
       console.error('Error adding to watchlist:', error);
       return NextResponse.json({ error: 'Failed to add to watchlist' }, { status: 500 });

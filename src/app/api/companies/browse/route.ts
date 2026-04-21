@@ -137,9 +137,45 @@ export async function GET(request: NextRequest) {
     }
 
     const total = count || 0;
+    const companies = data || [];
+
+    // Enrich with in_pipeline / is_watchlisted flags for the user's entity
+    let enriched = companies as (typeof companies[number] & { in_pipeline?: boolean; is_watchlisted?: boolean })[];
+
+    // Resolve user's active entity for pipeline/watchlist checks
+    let userEntityId: string | null = tenantEntityId;
+    if (!userEntityId) {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (authUser) {
+          const { data: prof } = await supabase
+            .from('profiles')
+            .select('active_entity_id')
+            .eq('user_id', authUser.id)
+            .single();
+          userEntityId = prof?.active_entity_id || null;
+        }
+      } catch { /* ignore */ }
+    }
+
+    if (userEntityId && companies.length > 0) {
+      const companyIds = companies.map((c) => c.id);
+      const db = getSupabase();
+      const [dealsRes, wlRes] = await Promise.all([
+        db.from('deals').select('company_id').eq('entity_id', userEntityId).in('company_id', companyIds),
+        db.from('watchlist_items').select('company_id').eq('entity_id', userEntityId).in('company_id', companyIds),
+      ]);
+      const pipelineSet = new Set((dealsRes.data || []).map((d) => d.company_id));
+      const watchlistSet = new Set((wlRes.data || []).map((w) => w.company_id));
+      enriched = companies.map((c) => ({
+        ...c,
+        in_pipeline: pipelineSet.has(c.id),
+        is_watchlisted: watchlistSet.has(c.id),
+      }));
+    }
 
     return NextResponse.json({
-      data: data || [],
+      data: enriched,
       pagination: {
         page,
         limit,
