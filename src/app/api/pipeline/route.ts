@@ -170,23 +170,31 @@ export async function GET() {
       overall_score: c.overall_score,
     }));
 
-    // Format watchlist
-    const watchlist = (watchlistItems || []).map((item) => {
-      const company = item.company_pages as any;
-      return {
-        id: item.id,
-        company_id: item.company_id,
-        company_name: company?.company_name || 'Unknown',
-        slug: company?.slug || null,
-        industry: company?.industry || null,
-        overall_score: company?.overall_score || null,
-        one_liner: company?.one_liner || null,
-        logo_url: company?.logo_url || null,
-        is_raising: company?.is_raising || false,
-        raising_amount: company?.raising_amount || null,
-        raising_target_close: company?.raising_target_close || null,
-      };
-    });
+    // Collect company_ids that already have a pipeline deal — these should NOT
+    // appear in the Watchlist column (avoids showing the same company twice).
+    const dealCompanyIds = new Set(
+      (deals || []).filter(d => d.company_id).map(d => d.company_id),
+    );
+
+    // Format watchlist, excluding companies already in a pipeline stage
+    const watchlist = (watchlistItems || [])
+      .filter((item) => !dealCompanyIds.has(item.company_id))
+      .map((item) => {
+        const company = item.company_pages as any;
+        return {
+          id: item.id,
+          company_id: item.company_id,
+          company_name: company?.company_name || 'Unknown',
+          slug: company?.slug || null,
+          industry: company?.industry || null,
+          overall_score: company?.overall_score || null,
+          one_liner: company?.one_liner || null,
+          logo_url: company?.logo_url || null,
+          is_raising: company?.is_raising || false,
+          raising_amount: company?.raising_amount || null,
+          raising_target_close: company?.raising_target_close || null,
+        };
+      });
 
     // Group deals by stage
     const grouped: Record<string, any[]> = {
