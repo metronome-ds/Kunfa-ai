@@ -358,8 +358,15 @@ function DashboardContent() {
       setInvestorStats({ pipelineDeals: totalDeals, watchlisted: watchlistCount, totalPipelineValue: totalValue, avgKunfaScore: avgScore });
       setStageCounts(counts);
 
-      // Top 5 deals by score
-      const sorted = allDealsList.filter(d => d.score !== null).sort((a, b) => (b.score || 0) - (a.score || 0)).slice(0, 5);
+      // Recent pipeline deals: scored first (highest score), then unscored (newest first)
+      const sorted = [...allDealsList].sort((a, b) => {
+        const aScored = a.score !== null && a.score !== undefined;
+        const bScored = b.score !== null && b.score !== undefined;
+        if (aScored && !bScored) return -1;
+        if (!aScored && bScored) return 1;
+        if (aScored && bScored) return (b.score || 0) - (a.score || 0);
+        return 0; // both unscored — keep pipeline order
+      }).slice(0, 10);
       setTopDeals(sorted);
 
       // Recent activity: from deals (created_at, stage_changed_at) + notifications
@@ -850,7 +857,7 @@ function DashboardContent() {
         {/* Top Deals Table — 3 cols */}
         <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Top Deals by Score</h2>
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Pipeline Deals</h2>
             <Link href="/pipeline" className="text-xs text-[#007CF8] font-medium hover:underline flex items-center gap-1">
               View Pipeline <ArrowRight className="w-3 h-3" />
             </Link>
@@ -893,7 +900,7 @@ function DashboardContent() {
           ) : (
             <div className="text-center py-8">
               <TrendingUp className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-400">No scored deals yet</p>
+              <p className="text-sm text-gray-400">No deals in pipeline yet</p>
             </div>
           )}
         </div>
