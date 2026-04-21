@@ -108,6 +108,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Auto-create deal in pipeline so it appears in entity's deal flow
+    if (company.id) {
+      const { error: dealErr } = await supabaseClient
+        .from('deals')
+        .insert({
+          created_by: user.id,
+          company_id: company.id,
+          stage: 'sourced',
+          raise_amount: null,
+          stage_changed_at: new Date().toISOString(),
+          entity_id: entityId,
+        })
+      if (dealErr) console.error('[INVITE] Deal insert failed (non-fatal):', dealErr)
+    }
+
     // Send invite email
     const emailContent = companyInviteEmail({
       investorName,

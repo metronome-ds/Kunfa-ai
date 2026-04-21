@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create company' }, { status: 500 })
     }
 
-    // Create deal in pipeline
+    // Create deal in pipeline — entity_id ensures visibility to all entity members
     const { data: deal, error: dealError } = await supabase
       .from('deals')
       .insert({
@@ -78,6 +78,7 @@ export async function POST(request: NextRequest) {
         sector: sector || null,
         raise_amount: raise_amount || null,
         stage_changed_at: new Date().toISOString(),
+        entity_id: entityId,
       })
       .select('id')
       .single()

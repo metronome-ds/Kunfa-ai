@@ -204,6 +204,18 @@ export async function POST(request: NextRequest) {
     )
   }
 
+  // --- Auto-create deal in pipeline so it appears in entity's deal flow ------
+  const { error: dealErr } = await db.from('deals').insert({
+    created_by: user.id,
+    company_id: created.id,
+    stage: 'sourced',
+    sector: typeof industry === 'string' ? industry.trim() || null : null,
+    raise_amount: raiseAmountNumeric,
+    stage_changed_at: new Date().toISOString(),
+    entity_id: entityId,
+  })
+  if (dealErr) console.error('[ONBOARD-STARTUP] Deal insert failed (non-fatal):', dealErr)
+
   // --- Invitation code (if feature enabled) ----------------------------------
   const features = (tenant?.features || {}) as Record<string, boolean>
   let invitationCode: string | null = null
