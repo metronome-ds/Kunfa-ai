@@ -73,6 +73,15 @@ export async function POST(request: NextRequest) {
       .replace(/^-|-$/g, '')
       + '-' + crypto.randomBytes(4).toString('hex')
 
+    // Resolve entity context: scope to user's active entity if any
+    const supabaseClient = getSupabase()
+    const { data: inviterProfile } = await supabaseClient
+      .from('profiles')
+      .select('active_entity_id')
+      .eq('user_id', user.id)
+      .single()
+    const entityId = inviterProfile?.active_entity_id || null
+
     // Create company_pages record
     const { data: company, error: insertError } = await supabase
       .from('company_pages')
@@ -86,6 +95,7 @@ export async function POST(request: NextRequest) {
         claim_token: claimToken,
         claim_invited_email: founderEmail,
         is_public: false,
+        entity_id: entityId,
       })
       .select('id, slug')
       .single()

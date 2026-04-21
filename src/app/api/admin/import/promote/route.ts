@@ -18,13 +18,14 @@ export async function POST(request: NextRequest) {
     // Verify admin
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_admin')
+      .select('is_admin, active_entity_id')
       .eq('user_id', user.id)
       .single()
 
     if (!profile?.is_admin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
+    const adminEntityId = profile.active_entity_id || null
 
     const body = await request.json().catch(() => ({}))
     const batchFilter = (body as Record<string, string>).batch_id || null
@@ -107,6 +108,7 @@ export async function POST(request: NextRequest) {
           claim_status: 'unclaimed',
           claim_token: claimToken,
           is_public: true,
+          entity_id: adminEntityId,
         })
         .select('id')
         .single()

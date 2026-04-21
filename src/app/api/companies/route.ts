@@ -29,6 +29,14 @@ export async function POST(request: NextRequest) {
     // Generate claim token for founder claim flow
     const claimToken = crypto.randomBytes(12).toString('hex')
 
+    // Resolve entity context: if user has an active entity, scope the company to it
+    const { data: creatorProfile } = await supabase
+      .from('profiles')
+      .select('active_entity_id')
+      .eq('user_id', user.id)
+      .single()
+    const entityId = creatorProfile?.active_entity_id || null
+
     // Create company page
     const { data: companyPage, error: cpError } = await supabase
       .from('company_pages')
@@ -50,6 +58,7 @@ export async function POST(request: NextRequest) {
         added_by: user.id,
         claim_token: claimToken,
         claim_status: 'unclaimed',
+        entity_id: entityId,
       })
       .select('id')
       .single()
