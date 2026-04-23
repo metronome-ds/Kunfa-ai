@@ -85,15 +85,52 @@ function formatRaiseAmount(amount: number | string | null) {
   return `$${num.toLocaleString()}`
 }
 
-export default async function CompanyPublicPage({ params }: { params: Promise<{ slug: string }> }) {
+async function validateShareToken(token: string, companyId: string): Promise<boolean> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+  const { data } = await supabase
+    .from('share_invitations')
+    .select('id, expires_at, is_active')
+    .eq('token', token)
+    .eq('company_id', companyId)
+    .single()
+
+  if (!data || !data.is_active) return false
+  if (new Date(data.expires_at) < new Date()) return false
+
+  // Increment view count
+  await supabase
+    .from('share_invitations')
+    .update({ view_count: (data as { view_count?: number }).view_count ?? 0 + 1, last_viewed_at: new Date().toISOString() })
+    .eq('id', data.id)
+
+  return true
+}
+
+export default async function CompanyPublicPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const { slug } = await params
-
-
+  const search = await searchParams
+  const shareToken = typeof search.share === 'string' ? search.share : null
 
   const company = await getCompanyPage(slug)
 
   if (!company) {
     notFound()
+  }
+
+  // If share token provided, validate it for unauthenticated access
+  let shareAccess = false
+  if (shareToken) {
+    shareAccess = await validateShareToken(shareToken, company.id)
   }
 
   const grades = await getSubmissionGrades(company.submission_id)

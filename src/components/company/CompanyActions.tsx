@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { getCurrentUser } from '@/lib/supabase';
 import { supabase } from '@/lib/supabase';
-import { Heart, HeartOff, Plus, Check, Pencil, Send, Copy, Clock, CheckCircle2, Circle, Loader2, Trash2 } from 'lucide-react';
+import { Heart, HeartOff, Plus, Check, Pencil, Send, Copy, Clock, CheckCircle2, Circle, Loader2, Trash2, Share2 } from 'lucide-react';
 import EditCompanyModal from './EditCompanyModal';
 import { DeleteCompanyModal } from './DeleteCompanyModal';
+import { ShareProfileModal } from './ShareProfileModal';
 import { useTenant } from '@/components/TenantProvider';
 import { tenantFetch } from '@/lib/tenant-fetch';
 
@@ -60,6 +61,7 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
   const [pipelineLoading, setPipelineLoading] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
 
   // Claim UI state
   const [currentClaimStatus, setCurrentClaimStatus] = useState(initialClaimStatus || 'unclaimed');
@@ -295,6 +297,17 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
           </button>
         )}
 
+        {/* Share button — for owner or entity admin */}
+        {(isOwner || isTenantAdmin || canEdit) && company && (
+          <button
+            onClick={() => setShareOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"
+          >
+            <Share2 className="w-4 h-4" />
+            Share Profile
+          </button>
+        )}
+
         {/* Delete button — entity admins only */}
         {isTenantAdmin && company && (
           <button
@@ -422,6 +435,16 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
             setDeleteOpen(false);
             window.location.href = '/deals';
           }}
+        />
+      )}
+
+      {/* Share Modal */}
+      {company && (
+        <ShareProfileModal
+          companyId={companyId}
+          companyName={company.company_name}
+          isOpen={shareOpen}
+          onClose={() => setShareOpen(false)}
         />
       )}
     </>

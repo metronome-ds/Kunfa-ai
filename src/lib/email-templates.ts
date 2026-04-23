@@ -399,3 +399,53 @@ export function claimRejectedEmail(params: {
     `),
   }
 }
+
+// --- Profile Share Invitation ---
+
+export function profileShareEmail(params: {
+  companyName: string
+  oneLiner: string | null
+  score: number | null
+  sharerName: string
+  recipientName: string | null
+  personalMessage: string | null
+  shareToken: string
+  slug: string
+}): { subject: string; html: string } {
+  const { companyName, oneLiner, score, sharerName, recipientName, personalMessage, shareToken, slug } = params
+  const shareUrl = `${BASE_URL}/company/${slug}?share=${shareToken}`
+  const greeting = recipientName ? `Hi ${recipientName.split(' ')[0]},` : 'Hi,'
+
+  const messageBlock = personalMessage
+    ? `<div style="margin:16px 0;padding:12px 16px;border-left:4px solid #0168FE;background:#f0f7ff;border-radius:0 8px 8px 0;">
+        <p style="margin:0;font-size:14px;color:#374151;line-height:1.6;font-style:italic;">&ldquo;${personalMessage}&rdquo;</p>
+      </div>`
+    : ''
+
+  const scoreBlock = score != null
+    ? `<p style="margin:8px 0 0;font-size:13px;color:#6b7280;">Kunfa Score: <strong style="color:#111827;">${score}/100</strong></p>`
+    : ''
+
+  return {
+    subject: `${sharerName} invited you to view ${companyName} on Kunfa`,
+    html: layout(`
+      <h1 style="margin:0 0 16px;font-size:20px;color:#111827;">You're invited to view ${companyName}</h1>
+      <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.6;">
+        ${greeting}
+      </p>
+      <p style="margin:0 0 12px;font-size:15px;color:#374151;line-height:1.6;">
+        <strong>${sharerName}</strong> has invited you to view <strong>${companyName}</strong>'s profile and deal room on Kunfa.
+      </p>
+      ${messageBlock}
+      <div style="margin:16px 0;padding:16px;background:#f9fafb;border-radius:8px;border:1px solid #e5e7eb;">
+        <p style="margin:0;font-size:16px;font-weight:600;color:#111827;">${companyName}</p>
+        ${oneLiner ? `<p style="margin:4px 0 0;font-size:14px;color:#6b7280;">${oneLiner}</p>` : ''}
+        ${scoreBlock}
+      </div>
+      ${button('View Deal Room', shareUrl)}
+      <p style="margin:16px 0 0;font-size:12px;color:#9ca3af;line-height:1.5;">
+        This invitation was sent by ${sharerName} via Kunfa. This link expires in 30 days.
+      </p>
+    `),
+  }
+}
