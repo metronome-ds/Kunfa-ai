@@ -33,6 +33,8 @@ import DealRoomActivityCard from '@/components/dashboard/DealRoomActivityCard';
 import WwipDashboard from '@/components/dashboard/WwipDashboard';
 import { useTenant } from '@/components/TenantProvider';
 import { PageHead, StatCard, SectionHead, EmptyState, WelcomeBanner, Button, LinkText } from '@/components/ui/design-system';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import { MobileDashboard } from '@/components/mobile/MobileDashboard';
 
 interface UserProfile {
   id: string;
@@ -714,6 +716,28 @@ function DashboardContent() {
 
   // ─── INVESTOR DASHBOARD ──────────────────────────────────
   const totalStageDeals = Object.values(stageCounts).reduce((a, b) => a + b, 0);
+  const isMobile = useIsMobile();
+
+  // Mobile layout — completely different structure per m-screens.jsx
+  if (isMobile) {
+    return (
+      <MobileDashboard
+        userName={userProfile?.full_name || null}
+        pipelineDeals={investorStats.pipelineDeals}
+        watchlisted={investorStats.watchlisted}
+        totalPipelineValue={formatCompact(investorStats.totalPipelineValue)}
+        avgScore={investorStats.avgKunfaScore ? String(investorStats.avgKunfaScore) : '—'}
+        deals={topDeals.map(d => ({
+          id: d.id,
+          company_name: d.company_name,
+          slug: d.slug,
+          score: d.score,
+          stage: d.stage,
+          raise_amount: d.raise_amount,
+        }))}
+      />
+    );
+  }
 
   return (
     <div>
