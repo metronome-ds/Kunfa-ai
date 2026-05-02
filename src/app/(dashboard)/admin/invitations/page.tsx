@@ -26,7 +26,7 @@ function getStatus(inv: Invitation): 'active' | 'expired' | 'exhausted' | 'inact
 
 const STATUS_COLORS: Record<string, string> = {
   active: 'bg-emerald-100 text-emerald-700',
-  expired: 'bg-gray-100 text-gray-600',
+  expired: 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]',
   exhausted: 'bg-amber-100 text-amber-700',
   inactive: 'bg-red-100 text-red-700',
 };
@@ -125,8 +125,8 @@ export default function InvitationsPage() {
   if (!isTenantContext || !hasFeature) {
     return (
       <div className="p-8 max-w-4xl mx-auto text-center">
-        <Ticket className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <h1 className="text-xl font-semibold text-gray-900">Feature not available</h1>
+        <Ticket className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Feature not available</h1>
       </div>
     );
   }
@@ -145,11 +145,11 @@ export default function InvitationsPage() {
     <div className="p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Invitation Codes</h1>
-          <p className="text-gray-500 text-sm mt-1">Generate and manage invitation codes</p>
+          <h1 className="text-2xl font-bold text-[var(--ink)]">Invitation Codes</h1>
+          <p className="text-[var(--ink-mute)] text-sm mt-1">Generate and manage invitation codes</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => setBulkOpen(true)} className="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50">
+          <button onClick={() => setBulkOpen(true)} className="inline-flex items-center gap-1.5 px-3 py-2 border border-[var(--line)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)]">
             <Package className="w-4 h-4" /> Bulk Generate
           </button>
           <button onClick={() => setModalOpen(true)} className="inline-flex items-center gap-1.5 px-3 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)]">
@@ -158,13 +158,13 @@ export default function InvitationsPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex gap-3">
-        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4 mb-6 flex gap-3">
+        <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="px-3 py-2 border border-[var(--line)] rounded-lg text-sm">
           <option value="">All types</option>
           <option value="startup">Startup</option>
           <option value="investor">Investor</option>
         </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 border border-[var(--line)] rounded-lg text-sm">
           <option value="">All statuses</option>
           <option value="active">Active</option>
           <option value="expired">Expired</option>
@@ -173,21 +173,21 @@ export default function InvitationsPage() {
         </select>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] overflow-hidden">
         {loading ? (
           <div className="py-12 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)] mx-auto" /></div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
-            <Ticket className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-            <h2 className="text-sm font-semibold text-gray-900">No invitation codes</h2>
-            <p className="text-xs text-gray-500 mt-1">Generate your first code to invite members.</p>
+            <Ticket className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+            <h2 className="text-sm font-semibold text-[var(--ink)]">No invitation codes</h2>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">Generate your first code to invite members.</p>
           </div>
         ) : (
           <table className="w-full divide-y divide-gray-50">
-            <thead className="bg-gray-50/50">
+            <thead className="bg-[var(--bg-sunk)]/50">
               <tr>
                 {['Code', 'Type', 'Uses', 'Expires', 'Status', 'Created', 'Actions'].map((h) => (
-                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-[var(--ink-mute)] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
@@ -195,26 +195,26 @@ export default function InvitationsPage() {
               {filtered.map((inv) => {
                 const status = getStatus(inv);
                 return (
-                  <tr key={inv.id} className="hover:bg-gray-50/50">
-                    <td className="px-4 py-3 font-mono font-semibold text-gray-900 text-sm">{inv.code}</td>
+                  <tr key={inv.id} className="hover:bg-[var(--bg-sunk)]/50">
+                    <td className="px-4 py-3 font-mono font-semibold text-[var(--ink)] text-sm">{inv.code}</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs font-medium px-2 py-1 rounded-full ${inv.type === 'startup' ? 'bg-[var(--accent-soft)] text-[var(--ink)]' : 'bg-emerald-100 text-emerald-700'}`}>
                         {inv.type}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-700">{inv.uses_count} / {inv.max_uses}</td>
-                    <td className="px-4 py-3 text-sm text-gray-500">{inv.expires_at ? new Date(inv.expires_at).toLocaleDateString() : '—'}</td>
+                    <td className="px-4 py-3 text-sm text-[var(--ink-soft)]">{inv.uses_count} / {inv.max_uses}</td>
+                    <td className="px-4 py-3 text-sm text-[var(--ink-mute)]">{inv.expires_at ? new Date(inv.expires_at).toLocaleDateString() : '—'}</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs font-medium px-2 py-1 rounded-full ${STATUS_COLORS[status]}`}>{status}</span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-gray-500">{new Date(inv.created_at).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 text-sm text-[var(--ink-mute)]">{new Date(inv.created_at).toLocaleDateString()}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <button onClick={() => copy(inv)} className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-gray-700" title="Copy">
+                        <button onClick={() => copy(inv)} className="p-1.5 hover:bg-[var(--bg-sunk)] rounded text-[var(--ink-mute)] hover:text-[var(--ink-soft)]" title="Copy">
                           {copiedId === inv.id ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
                         </button>
                         {inv.is_active && (
-                          <button onClick={() => deactivate(inv)} className="p-1.5 hover:bg-red-50 rounded text-gray-500 hover:text-red-600" title="Deactivate">
+                          <button onClick={() => deactivate(inv)} className="p-1.5 hover:bg-red-50 rounded text-[var(--ink-mute)] hover:text-red-600" title="Deactivate">
                             <X className="w-4 h-4" />
                           </button>
                         )}
@@ -231,31 +231,31 @@ export default function InvitationsPage() {
       {/* Create Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="font-semibold text-gray-900 mb-4">Generate Code</h3>
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 max-w-md w-full">
+            <h3 className="font-semibold text-[var(--ink)] mb-4">Generate Code</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
-                <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Type</label>
+                <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm">
                   <option value="startup">Startup</option>
                   <option value="investor">Investor</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Max Uses</label>
-                <input type="number" min="1" value={form.max_uses} onChange={(e) => setForm({ ...form, max_uses: Number(e.target.value) })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Max Uses</label>
+                <input type="number" min="1" value={form.max_uses} onChange={(e) => setForm({ ...form, max_uses: Number(e.target.value) })} className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Expires (optional)</label>
-                <input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Expires (optional)</label>
+                <input type="date" value={form.expires_at} onChange={(e) => setForm({ ...form, expires_at: e.target.value })} className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Notes</label>
-                <input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Notes</label>
+                <input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm" />
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-5">
-              <button onClick={() => setModalOpen(false)} className="px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
+              <button onClick={() => setModalOpen(false)} className="px-3 py-2 text-sm text-[var(--ink-soft)] rounded-lg hover:bg-[var(--bg-sunk)]">Cancel</button>
               <button onClick={createOne} disabled={creating} className="px-3 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] disabled:opacity-50">
                 {creating ? 'Creating…' : 'Generate'}
               </button>
@@ -267,27 +267,27 @@ export default function InvitationsPage() {
       {/* Bulk Modal */}
       {bulkOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full">
-            <h3 className="font-semibold text-gray-900 mb-4">Bulk Generate</h3>
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 max-w-md w-full">
+            <h3 className="font-semibold text-[var(--ink)] mb-4">Bulk Generate</h3>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
-                <select value={bulkForm.type} onChange={(e) => setBulkForm({ ...bulkForm, type: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm">
+                <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Type</label>
+                <select value={bulkForm.type} onChange={(e) => setBulkForm({ ...bulkForm, type: e.target.value })} className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm">
                   <option value="startup">Startup</option>
                   <option value="investor">Investor</option>
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Count (1-50)</label>
-                <input type="number" min="1" max="50" value={bulkForm.count} onChange={(e) => setBulkForm({ ...bulkForm, count: Number(e.target.value) })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Count (1-50)</label>
+                <input type="number" min="1" max="50" value={bulkForm.count} onChange={(e) => setBulkForm({ ...bulkForm, count: Number(e.target.value) })} className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Expires (optional)</label>
-                <input type="date" value={bulkForm.expires_at} onChange={(e) => setBulkForm({ ...bulkForm, expires_at: e.target.value })} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Expires (optional)</label>
+                <input type="date" value={bulkForm.expires_at} onChange={(e) => setBulkForm({ ...bulkForm, expires_at: e.target.value })} className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm" />
               </div>
             </div>
             <div className="flex justify-end gap-2 mt-5">
-              <button onClick={() => setBulkOpen(false)} className="px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
+              <button onClick={() => setBulkOpen(false)} className="px-3 py-2 text-sm text-[var(--ink-soft)] rounded-lg hover:bg-[var(--bg-sunk)]">Cancel</button>
               <button onClick={createBulk} disabled={creating} className="px-3 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] disabled:opacity-50">
                 {creating ? 'Generating…' : `Generate ${bulkForm.count}`}
               </button>

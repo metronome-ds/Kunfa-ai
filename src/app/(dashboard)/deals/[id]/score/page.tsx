@@ -66,9 +66,9 @@ export default async function ScorePage({ params }: ScorePageProps) {
   const scoringData = undefined;
 
   return (
-    <div className="min-h-screen bg-[#F8F9FB]">
+    <div className="min-h-screen bg-[var(--bg-sunk)]">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-[var(--bg-elev)] border-b border-[var(--line)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center gap-4 mb-4">
             <Link
@@ -79,8 +79,8 @@ export default async function ScorePage({ params }: ScorePageProps) {
               Back to Deal
             </Link>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">{company?.company_name || 'Unknown Company'}</h1>
-          <p className="text-gray-600 mt-1">AI-Powered Investment Analysis</p>
+          <h1 className="text-3xl font-bold text-[var(--ink)]">{company?.company_name || 'Unknown Company'}</h1>
+          <p className="text-[var(--ink-soft)] mt-1">AI-Powered Investment Analysis</p>
         </div>
       </div>
 
@@ -89,8 +89,8 @@ export default async function ScorePage({ params }: ScorePageProps) {
         <div className="space-y-12">
           {/* Deal Score Section */}
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900">Investment Score</h2>
-            <div className="bg-white rounded-lg p-6">
+            <h2 className="text-2xl font-bold text-[var(--ink)]">Investment Score</h2>
+            <div className="bg-[var(--bg-elev)] rounded-lg p-6">
               <DealScorer dealId={dealId} scores={scoringData} />
             </div>
           </section>
@@ -99,16 +99,16 @@ export default async function ScorePage({ params }: ScorePageProps) {
           <div className="space-y-6">
             {/* Company Brief Tab */}
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-gray-900">Company Brief</h2>
-              <div className="bg-white rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-[var(--ink)]">Company Brief</h2>
+              <div className="bg-[var(--bg-elev)] rounded-lg p-6">
                 <CompanyBrief dealId={dealId} />
               </div>
             </section>
 
             {/* Term Sheet Analysis Tab */}
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-gray-900">Term Sheet Analysis</h2>
-              <div className="bg-white rounded-lg p-6">
+              <h2 className="text-2xl font-bold text-[var(--ink)]">Term Sheet Analysis</h2>
+              <div className="bg-[var(--bg-elev)] rounded-lg p-6">
                 <TermSheetAnalyzer
                   dealId={dealId}
                   documentId={undefined}

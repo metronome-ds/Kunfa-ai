@@ -266,9 +266,9 @@ export default function OnboardStartupPage() {
   if (!isTenantContext || !hasFeature) {
     return (
       <div className="p-8 max-w-4xl mx-auto text-center">
-        <Rocket className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <h1 className="text-xl font-semibold text-gray-900">Feature not available</h1>
-        <p className="text-sm text-gray-500 mt-2">
+        <Rocket className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Feature not available</h1>
+        <p className="text-sm text-[var(--ink-mute)] mt-2">
           Onboard startup is not enabled for this tenant.
         </p>
       </div>
@@ -278,8 +278,8 @@ export default function OnboardStartupPage() {
   if (!isAdmin) {
     return (
       <div className="p-8 max-w-4xl mx-auto text-center">
-        <h1 className="text-xl font-semibold text-gray-900">Admin access required</h1>
-        <p className="text-sm text-gray-500 mt-2">
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Admin access required</h1>
+        <p className="text-sm text-[var(--ink-mute)] mt-2">
           Only tenant admins can onboard startups.
         </p>
       </div>
@@ -298,14 +298,14 @@ export default function OnboardStartupPage() {
 
     return (
       <div className="p-8 max-w-xl mx-auto">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
               <Check className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-gray-900">Company created</h2>
-              <p className="text-sm text-gray-500">
+              <h2 className="text-lg font-bold text-[var(--ink)]">Company created</h2>
+              <p className="text-sm text-[var(--ink-mute)]">
                 {createdCompany.company_name}
                 {form.industry ? ` · ${form.industry}` : ''}
                 {form.stage ? ` · ${form.stage}` : ''}
@@ -323,15 +323,15 @@ export default function OnboardStartupPage() {
               </div>
             </div>
           ) : (
-            <div className="border-t border-gray-100 pt-4 mt-4">
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">
+            <div className="border-t border-[var(--line)] pt-4 mt-4">
+              <h3 className="text-sm font-semibold text-[var(--ink)] mb-1">
                 Send claim invitation to founder
               </h3>
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="text-xs text-[var(--ink-mute)] mb-3">
                 The founder will receive an email with a link to claim this company profile.
               </p>
               <label className="block">
-                <span className="block text-xs font-medium text-gray-700 mb-1">
+                <span className="block text-xs font-medium text-[var(--ink-soft)] mb-1">
                   Founder email
                 </span>
                 <input
@@ -339,19 +339,19 @@ export default function OnboardStartupPage() {
                   value={claimEmail}
                   onChange={(e) => setClaimEmail(e.target.value)}
                   placeholder="founder@startup.com"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 />
               </label>
               <label className="block mt-3">
-                <span className="block text-xs font-medium text-gray-700 mb-1">
-                  Personal message <span className="text-gray-400">(optional)</span>
+                <span className="block text-xs font-medium text-[var(--ink-soft)] mb-1">
+                  Personal message <span className="text-[var(--ink-faint)]">(optional)</span>
                 </span>
                 <textarea
                   value={claimMessage}
                   onChange={(e) => setClaimMessage(e.target.value)}
                   rows={2}
                   placeholder="Hi — we've added your company to our network…"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 />
               </label>
               {claimError && (
@@ -370,10 +370,10 @@ export default function OnboardStartupPage() {
             </div>
           )}
 
-          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-gray-100">
+          <div className="flex items-center gap-3 mt-4 pt-4 border-t border-[var(--line)]">
             <Link
               href={companyUrl}
-              className="flex-1 text-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="flex-1 text-center px-4 py-2 border border-[var(--line)] rounded-lg text-sm font-medium text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]"
             >
               View Company
             </Link>
@@ -387,7 +387,7 @@ export default function OnboardStartupPage() {
                 setClaimSent(false)
                 setClaimError(null)
               }}
-              className="flex-1 text-center px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="flex-1 text-center px-4 py-2 border border-[var(--line)] rounded-lg text-sm font-medium text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]"
             >
               Onboard Another
             </button>
@@ -396,7 +396,7 @@ export default function OnboardStartupPage() {
           {!claimSent && (
             <button
               onClick={() => router.push(companyUrl)}
-              className="mt-3 w-full text-xs text-gray-400 hover:text-gray-600 text-center"
+              className="mt-3 w-full text-xs text-[var(--ink-faint)] hover:text-[var(--ink-soft)] text-center"
             >
               Skip — I&apos;ll send the invite later
             </button>
@@ -409,8 +409,8 @@ export default function OnboardStartupPage() {
   return (
     <div className="p-8 max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Onboard Startup</h1>
-        <p className="text-gray-500 text-sm mt-1">Add a new startup to your network</p>
+        <h1 className="text-2xl font-bold text-[var(--ink)]">Onboard Startup</h1>
+        <p className="text-[var(--ink-mute)] text-sm mt-1">Add a new startup to your network</p>
       </div>
 
       {/* Step Indicator */}
@@ -424,14 +424,14 @@ export default function OnboardStartupPage() {
                     ? 'bg-[var(--ink)] text-white'
                     : i === step
                       ? 'bg-[var(--ink)] text-white ring-4 ring-[var(--accent-soft)]'
-                      : 'bg-gray-100 text-gray-400'
+                      : 'bg-[var(--bg-sunk)] text-[var(--ink-faint)]'
                 }`}
               >
                 {i < step ? <Check className="w-4 h-4" /> : i + 1}
               </div>
               <span
                 className={`text-xs hidden md:inline ${
-                  i === step ? 'font-semibold text-gray-900' : 'text-gray-400'
+                  i === step ? 'font-semibold text-[var(--ink)]' : 'text-[var(--ink-faint)]'
                 }`}
               >
                 {label}
@@ -439,17 +439,17 @@ export default function OnboardStartupPage() {
             </div>
             {i < STEPS.length - 1 && (
               <div
-                className={`flex-1 h-0.5 mx-2 ${i < step ? 'bg-[var(--ink)]' : 'bg-gray-200'}`}
+                className={`flex-1 h-0.5 mx-2 ${i < step ? 'bg-[var(--ink)]' : 'bg-[var(--bg-sunk)]'}`}
               />
             )}
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
         {step === 0 && (
           <div className="space-y-4">
-            <h2 className="font-semibold text-gray-900">Company Basics</h2>
+            <h2 className="font-semibold text-[var(--ink)]">Company Basics</h2>
             <Field
               label="Company Name"
               required
@@ -485,7 +485,7 @@ export default function OnboardStartupPage() {
 
         {step === 1 && (
           <div className="space-y-4">
-            <h2 className="font-semibold text-gray-900">Classification</h2>
+            <h2 className="font-semibold text-[var(--ink)]">Classification</h2>
             <Field
               label="Industry / Sector"
               value={form.industry}
@@ -513,7 +513,7 @@ export default function OnboardStartupPage() {
 
         {step === 2 && (
           <div className="space-y-4">
-            <h2 className="font-semibold text-gray-900">Founder</h2>
+            <h2 className="font-semibold text-[var(--ink)]">Founder</h2>
             <Field
               label="Founder Name"
               value={form.founder_name}
@@ -543,15 +543,15 @@ export default function OnboardStartupPage() {
 
         {step === 3 && (
           <div className="space-y-4">
-            <h2 className="font-semibold text-gray-900">Fundraising</h2>
+            <h2 className="font-semibold text-[var(--ink)]">Fundraising</h2>
             <label className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={form.is_raising}
                 onChange={(e) => update('is_raising', e.target.checked)}
-                className="rounded border-gray-300"
+                className="rounded border-[var(--line-strong)]"
               />
-              <span className="text-sm text-gray-700">Currently raising</span>
+              <span className="text-sm text-[var(--ink-soft)]">Currently raising</span>
             </label>
             {form.is_raising && (
               <>
@@ -580,8 +580,8 @@ export default function OnboardStartupPage() {
 
         {step === 4 && (
           <div className="space-y-4">
-            <h2 className="font-semibold text-gray-900">Documents</h2>
-            <p className="text-xs text-gray-500">
+            <h2 className="font-semibold text-[var(--ink)]">Documents</h2>
+            <p className="text-xs text-[var(--ink-mute)]">
               Upload the company&apos;s pitch deck and financial documents. These will be visible
               to investors in the Data Room.
             </p>
@@ -604,7 +604,7 @@ export default function OnboardStartupPage() {
 
         {step === 5 && (
           <div className="space-y-3">
-            <h2 className="font-semibold text-gray-900 mb-4">Review</h2>
+            <h2 className="font-semibold text-[var(--ink)] mb-4">Review</h2>
             <Row label="Company" value={form.company_name} />
             <Row label="One-liner" value={form.one_liner} />
             <Row label="Website" value={form.website_url} />
@@ -649,11 +649,11 @@ export default function OnboardStartupPage() {
         )}
 
         {/* Nav Buttons */}
-        <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-100">
+        <div className="flex items-center justify-between pt-6 mt-6 border-t border-[var(--line)]">
           <button
             onClick={goBack}
             disabled={step === 0 || submitting}
-            className="inline-flex items-center gap-1 px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1 px-4 py-2 text-sm text-[var(--ink-soft)] rounded-lg hover:bg-[var(--bg-sunk)] disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <ChevronLeft className="w-4 h-4" /> Back
           </button>
@@ -703,7 +703,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="block text-xs font-medium text-gray-700 mb-1">
+      <span className="block text-xs font-medium text-[var(--ink-soft)] mb-1">
         {label}
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </span>
@@ -712,9 +712,9 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+        className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
       />
-      {helpText && <p className="text-[11px] text-gray-500 mt-1">{helpText}</p>}
+      {helpText && <p className="text-[11px] text-[var(--ink-mute)] mt-1">{helpText}</p>}
     </label>
   )
 }
@@ -730,12 +730,12 @@ function TextareaField({
 }) {
   return (
     <label className="block">
-      <span className="block text-xs font-medium text-gray-700 mb-1">{label}</span>
+      <span className="block text-xs font-medium text-[var(--ink-soft)] mb-1">{label}</span>
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+        className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
       />
     </label>
   )
@@ -754,11 +754,11 @@ function Select({
 }) {
   return (
     <label className="block">
-      <span className="block text-xs font-medium text-gray-700 mb-1">{label}</span>
+      <span className="block text-xs font-medium text-[var(--ink-soft)] mb-1">{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+        className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
       >
         {options.map((o) => (
           <option key={o} value={o}>
@@ -772,9 +772,9 @@ function Select({
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between py-1.5 border-b border-gray-50">
-      <span className="text-xs text-gray-500">{label}</span>
-      <span className="text-sm text-gray-900">{value || '—'}</span>
+    <div className="flex justify-between py-1.5 border-b border-[var(--line)]">
+      <span className="text-xs text-[var(--ink-mute)]">{label}</span>
+      <span className="text-sm text-[var(--ink)]">{value || '—'}</span>
     </div>
   )
 }

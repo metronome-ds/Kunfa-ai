@@ -39,7 +39,7 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-kunfa-light-bg flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full">
+      <div className="bg-[var(--bg-elev)] rounded-2xl max-w-2xl w-full">
         {/* Header */}
         <div className="bg-kunfa-navy rounded-t-2xl px-6 py-4 flex items-center justify-between">
           <KunfaLogo height={24} inverted />

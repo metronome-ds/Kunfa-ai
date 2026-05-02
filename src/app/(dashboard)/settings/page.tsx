@@ -8,8 +8,8 @@ import { STAGES, INDUSTRIES } from '@/lib/constants';
 
 const INPUT_CLASS = 'w-full rounded-[5px] border border-[var(--line-strong)] bg-[var(--bg)] px-3 py-2.5 text-[13.5px] text-[var(--ink)] focus:border-[var(--ink)] focus:shadow-[var(--focus-ring)] outline-none transition-all';
 const SELECT_CLASS = 'w-full rounded-[5px] border border-[var(--line-strong)] bg-[var(--bg)] px-3 py-2.5 text-[13.5px] text-[var(--ink)] focus:border-[var(--ink)] focus:shadow-[var(--focus-ring)] outline-none transition-all';
-const DISABLED_CLASS = 'w-full rounded-lg border border-gray-200 bg-[#F8F9FB] px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed';
-const LABEL_CLASS = 'block text-sm font-medium text-gray-700 mb-1.5';
+const DISABLED_CLASS = 'w-full rounded-lg border border-[var(--line)] bg-[var(--bg-sunk)] px-4 py-2.5 text-sm text-[var(--ink-mute)] cursor-not-allowed';
+const LABEL_CLASS = 'block text-sm font-medium text-[var(--ink-soft)] mb-1.5';
 
 function Toast({ message, type, onClose }: { message: string; type: 'success' | 'error'; onClose: () => void }) {
   useEffect(() => {
@@ -18,7 +18,7 @@ function Toast({ message, type, onClose }: { message: string; type: 'success' | 
   }, [onClose]);
 
   return (
-    <div className={`fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-lg shadow-lg transition-all ${
+    <div className={`fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-3 rounded-lg transition-all ${
       type === 'success' ? 'bg-emerald-50 border border-emerald-200 text-emerald-700' : 'bg-red-50 border border-red-200 text-red-700'
     }`}>
       {type === 'success' && <Check className="w-4 h-4" />}
@@ -65,8 +65,8 @@ function ChangePasswordSection() {
 
   return (
     <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] border border-[var(--line)] p-6 mb-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
-        <Lock className="w-5 h-5 text-gray-400" />
+      <h2 className="text-lg font-semibold text-[var(--ink)] mb-5 flex items-center gap-2">
+        <Lock className="w-5 h-5 text-[var(--ink-faint)]" />
         Change Password
       </h2>
 
@@ -185,7 +185,7 @@ function PlanBillingSection() {
 
   const tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1);
   const tierColor = tier === 'free'
-    ? 'bg-gray-100 text-gray-700'
+    ? 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'
     : 'bg-[var(--ink)] text-white';
 
   const formattedExpiry = expiresAt
@@ -196,8 +196,8 @@ function PlanBillingSection() {
 
   return (
     <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] border border-[var(--line)] p-6 mb-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
-        <CreditCard className="w-5 h-5 text-gray-400" />
+      <h2 className="text-lg font-semibold text-[var(--ink)] mb-5 flex items-center gap-2">
+        <CreditCard className="w-5 h-5 text-[var(--ink-faint)]" />
         Plan & Billing
       </h2>
 
@@ -205,7 +205,7 @@ function PlanBillingSection() {
         <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${tierColor}`}>
           {tierLabel}
         </span>
-        <p className="text-sm text-gray-500 mt-2">
+        <p className="text-sm text-[var(--ink-mute)] mt-2">
           {tier === 'free'
             ? "You're on the Free plan."
             : isTrialOrGrant && formattedExpiry
@@ -214,9 +214,9 @@ function PlanBillingSection() {
         </p>
       </div>
 
-      <div className="border-t border-gray-100 pt-5">
-        <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-1.5">
-          <Tag className="w-4 h-4 text-gray-400" />
+      <div className="border-t border-[var(--line)] pt-5">
+        <h3 className="text-sm font-medium text-[var(--ink-soft)] mb-3 flex items-center gap-1.5">
+          <Tag className="w-4 h-4 text-[var(--ink-faint)]" />
           Redeem a Promo Code
         </h3>
         <div className="flex gap-2 max-w-md">
@@ -245,7 +245,7 @@ function PlanBillingSection() {
         )}
       </div>
 
-      <div className="border-t border-gray-100 mt-5 pt-4">
+      <div className="border-t border-[var(--line)] mt-5 pt-4">
         <a href="/#pricing" className="text-sm text-[var(--accent-ink)] font-medium hover:underline">
           View Plans &rarr;
         </a>
@@ -462,7 +462,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--line-strong)] mb-4" />
-          <p className="text-gray-500 text-sm">Loading settings...</p>
+          <p className="text-[var(--ink-mute)] text-sm">Loading settings...</p>
         </div>
       </div>
     );
@@ -485,8 +485,8 @@ export default function SettingsPage() {
 
       {/* Section A — Personal Info */}
       <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] border border-[var(--line)] p-6 mb-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
-          <User className="w-5 h-5 text-gray-400" />
+        <h2 className="text-lg font-semibold text-[var(--ink)] mb-5 flex items-center gap-2">
+          <User className="w-5 h-5 text-[var(--ink-faint)]" />
           Personal Info
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -510,7 +510,7 @@ export default function SettingsPage() {
             <label className={LABEL_CLASS}>Role</label>
             <div className="flex items-center gap-2 mt-1">
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                isStartup ? 'bg-purple-100 text-purple-700' : isInvestor ? 'bg-[var(--accent-soft)] text-[var(--ink)]' : 'bg-gray-100 text-gray-600'
+                isStartup ? 'bg-purple-100 text-purple-700' : isInvestor ? 'bg-[var(--accent-soft)] text-[var(--ink)]' : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'
               }`}>
                 {isStartup ? 'Startup' : isInvestor ? 'Investor' : role || '—'}
               </span>
@@ -518,10 +518,10 @@ export default function SettingsPage() {
           </div>
           <div>
             <label className={LABEL_CLASS}>Member Since</label>
-            <p className="text-sm text-gray-600 mt-1">{formattedMemberSince || '—'}</p>
+            <p className="text-sm text-[var(--ink-soft)] mt-1">{formattedMemberSince || '—'}</p>
           </div>
         </div>
-        <div className="mt-5 pt-4 border-t border-gray-100">
+        <div className="mt-5 pt-4 border-t border-[var(--line)]">
           <button
             onClick={handleSavePersonal}
             disabled={personalSaving}
@@ -536,15 +536,15 @@ export default function SettingsPage() {
       {/* Section B — Startup: Company Information */}
       {showCompanySection && (
         <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] border border-[var(--line)] p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-gray-400" />
+          <h2 className="text-lg font-semibold text-[var(--ink)] mb-1 flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-[var(--ink-faint)]" />
             Company Information
           </h2>
           {isTeamMember && !canEditCompany && (
             <p className="text-xs text-amber-600 mb-4">You have view-only access. Contact your team owner to make changes.</p>
           )}
           {canEditCompany && (
-            <p className="text-xs text-gray-500 mb-5">Changes here will sync to your public company profile.</p>
+            <p className="text-xs text-[var(--ink-mute)] mb-5">Changes here will sync to your public company profile.</p>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -566,7 +566,7 @@ export default function SettingsPage() {
                 placeholder="What does your company do in one sentence?"
                 className={canEditCompany ? INPUT_CLASS : DISABLED_CLASS}
               />
-              <p className="text-xs text-gray-400 mt-1">{oneLiner.length}/160</p>
+              <p className="text-xs text-[var(--ink-faint)] mt-1">{oneLiner.length}/160</p>
             </div>
             <div>
               <label className={LABEL_CLASS}>Industry</label>
@@ -592,7 +592,7 @@ export default function SettingsPage() {
             </div>
           </div>
           {canEditCompany && (
-            <div className="mt-5 pt-4 border-t border-gray-100">
+            <div className="mt-5 pt-4 border-t border-[var(--line)]">
               <button
                 onClick={handleSaveCompany}
                 disabled={companySaving}
@@ -609,8 +609,8 @@ export default function SettingsPage() {
       {/* Section B — Investor: Fund Information */}
       {showFundSection && (
         <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] border border-[var(--line)] p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-gray-400" />
+          <h2 className="text-lg font-semibold text-[var(--ink)] mb-5 flex items-center gap-2">
+            <Briefcase className="w-5 h-5 text-[var(--ink-faint)]" />
             Investment Profile
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -647,7 +647,7 @@ export default function SettingsPage() {
               <textarea value={investmentThesis} onChange={(e) => setInvestmentThesis(e.target.value)} rows={3} placeholder="Describe your investment strategy and thesis..." className={INPUT_CLASS} />
             </div>
           </div>
-          <div className="mt-5 pt-4 border-t border-gray-100">
+          <div className="mt-5 pt-4 border-t border-[var(--line)]">
             <button
               onClick={handleSaveFund}
               disabled={fundSaving}
@@ -670,7 +670,7 @@ export default function SettingsPage() {
       <div className="flex items-center justify-end mb-6">
         <button
           onClick={handleLogout}
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-red-600 px-4 py-2.5 rounded-lg font-medium text-sm transition"
+          className="inline-flex items-center gap-2 text-[var(--ink-mute)] hover:text-red-600 px-4 py-2.5 rounded-lg font-medium text-sm transition"
         >
           <LogOut className="w-4 h-4" />
           Sign Out
@@ -683,7 +683,7 @@ export default function SettingsPage() {
           <AlertTriangle className="w-5 h-5" />
           Danger Zone
         </h2>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-[var(--ink-soft)] mb-4">
           Permanently delete your account and all associated data. This action cannot be undone.
         </p>
         <button
@@ -697,26 +697,26 @@ export default function SettingsPage() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+          <div className="bg-[var(--bg-elev)] rounded-xl max-w-md w-full mx-4 p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900">Delete Account</h3>
+              <h3 className="text-lg font-semibold text-[var(--ink)]">Delete Account</h3>
             </div>
 
-            <p className="text-sm text-gray-700 mb-3">
+            <p className="text-sm text-[var(--ink-soft)] mb-3">
               This will permanently delete your account and all associated data. This action cannot be undone.
             </p>
 
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-[var(--ink-soft)] mb-4">
               {isStartup
                 ? 'Your company profile, scores, and all uploaded documents will be permanently removed.'
                 : 'Your pipeline, watchlist, portfolio, team, and all deal data will be permanently removed.'}
             </p>
 
             <div className="mb-5">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1.5">
                 Type <span className="font-bold text-red-600">DELETE</span> to confirm
               </label>
               <input
@@ -724,14 +724,14 @@ export default function SettingsPage() {
                 value={deleteConfirm}
                 onChange={(e) => setDeleteConfirm(e.target.value)}
                 placeholder="DELETE"
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
+                className="w-full rounded-lg border border-[var(--line-strong)] px-4 py-2.5 text-sm text-[var(--ink)] focus:border-red-500 focus:ring-2 focus:ring-red-500/20 outline-none transition-all"
               />
             </div>
 
             <div className="flex items-center justify-end gap-3">
               <button
                 onClick={() => { setShowDeleteModal(false); setDeleteConfirm(''); }}
-                className="px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition"
+                className="px-4 py-2.5 text-sm font-medium text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)] rounded-lg transition"
               >
                 Cancel
               </button>

@@ -18,7 +18,7 @@ export default function Home() {
   const closeModal = () => setIsModalOpen(false)
 
   return (
-    <main className="min-h-screen bg-white">
+    <main className="min-h-screen bg-[var(--bg-elev)]">
       <Navbar onApplyNow={openModal} />
       <Hero onApplyNow={openModal} />
       <HowItWorks />

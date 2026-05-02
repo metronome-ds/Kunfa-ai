@@ -39,7 +39,7 @@ function ScoreRing({ score }: { score: number | null }) {
         <circle cx="22" cy="22" r="18" stroke="#E5E7EB" strokeWidth="3" fill="none" />
         <circle cx="22" cy="22" r="18" stroke={color} strokeWidth="3" fill="none" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-gray-900">{score ?? '—'}</span>
+      <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-[var(--ink)]">{score ?? '—'}</span>
     </div>
   );
 }
@@ -94,8 +94,8 @@ export default function StartupsPage() {
   if (!isTenantContext) {
     return (
       <div className="p-8 max-w-4xl mx-auto text-center">
-        <h1 className="text-xl font-semibold text-gray-900">Startup Directory</h1>
-        <p className="text-sm text-gray-500 mt-2">This page is only available in a tenant context.</p>
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Startup Directory</h1>
+        <p className="text-sm text-[var(--ink-mute)] mt-2">This page is only available in a tenant context.</p>
       </div>
     );
   }
@@ -103,9 +103,9 @@ export default function StartupsPage() {
   if (!hasFeature) {
     return (
       <div className="p-8 max-w-4xl mx-auto text-center">
-        <Rocket className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <h1 className="text-xl font-semibold text-gray-900">Feature not available</h1>
-        <p className="text-sm text-gray-500 mt-2">The startup directory is not enabled for this tenant.</p>
+        <Rocket className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Feature not available</h1>
+        <p className="text-sm text-[var(--ink-mute)] mt-2">The startup directory is not enabled for this tenant.</p>
       </div>
     );
   }
@@ -130,15 +130,15 @@ export default function StartupsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--ink-mute)' }} />
           <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search startups..." style={{ width: '100%', paddingLeft: 36, paddingRight: 12, paddingTop: 8, paddingBottom: 8, border: '1px solid var(--line-strong)', borderRadius: 5, fontSize: 13, background: 'var(--bg)', color: 'var(--ink)', outline: 'none' }} />
         </div>
-        <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+        <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="px-3 py-2 border border-[var(--line)] rounded-lg text-sm">
           <option value="">All industries</option>
           {industries.map((i) => <option key={i} value={i}>{i}</option>)}
         </select>
-        <select value={stage} onChange={(e) => setStage(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+        <select value={stage} onChange={(e) => setStage(e.target.value)} className="px-3 py-2 border border-[var(--line)] rounded-lg text-sm">
           <option value="">All stages</option>
           {stages.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select value={sort} onChange={(e) => setSort(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
+        <select value={sort} onChange={(e) => setSort(e.target.value)} className="px-3 py-2 border border-[var(--line)] rounded-lg text-sm">
           <option value="score">Top score</option>
           <option value="newest">Newest</option>
           <option value="name">Name</option>
@@ -148,27 +148,27 @@ export default function StartupsPage() {
       {loading ? (
         <div className="py-12 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)] mx-auto" /></div>
       ) : startups.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
-          <Rocket className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <h2 className="text-lg font-semibold text-gray-900">No startups yet</h2>
-          <p className="text-sm text-gray-500 mt-1">Startups in your network will appear here.</p>
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-12 text-center">
+          <Rocket className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+          <h2 className="text-lg font-semibold text-[var(--ink)]">No startups yet</h2>
+          <p className="text-sm text-[var(--ink-mute)] mt-1">Startups in your network will appear here.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {startups.map((s) => (
-            <Link key={s.id} href={`/company/${s.slug}`} className="bg-white rounded-xl border border-gray-200 p-5 hover:border-gray-300 hover:shadow-sm transition">
+            <Link key={s.id} href={`/company/${s.slug}`} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5 hover:border-[var(--line-strong)] hover:shadow-sm transition">
               <div className="flex items-start gap-3 mb-3">
                 {s.logo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={s.logo_url} alt={s.company_name} className="w-12 h-12 rounded-lg object-cover border border-gray-200" />
+                  <img src={s.logo_url} alt={s.company_name} className="w-12 h-12 rounded-lg object-cover border border-[var(--line)]" />
                 ) : (
                   <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[var(--accent-soft)] to-[var(--accent-soft)] flex items-center justify-center text-[var(--accent-ink)] font-bold">
                     {s.company_name.charAt(0)}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 truncate">{s.company_name}</h3>
-                  {s.one_liner && <p className="text-xs text-gray-500 line-clamp-2 mt-0.5">{s.one_liner}</p>}
+                  <h3 className="font-semibold text-[var(--ink)] truncate">{s.company_name}</h3>
+                  {s.one_liner && <p className="text-xs text-[var(--ink-mute)] line-clamp-2 mt-0.5">{s.one_liner}</p>}
                 </div>
                 <ScoreRing score={s.overall_score} />
               </div>
@@ -178,7 +178,7 @@ export default function StartupsPage() {
                 {s.is_raising && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Raising</span>}
                 <SourceBadge source={s.source} />
                 {s.is_public === false && (
-                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--bg-sunk)] text-[var(--ink-soft)]">
                     <Lock className="w-3 h-3" />Private
                   </span>
                 )}
@@ -194,14 +194,14 @@ export default function StartupsPage() {
                   </span>
                 )}
               </div>
-              <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
+              <div className="flex items-center justify-between text-xs text-[var(--ink-mute)] pt-2 border-t border-[var(--line)]">
                 <span className="truncate">{s.founder_name || '—'}</span>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {s.country && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{s.country}</span>}
                   {isAdmin && (
                     <button
                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDeleteTarget({ id: s.id, name: s.company_name }); }}
-                      className="p-1 text-gray-300 hover:text-red-500 transition rounded"
+                      className="p-1 text-[var(--ink-faint)] hover:text-red-500 transition rounded"
                       title="Delete company"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

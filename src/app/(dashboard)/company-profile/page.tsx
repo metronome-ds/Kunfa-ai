@@ -50,7 +50,7 @@ interface CompanyData {
 // STAGES and INDUSTRIES imported from @/lib/constants
 
 function getScoreColor(score: number | null) {
-  if (!score) return 'text-gray-400'
+  if (!score) return 'text-[var(--ink-faint)]'
   if (score >= 80) return 'text-emerald-600'
   if (score >= 60) return 'text-[var(--ink)]'
   if (score >= 40) return 'text-yellow-600'
@@ -58,7 +58,7 @@ function getScoreColor(score: number | null) {
 }
 
 function getScoreBg(score: number | null) {
-  if (!score) return 'bg-[#F8F9FB] border-gray-200'
+  if (!score) return 'bg-[var(--bg-sunk)] border-[var(--line)]'
   if (score >= 80) return 'bg-emerald-50 border-emerald-200'
   if (score >= 60) return 'bg-[var(--accent-soft)] border-[var(--line)]'
   if (score >= 40) return 'bg-yellow-50 border-yellow-200'
@@ -78,8 +78,8 @@ function daysSince(dateStr: string) {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
 }
 
-const INPUT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent'
-const SELECT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent'
+const INPUT_CLASS = 'w-full bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg px-3 py-2 text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent'
+const SELECT_CLASS = 'w-full bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg px-3 py-2 text-sm text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent'
 
 export default function CompanyProfilePage() {
   const [company, setCompany] = useState<CompanyData | null>(null)
@@ -259,12 +259,12 @@ export default function CompanyProfilePage() {
   if (loading) {
     return (
       <div className="p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Company Profile</h1>
+        <h1 className="text-2xl font-bold text-[var(--ink)] mb-6">Company Profile</h1>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 animate-pulse">
-              <div className="h-5 bg-gray-200 rounded w-1/3 mb-3" />
-              <div className="h-4 bg-gray-200 rounded w-2/3" />
+            <div key={i} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 animate-pulse">
+              <div className="h-5 bg-[var(--bg-sunk)] rounded w-1/3 mb-3" />
+              <div className="h-4 bg-[var(--bg-sunk)] rounded w-2/3" />
             </div>
           ))}
         </div>
@@ -276,13 +276,13 @@ export default function CompanyProfilePage() {
   if (!company) {
     return (
       <div className="p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Company Profile</h1>
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <FileText className="w-8 h-8 text-gray-400" />
+        <h1 className="text-2xl font-bold text-[var(--ink)] mb-6">Company Profile</h1>
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-12 text-center">
+          <div className="w-16 h-16 bg-[var(--bg-sunk)] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-8 h-8 text-[var(--ink-faint)]" />
           </div>
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">No company profile yet</h2>
-          <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">
+          <h2 className="text-lg font-semibold text-[var(--ink)] mb-2">No company profile yet</h2>
+          <p className="text-[var(--ink-mute)] text-sm mb-6 max-w-md mx-auto">
             Get your Kunfa Score to create your company profile. Investors will be able to discover and evaluate your startup.
           </p>
           <Link
@@ -322,7 +322,7 @@ export default function CompanyProfilePage() {
   return (
     <div className="p-8">
       {/* Header row: score + company info + actions */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-6">
         <div className="flex items-start gap-6">
           {/* Logo or Score badge */}
           <div className="flex flex-col items-center flex-shrink-0 gap-1">
@@ -337,16 +337,16 @@ export default function CompanyProfilePage() {
               <div className={`w-20 h-20 rounded-2xl border-2 flex flex-col items-center justify-center ${getScoreBg(company.overall_score)}`}>
                 <span className={`text-3xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
                 {scored !== null && (
-                  <span className="text-[10px] text-gray-400">{scored}d ago</span>
+                  <span className="text-[10px] text-[var(--ink-faint)]">{scored}d ago</span>
                 )}
               </div>
             )}
           </div>
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-gray-900">{company.company_name}</h1>
+            <h1 className="text-2xl font-bold text-[var(--ink)]">{company.company_name}</h1>
             {company.one_liner && (
-              <p className="text-gray-500 text-sm mt-1">{company.one_liner}</p>
+              <p className="text-[var(--ink-mute)] text-sm mt-1">{company.one_liner}</p>
             )}
 
             {/* Tags */}
@@ -362,7 +362,7 @@ export default function CompanyProfilePage() {
                 </span>
               )}
               {hq && (
-                <span className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
+                <span className="px-2.5 py-0.5 rounded-full bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-xs font-medium">
                   {hq}
                 </span>
               )}
@@ -375,7 +375,7 @@ export default function CompanyProfilePage() {
                   href={company.website_url.startsWith('http') ? company.website_url : `https://${company.website_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 transition"
+                  className="inline-flex items-center gap-1 text-xs text-[var(--ink-mute)] hover:text-[var(--ink)] transition"
                 >
                   <ExternalLink className="w-3 h-3" />
                   {company.website_url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
@@ -417,7 +417,7 @@ export default function CompanyProfilePage() {
             {canEdit && (
               <button
                 onClick={editing ? cancelEditing : startEditing}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--bg-sunk)] text-[var(--ink-soft)] border border-[var(--line)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
               >
                 {editing ? (
                   <>
@@ -434,7 +434,7 @@ export default function CompanyProfilePage() {
             )}
             <button
               onClick={handleCopyLink}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--bg-sunk)] text-[var(--ink-soft)] border border-[var(--line)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
             >
               {copied ? (
                 <>
@@ -462,15 +462,15 @@ export default function CompanyProfilePage() {
 
       {/* Edit Mode Form */}
       {editing && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-          <h2 className="text-sm font-semibold text-gray-900 mb-4">Edit Profile</h2>
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-6">
+          <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Edit Profile</h2>
 
           {/* Logo upload */}
           <div className="mb-4">
-            <label className="block text-xs font-medium text-gray-500 mb-1">Company Logo</label>
+            <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Company Logo</label>
             <div className="flex items-center gap-3">
               <CompanyLogo name={editForm.company_name || 'C'} logoUrl={editForm.logo_url || null} size="lg" />
-              <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-300 text-gray-700 bg-white hover:bg-[#F8F9FB] transition cursor-pointer">
+              <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border border-[var(--line-strong)] text-[var(--ink-soft)] bg-[var(--bg-elev)] hover:bg-[var(--bg-sunk)] transition cursor-pointer">
                 <Upload className="w-3.5 h-3.5" />
                 {editForm.logo_url ? 'Change Logo' : 'Upload Logo'}
                 <input
@@ -505,20 +505,20 @@ export default function CompanyProfilePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Company Name</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Company Name</label>
               <input type="text" value={editForm.company_name}
                 onChange={(e) => setEditForm(f => ({ ...f, company_name: e.target.value }))}
                 className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">One-Liner</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">One-Liner</label>
               <input type="text" value={editForm.one_liner}
                 onChange={(e) => setEditForm(f => ({ ...f, one_liner: e.target.value }))}
                 maxLength={160}
                 className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Industry</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Industry</label>
               <select value={editForm.industry}
                 onChange={(e) => setEditForm(f => ({ ...f, industry: e.target.value }))}
                 className={SELECT_CLASS}>
@@ -527,7 +527,7 @@ export default function CompanyProfilePage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Stage</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Stage</label>
               <select value={editForm.stage}
                 onChange={(e) => setEditForm(f => ({ ...f, stage: e.target.value }))}
                 className={SELECT_CLASS}>
@@ -536,51 +536,51 @@ export default function CompanyProfilePage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Country / HQ</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Country / HQ</label>
               <input type="text" value={editForm.country}
                 onChange={(e) => setEditForm(f => ({ ...f, country: e.target.value, headquarters: e.target.value }))}
                 className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Website</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Website</label>
               <input type="url" value={editForm.website_url}
                 onChange={(e) => setEditForm(f => ({ ...f, website_url: e.target.value }))}
                 className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Company LinkedIn URL</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Company LinkedIn URL</label>
               <input type="url" value={editForm.company_linkedin_url}
                 onChange={(e) => setEditForm(f => ({ ...f, company_linkedin_url: e.target.value }))}
                 placeholder="linkedin.com/company/your-company"
                 className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Raise Amount ($)</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Raise Amount ($)</label>
               <input type="number" value={editForm.raise_amount}
                 onChange={(e) => setEditForm(f => ({ ...f, raise_amount: e.target.value }))}
                 className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Team Size</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Team Size</label>
               <input type="number" value={editForm.team_size}
                 onChange={(e) => setEditForm(f => ({ ...f, team_size: e.target.value }))}
                 className={INPUT_CLASS} />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-500 mb-1">Founded Year</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Founded Year</label>
               <input type="number" value={editForm.founded_year}
                 onChange={(e) => setEditForm(f => ({ ...f, founded_year: e.target.value }))}
                 className={INPUT_CLASS} />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Use of Funds</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Use of Funds</label>
               <textarea value={editForm.use_of_funds}
                 onChange={(e) => setEditForm(f => ({ ...f, use_of_funds: e.target.value }))}
                 rows={2}
                 className={INPUT_CLASS} />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-gray-500 mb-1">Traction</label>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Traction</label>
               <textarea value={editForm.traction}
                 onChange={(e) => setEditForm(f => ({ ...f, traction: e.target.value }))}
                 rows={2}
@@ -589,9 +589,9 @@ export default function CompanyProfilePage() {
           </div>
 
           {/* Founding Team Editor */}
-          <div className="mt-6 border-t border-gray-200 pt-4">
+          <div className="mt-6 border-t border-[var(--line)] pt-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-gray-900">Founding Team</h3>
+              <h3 className="text-sm font-semibold text-[var(--ink)]">Founding Team</h3>
               {editTeam.length < 5 && (
                 <button
                   type="button"
@@ -604,40 +604,40 @@ export default function CompanyProfilePage() {
             </div>
             <div className="space-y-3">
               {editTeam.map((member, i) => (
-                <div key={i} className="bg-[#F8F9FB] rounded-lg p-3 relative">
+                <div key={i} className="bg-[var(--bg-sunk)] rounded-lg p-3 relative">
                   {i > 0 && (
                     <button
                       type="button"
                       onClick={() => setEditTeam(editTeam.filter((_, j) => j !== i))}
-                      className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition"
+                      className="absolute top-2 right-2 text-[var(--ink-faint)] hover:text-red-500 transition"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   )}
                   <div className={`grid grid-cols-2 gap-3 ${i > 0 ? 'pr-6' : ''}`}>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Name {i === 0 ? '*' : ''}</label>
+                      <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Name {i === 0 ? '*' : ''}</label>
                       <input type="text" value={member.name}
                         onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, name: e.target.value } : m))}
                         placeholder="Jane Smith"
                         className={INPUT_CLASS} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Title</label>
+                      <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Title</label>
                       <input type="text" value={member.title}
                         onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, title: e.target.value } : m))}
                         placeholder="CEO & Co-Founder"
                         className={INPUT_CLASS} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">Email</label>
+                      <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Email</label>
                       <input type="email" value={member.email}
                         onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, email: e.target.value } : m))}
                         placeholder="jane@company.com"
                         className={INPUT_CLASS} />
                     </div>
                     <div>
-                      <label className="block text-xs font-medium text-gray-500 mb-1">LinkedIn</label>
+                      <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">LinkedIn</label>
                       <input type="url" value={member.linkedin}
                         onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, linkedin: e.target.value } : m))}
                         placeholder="linkedin.com/in/..."
@@ -659,7 +659,7 @@ export default function CompanyProfilePage() {
             </button>
             <button
               onClick={cancelEditing}
-              className="px-6 py-2 bg-gray-100 text-gray-700 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-200 transition"
+              className="px-6 py-2 bg-[var(--bg-sunk)] text-[var(--ink-soft)] border border-[var(--line)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
             >
               Cancel
             </button>
@@ -677,8 +677,8 @@ export default function CompanyProfilePage() {
           {paid && hasReport ? (
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">Kunfa Readiness Report</h3>
-                <p className="text-xs text-gray-500 mt-0.5">Your full AI-powered investment analysis is ready.</p>
+                <h3 className="text-sm font-semibold text-[var(--ink)]">Kunfa Readiness Report</h3>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">Your full AI-powered investment analysis is ready.</p>
               </div>
               <Link
                 href={`/report/${company.submission_id}`}
@@ -693,16 +693,16 @@ export default function CompanyProfilePage() {
               <div className="flex items-center gap-3">
                 <Loader2 className="w-5 h-5 text-[var(--accent-ink)] animate-spin flex-shrink-0" />
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-900">Report Generating...</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
+                  <h3 className="text-sm font-semibold text-[var(--ink)]">Report Generating...</h3>
+                  <p className="text-xs text-[var(--ink-mute)] mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
                 </div>
               </div>
             </div>
           ) : (
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-semibold text-gray-900">Unlock Your Full Readiness Report</h3>
-                <p className="text-xs text-gray-500 mt-0.5">Detailed analysis, sector benchmarks, and actionable recommendations.</p>
+                <h3 className="text-sm font-semibold text-[var(--ink)]">Unlock Your Full Readiness Report</h3>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">Detailed analysis, sector benchmarks, and actionable recommendations.</p>
               </div>
               <button
                 onClick={async () => {
@@ -730,34 +730,34 @@ export default function CompanyProfilePage() {
       <div className="space-y-4">
         {/* Overview */}
         {company.description && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">Overview</h2>
-            <p className="text-gray-700 text-sm leading-relaxed">{company.description}</p>
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+            <h2 className="text-sm font-semibold text-[var(--ink)] uppercase tracking-wider mb-3">Overview</h2>
+            <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{company.description}</p>
           </div>
         )}
 
         {/* Funding */}
         {(raiseFormatted || company.stage || company.use_of_funds) && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">Funding</h2>
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+            <h2 className="text-sm font-semibold text-[var(--ink)] uppercase tracking-wider mb-3">Funding</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-3">
               {raiseFormatted && (
                 <div>
-                  <p className="text-[10px] text-gray-500 mb-0.5">Raise Amount</p>
-                  <p className="text-lg font-semibold text-gray-900">{raiseFormatted}</p>
+                  <p className="text-[10px] text-[var(--ink-mute)] mb-0.5">Raise Amount</p>
+                  <p className="text-lg font-semibold text-[var(--ink)]">{raiseFormatted}</p>
                 </div>
               )}
               {company.stage && (
                 <div>
-                  <p className="text-[10px] text-gray-500 mb-0.5">Stage</p>
-                  <p className="text-lg font-semibold text-gray-900">{company.stage}</p>
+                  <p className="text-[10px] text-[var(--ink-mute)] mb-0.5">Stage</p>
+                  <p className="text-lg font-semibold text-[var(--ink)]">{company.stage}</p>
                 </div>
               )}
             </div>
             {company.use_of_funds && (
               <div>
-                <p className="text-[10px] text-gray-500 mb-0.5">Use of Funds</p>
-                <p className="text-gray-700 text-sm leading-relaxed">{company.use_of_funds}</p>
+                <p className="text-[10px] text-[var(--ink-mute)] mb-0.5">Use of Funds</p>
+                <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{company.use_of_funds}</p>
               </div>
             )}
           </div>
@@ -765,21 +765,21 @@ export default function CompanyProfilePage() {
 
         {/* Team */}
         {(teamMembers.length > 0 || company.team_size || company.founded_year) && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">Team</h2>
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+            <h2 className="text-sm font-semibold text-[var(--ink)] uppercase tracking-wider mb-3">Team</h2>
             {teamMembers.length > 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
                 {teamMembers.map((member, idx) => (
-                  <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-[#F8F9FB] border border-gray-200">
-                    <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                      <span className="text-xs font-semibold text-gray-600">
+                  <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-sunk)] border border-[var(--line)]">
+                    <div className="w-9 h-9 rounded-full bg-[var(--bg-sunk)] flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-semibold text-[var(--ink-soft)]">
                         {member.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">{member.name}</p>
+                      <p className="text-sm font-medium text-[var(--ink)] truncate">{member.name}</p>
                       {member.title && (
-                        <p className="text-xs text-gray-500 truncate">{member.title}</p>
+                        <p className="text-xs text-[var(--ink-mute)] truncate">{member.title}</p>
                       )}
                     </div>
                     {member.linkedin && (
@@ -797,12 +797,12 @@ export default function CompanyProfilePage() {
               </div>
             )}
             {(company.team_size || company.founded_year) && (
-              <div className="flex items-center gap-6 text-sm text-gray-500">
+              <div className="flex items-center gap-6 text-sm text-[var(--ink-mute)]">
                 {company.team_size && (
-                  <span>Team Size: <span className="font-semibold text-gray-900">{company.team_size}</span></span>
+                  <span>Team Size: <span className="font-semibold text-[var(--ink)]">{company.team_size}</span></span>
                 )}
                 {company.founded_year && (
-                  <span>Founded: <span className="font-semibold text-gray-900">{company.founded_year}</span></span>
+                  <span>Founded: <span className="font-semibold text-[var(--ink)]">{company.founded_year}</span></span>
                 )}
               </div>
             )}
@@ -811,39 +811,39 @@ export default function CompanyProfilePage() {
 
         {/* Traction */}
         {company.traction && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">Traction</h2>
-            <p className="text-gray-700 text-sm leading-relaxed">{company.traction}</p>
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+            <h2 className="text-sm font-semibold text-[var(--ink)] uppercase tracking-wider mb-3">Traction</h2>
+            <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{company.traction}</p>
           </div>
         )}
 
         {/* AI Analysis */}
         {hasAnalysis && (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">AI Analysis</h2>
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+            <h2 className="text-sm font-semibold text-[var(--ink)] uppercase tracking-wider mb-3">AI Analysis</h2>
             <div className="space-y-4">
               {company.problem_summary && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-1">Problem</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">{company.problem_summary}</p>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Problem</h3>
+                  <p className="text-[var(--ink-mute)] text-sm leading-relaxed">{company.problem_summary}</p>
                 </div>
               )}
               {company.solution_summary && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-1">Solution</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">{company.solution_summary}</p>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Solution</h3>
+                  <p className="text-[var(--ink-mute)] text-sm leading-relaxed">{company.solution_summary}</p>
                 </div>
               )}
               {company.business_model && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-1">Business Model</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">{company.business_model}</p>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Business Model</h3>
+                  <p className="text-[var(--ink-mute)] text-sm leading-relaxed">{company.business_model}</p>
                 </div>
               )}
               {company.key_risks && (
                 <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-1">Key Risks</h3>
-                  <p className="text-gray-500 text-sm leading-relaxed">{company.key_risks}</p>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Key Risks</h3>
+                  <p className="text-[var(--ink-mute)] text-sm leading-relaxed">{company.key_risks}</p>
                 </div>
               )}
             </div>

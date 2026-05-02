@@ -34,7 +34,7 @@ const EMOJIS = [
 ]
 
 const INTEREST_OPTIONS = [
-  { value: 'pass', label: 'Pass', color: 'bg-gray-100 text-gray-600 border-gray-200' },
+  { value: 'pass', label: 'Pass', color: 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] border-[var(--line)]' },
   { value: 'watching', label: 'Watching', color: 'bg-[var(--accent-soft)] text-[var(--ink)] border-[var(--line)]' },
   { value: 'interested', label: 'Interested', color: 'bg-amber-50 text-amber-700 border-amber-200' },
   { value: 'committed', label: 'Committed', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
@@ -187,7 +187,7 @@ export default function DealDiscussionPage() {
   if (!deal) {
     return (
       <div className="max-w-lg mx-auto py-20 px-4 text-center">
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Deal Not Found</h1>
+        <h1 className="text-xl font-bold text-[var(--ink)] mb-2">Deal Not Found</h1>
         <button onClick={() => router.push(`/communities/${slug}`)} className="text-sm text-[var(--accent-ink)] hover:underline">Back to community</button>
       </div>
     )
@@ -204,26 +204,26 @@ export default function DealDiscussionPage() {
     <div className="max-w-3xl mx-auto px-4 py-6">
       <button
         onClick={() => router.push(`/communities/${slug}`)}
-        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-6"
+        className="flex items-center gap-1.5 text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to {community?.name || 'Community'}
       </button>
 
       {/* Deal card */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-6">
         <div className="flex items-start gap-4 mb-4">
           {deal.company?.logo_url ? (
-            <img src={deal.company.logo_url} alt="" className="w-14 h-14 rounded-xl object-cover border border-gray-100" />
+            <img src={deal.company.logo_url} alt="" className="w-14 h-14 rounded-xl object-cover border border-[var(--line)]" />
           ) : (
-            <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center text-lg font-semibold text-gray-400">{name[0]}</div>
+            <div className="w-14 h-14 rounded-xl bg-[var(--bg-sunk)] flex items-center justify-center text-lg font-semibold text-[var(--ink-faint)]">{name[0]}</div>
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2">
               {deal.company ? (
-                <Link href={`/company/${deal.company.slug}`} className="text-xl font-bold text-gray-900 hover:text-[var(--accent-ink)]">{name}</Link>
+                <Link href={`/company/${deal.company.slug}`} className="text-xl font-bold text-[var(--ink)] hover:text-[var(--accent-ink)]">{name}</Link>
               ) : (
-                <span className="text-xl font-bold text-gray-900">{name}</span>
+                <span className="text-xl font-bold text-[var(--ink)]">{name}</span>
               )}
               {score != null && (
                 <span className={`text-sm font-bold px-2 py-0.5 rounded ${
@@ -233,11 +233,11 @@ export default function DealDiscussionPage() {
                 }`}>{score}</span>
               )}
             </div>
-            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+            <div className="flex items-center gap-2 text-sm text-[var(--ink-mute)] mt-1">
               {sector && <span>{sector}</span>}
               {sector && stage && <span>·</span>}
               {stage && <span>{stage}</span>}
-              {amount ? <><span>·</span><span className="font-medium text-gray-700">{formatAmount(amount)}</span></> : null}
+              {amount ? <><span>·</span><span className="font-medium text-[var(--ink-soft)]">{formatAmount(amount)}</span></> : null}
               {deal.external_docs_url && (
                 <a href={deal.external_docs_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[var(--accent-ink)] hover:underline ml-2">
                   <ExternalLink className="w-3.5 h-3.5" /> Docs
@@ -247,7 +247,7 @@ export default function DealDiscussionPage() {
           </div>
         </div>
 
-        {deal.external_description && <p className="text-sm text-gray-600 mb-4">{deal.external_description}</p>}
+        {deal.external_description && <p className="text-sm text-[var(--ink-soft)] mb-4">{deal.external_description}</p>}
 
         {/* Interest voting */}
         <div className="flex items-center gap-2 flex-wrap mb-3">
@@ -258,7 +258,7 @@ export default function DealDiscussionPage() {
               className={`px-3 py-1.5 text-sm font-medium rounded-lg border transition ${
                 deal.myInterest === opt.value
                   ? opt.color + ' border-current'
-                  : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300'
+                  : 'bg-[var(--bg-elev)] text-[var(--ink-mute)] border-[var(--line)] hover:border-[var(--line-strong)]'
               }`}
             >
               {opt.label}
@@ -268,7 +268,7 @@ export default function DealDiscussionPage() {
 
         {/* Interest bar */}
         {total > 0 && (
-          <div className="flex items-center gap-3 text-xs text-gray-400">
+          <div className="flex items-center gap-3 text-xs text-[var(--ink-faint)]">
             <div className="flex h-2 rounded-full overflow-hidden gap-0.5 flex-1">
               {deal.interestBreakdown.pass > 0 && <div className="bg-gray-300" style={{ flex: deal.interestBreakdown.pass }} />}
               {deal.interestBreakdown.watching > 0 && <div className="bg-[var(--accent)]" style={{ flex: deal.interestBreakdown.watching }} />}
@@ -279,18 +279,18 @@ export default function DealDiscussionPage() {
           </div>
         )}
 
-        <div className="text-xs text-gray-400 mt-3">Shared by {deal.sharedByName} · {timeAgo(deal.created_at)}</div>
+        <div className="text-xs text-[var(--ink-faint)] mt-3">Shared by {deal.sharedByName} · {timeAgo(deal.created_at)}</div>
       </div>
 
       {/* Comment input */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4 mb-4">
         <div className="flex items-center gap-2">
           <input
             type="text"
             value={newComment}
             onChange={e => setNewComment(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleComment()}
-            className="flex-1 px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+            className="flex-1 px-3 py-2.5 border border-[var(--line)] rounded-lg text-sm text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             placeholder="Add a comment..."
           />
           <button
@@ -305,7 +305,7 @@ export default function DealDiscussionPage() {
 
       {/* Comments */}
       {comments.length === 0 ? (
-        <div className="text-center py-8 text-gray-400 text-sm">No comments yet. Start the discussion!</div>
+        <div className="text-center py-8 text-[var(--ink-faint)] text-sm">No comments yet. Start the discussion!</div>
       ) : (
         <div className="space-y-3">
           {comments.map(comment => (
@@ -351,19 +351,19 @@ function CommentCard({
   isReply?: boolean;
 }) {
   return (
-    <div className={`bg-white rounded-xl border border-gray-200 p-4 ${isReply ? 'border-gray-100' : ''}`}>
+    <div className={`bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4 ${isReply ? 'border-[var(--line)]' : ''}`}>
       <div className="flex items-start justify-between mb-1">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-[var(--ink)]/10 flex items-center justify-center text-xs font-semibold text-[var(--accent-ink)]">
             {(comment.authorName || '?')[0].toUpperCase()}
           </div>
-          <span className="text-sm font-medium text-gray-900">{comment.authorName}</span>
-          <span className="text-xs text-gray-400">{timeAgo(comment.createdAt)}</span>
+          <span className="text-sm font-medium text-[var(--ink)]">{comment.authorName}</span>
+          <span className="text-xs text-[var(--ink-faint)]">{timeAgo(comment.createdAt)}</span>
         </div>
-        <button onClick={onDelete} className="text-gray-300 hover:text-red-500 transition"><Trash2 className="w-3.5 h-3.5" /></button>
+        <button onClick={onDelete} className="text-[var(--ink-faint)] hover:text-red-500 transition"><Trash2 className="w-3.5 h-3.5" /></button>
       </div>
 
-      <p className="text-sm text-gray-700 whitespace-pre-wrap mb-2 ml-9">{comment.content}</p>
+      <p className="text-sm text-[var(--ink-soft)] whitespace-pre-wrap mb-2 ml-9">{comment.content}</p>
 
       <div className="flex items-center gap-1.5 ml-9">
         {EMOJIS.map(({ emoji, icon: Icon }) => {
@@ -373,7 +373,7 @@ function CommentCard({
               key={emoji}
               onClick={() => onReact(emoji)}
               className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition ${
-                r?.hasReacted ? 'bg-[var(--ink)]/10 text-[var(--accent-ink)]' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                r?.hasReacted ? 'bg-[var(--ink)]/10 text-[var(--accent-ink)]' : 'bg-[var(--bg-sunk)] text-[var(--ink-faint)] hover:bg-[var(--bg-sunk)]'
               }`}
             >
               <Icon className="w-3 h-3" />
@@ -382,7 +382,7 @@ function CommentCard({
           )
         })}
         {!isReply && onReplyClick && (
-          <button onClick={onReplyClick} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-gray-50 text-gray-400 hover:bg-gray-100">
+          <button onClick={onReplyClick} className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-[var(--bg-sunk)] text-[var(--ink-faint)] hover:bg-[var(--bg-sunk)]">
             <MessageSquare className="w-3 h-3" /> Reply
           </button>
         )}
@@ -395,7 +395,7 @@ function CommentCard({
             value={replyContent}
             onChange={e => setReplyContent(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && onReply()}
-            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+            className="flex-1 px-3 py-2 border border-[var(--line)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             placeholder="Write a reply..."
             autoFocus
           />

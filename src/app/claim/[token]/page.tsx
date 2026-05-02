@@ -25,7 +25,7 @@ interface CompanyInfo {
 }
 
 function getScoreColor(score: number | null | undefined) {
-  if (!score) return 'text-gray-500 bg-gray-100 border-gray-200'
+  if (!score) return 'text-[var(--ink-mute)] bg-[var(--bg-sunk)] border-[var(--line)]'
   if (score >= 80) return 'text-emerald-700 bg-emerald-50 border-emerald-200'
   if (score >= 60) return 'text-[var(--ink)] bg-[var(--accent-soft)] border-[var(--line)]'
   if (score >= 40) return 'text-yellow-700 bg-yellow-50 border-yellow-200'
@@ -93,7 +93,7 @@ export default function ClaimPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
       </div>
     )
@@ -101,13 +101,13 @@ export default function ClaimPage() {
 
   if (!companyInfo?.valid) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
           <div className="mb-6">
             <KunfaLogo height={32} />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Invalid Claim Link</h1>
-          <p className="text-gray-600 mb-6">
+          <h1 className="text-2xl font-bold text-[var(--ink)] mb-2">Invalid Claim Link</h1>
+          <p className="text-[var(--ink-soft)] mb-6">
             This claim link is invalid or the company has already been claimed.
           </p>
           <Link href="/" className="text-[var(--accent-ink)] hover:underline text-sm font-medium">
@@ -122,15 +122,15 @@ export default function ClaimPage() {
   if (result) {
     if (result.approved) {
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
           <div className="w-full max-w-md text-center">
             <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Company Claimed!</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">Company Claimed!</h2>
+            <p className="text-[var(--ink-soft)] mb-4">
               You now own the <strong>{companyInfo.company_name}</strong> profile. Redirecting to your dashboard...
             </p>
           </div>
@@ -140,15 +140,15 @@ export default function ClaimPage() {
 
     if (result.pending) {
       return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+        <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
           <div className="w-full max-w-md text-center">
             <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Claim Submitted for Review</h2>
-            <p className="text-gray-600 mb-6">
+            <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">Claim Submitted for Review</h2>
+            <p className="text-[var(--ink-soft)] mb-6">
               Your email domain doesn&apos;t match the company website, so your claim has been submitted for admin review. You&apos;ll receive an email once it&apos;s been reviewed.
             </p>
             <Link href="/dashboard" className="text-[var(--accent-ink)] hover:underline text-sm font-medium">
@@ -167,7 +167,7 @@ export default function ClaimPage() {
   const loginQuery = tenantSlug ? `claim=${token}&tenant=${tenantSlug}` : `claim=${token}`
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
@@ -178,16 +178,16 @@ export default function ClaimPage() {
               <KunfaLogo height={32} />
             )}
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-[var(--ink)]">
             Claim {companyInfo.company_name}{tenantSlug ? ` on ${networkName}` : ' on Kunfa'}
           </h1>
-          <p className="text-gray-500 mt-2">
+          <p className="text-[var(--ink-mute)] mt-2">
             Take ownership of your company profile, update your information, and connect with investors.
           </p>
         </div>
 
         {/* Company card */}
-        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mb-6">
+        <div className="bg-[var(--bg-elev)] rounded-xl p-6 border border-[var(--line)] mb-6">
           <div className="flex items-start gap-4">
             {companyInfo.overall_score && (
               <div className={`w-14 h-14 rounded-xl border-2 flex items-center justify-center flex-shrink-0 ${getScoreColor(companyInfo.overall_score)}`}>
@@ -195,9 +195,9 @@ export default function ClaimPage() {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg font-semibold text-gray-900">{companyInfo.company_name}</h2>
+              <h2 className="text-lg font-semibold text-[var(--ink)]">{companyInfo.company_name}</h2>
               {companyInfo.one_liner && (
-                <p className="text-sm text-gray-600 mt-1 line-clamp-2">{companyInfo.one_liner}</p>
+                <p className="text-sm text-[var(--ink-soft)] mt-1 line-clamp-2">{companyInfo.one_liner}</p>
               )}
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 {companyInfo.industry && (
@@ -217,9 +217,9 @@ export default function ClaimPage() {
 
         {user ? (
           // Logged in — show claim button
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
-            <p className="text-sm text-gray-600 mb-4">
-              Logged in as <strong className="text-gray-900">{user.email}</strong>
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 border border-[var(--line)]">
+            <p className="text-sm text-[var(--ink-soft)] mb-4">
+              Logged in as <strong className="text-[var(--ink)]">{user.email}</strong>
             </p>
 
             {error && (
@@ -236,8 +236,8 @@ export default function ClaimPage() {
           </div>
         ) : (
           // Not logged in — redirect to signup with claim token
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 border border-[var(--line)]">
+            <p className="text-sm text-[var(--ink-soft)] mb-4">
               Create an account to claim <strong>{companyInfo.company_name}</strong>. We&apos;ll verify your email with a 6-digit code.
             </p>
 
@@ -248,7 +248,7 @@ export default function ClaimPage() {
               Sign Up & Claim
             </Link>
 
-            <p className="text-center text-gray-600 text-sm mt-4">
+            <p className="text-center text-[var(--ink-soft)] text-sm mt-4">
               Already have an account?{' '}
               <Link
                 href={`/login?${loginQuery}`}

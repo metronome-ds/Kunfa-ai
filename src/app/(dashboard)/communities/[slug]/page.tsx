@@ -48,7 +48,7 @@ const EMOJIS = [
 ]
 
 const INTEREST_OPTIONS = [
-  { value: 'pass', label: 'Pass', color: 'bg-gray-100 text-gray-600' },
+  { value: 'pass', label: 'Pass', color: 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]' },
   { value: 'watching', label: 'Watching', color: 'bg-[var(--accent-soft)] text-[var(--ink)]' },
   { value: 'interested', label: 'Interested', color: 'bg-amber-100 text-amber-700' },
   { value: 'committed', label: 'Committed', color: 'bg-emerald-100 text-emerald-700' },
@@ -57,8 +57,8 @@ const INTEREST_OPTIONS = [
 const ROLE_BADGES: Record<string, string> = {
   admin: 'bg-violet-100 text-violet-700',
   deal_lead: 'bg-[var(--accent-soft)] text-[var(--ink)]',
-  member: 'bg-gray-100 text-gray-600',
-  observer: 'bg-gray-50 text-gray-400',
+  member: 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]',
+  observer: 'bg-[var(--bg-sunk)] text-[var(--ink-faint)]',
 }
 
 function timeAgo(dateStr: string): string {
@@ -120,9 +120,9 @@ export default function CommunityHubPage() {
   if (error === 'not_member') {
     return (
       <div className="max-w-lg mx-auto py-20 px-4 text-center">
-        <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Members Only</h1>
-        <p className="text-gray-500 mb-6">You don&apos;t have access to this community. Ask an admin for an invite.</p>
+        <Users className="w-12 h-12 text-[var(--ink-faint)] mx-auto mb-4" />
+        <h1 className="text-xl font-bold text-[var(--ink)] mb-2">Members Only</h1>
+        <p className="text-[var(--ink-mute)] mb-6">You don&apos;t have access to this community. Ask an admin for an invite.</p>
         <button onClick={() => router.push('/communities')} className="text-sm text-[var(--accent-ink)] hover:underline">Back to Communities</button>
       </div>
     )
@@ -131,7 +131,7 @@ export default function CommunityHubPage() {
   if (!community || error) {
     return (
       <div className="max-w-lg mx-auto py-20 px-4 text-center">
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Community Not Found</h1>
+        <h1 className="text-xl font-bold text-[var(--ink)] mb-2">Community Not Found</h1>
         <button onClick={() => router.push('/communities')} className="text-sm text-[var(--accent-ink)] hover:underline">Back to Communities</button>
       </div>
     )
@@ -150,10 +150,10 @@ export default function CommunityHubPage() {
       <div className="mb-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">{community.name}</h1>
-            {community.description && <p className="text-gray-500 mt-1">{community.description}</p>}
+            <h1 className="text-2xl font-bold text-[var(--ink)]">{community.name}</h1>
+            {community.description && <p className="text-[var(--ink-mute)] mt-1">{community.description}</p>}
             {community.thesis && <p className="text-sm text-[var(--accent-ink)] mt-1 italic">{community.thesis}</p>}
-            <div className="flex items-center gap-3 mt-2 text-sm text-gray-400">
+            <div className="flex items-center gap-3 mt-2 text-sm text-[var(--ink-faint)]">
               <span>{community.memberCount} members</span>
               <span>·</span>
               <span>{community.dealCount} active deals</span>
@@ -165,7 +165,7 @@ export default function CommunityHubPage() {
             <div className="flex items-center gap-2">
               <Link
                 href={`/communities/${slug}/settings`}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+                className="flex items-center gap-1.5 px-3 py-2 text-sm text-[var(--ink-soft)] hover:text-[var(--ink)] border border-[var(--line)] rounded-lg hover:bg-[var(--bg-sunk)] transition"
               >
                 <Settings className="w-4 h-4" />
                 Settings
@@ -176,13 +176,13 @@ export default function CommunityHubPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
+      <div className="flex gap-1 mb-6 bg-[var(--bg-sunk)] p-1 rounded-lg w-fit">
         {tabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`px-4 py-2 text-sm font-medium rounded-md transition ${
-              activeTab === tab.key ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+              activeTab === tab.key ? 'bg-[var(--bg-elev)] text-[var(--ink)]' : 'text-[var(--ink-mute)] hover:text-[var(--ink-soft)]'
             }`}
           >
             {tab.label}
@@ -266,17 +266,17 @@ function FeedTab({ slug, community }: { slug: string; community: Community }) {
     if (res.ok) loadFeed()
   }
 
-  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-[var(--ink-faint)]" /></div>
 
   return (
     <div>
       {/* Post composer */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-4">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4 mb-4">
         <textarea
           value={newPost}
           onChange={e => setNewPost(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
+          className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
           placeholder="Share an update with the community..."
         />
         <div className="flex justify-end mt-2">
@@ -293,7 +293,7 @@ function FeedTab({ slug, community }: { slug: string; community: Community }) {
 
       {/* Posts */}
       {posts.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">No posts yet. Be the first to share something!</div>
+        <div className="text-center py-12 text-[var(--ink-faint)]">No posts yet. Be the first to share something!</div>
       ) : (
         <div className="space-y-3">
           {posts.map(post => (
@@ -326,25 +326,25 @@ function PostCard({
   const isAdmin = community.userRole === 'admin'
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4">
+    <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2 mb-2">
           <div className="w-8 h-8 rounded-full bg-[var(--ink)]/10 flex items-center justify-center text-xs font-semibold text-[var(--accent-ink)]">
             {(post.authorName || '?')[0].toUpperCase()}
           </div>
           <div>
-            <span className="text-sm font-medium text-gray-900">{post.authorName}</span>
-            <span className="text-xs text-gray-400 ml-2">{timeAgo(post.createdAt)}</span>
+            <span className="text-sm font-medium text-[var(--ink)]">{post.authorName}</span>
+            <span className="text-xs text-[var(--ink-faint)] ml-2">{timeAgo(post.createdAt)}</span>
           </div>
         </div>
         {isAdmin && (
-          <button onClick={onDelete} className="text-gray-300 hover:text-red-500 transition">
+          <button onClick={onDelete} className="text-[var(--ink-faint)] hover:text-red-500 transition">
             <Trash2 className="w-4 h-4" />
           </button>
         )}
       </div>
 
-      <p className="text-sm text-gray-700 whitespace-pre-wrap mb-3">{post.content}</p>
+      <p className="text-sm text-[var(--ink-soft)] whitespace-pre-wrap mb-3">{post.content}</p>
 
       {/* Reactions */}
       <div className="flex items-center gap-1.5 flex-wrap">
@@ -355,7 +355,7 @@ function PostCard({
               key={emoji}
               onClick={() => onReact(emoji)}
               className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition ${
-                r?.hasReacted ? 'bg-[var(--ink)]/10 text-[var(--accent-ink)]' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                r?.hasReacted ? 'bg-[var(--ink)]/10 text-[var(--accent-ink)]' : 'bg-[var(--bg-sunk)] text-[var(--ink-faint)] hover:bg-[var(--bg-sunk)]'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -365,7 +365,7 @@ function PostCard({
         })}
         <button
           onClick={() => setReplyingTo(replyingTo === post.id ? null : post.id)}
-          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-50 text-gray-400 hover:bg-gray-100 transition"
+          className="flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-[var(--bg-sunk)] text-[var(--ink-faint)] hover:bg-[var(--bg-sunk)] transition"
         >
           <MessageSquare className="w-3.5 h-3.5" />
           {post.replyCount > 0 ? post.replyCount : ''} Reply
@@ -380,7 +380,7 @@ function PostCard({
             value={replyContent}
             onChange={e => setReplyContent(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && onReply()}
-            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+            className="flex-1 px-3 py-2 border border-[var(--line)] rounded-lg text-sm text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             placeholder="Write a reply..."
             autoFocus
           />
@@ -498,7 +498,7 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
     if (res.ok) loadDeals()
   }
 
-  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-[var(--ink-faint)]" /></div>
 
   return (
     <div>
@@ -515,7 +515,7 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
       )}
 
       {deals.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">No deals shared yet.</div>
+        <div className="text-center py-12 text-[var(--ink-faint)]">No deals shared yet.</div>
       ) : (
         <div className="space-y-3">
           {deals.map(deal => (
@@ -527,10 +527,10 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
       {/* Share Deal Modal */}
       {showShareModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-2xl max-h-[80vh] overflow-y-auto">
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Share a Deal</h3>
-              <button onClick={() => { setShowShareModal(false); setShareMode(null); setShareError('') }} className="text-gray-400 hover:text-gray-600">
+              <h3 className="text-lg font-semibold text-[var(--ink)]">Share a Deal</h3>
+              <button onClick={() => { setShowShareModal(false); setShareMode(null); setShareError('') }} className="text-[var(--ink-faint)] hover:text-[var(--ink-soft)]">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -539,43 +539,43 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
               <div className="space-y-3">
                 <button
                   onClick={() => setShareMode('kunfa')}
-                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-[var(--line-strong)] transition"
+                  className="w-full text-left p-4 rounded-xl border-2 border-[var(--line)] hover:border-[var(--line-strong)] transition"
                 >
-                  <div className="font-medium text-gray-900">From Kunfa</div>
-                  <div className="text-sm text-gray-500">Search for a company already on the platform</div>
+                  <div className="font-medium text-[var(--ink)]">From Kunfa</div>
+                  <div className="text-sm text-[var(--ink-mute)]">Search for a company already on the platform</div>
                 </button>
                 <button
                   onClick={() => setShareMode('external')}
-                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-[var(--line-strong)] transition"
+                  className="w-full text-left p-4 rounded-xl border-2 border-[var(--line)] hover:border-[var(--line-strong)] transition"
                 >
-                  <div className="font-medium text-gray-900">External Deal</div>
-                  <div className="text-sm text-gray-500">Add a company not yet on Kunfa</div>
+                  <div className="font-medium text-[var(--ink)]">External Deal</div>
+                  <div className="text-sm text-[var(--ink-mute)]">Add a company not yet on Kunfa</div>
                 </button>
               </div>
             ) : shareMode === 'kunfa' ? (
               <div>
                 <div className="relative mb-3">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--ink-faint)]" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={e => handleSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                    className="w-full pl-10 pr-4 py-2.5 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                     placeholder="Search company name..."
                     autoFocus
                   />
                 </div>
-                {searching && <div className="text-center py-3 text-gray-400 text-sm">Searching...</div>}
+                {searching && <div className="text-center py-3 text-[var(--ink-faint)] text-sm">Searching...</div>}
                 <div className="space-y-1 max-h-60 overflow-y-auto">
                   {searchResults.map(c => (
                     <button
                       key={c.id}
                       onClick={() => handleShareKunfa(c.id)}
                       disabled={shareLoading}
-                      className="w-full text-left flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition"
+                      className="w-full text-left flex items-center justify-between p-3 rounded-lg hover:bg-[var(--bg-sunk)] transition"
                     >
                       <div>
-                        <div className="font-medium text-gray-900 text-sm">{c.company_name}</div>
+                        <div className="font-medium text-[var(--ink)] text-sm">{c.company_name}</div>
                       </div>
                       {c.ai_score && (
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
@@ -590,37 +590,37 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
                     </button>
                   ))}
                 </div>
-                <button onClick={() => setShareMode(null)} className="text-sm text-gray-500 hover:text-gray-700 mt-3">← Back</button>
+                <button onClick={() => setShareMode(null)} className="text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] mt-3">← Back</button>
               </div>
             ) : (
               <form onSubmit={handleShareExternal} className="space-y-3">
                 <input type="text" value={extName} onChange={e => setExtName(e.target.value)} required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="Company name *" />
                 <textarea value={extDesc} onChange={e => setExtDesc(e.target.value)} rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
                   placeholder="Description" />
                 <div className="grid grid-cols-2 gap-3">
                   <select value={extSector} onChange={e => setExtSector(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]">
+                    className="px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]">
                     <option value="">Sector</option>
                     {['Fintech', 'SaaS', 'Healthtech', 'E-commerce', 'Edtech', 'Logistics', 'AI/ML', 'Cleantech', 'Other'].map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                   <select value={extStage} onChange={e => setExtStage(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]">
+                    className="px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]">
                     <option value="">Stage</option>
                     {['Pre-seed', 'Seed', 'Series A', 'Series B', 'Series C+', 'Growth'].map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <input type="number" value={extAmount} onChange={e => setExtAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="Raise amount (USD)" />
                 <input type="url" value={extDocs} onChange={e => setExtDocs(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="Docs URL (optional)" />
                 {shareError && <p className="text-red-600 text-sm">{shareError}</p>}
                 <div className="flex justify-between items-center">
-                  <button type="button" onClick={() => setShareMode(null)} className="text-sm text-gray-500 hover:text-gray-700">← Back</button>
+                  <button type="button" onClick={() => setShareMode(null)} className="text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)]">← Back</button>
                   <button type="submit" disabled={shareLoading} className="px-4 py-2 bg-[var(--ink)] text-white text-sm font-medium rounded-lg hover:bg-[var(--ink-2)] disabled:opacity-50">
                     {shareLoading ? 'Sharing...' : 'Share Deal'}
                   </button>
@@ -644,22 +644,22 @@ function DealCard({ deal, slug, onInterest }: { deal: DealItem; slug: string; on
   const total = deal.interestBreakdown.pass + deal.interestBreakdown.watching + deal.interestBreakdown.interested + deal.interestBreakdown.committed
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4">
+    <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4">
       <div className="flex items-start justify-between mb-2">
         <div className="flex items-center gap-3">
           {deal.company?.logo_url ? (
-            <img src={deal.company.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-gray-100" />
+            <img src={deal.company.logo_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-[var(--line)]" />
           ) : (
-            <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-400">
+            <div className="w-10 h-10 rounded-lg bg-[var(--bg-sunk)] flex items-center justify-center text-sm font-semibold text-[var(--ink-faint)]">
               {name[0]}
             </div>
           )}
           <div>
             <div className="flex items-center gap-2">
               {deal.company ? (
-                <Link href={`/company/${deal.company.slug}`} className="font-semibold text-gray-900 hover:text-[var(--accent-ink)]">{name}</Link>
+                <Link href={`/company/${deal.company.slug}`} className="font-semibold text-[var(--ink)] hover:text-[var(--accent-ink)]">{name}</Link>
               ) : (
-                <span className="font-semibold text-gray-900">{name}</span>
+                <span className="font-semibold text-[var(--ink)]">{name}</span>
               )}
               {score != null && (
                 <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
@@ -669,23 +669,23 @@ function DealCard({ deal, slug, onInterest }: { deal: DealItem; slug: string; on
                 }`}>{score}</span>
               )}
               {deal.external_docs_url && (
-                <a href={deal.external_docs_url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--accent-ink)]">
+                <a href={deal.external_docs_url} target="_blank" rel="noopener noreferrer" className="text-[var(--ink-faint)] hover:text-[var(--accent-ink)]">
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+            <div className="flex items-center gap-2 text-xs text-[var(--ink-mute)] mt-0.5">
               {sector && <span>{sector}</span>}
               {sector && stage && <span>·</span>}
               {stage && <span>{stage}</span>}
-              {amount ? <><span>·</span><span className="font-medium text-gray-700">{formatAmount(amount)}</span></> : null}
+              {amount ? <><span>·</span><span className="font-medium text-[var(--ink-soft)]">{formatAmount(amount)}</span></> : null}
             </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Link
             href={`/communities/${slug}/deals/${deal.id}`}
-            className="flex items-center gap-1 text-xs text-gray-400 hover:text-[var(--accent-ink)]"
+            className="flex items-center gap-1 text-xs text-[var(--ink-faint)] hover:text-[var(--accent-ink)]"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             {deal.commentCount}
@@ -694,7 +694,7 @@ function DealCard({ deal, slug, onInterest }: { deal: DealItem; slug: string; on
       </div>
 
       {deal.external_description && (
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{deal.external_description}</p>
+        <p className="text-sm text-[var(--ink-soft)] mb-3 line-clamp-2">{deal.external_description}</p>
       )}
 
       {/* Interest bar */}
@@ -709,26 +709,26 @@ function DealCard({ deal, slug, onInterest }: { deal: DealItem; slug: string; on
 
       {/* Bottom row */}
       <div className="flex items-center justify-between">
-        <span className="text-xs text-gray-400">Shared by {deal.sharedByName} · {timeAgo(deal.created_at)}</span>
+        <span className="text-xs text-[var(--ink-faint)]">Shared by {deal.sharedByName} · {timeAgo(deal.created_at)}</span>
         <div className="relative">
           <button
             onClick={() => setShowInterest(!showInterest)}
             className={`text-xs font-medium px-2.5 py-1 rounded-full transition ${
               deal.myInterest
-                ? INTEREST_OPTIONS.find(o => o.value === deal.myInterest)?.color || 'bg-gray-100 text-gray-600'
-                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                ? INTEREST_OPTIONS.find(o => o.value === deal.myInterest)?.color || 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'
+                : 'bg-[var(--bg-sunk)] text-[var(--ink-mute)] hover:bg-[var(--bg-sunk)]'
             }`}
           >
             {deal.myInterest ? INTEREST_OPTIONS.find(o => o.value === deal.myInterest)?.label : 'Set Interest'}
             <ChevronDown className="w-3 h-3 inline ml-1" />
           </button>
           {showInterest && (
-            <div className="absolute right-0 top-full mt-1 bg-white rounded-lg border border-gray-200 shadow-lg py-1 z-10 w-36">
+            <div className="absolute right-0 top-full mt-1 bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] py-1 z-10 w-36">
               {INTEREST_OPTIONS.map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => { onInterest(opt.value); setShowInterest(false) }}
-                  className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 ${deal.myInterest === opt.value ? 'font-medium text-[var(--accent-ink)]' : 'text-gray-700'}`}
+                  className={`w-full text-left px-3 py-1.5 text-sm hover:bg-[var(--bg-sunk)] ${deal.myInterest === opt.value ? 'font-medium text-[var(--accent-ink)]' : 'text-[var(--ink-soft)]'}`}
                 >
                   {opt.label}
                 </button>
@@ -806,7 +806,7 @@ function MembersTab({ slug, community }: { slug: string; community: Community })
     setActionLoading(null)
   }
 
-  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-gray-400" /></div>
+  if (loading) return <div className="flex justify-center py-12"><Loader2 className="w-5 h-5 animate-spin text-[var(--ink-faint)]" /></div>
 
   return (
     <div>
@@ -822,28 +822,28 @@ function MembersTab({ slug, community }: { slug: string; community: Community })
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-200 bg-[#F8F9FB]">
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Member</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Role</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-              <th className="text-left px-4 py-3 font-medium text-gray-600">Joined</th>
-              {isAdmin && <th className="text-right px-4 py-3 font-medium text-gray-600">Actions</th>}
+            <tr className="border-b border-[var(--line)] bg-[var(--bg-sunk)]">
+              <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Member</th>
+              <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Role</th>
+              <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Status</th>
+              <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Joined</th>
+              {isAdmin && <th className="text-right px-4 py-3 font-medium text-[var(--ink-soft)]">Actions</th>}
             </tr>
           </thead>
           <tbody>
             {members.map(m => (
-              <tr key={m.id} className="border-b border-gray-100 hover:bg-[#F8F9FB]">
+              <tr key={m.id} className="border-b border-[var(--line)] hover:bg-[var(--bg-sunk)]">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
                     <div className="w-7 h-7 rounded-full bg-[var(--ink)]/10 flex items-center justify-center text-xs font-semibold text-[var(--accent-ink)]">
                       {(m.name || m.email || '?')[0].toUpperCase()}
                     </div>
                     <div>
-                      <div className="font-medium text-gray-900">{m.name || 'Pending'}</div>
-                      <div className="text-xs text-gray-400">{m.email}</div>
+                      <div className="font-medium text-[var(--ink)]">{m.name || 'Pending'}</div>
+                      <div className="text-xs text-[var(--ink-faint)]">{m.email}</div>
                     </div>
                   </div>
                 </td>
@@ -853,7 +853,7 @@ function MembersTab({ slug, community }: { slug: string; community: Community })
                       value={m.role}
                       onChange={e => handleRoleChange(m.userId, e.target.value)}
                       disabled={actionLoading === m.userId}
-                      className={`text-xs font-medium px-2 py-0.5 rounded border-0 ${ROLE_BADGES[m.role] || 'bg-gray-100 text-gray-600'}`}
+                      className={`text-xs font-medium px-2 py-0.5 rounded border-0 ${ROLE_BADGES[m.role] || 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'}`}
                     >
                       <option value="admin">Admin</option>
                       <option value="deal_lead">Deal Lead</option>
@@ -861,7 +861,7 @@ function MembersTab({ slug, community }: { slug: string; community: Community })
                       <option value="observer">Observer</option>
                     </select>
                   ) : (
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded ${ROLE_BADGES[m.role] || 'bg-gray-100 text-gray-600'}`}>
+                    <span className={`text-xs font-medium px-2 py-0.5 rounded ${ROLE_BADGES[m.role] || 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'}`}>
                       {m.role.replace('_', ' ')}
                     </span>
                   )}
@@ -871,7 +871,7 @@ function MembersTab({ slug, community }: { slug: string; community: Community })
                     {m.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-xs text-gray-500">{new Date(m.joinedAt).toLocaleDateString()}</td>
+                <td className="px-4 py-3 text-xs text-[var(--ink-mute)]">{new Date(m.joinedAt).toLocaleDateString()}</td>
                 {isAdmin && (
                   <td className="px-4 py-3 text-right">
                     {m.status === 'active' && (
@@ -894,22 +894,22 @@ function MembersTab({ slug, community }: { slug: string; community: Community })
       {/* Invite modal */}
       {showInviteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 w-full max-w-md">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Invite Members</h3>
-              <button onClick={() => { setShowInviteModal(false); setInviteResult(null) }} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+              <h3 className="text-lg font-semibold text-[var(--ink)]">Invite Members</h3>
+              <button onClick={() => { setShowInviteModal(false); setInviteResult(null) }} className="text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"><X className="w-5 h-5" /></button>
             </div>
             <textarea
               value={inviteEmails}
               onChange={e => setInviteEmails(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
+              className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm font-mono focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
               placeholder={"ahmed@example.com\nsarah@example.com"}
             />
-            <p className="text-xs text-gray-400 mt-1 mb-3">One email per line or comma-separated</p>
+            <p className="text-xs text-[var(--ink-faint)] mt-1 mb-3">One email per line or comma-separated</p>
             {inviteResult && <p className="text-sm text-emerald-600 mb-3">{inviteResult}</p>}
             <div className="flex justify-end gap-3">
-              <button onClick={() => { setShowInviteModal(false); setInviteResult(null) }} className="px-4 py-2 text-sm text-gray-600">Cancel</button>
+              <button onClick={() => { setShowInviteModal(false); setInviteResult(null) }} className="px-4 py-2 text-sm text-[var(--ink-soft)]">Cancel</button>
               <button
                 onClick={handleInvite}
                 disabled={inviteLoading}

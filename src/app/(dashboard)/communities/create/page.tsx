@@ -93,14 +93,14 @@ function CreateCommunityForm() {
     <div className="max-w-2xl mx-auto px-4 py-10">
       <button
         onClick={() => router.push('/communities')}
-        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 mb-6"
+        className="flex items-center gap-1.5 text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] mb-6"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Communities
       </button>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Create a Community</h1>
-      <p className="text-gray-500 mb-8">Set up a private deal-sharing space for your investor network.</p>
+      <h1 className="text-2xl font-bold text-[var(--ink)] mb-1">Create a Community</h1>
+      <p className="text-[var(--ink-mute)] mb-8">Set up a private deal-sharing space for your investor network.</p>
 
       {/* Progress */}
       <div className="flex items-center gap-2 mb-8">
@@ -109,50 +109,50 @@ function CreateCommunityForm() {
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition ${
               s < step ? 'bg-emerald-100 text-emerald-700' :
               s === step ? 'bg-[var(--ink)] text-white' :
-              'bg-gray-100 text-gray-400'
+              'bg-[var(--bg-sunk)] text-[var(--ink-faint)]'
             }`}>
               {s < step ? <Check className="w-4 h-4" /> : s}
             </div>
-            {s < 5 && <div className={`w-8 h-0.5 ${s < step ? 'bg-emerald-200' : 'bg-gray-200'}`} />}
+            {s < 5 && <div className={`w-8 h-0.5 ${s < step ? 'bg-emerald-200' : 'bg-[var(--bg-sunk)]'}`} />}
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
         {/* Step 1: Basics */}
         {step === 1 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-1">Community Details</h2>
-              <p className="text-sm text-gray-500">Name your community and describe its purpose.</p>
+              <h2 className="text-lg font-semibold text-[var(--ink)] mb-1">Community Details</h2>
+              <p className="text-sm text-[var(--ink-mute)]">Name your community and describe its purpose.</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Name *</label>
               <input
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                className="w-full px-4 py-3 border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 placeholder="e.g. GCC Angel Network"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Description</label>
               <textarea
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
+                className="w-full px-4 py-3 border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
                 placeholder="What is this community about?"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Investment Thesis</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Investment Thesis</label>
               <textarea
                 value={thesis}
                 onChange={e => setThesis(e.target.value)}
                 rows={2}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
+                className="w-full px-4 py-3 border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
                 placeholder="e.g. Seed-stage SaaS in MENA"
               />
             </div>
@@ -163,31 +163,31 @@ function CreateCommunityForm() {
         {step === 2 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-1">Community Mode</h2>
-              <p className="text-sm text-gray-500">Choose how your community operates.</p>
+              <h2 className="text-lg font-semibold text-[var(--ink)] mb-1">Community Mode</h2>
+              <p className="text-sm text-[var(--ink-mute)]">Choose how your community operates.</p>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => setMode('network')}
                 className={`text-left p-5 rounded-xl border-2 transition ${
-                  mode === 'network' ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-gray-200 hover:border-gray-300'
+                  mode === 'network' ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-[var(--line)] hover:border-[var(--line-strong)]'
                 }`}
               >
-                <Globe className={`w-6 h-6 mb-3 ${mode === 'network' ? 'text-[var(--accent-ink)]' : 'text-gray-400'}`} />
-                <div className="font-semibold text-gray-900 mb-1">Network</div>
-                <p className="text-sm text-gray-500">Lightweight deal sharing and discussion. Great for angel networks and investor circles.</p>
+                <Globe className={`w-6 h-6 mb-3 ${mode === 'network' ? 'text-[var(--accent-ink)]' : 'text-[var(--ink-faint)]'}`} />
+                <div className="font-semibold text-[var(--ink)] mb-1">Network</div>
+                <p className="text-sm text-[var(--ink-mute)]">Lightweight deal sharing and discussion. Great for angel networks and investor circles.</p>
               </button>
               <button
                 type="button"
                 onClick={() => setMode('syndicate')}
                 className={`text-left p-5 rounded-xl border-2 transition ${
-                  mode === 'syndicate' ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-gray-200 hover:border-gray-300'
+                  mode === 'syndicate' ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-[var(--line)] hover:border-[var(--line-strong)]'
                 }`}
               >
-                <FileKey className={`w-6 h-6 mb-3 ${mode === 'syndicate' ? 'text-[var(--accent-ink)]' : 'text-gray-400'}`} />
-                <div className="font-semibold text-gray-900 mb-1">Syndicate</div>
-                <p className="text-sm text-gray-500">Structured IC process with capital commitments. For fund managers and formal groups.</p>
+                <FileKey className={`w-6 h-6 mb-3 ${mode === 'syndicate' ? 'text-[var(--accent-ink)]' : 'text-[var(--ink-faint)]'}`} />
+                <div className="font-semibold text-[var(--ink)] mb-1">Syndicate</div>
+                <p className="text-sm text-[var(--ink-mute)]">Structured IC process with capital commitments. For fund managers and formal groups.</p>
               </button>
             </div>
           </div>
@@ -197,8 +197,8 @@ function CreateCommunityForm() {
         {step === 3 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-1">Membership Type</h2>
-              <p className="text-sm text-gray-500">How can people join your community?</p>
+              <h2 className="text-lg font-semibold text-[var(--ink)] mb-1">Membership Type</h2>
+              <p className="text-sm text-[var(--ink-mute)]">How can people join your community?</p>
             </div>
             <div className="space-y-3">
               {[
@@ -211,13 +211,13 @@ function CreateCommunityForm() {
                   type="button"
                   onClick={() => setMembershipType(opt.value as typeof membershipType)}
                   className={`w-full text-left flex items-center gap-4 p-4 rounded-xl border-2 transition ${
-                    membershipType === opt.value ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-gray-200 hover:border-gray-300'
+                    membershipType === opt.value ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-[var(--line)] hover:border-[var(--line-strong)]'
                   }`}
                 >
-                  <opt.icon className={`w-5 h-5 ${membershipType === opt.value ? 'text-[var(--accent-ink)]' : 'text-gray-400'}`} />
+                  <opt.icon className={`w-5 h-5 ${membershipType === opt.value ? 'text-[var(--accent-ink)]' : 'text-[var(--ink-faint)]'}`} />
                   <div>
-                    <div className="font-medium text-gray-900">{opt.label}</div>
-                    <div className="text-sm text-gray-500">{opt.desc}</div>
+                    <div className="font-medium text-[var(--ink)]">{opt.label}</div>
+                    <div className="text-sm text-[var(--ink-mute)]">{opt.desc}</div>
                   </div>
                 </button>
               ))}
@@ -229,8 +229,8 @@ function CreateCommunityForm() {
         {step === 4 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-1">Deal Sharing Permissions</h2>
-              <p className="text-sm text-gray-500">Who can share deals in this community?</p>
+              <h2 className="text-lg font-semibold text-[var(--ink)] mb-1">Deal Sharing Permissions</h2>
+              <p className="text-sm text-[var(--ink-mute)]">Who can share deals in this community?</p>
             </div>
             <div className="space-y-3">
               {[
@@ -242,11 +242,11 @@ function CreateCommunityForm() {
                   type="button"
                   onClick={() => setDealSharing(opt.value as typeof dealSharing)}
                   className={`w-full text-left p-4 rounded-xl border-2 transition ${
-                    dealSharing === opt.value ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-gray-200 hover:border-gray-300'
+                    dealSharing === opt.value ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-[var(--line)] hover:border-[var(--line-strong)]'
                   }`}
                 >
-                  <div className="font-medium text-gray-900">{opt.label}</div>
-                  <div className="text-sm text-gray-500">{opt.desc}</div>
+                  <div className="font-medium text-[var(--ink)]">{opt.label}</div>
+                  <div className="text-sm text-[var(--ink-mute)]">{opt.desc}</div>
                 </button>
               ))}
             </div>
@@ -257,17 +257,17 @@ function CreateCommunityForm() {
         {step === 5 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-1">Invite Members</h2>
-              <p className="text-sm text-gray-500">Add email addresses to invite your first members. You can skip this and invite later.</p>
+              <h2 className="text-lg font-semibold text-[var(--ink)] mb-1">Invite Members</h2>
+              <p className="text-sm text-[var(--ink-mute)]">Add email addresses to invite your first members. You can skip this and invite later.</p>
             </div>
             <textarea
               value={emails}
               onChange={e => setEmails(e.target.value)}
               rows={5}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none font-mono text-sm"
+              className="w-full px-4 py-3 border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none font-mono text-sm"
               placeholder={"ahmed@example.com\nsarah@example.com\nmichael@example.com"}
             />
-            <p className="text-xs text-gray-400">One email per line, or comma-separated.</p>
+            <p className="text-xs text-[var(--ink-faint)]">One email per line, or comma-separated.</p>
           </div>
         )}
 
@@ -276,12 +276,12 @@ function CreateCommunityForm() {
         )}
 
         {/* Navigation */}
-        <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-100">
+        <div className="flex items-center justify-between mt-6 pt-4 border-t border-[var(--line)]">
           <button
             type="button"
             onClick={() => setStep((step - 1) as Step)}
             disabled={step === 1}
-            className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="flex items-center gap-1.5 text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <ArrowLeft className="w-4 h-4" />
             Back

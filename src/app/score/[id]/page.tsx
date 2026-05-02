@@ -93,7 +93,7 @@ export default function ScoreResultsPage() {
   }
 
   const fallbackNav = (
-    <nav className="bg-white border-b border-gray-200 px-6 py-4">
+    <nav className="bg-[var(--bg-elev)] border-b border-[var(--line)] px-6 py-4">
       <div className="max-w-3xl mx-auto flex items-center justify-between">
         <Link href="/">
           <KunfaLogo height={28} />
@@ -108,7 +108,7 @@ export default function ScoreResultsPage() {
         {loading && (
           <div className="text-center py-16">
             <div className="w-12 h-12 border-4 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-gray-500">Loading your score...</p>
+            <p className="text-[var(--ink-mute)]">Loading your score...</p>
           </div>
         )}
 
@@ -124,7 +124,7 @@ export default function ScoreResultsPage() {
             {/* Score Header */}
             <div className="text-center">
               {companyName && (
-                <h1 className="text-2xl font-bold text-gray-900 mb-6">{companyName}</h1>
+                <h1 className="text-2xl font-bold text-[var(--ink)] mb-6">{companyName}</h1>
               )}
 
               {/* Large Score Circle */}
@@ -142,39 +142,39 @@ export default function ScoreResultsPage() {
                   <span className={`text-5xl font-bold ${getScoreColor(result.overall_score)}`}>
                     {result.overall_score}
                   </span>
-                  <span className="text-sm text-gray-400">/100</span>
+                  <span className="text-sm text-[var(--ink-faint)]">/100</span>
                 </div>
               </div>
 
               <div className="flex items-center justify-center gap-1.5 mb-1">
-                <h2 className="text-xl font-bold text-gray-900">Your Kunfa Score</h2>
+                <h2 className="text-xl font-bold text-[var(--ink)]">Your Kunfa Score</h2>
                 <ScoreTooltip />
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-[var(--ink-mute)]">
                 Top <span className="font-semibold text-[var(--accent-ink)]">{result.percentile}%</span> of submissions
               </p>
             </div>
 
             {/* AI Summary */}
             {result.summary && (
-              <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">AI Summary</h3>
-                <p className="text-gray-700 leading-relaxed">{result.summary}</p>
+              <div className="bg-[var(--bg-elev)] rounded-xl p-6 border border-[var(--line)]">
+                <h3 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-3">AI Summary</h3>
+                <p className="text-[var(--ink-soft)] leading-relaxed">{result.summary}</p>
               </div>
             )}
 
             {/* Category Scores */}
             <div className="grid sm:grid-cols-2 gap-4">
               {(Object.entries(result.dimensions) as [string, { score: number; letter_grade: string; headline: string }][]).map(([key, dim]) => (
-                <div key={key} className="bg-white rounded-xl p-5 border border-gray-200 shadow-sm">
+                <div key={key} className="bg-[var(--bg-elev)] rounded-xl p-5 border border-[var(--line)]">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-sm font-semibold text-gray-900">{dimensionLabels[key] || key}</h4>
+                    <h4 className="text-sm font-semibold text-[var(--ink)]">{dimensionLabels[key] || key}</h4>
                     <span className={`text-sm font-bold px-2.5 py-0.5 rounded-lg ${getGradeColor(dim.letter_grade)}`}>
                       {dim.letter_grade}
                     </span>
                   </div>
                   {dim.headline && (
-                    <p className="text-xs text-gray-500">{dim.headline}</p>
+                    <p className="text-xs text-[var(--ink-mute)]">{dim.headline}</p>
                   )}
                 </div>
               ))}
@@ -185,7 +185,7 @@ export default function ScoreResultsPage() {
               <button
                 onClick={handleUnlock}
                 disabled={unlocking}
-                className="w-full max-w-md bg-[var(--ink)] text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-[var(--ink-2)] transition disabled:opacity-50 shadow-lg"
+                className="w-full max-w-md bg-[var(--ink)] text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-[var(--ink-2)] transition disabled:opacity-50"
               >
                 {unlocking ? 'Redirecting to checkout...' : 'Unlock Your Full Kunfa Readiness Report — $59'}
               </button>
@@ -193,7 +193,7 @@ export default function ScoreResultsPage() {
               {slug && (
                 <Link
                   href={`/company/${slug}`}
-                  className="w-full max-w-md text-center border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold text-base hover:border-[var(--line-strong)] hover:text-[var(--accent-ink)] transition"
+                  className="w-full max-w-md text-center border-2 border-[var(--line-strong)] text-[var(--ink-soft)] px-8 py-4 rounded-xl font-semibold text-base hover:border-[var(--line-strong)] hover:text-[var(--accent-ink)] transition"
                 >
                   View My Company Profile &rarr;
                 </Link>

@@ -455,7 +455,7 @@ export default function AddCompanyPage() {
           {docs.length > 0 && (
             <div className="mt-3 space-y-2">
               {docs.map((doc, i) => (
-                <div key={i} className="flex items-center gap-3 p-2.5 bg-white rounded-lg border border-gray-200">
+                <div key={i} className="flex items-center gap-3 p-2.5 bg-[var(--bg-elev)] rounded-lg border border-[var(--line)]">
                   <FileText className={`w-5 h-5 flex-shrink-0 ${doc.error ? 'text-red-400' : doc.uploading ? 'text-[var(--ink-mute)]' : 'text-emerald-500'}`} />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-[var(--ink)] truncate">{doc.file.name}</p>
@@ -510,7 +510,7 @@ export default function AddCompanyPage() {
               value={inviteForm.companyName}
               onChange={(e) => setInviteForm(f => ({ ...f, companyName: e.target.value }))}
               required
-              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
+              className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
               placeholder="Acme Corp"
             />
           </div>
@@ -522,7 +522,7 @@ export default function AddCompanyPage() {
               value={inviteForm.founderEmail}
               onChange={(e) => setInviteForm(f => ({ ...f, founderEmail: e.target.value }))}
               required
-              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
+              className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
               placeholder="founder@company.com"
             />
           </div>
@@ -533,7 +533,7 @@ export default function AddCompanyPage() {
               type="text"
               value={inviteForm.founderName}
               onChange={(e) => setInviteForm(f => ({ ...f, founderName: e.target.value }))}
-              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
+              className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
               placeholder="Jane Smith (optional)"
             />
           </div>
@@ -544,7 +544,7 @@ export default function AddCompanyPage() {
               value={inviteForm.message}
               onChange={(e) => setInviteForm(f => ({ ...f, message: e.target.value }))}
               rows={5}
-              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)] resize-none"
+              className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)] resize-none"
             />
             <p className="text-xs text-[var(--ink-mute)] mt-1">This message will appear in the invite email.</p>
           </div>
@@ -575,7 +575,7 @@ export default function AddCompanyPage() {
           {docs.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
               {docs.map((doc, i) => (
-                <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded text-xs text-[var(--ink-soft)]">
+                <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-[var(--bg-sunk)] rounded text-xs text-[var(--ink-soft)]">
                   <FileText className="w-3 h-3" />
                   {doc.file.name}
                   <button type="button" onClick={() => removeDoc(i)} className="ml-1 text-[var(--ink-mute)] hover:text-red-500"><X className="w-3 h-3" /></button>
@@ -633,7 +633,7 @@ export default function AddCompanyPage() {
                 value={form.company_name}
                 onChange={(e) => updateField('company_name', e.target.value)}
                 required
-                className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
+                className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
                 placeholder="Acme Corp"
               />
             </div>
@@ -642,25 +642,25 @@ export default function AddCompanyPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Website URL</label>
-              <input type="text" value={form.website_url} onChange={(e) => updateField('website_url', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="https://example.com" />
+              <input type="text" value={form.website_url} onChange={(e) => updateField('website_url', e.target.value)} className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="https://example.com" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Company LinkedIn</label>
-              <input type="text" value={form.company_linkedin_url} onChange={(e) => updateField('company_linkedin_url', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="https://linkedin.com/company/..." />
+              <input type="text" value={form.company_linkedin_url} onChange={(e) => updateField('company_linkedin_url', e.target.value)} className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="https://linkedin.com/company/..." />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Industry</label>
-              <select value={form.sector} onChange={(e) => updateField('sector', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]">
+              <select value={form.sector} onChange={(e) => updateField('sector', e.target.value)} className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]">
                 <option value="">Select industry</option>
                 {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Stage</label>
-              <select value={form.stage} onChange={(e) => updateField('stage', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]">
+              <select value={form.stage} onChange={(e) => updateField('stage', e.target.value)} className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]">
                 <option value="">Select stage</option>
                 {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
@@ -670,22 +670,22 @@ export default function AddCompanyPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Raise Amount (USD)</label>
-              <input type="number" value={form.raise_amount} onChange={(e) => updateField('raise_amount', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="e.g. 2000000" />
+              <input type="number" value={form.raise_amount} onChange={(e) => updateField('raise_amount', e.target.value)} className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="e.g. 2000000" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Team Size</label>
-              <input type="number" value={form.team_size} onChange={(e) => updateField('team_size', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="e.g. 12" />
+              <input type="number" value={form.team_size} onChange={(e) => updateField('team_size', e.target.value)} className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="e.g. 12" />
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Founded Year</label>
-            <input type="number" value={form.founded_year} onChange={(e) => updateField('founded_year', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="e.g. 2023" />
+            <input type="number" value={form.founded_year} onChange={(e) => updateField('founded_year', e.target.value)} className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="e.g. 2023" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Description</label>
-            <textarea value={form.description} onChange={(e) => updateField('description', e.target.value)} rows={3} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)] resize-none" placeholder="Brief company description..." />
+            <textarea value={form.description} onChange={(e) => updateField('description', e.target.value)} rows={3} className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)] resize-none" placeholder="Brief company description..." />
           </div>
 
           <button

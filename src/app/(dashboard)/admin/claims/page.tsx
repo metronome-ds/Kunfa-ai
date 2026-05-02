@@ -111,19 +111,19 @@ export default function AdminClaimsPage() {
     <div className="max-w-5xl mx-auto px-6 py-10">
       <div className="flex items-center gap-3 mb-8">
         <ShieldCheck className="w-6 h-6 text-[var(--accent-ink)]" />
-        <h1 className="text-2xl font-bold text-gray-900">Claim Requests</h1>
+        <h1 className="text-2xl font-bold text-[var(--ink)]">Claim Requests</h1>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
+      <div className="flex gap-1 mb-6 bg-[var(--bg-sunk)] p-1 rounded-lg w-fit">
         {tabs.map(tab => (
           <button
             key={tab.key}
             onClick={() => switchTab(tab.key)}
             className={`px-4 py-2 text-sm font-medium rounded-md transition ${
               activeTab === tab.key
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-500 hover:text-gray-700'
+                ? 'bg-[var(--bg-elev)] text-[var(--ink)]'
+                : 'text-[var(--ink-mute)] hover:text-[var(--ink-soft)]'
             }`}
           >
             {tab.label}
@@ -136,27 +136,27 @@ export default function AdminClaimsPage() {
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--line-strong)]" />
         </div>
       ) : claims.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-[var(--ink-mute)]">
           No {activeTab} claim requests.
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200 bg-[#F8F9FB]">
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Company</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Requester</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Email</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Website</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Date</th>
+              <tr className="border-b border-[var(--line)] bg-[var(--bg-sunk)]">
+                <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Company</th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Requester</th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Email</th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Website</th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Date</th>
                 {activeTab === 'pending' && (
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Actions</th>
+                  <th className="text-right px-4 py-3 font-medium text-[var(--ink-soft)]">Actions</th>
                 )}
               </tr>
             </thead>
             <tbody>
               {claims.map((claim) => (
-                <tr key={claim.id} className="border-b border-gray-100 hover:bg-[#F8F9FB]">
+                <tr key={claim.id} className="border-b border-[var(--line)] hover:bg-[var(--bg-sunk)]">
                   <td className="px-4 py-3">
                     <Link
                       href={`/company/${claim.company_pages.slug}`}
@@ -165,14 +165,14 @@ export default function AdminClaimsPage() {
                       {claim.company_pages.company_name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-gray-700">{claim.requester_name || '—'}</td>
-                  <td className="px-4 py-3 text-gray-600">{claim.requester_email}</td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">
+                  <td className="px-4 py-3 text-[var(--ink-soft)]">{claim.requester_name || '—'}</td>
+                  <td className="px-4 py-3 text-[var(--ink-soft)]">{claim.requester_email}</td>
+                  <td className="px-4 py-3 text-[var(--ink-mute)] text-xs">
                     {claim.company_pages.website_url
                       ? claim.company_pages.website_url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')
                       : '—'}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">
+                  <td className="px-4 py-3 text-[var(--ink-mute)] text-xs">
                     {new Date(claim.created_at).toLocaleDateString()}
                   </td>
                   {activeTab === 'pending' && (
@@ -207,19 +207,19 @@ export default function AdminClaimsPage() {
       {/* Rejection reason modal */}
       {rejectingId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Rejection Reason</h3>
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-[var(--ink)] mb-4">Rejection Reason</h3>
             <textarea
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               placeholder="Optional reason for rejection..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 resize-none"
+              className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400 resize-none"
               rows={3}
             />
             <div className="flex justify-end gap-3 mt-4">
               <button
                 onClick={() => { setRejectingId(null); setRejectionReason('') }}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                className="px-4 py-2 text-sm text-[var(--ink-soft)] hover:text-[var(--ink-2)]"
               >
                 Cancel
               </button>

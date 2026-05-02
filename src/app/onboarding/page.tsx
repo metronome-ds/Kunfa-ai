@@ -140,7 +140,7 @@ export default function InvestorOnboardingPage() {
           <div className="mb-4">
             <KunfaLogo height={32} inverted />
           </div>
-          <p className="text-gray-400">Set up your investor profile</p>
+          <p className="text-[var(--ink-faint)]">Set up your investor profile</p>
         </div>
 
         {/* Progress Steps */}
@@ -154,12 +154,12 @@ export default function InvestorOnboardingPage() {
                 <div className="flex items-center gap-2">
                   <div
                     className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
-                      isActive ? 'bg-[var(--ink)] text-white' : 'bg-gray-700 text-gray-400'
+                      isActive ? 'bg-[var(--ink)] text-white' : 'bg-gray-700 text-[var(--ink-faint)]'
                     }`}
                   >
                     {isDone ? <CheckCircle className="w-5 h-5" /> : stepNum}
                   </div>
-                  <span className={`text-sm hidden sm:inline ${isActive ? 'text-white' : 'text-gray-500'}`}>
+                  <span className={`text-sm hidden sm:inline ${isActive ? 'text-white' : 'text-[var(--ink-mute)]'}`}>
                     {s.label}
                   </span>
                 </div>
@@ -184,11 +184,11 @@ export default function InvestorOnboardingPage() {
             <div className="space-y-5">
               <div>
                 <h2 className="text-xl font-bold text-white mb-1">About You</h2>
-                <p className="text-gray-400 text-sm">Tell us a bit about yourself</p>
+                <p className="text-[var(--ink-faint)] text-sm">Tell us a bit about yourself</p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Full Name *</label>
+                <label className="block text-sm font-medium text-[var(--ink-faint)] mb-1">Full Name *</label>
                 <input
                   type="text"
                   value={fullName}
@@ -199,7 +199,7 @@ export default function InvestorOnboardingPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Fund / Firm Name</label>
+                <label className="block text-sm font-medium text-[var(--ink-faint)] mb-1">Fund / Firm Name</label>
                 <input
                   type="text"
                   value={fundName}
@@ -210,7 +210,7 @@ export default function InvestorOnboardingPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">Job Title</label>
+                <label className="block text-sm font-medium text-[var(--ink-faint)] mb-1">Job Title</label>
                 <input
                   type="text"
                   value={jobTitle}
@@ -221,7 +221,7 @@ export default function InvestorOnboardingPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">LinkedIn URL</label>
+                <label className="block text-sm font-medium text-[var(--ink-faint)] mb-1">LinkedIn URL</label>
                 <input
                   type="url"
                   value={linkedinUrl}
@@ -238,12 +238,12 @@ export default function InvestorOnboardingPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-xl font-bold text-white mb-1">Investment Focus</h2>
-                <p className="text-gray-400 text-sm">Help us match you with the right deals</p>
+                <p className="text-[var(--ink-faint)] text-sm">Help us match you with the right deals</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">AUM (USD)</label>
+                  <label className="block text-sm font-medium text-[var(--ink-faint)] mb-1">AUM (USD)</label>
                   <input
                     type="number"
                     value={aum}
@@ -257,7 +257,7 @@ export default function InvestorOnboardingPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Min Check Size (USD)</label>
+                  <label className="block text-sm font-medium text-[var(--ink-faint)] mb-1">Min Check Size (USD)</label>
                   <input
                     type="number"
                     value={ticketMin}
@@ -267,7 +267,7 @@ export default function InvestorOnboardingPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-1">Max Check Size (USD)</label>
+                  <label className="block text-sm font-medium text-[var(--ink-faint)] mb-1">Max Check Size (USD)</label>
                   <input
                     type="number"
                     value={ticketMax}
@@ -279,7 +279,7 @@ export default function InvestorOnboardingPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Stage Focus</label>
+                <label className="block text-sm font-medium text-[var(--ink-faint)] mb-2">Stage Focus</label>
                 <div className="flex flex-wrap gap-2">
                   {STAGES.map((stage) => (
                     <button
@@ -289,7 +289,7 @@ export default function InvestorOnboardingPage() {
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
                         stageFocus.includes(stage)
                           ? 'bg-[var(--ink)] text-white'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          : 'bg-gray-700 text-[var(--ink-faint)] hover:bg-gray-600'
                       }`}
                     >
                       {stage}
@@ -299,7 +299,7 @@ export default function InvestorOnboardingPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Sector Interests</label>
+                <label className="block text-sm font-medium text-[var(--ink-faint)] mb-2">Sector Interests</label>
                 <div className="flex flex-wrap gap-2">
                   {SECTORS.map((sector) => (
                     <button
@@ -309,7 +309,7 @@ export default function InvestorOnboardingPage() {
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
                         sectorInterests.includes(sector)
                           ? 'bg-[var(--ink)] text-white'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          : 'bg-gray-700 text-[var(--ink-faint)] hover:bg-gray-600'
                       }`}
                     >
                       {sector}
@@ -319,7 +319,7 @@ export default function InvestorOnboardingPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Geographic Focus</label>
+                <label className="block text-sm font-medium text-[var(--ink-faint)] mb-2">Geographic Focus</label>
                 <div className="flex flex-wrap gap-2">
                   {REGIONS.map((region) => (
                     <button
@@ -329,7 +329,7 @@ export default function InvestorOnboardingPage() {
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
                         geoFocus.includes(region)
                           ? 'bg-[var(--ink)] text-white'
-                          : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                          : 'bg-gray-700 text-[var(--ink-faint)] hover:bg-gray-600'
                       }`}
                     >
                       {region}
@@ -345,7 +345,7 @@ export default function InvestorOnboardingPage() {
             <div className="space-y-5">
               <div>
                 <h2 className="text-xl font-bold text-white mb-1">Investment Thesis</h2>
-                <p className="text-gray-400 text-sm">Optional — describe your investment approach</p>
+                <p className="text-[var(--ink-faint)] text-sm">Optional — describe your investment approach</p>
               </div>
 
               <div>
@@ -356,7 +356,7 @@ export default function InvestorOnboardingPage() {
                   className="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--ink)] resize-none"
                   placeholder="We invest in early-stage B2B SaaS companies in emerging markets that leverage AI to solve industry-specific problems..."
                 />
-                <p className="text-xs text-gray-500 mt-1">This helps founders understand your focus areas</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-1">This helps founders understand your focus areas</p>
               </div>
             </div>
           )}
@@ -388,7 +388,7 @@ export default function InvestorOnboardingPage() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 bg-gray-700 text-gray-300 rounded-lg font-medium hover:bg-gray-600 transition disabled:opacity-50"
+                  className="px-6 py-2.5 bg-gray-700 text-[var(--ink-faint)] rounded-lg font-medium hover:bg-gray-600 transition disabled:opacity-50"
                 >
                   Skip & Finish
                 </button>

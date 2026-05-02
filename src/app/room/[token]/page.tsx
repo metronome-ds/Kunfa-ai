@@ -37,7 +37,7 @@ function getCategoryColor(category: string) {
     investment_memo: 'bg-teal-100 text-teal-700',
     internal_memo: 'bg-slate-100 text-slate-700',
     product: 'bg-indigo-100 text-indigo-700',
-    other: 'bg-gray-100 text-gray-700',
+    other: 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]',
   }
   return colors[category] || colors.other
 }
@@ -146,14 +146,14 @@ export default function RoomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--bg-sunk)]">
       {/* Header */}
-      <nav className="bg-white border-b border-gray-200">
+      <nav className="bg-[var(--bg-elev)] border-b border-[var(--line)]">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="hover:opacity-80 transition">
             <KunfaLogo height={22} />
           </Link>
-          <span className="text-xs text-gray-400">Deal Room</span>
+          <span className="text-xs text-[var(--ink-faint)]">Deal Room</span>
         </div>
       </nav>
 
@@ -168,9 +168,9 @@ export default function RoomPage() {
         {/* Error */}
         {status === 'error' && (
           <div className="text-center py-24">
-            <AlertCircle className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-gray-900 mb-2">Link Not Found</h1>
-            <p className="text-sm text-gray-500">{errorMessage}</p>
+            <AlertCircle className="w-12 h-12 text-[var(--ink-faint)] mx-auto mb-4" />
+            <h1 className="text-xl font-semibold text-[var(--ink)] mb-2">Link Not Found</h1>
+            <p className="text-sm text-[var(--ink-mute)]">{errorMessage}</p>
           </div>
         )}
 
@@ -178,21 +178,21 @@ export default function RoomPage() {
         {status === 'expired' && (
           <div className="text-center py-24">
             <AlertCircle className="w-12 h-12 text-amber-300 mx-auto mb-4" />
-            <h1 className="text-xl font-semibold text-gray-900 mb-2">Link Expired</h1>
-            <p className="text-sm text-gray-500">{errorMessage}</p>
-            <p className="text-sm text-gray-400 mt-2">Contact the sender for a new link.</p>
+            <h1 className="text-xl font-semibold text-[var(--ink)] mb-2">Link Expired</h1>
+            <p className="text-sm text-[var(--ink-mute)]">{errorMessage}</p>
+            <p className="text-sm text-[var(--ink-faint)] mt-2">Contact the sender for a new link.</p>
           </div>
         )}
 
         {/* Password gate */}
         {status === 'password' && (
           <div className="max-w-md mx-auto py-16">
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 text-center">
-              <Lock className="w-10 h-10 text-gray-400 mx-auto mb-4" />
+            <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-8 text-center">
+              <Lock className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-4" />
               {company && (
-                <h1 className="text-xl font-semibold text-gray-900 mb-1">{company.company_name}</h1>
+                <h1 className="text-xl font-semibold text-[var(--ink)] mb-1">{company.company_name}</h1>
               )}
-              <p className="text-sm text-gray-500 mb-6">This deal room is password protected</p>
+              <p className="text-sm text-[var(--ink-mute)] mb-6">This deal room is password protected</p>
 
               {passwordError && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
@@ -207,7 +207,7 @@ export default function RoomPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
                   autoFocus
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] mb-4"
+                  className="w-full px-4 py-3 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] mb-4"
                 />
                 <button
                   type="submit"
@@ -227,9 +227,9 @@ export default function RoomPage() {
             {/* Company header */}
             {company && (
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">{company.company_name}</h1>
+                <h1 className="text-3xl font-bold text-[var(--ink)]">{company.company_name}</h1>
                 {company.one_liner && (
-                  <p className="text-gray-600 mt-1">{company.one_liner}</p>
+                  <p className="text-[var(--ink-soft)] mt-1">{company.one_liner}</p>
                 )}
                 <div className="flex items-center gap-2 mt-3">
                   {company.industry && (
@@ -253,16 +253,16 @@ export default function RoomPage() {
 
             {/* Documents */}
             {documents.length === 0 ? (
-              <div className="text-center py-16 bg-white rounded-xl border border-gray-200">
-                <FileText className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-sm text-gray-500">No documents available</p>
+              <div className="text-center py-16 bg-[var(--bg-elev)] rounded-xl border border-[var(--line)]">
+                <FileText className="w-12 h-12 text-[var(--ink-faint)] mx-auto mb-3" />
+                <p className="text-sm text-[var(--ink-mute)]">No documents available</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {documents.map(doc => (
                   <div
                     key={doc.id}
-                    className="bg-white border border-gray-200 rounded-xl p-5 hover:border-[var(--line-strong)]/30 hover:shadow-md transition"
+                    className="bg-[var(--bg-elev)] border border-[var(--line)] rounded-xl p-5 hover:border-[var(--line-strong)]/30 hover:shadow-md transition"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <span className="text-3xl">{getFileIcon(doc.file_type)}</span>
@@ -271,14 +271,14 @@ export default function RoomPage() {
                       </span>
                     </div>
 
-                    <p className="text-sm font-medium text-gray-900 truncate mb-1">{doc.file_name}</p>
+                    <p className="text-sm font-medium text-[var(--ink)] truncate mb-1">{doc.file_name}</p>
 
                     {doc.description && (
-                      <p className="text-xs text-gray-500 line-clamp-2 mb-3">{doc.description}</p>
+                      <p className="text-xs text-[var(--ink-mute)] line-clamp-2 mb-3">{doc.description}</p>
                     )}
 
                     {doc.file_size > 0 && (
-                      <p className="text-[10px] text-gray-400 mb-3">{formatFileSize(doc.file_size)}</p>
+                      <p className="text-[10px] text-[var(--ink-faint)] mb-3">{formatFileSize(doc.file_size)}</p>
                     )}
 
                     <div className="flex items-center gap-2 mt-auto">
@@ -286,7 +286,7 @@ export default function RoomPage() {
                         href={doc.file_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 transition"
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[var(--bg-sunk)] text-[var(--ink-soft)] rounded-lg text-xs font-medium hover:bg-[var(--bg-sunk)] transition"
                       >
                         <Eye className="w-3.5 h-3.5" />
                         View
@@ -311,9 +311,9 @@ export default function RoomPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 mt-16 py-8 bg-white">
+      <footer className="border-t border-[var(--line)] mt-16 py-8 bg-[var(--bg-elev)]">
         <div className="max-w-5xl mx-auto px-6 text-center">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-[var(--ink-faint)]">
             Powered by{' '}
             <Link href="/" className="text-[var(--accent-ink)] hover:underline font-medium">
               Kunfa

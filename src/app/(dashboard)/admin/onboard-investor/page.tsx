@@ -91,8 +91,8 @@ export default function OnboardInvestorPage() {
   if (!isTenantContext || !hasFeature) {
     return (
       <div className="p-8 max-w-4xl mx-auto text-center">
-        <UserPlus className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-        <h1 className="text-xl font-semibold text-gray-900">Feature not available</h1>
+        <UserPlus className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Feature not available</h1>
       </div>
     );
   }
@@ -107,8 +107,8 @@ export default function OnboardInvestorPage() {
         <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
           <Check className="w-8 h-8 text-emerald-600" />
         </div>
-        <h1 className="text-xl font-semibold text-gray-900">Invitation sent</h1>
-        <p className="text-sm text-gray-500 mt-2">{form.full_name} will receive an email to join your network.</p>
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Invitation sent</h1>
+        <p className="text-sm text-[var(--ink-mute)] mt-2">{form.full_name} will receive an email to join your network.</p>
       </div>
     );
   }
@@ -118,8 +118,8 @@ export default function OnboardInvestorPage() {
   return (
     <div className="p-8 max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Onboard Investor</h1>
-        <p className="text-gray-500 text-sm mt-1">Invite a new investor to your network</p>
+        <h1 className="text-2xl font-bold text-[var(--ink)]">Onboard Investor</h1>
+        <p className="text-[var(--ink-mute)] text-sm mt-1">Invite a new investor to your network</p>
       </div>
 
       <div className="flex items-center justify-between mb-8">
@@ -127,21 +127,21 @@ export default function OnboardInvestorPage() {
           <div key={label} className="flex items-center flex-1">
             <div className={`flex items-center gap-2`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${
-                i < step ? 'bg-[var(--ink)] text-white' : i === step ? 'bg-[var(--ink)] text-white ring-4 ring-[var(--accent-soft)]' : 'bg-gray-100 text-gray-400'
+                i < step ? 'bg-[var(--ink)] text-white' : i === step ? 'bg-[var(--ink)] text-white ring-4 ring-[var(--accent-soft)]' : 'bg-[var(--bg-sunk)] text-[var(--ink-faint)]'
               }`}>
                 {i < step ? <Check className="w-4 h-4" /> : i + 1}
               </div>
-              <span className={`text-xs hidden md:inline ${i === step ? 'font-semibold text-gray-900' : 'text-gray-400'}`}>{label}</span>
+              <span className={`text-xs hidden md:inline ${i === step ? 'font-semibold text-[var(--ink)]' : 'text-[var(--ink-faint)]'}`}>{label}</span>
             </div>
-            {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 ${i < step ? 'bg-[var(--ink)]' : 'bg-gray-200'}`} />}
+            {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 ${i < step ? 'bg-[var(--ink)]' : 'bg-[var(--bg-sunk)]'}`} />}
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
         {step === 0 && (
           <div className="space-y-4">
-            <h2 className="font-semibold text-gray-900">Personal</h2>
+            <h2 className="font-semibold text-[var(--ink)]">Personal</h2>
             <Field label="Full Name *" value={form.full_name} onChange={(v) => update('full_name', v)} />
             <Field label="Email *" type="email" value={form.email} onChange={(v) => update('email', v)} />
             <Field label="Phone" value={form.phone} onChange={(v) => update('phone', v)} />
@@ -150,19 +150,19 @@ export default function OnboardInvestorPage() {
         )}
         {step === 1 && (
           <div className="space-y-4">
-            <h2 className="font-semibold text-gray-900">Professional</h2>
+            <h2 className="font-semibold text-[var(--ink)]">Professional</h2>
             <Field label="Job Title" value={form.job_title} onChange={(v) => update('job_title', v)} />
             <Field label="Firm / Fund Name" value={form.fund_name} onChange={(v) => update('fund_name', v)} />
             <Field label="LinkedIn URL" value={form.linkedin_url} onChange={(v) => update('linkedin_url', v)} />
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Bio</label>
-              <textarea value={form.bio} onChange={(e) => update('bio', e.target.value)} rows={3} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+              <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Bio</label>
+              <textarea value={form.bio} onChange={(e) => update('bio', e.target.value)} rows={3} className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm" />
             </div>
           </div>
         )}
         {step === 2 && (
           <div className="space-y-4">
-            <h2 className="font-semibold text-gray-900">Investment Profile</h2>
+            <h2 className="font-semibold text-[var(--ink)]">Investment Profile</h2>
             <MultiSelect label="Sector Interests" values={form.sector_interests} options={SECTORS} onToggle={(v) => toggleArr('sector_interests', v)} />
             <MultiSelect label="Stage Focus" values={form.stage_focus} options={STAGES} onToggle={(v) => toggleArr('stage_focus', v)} />
             <div className="grid grid-cols-2 gap-3">
@@ -174,17 +174,17 @@ export default function OnboardInvestorPage() {
         )}
         {step === 3 && (
           <div className="space-y-4">
-            <h2 className="font-semibold text-gray-900">Accreditation</h2>
+            <h2 className="font-semibold text-[var(--ink)]">Accreditation</h2>
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={form.is_accredited} onChange={(e) => update('is_accredited', e.target.checked)} />
-              <span className="text-sm text-gray-700">Accredited investor</span>
+              <span className="text-sm text-[var(--ink-soft)]">Accredited investor</span>
             </label>
             {form.is_accredited && (
               <>
                 <Field label="Accreditation Type" value={form.accreditation_type} onChange={(v) => update('accreditation_type', v)} />
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Verification Notes</label>
-                  <textarea value={form.verification_notes} onChange={(e) => update('verification_notes', e.target.value)} rows={2} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm" />
+                  <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Verification Notes</label>
+                  <textarea value={form.verification_notes} onChange={(e) => update('verification_notes', e.target.value)} rows={2} className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm" />
                 </div>
               </>
             )}
@@ -192,7 +192,7 @@ export default function OnboardInvestorPage() {
         )}
         {step === 4 && (
           <div className="space-y-3">
-            <h2 className="font-semibold text-gray-900 mb-4">Review</h2>
+            <h2 className="font-semibold text-[var(--ink)] mb-4">Review</h2>
             <Row label="Name" value={form.full_name} />
             <Row label="Email" value={form.email} />
             <Row label="Firm" value={form.fund_name} />
@@ -204,8 +204,8 @@ export default function OnboardInvestorPage() {
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-6 mt-6 border-t border-gray-100">
-          <button onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0} className="inline-flex items-center gap-1 px-4 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-30">
+        <div className="flex items-center justify-between pt-6 mt-6 border-t border-[var(--line)]">
+          <button onClick={() => setStep((s) => Math.max(0, s - 1))} disabled={step === 0} className="inline-flex items-center gap-1 px-4 py-2 text-sm text-[var(--ink-soft)] rounded-lg hover:bg-[var(--bg-sunk)] disabled:opacity-30">
             <ChevronLeft className="w-4 h-4" /> Back
           </button>
           {step < STEPS.length - 1 ? (
@@ -226,8 +226,8 @@ export default function OnboardInvestorPage() {
 function Field({ label, value, onChange, type = 'text' }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]" />
+      <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">{label}</label>
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]" />
     </div>
   );
 }
@@ -235,12 +235,12 @@ function Field({ label, value, onChange, type = 'text' }: { label: string; value
 function MultiSelect({ label, values, options, onToggle }: { label: string; values: string[]; options: string[]; onToggle: (v: string) => void }) {
   return (
     <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">{label}</label>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => {
           const active = values.includes(o);
           return (
-            <button key={o} type="button" onClick={() => onToggle(o)} className={`text-xs px-2.5 py-1 rounded-full border ${active ? 'bg-[var(--ink)] text-white border-[var(--line-strong)]' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'}`}>
+            <button key={o} type="button" onClick={() => onToggle(o)} className={`text-xs px-2.5 py-1 rounded-full border ${active ? 'bg-[var(--ink)] text-white border-[var(--line-strong)]' : 'bg-[var(--bg-elev)] text-[var(--ink-soft)] border-[var(--line)] hover:border-[var(--line-strong)]'}`}>
               {o}
             </button>
           );
@@ -252,9 +252,9 @@ function MultiSelect({ label, values, options, onToggle }: { label: string; valu
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between py-1.5 border-b border-gray-50">
-      <span className="text-xs text-gray-500">{label}</span>
-      <span className="text-sm text-gray-900">{value || '—'}</span>
+    <div className="flex justify-between py-1.5 border-b border-[var(--line)]">
+      <span className="text-xs text-[var(--ink-mute)]">{label}</span>
+      <span className="text-sm text-[var(--ink)]">{value || '—'}</span>
     </div>
   );
 }

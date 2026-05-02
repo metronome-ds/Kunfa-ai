@@ -157,7 +157,7 @@ const SERVICES: Service[] = [
     id: 'board-advisory',
     title: 'Board Advisory & Strategic Planning',
     category: 'Strategy & Advisory',
-    categoryColor: 'bg-gray-100 text-gray-700',
+    categoryColor: 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]',
     price: '$8,000/mo',
     description: 'Board-level strategic guidance, expansion planning, M&A advisory, and investor relations management.',
     dimensions: ['Team', 'Market'],
@@ -184,18 +184,18 @@ function ServiceCard({ service, onBook }: { service: Service; onBook: () => void
   const [expanded, setExpanded] = useState(false)
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col">
+    <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 flex flex-col">
       {/* Category badge */}
       <span className={`inline-block self-start px-2.5 py-1 text-xs font-semibold rounded-full mb-3 ${service.categoryColor}`}>
         {service.category}
       </span>
 
       {/* Title + Price */}
-      <h3 className="text-lg font-bold text-gray-900 mb-1">{service.title}</h3>
+      <h3 className="text-lg font-bold text-[var(--ink)] mb-1">{service.title}</h3>
       <p className="text-2xl font-bold text-[var(--accent-ink)] mb-3">{service.price}</p>
 
       {/* Description */}
-      <p className="text-sm text-gray-600 mb-4 leading-relaxed">{service.description}</p>
+      <p className="text-sm text-[var(--ink-soft)] mb-4 leading-relaxed">{service.description}</p>
 
       {/* Dimension tags */}
       <div className="flex flex-wrap gap-1.5 mb-4">
@@ -209,7 +209,7 @@ function ServiceCard({ service, onBook }: { service: Service; onBook: () => void
       {/* Expandable SOW */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center gap-1.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition mb-4"
+        className="flex items-center gap-1.5 text-sm font-medium text-[var(--ink-soft)] hover:text-[var(--ink)] transition mb-4"
       >
         {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         What&apos;s included
@@ -218,7 +218,7 @@ function ServiceCard({ service, onBook }: { service: Service; onBook: () => void
       {expanded && (
         <ul className="space-y-2 mb-4 pl-1">
           {service.includes.map((item, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm text-gray-600">
+            <li key={i} className="flex items-start gap-2 text-sm text-[var(--ink-soft)]">
               <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
               {item}
             </li>
@@ -276,8 +276,8 @@ function DiscoveryCallForm() {
         <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle className="w-8 h-8 text-emerald-600" />
         </div>
-        <h3 className="text-xl font-bold text-gray-900 mb-2">Thank you!</h3>
-        <p className="text-gray-600">We&apos;ll be in touch within 24 hours.</p>
+        <h3 className="text-xl font-bold text-[var(--ink)] mb-2">Thank you!</h3>
+        <p className="text-[var(--ink-soft)]">We&apos;ll be in touch within 24 hours.</p>
       </div>
     )
   }
@@ -291,43 +291,43 @@ function DiscoveryCallForm() {
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+          <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Full Name *</label>
           <input
             type="text"
             required
             value={form.name}
             onChange={e => setForm({ ...form, name: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
+            className="w-full rounded-lg border border-[var(--line-strong)] px-4 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+          <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Email *</label>
           <input
             type="email"
             required
             value={form.email}
             onChange={e => setForm({ ...form, email: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
+            className="w-full rounded-lg border border-[var(--line-strong)] px-4 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
           />
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+        <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Company Name *</label>
         <input
           type="text"
           required
           value={form.company}
           onChange={e => setForm({ ...form, company: e.target.value })}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
+          className="w-full rounded-lg border border-[var(--line-strong)] px-4 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Service Interested In *</label>
+        <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Service Interested In *</label>
         <select
           required
           value={form.service}
           onChange={e => setForm({ ...form, service: e.target.value })}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
+          className="w-full rounded-lg border border-[var(--line-strong)] px-4 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
         >
           {SERVICE_OPTIONS.map(opt => (
             <option key={opt.value} value={opt.value} disabled={opt.value === ''}>
@@ -337,13 +337,13 @@ function DiscoveryCallForm() {
         </select>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+        <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Message</label>
         <textarea
           value={form.message}
           onChange={e => setForm({ ...form, message: e.target.value })}
           rows={3}
           placeholder="Tell us about your specific needs..."
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all resize-none"
+          className="w-full rounded-lg border border-[var(--line-strong)] px-4 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all resize-none"
         />
       </div>
       <button
@@ -394,8 +394,8 @@ function ProviderApplicationForm() {
         <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle className="w-8 h-8 text-emerald-600" />
         </div>
-        <h3 className="text-xl font-bold text-gray-900 mb-2">Application received!</h3>
-        <p className="text-gray-600">We&apos;ll review and get back to you within 48 hours.</p>
+        <h3 className="text-xl font-bold text-[var(--ink)] mb-2">Application received!</h3>
+        <p className="text-[var(--ink-soft)]">We&apos;ll review and get back to you within 48 hours.</p>
       </div>
     )
   }
@@ -409,60 +409,60 @@ function ProviderApplicationForm() {
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Company / Individual Name *</label>
+          <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Company / Individual Name *</label>
           <input
             type="text"
             required
             value={form.name}
             onChange={e => setForm({ ...form, name: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
+            className="w-full rounded-lg border border-[var(--line-strong)] px-4 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Contact Email *</label>
+          <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Contact Email *</label>
           <input
             type="email"
             required
             value={form.email}
             onChange={e => setForm({ ...form, email: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
+            className="w-full rounded-lg border border-[var(--line-strong)] px-4 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
           />
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Services You Offer *</label>
+        <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Services You Offer *</label>
         <textarea
           required
           value={form.services}
           onChange={e => setForm({ ...form, services: e.target.value })}
           rows={3}
           placeholder="Describe the services you provide..."
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all resize-none"
+          className="w-full rounded-lg border border-[var(--line-strong)] px-4 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all resize-none"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Portfolio / Website URL</label>
+        <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Portfolio / Website URL</label>
         <input
           type="url"
           value={form.portfolio}
           onChange={e => setForm({ ...form, portfolio: e.target.value })}
           placeholder="https://"
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
+          className="w-full rounded-lg border border-[var(--line-strong)] px-4 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+        <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Message</label>
         <textarea
           value={form.message}
           onChange={e => setForm({ ...form, message: e.target.value })}
           rows={2}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all resize-none"
+          className="w-full rounded-lg border border-[var(--line-strong)] px-4 py-2.5 text-sm text-[var(--ink)] focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all resize-none"
         />
       </div>
       <button
         type="submit"
         disabled={submitting || !form.name || !form.email || !form.services}
-        className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 bg-white hover:bg-[#F8F9FB] text-sm font-semibold transition disabled:opacity-50"
+        className="px-6 py-2.5 rounded-lg border border-[var(--line-strong)] text-[var(--ink-soft)] bg-[var(--bg-elev)] hover:bg-[var(--bg-sunk)] text-sm font-semibold transition disabled:opacity-50"
       >
         {submitting ? 'Submitting...' : 'Apply to Join'}
       </button>
@@ -485,9 +485,9 @@ export default function ServicesPage() {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
           <Briefcase className="w-6 h-6 text-[var(--accent-ink)]" />
-          <h1 className="text-2xl font-bold text-gray-900">Services</h1>
+          <h1 className="text-2xl font-bold text-[var(--ink)]">Services</h1>
         </div>
-        <p className="text-gray-500 text-sm">
+        <p className="text-[var(--ink-mute)] text-sm">
           Expert-led services to accelerate your fundraise and improve your Kunfa Score
         </p>
       </div>
@@ -501,9 +501,9 @@ export default function ServicesPage() {
 
       {/* Discovery Call Form */}
       <div ref={formRef} className="mb-16 scroll-mt-8">
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Book a Discovery Call</h2>
-          <p className="text-sm text-gray-500 mb-6">
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-8">
+          <h2 className="text-xl font-bold text-[var(--ink)] mb-1">Book a Discovery Call</h2>
+          <p className="text-sm text-[var(--ink-mute)] mb-6">
             Tell us about your needs and we&apos;ll match you with the right expert.
           </p>
           <DiscoveryCallForm />
@@ -511,13 +511,13 @@ export default function ServicesPage() {
       </div>
 
       {/* Divider */}
-      <div className="border-t border-gray-200 mb-16" />
+      <div className="border-t border-[var(--line)] mb-16" />
 
       {/* Provider Application */}
       <div className="mb-16">
-        <div className="bg-white rounded-xl border border-gray-200 p-8">
-          <h2 className="text-xl font-bold text-gray-900 mb-1">Become a Kunfa Service Provider</h2>
-          <p className="text-sm text-gray-500 mb-6">
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-8">
+          <h2 className="text-xl font-bold text-[var(--ink)] mb-1">Become a Kunfa Service Provider</h2>
+          <p className="text-sm text-[var(--ink-mute)] mb-6">
             Are you an expert in your field? Join our network of vetted service providers.
           </p>
           <ProviderApplicationForm />

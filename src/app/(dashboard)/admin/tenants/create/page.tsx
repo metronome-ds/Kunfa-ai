@@ -98,153 +98,153 @@ export default function CreateTenantPage() {
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
-      <Link href="/admin/tenants" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-6">
+      <Link href="/admin/tenants" className="inline-flex items-center gap-2 text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] mb-6">
         <ArrowLeft className="h-4 w-4" />
         Back to Tenants
       </Link>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Create New Tenant</h1>
-      <p className="text-gray-500 text-sm mb-8">Set up a new white-label tenant configuration.</p>
+      <h1 className="text-2xl font-bold text-[var(--ink)] mb-2">Create New Tenant</h1>
+      <p className="text-[var(--ink-mute)] text-sm mb-8">Set up a new white-label tenant configuration.</p>
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Basic Info */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Basic Info</h2>
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-[var(--ink)]">Basic Info</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Name *</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => { setName(e.target.value); if (!slug) setSlug('') }}
                 required
                 placeholder="Acme Capital"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Slug *</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Slug *</label>
               <input
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                 required
                 placeholder="acme-capital"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Tagline</label>
             <input
               type="text"
               value={tagline}
               onChange={(e) => setTagline(e.target.value)}
               placeholder="Your investment platform"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+              className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             />
           </div>
         </div>
 
         {/* Domain */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Domain</h2>
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-[var(--ink)]">Domain</h2>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Subdomain</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Subdomain</label>
               <div className="flex items-center">
                 <input
                   type="text"
                   value={subdomain}
                   onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                   placeholder="acme"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-l-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-l-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 />
-                <span className="px-3 py-2 bg-gray-50 border border-l-0 border-gray-300 rounded-r-lg text-sm text-gray-500">.kunfa.ai</span>
+                <span className="px-3 py-2 bg-[var(--bg-sunk)] border border-l-0 border-[var(--line-strong)] rounded-r-lg text-sm text-[var(--ink-mute)]">.kunfa.ai</span>
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Custom Domain</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Custom Domain</label>
               <input
                 type="text"
                 value={customDomain}
                 onChange={(e) => setCustomDomain(e.target.value.toLowerCase())}
                 placeholder="deals.acme.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
               />
             </div>
           </div>
         </div>
 
         {/* Branding */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Branding</h2>
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-[var(--ink)]">Branding</h2>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Logo URL</label>
             <input
               type="url"
               value={logoUrl}
               onChange={(e) => setLogoUrl(e.target.value)}
               placeholder="https://..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+              className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             />
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Primary Color</label>
               <div className="flex items-center gap-2">
-                <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="h-9 w-9 rounded border border-gray-300 cursor-pointer" />
-                <input type="text" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="h-9 w-9 rounded border border-[var(--line-strong)] cursor-pointer" />
+                <input type="text" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="flex-1 px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Color</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Secondary Color</label>
               <div className="flex items-center gap-2">
-                <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="h-9 w-9 rounded border border-gray-300 cursor-pointer" />
-                <input type="text" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="h-9 w-9 rounded border border-[var(--line-strong)] cursor-pointer" />
+                <input type="text" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="flex-1 px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Accent Color</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Accent Color</label>
               <div className="flex items-center gap-2">
-                <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="h-9 w-9 rounded border border-gray-300 cursor-pointer" />
-                <input type="text" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+                <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="h-9 w-9 rounded border border-[var(--line-strong)] cursor-pointer" />
+                <input type="text" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="flex-1 px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Access */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Access</h2>
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-[var(--ink)]">Access</h2>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Signup Mode</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">Signup Mode</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="radio" value="invitation_only" checked={signupMode === 'invitation_only'} onChange={(e) => setSignupMode(e.target.value)} className="text-[var(--accent-ink)]" />
-                <span className="text-sm text-gray-700">Invitation Only</span>
+                <span className="text-sm text-[var(--ink-soft)]">Invitation Only</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
                 <input type="radio" value="open" checked={signupMode === 'open'} onChange={(e) => setSignupMode(e.target.value)} className="text-[var(--accent-ink)]" />
-                <span className="text-sm text-gray-700">Open Registration</span>
+                <span className="text-sm text-[var(--ink-soft)]">Open Registration</span>
               </label>
             </div>
           </div>
         </div>
 
         {/* Features */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Features</h2>
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
+          <h2 className="text-lg font-semibold text-[var(--ink)]">Features</h2>
           <div className="grid grid-cols-2 gap-3">
             {Object.entries(features).map(([key, enabled]) => (
-              <label key={key} className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 cursor-pointer">
+              <label key={key} className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--bg-sunk)] cursor-pointer">
                 <input
                   type="checkbox"
                   checked={enabled}
                   onChange={() => toggleFeature(key)}
-                  className="h-4 w-4 rounded border-gray-300 text-[var(--accent-ink)] focus:ring-[var(--ink)]"
+                  className="h-4 w-4 rounded border-[var(--line-strong)] text-[var(--accent-ink)] focus:ring-[var(--ink)]"
                 />
-                <span className="text-sm text-gray-700">{key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+                <span className="text-sm text-[var(--ink-soft)]">{key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
               </label>
             ))}
           </div>
@@ -257,7 +257,7 @@ export default function CreateTenantPage() {
         )}
 
         <div className="flex items-center justify-end gap-4">
-          <Link href="/admin/tenants" className="px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition">
+          <Link href="/admin/tenants" className="px-4 py-2.5 text-sm font-medium text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)] rounded-lg transition">
             Cancel
           </Link>
           <button

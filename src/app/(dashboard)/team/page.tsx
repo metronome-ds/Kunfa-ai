@@ -26,9 +26,9 @@ function getRoleBadge(role: string) {
       return 'bg-emerald-100 text-emerald-700'
     case 'observer':
     case 'viewer':
-      return 'bg-gray-100 text-gray-600'
+      return 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'
     default:
-      return 'bg-gray-100 text-gray-600'
+      return 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'
   }
 }
 
@@ -44,7 +44,7 @@ function getStatusBadge(status: string) {
     case 'pending':
       return 'bg-yellow-100 text-yellow-700'
     default:
-      return 'bg-gray-100 text-gray-600'
+      return 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'
   }
 }
 
@@ -263,7 +263,7 @@ export default function TeamPage() {
       {loading && (
         <div className="text-center py-16">
           <div className="w-8 h-8 border-2 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-gray-500 text-sm">Loading team...</p>
+          <p className="text-[var(--ink-mute)] text-sm">Loading team...</p>
         </div>
       )}
 
@@ -272,27 +272,27 @@ export default function TeamPage() {
           <table className="w-full">
             <thead>
               <tr className="bg-[var(--bg-sunk)] border-b border-[var(--line)]">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Member</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Member</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Role</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Status</th>
                 <th className="px-5 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {members.map((member) => (
-                <tr key={member.id} className="hover:bg-[#F8F9FB] transition">
+                <tr key={member.id} className="hover:bg-[var(--bg-sunk)] transition">
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                        <span className="text-xs font-semibold text-gray-600">
+                      <div className="w-9 h-9 rounded-full bg-[var(--bg-sunk)] flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-semibold text-[var(--ink-soft)]">
                           {member.name ? getInitials(member.name) : '?'}
                         </span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900">{member.name || 'Pending'}</p>
-                        <p className="text-xs text-gray-500">{member.email}</p>
+                        <p className="text-sm font-medium text-[var(--ink)]">{member.name || 'Pending'}</p>
+                        <p className="text-xs text-[var(--ink-mute)]">{member.email}</p>
                         {member.title && (
-                          <p className="text-xs text-gray-400">{member.title}</p>
+                          <p className="text-xs text-[var(--ink-faint)]">{member.title}</p>
                         )}
                       </div>
                     </div>
@@ -307,7 +307,7 @@ export default function TeamPage() {
                       <select
                         value={member.role}
                         onChange={(e) => handleChangeRole(member.id, e.target.value)}
-                        className="text-xs font-medium px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[var(--ink)]"
+                        className="text-xs font-medium px-2 py-1 rounded-lg border border-[var(--line)] bg-[var(--bg-elev)] text-[var(--ink-soft)] focus:outline-none focus:ring-1 focus:ring-[var(--ink)]"
                       >
                         {inlineRoleOptions.map((r) => (
                           <option key={r} value={r}>
@@ -341,7 +341,7 @@ export default function TeamPage() {
                         {!isOwnerRow(member) && (
                           <button
                             onClick={() => handleRemove(member.id)}
-                            className="p-1.5 text-gray-400 hover:text-red-500 transition rounded-lg hover:bg-red-50"
+                            className="p-1.5 text-[var(--ink-faint)] hover:text-red-500 transition rounded-lg hover:bg-red-50"
                             title="Remove member"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -357,8 +357,8 @@ export default function TeamPage() {
 
           {members.length === 0 && (
             <div className="text-center py-12 px-6">
-              <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-              <p className="text-gray-500 text-sm mb-4">
+              <Users className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+              <p className="text-[var(--ink-mute)] text-sm mb-4">
                 No team members yet.{canManage ? ' Invite your first member to get started.' : ''}
               </p>
               {canManage && (
@@ -377,17 +377,17 @@ export default function TeamPage() {
       {showInvite && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50" onClick={() => setShowInvite(false)} />
-          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-bold text-gray-900">Invite Team Member</h2>
-              <button onClick={() => setShowInvite(false)} className="p-1 text-gray-400 hover:text-gray-600">
+          <div className="relative bg-[var(--bg-elev)] rounded-xl w-full max-w-md">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--line)]">
+              <h2 className="text-lg font-bold text-[var(--ink)]">Invite Team Member</h2>
+              <button onClick={() => setShowInvite(false)} className="p-1 text-[var(--ink-faint)] hover:text-[var(--ink-soft)]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleInvite} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Name *</label>
                 <input
                   type="text"
                   value={inviteName}
@@ -399,7 +399,7 @@ export default function TeamPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email *</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Email *</label>
                 <input
                   type="email"
                   value={inviteEmail}
@@ -411,7 +411,7 @@ export default function TeamPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Role</label>
                 <select
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value)}
@@ -436,7 +436,7 @@ export default function TeamPage() {
                 <button
                   type="button"
                   onClick={() => setShowInvite(false)}
-                  className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-200 transition"
+                  className="flex-1 py-2.5 bg-[var(--bg-sunk)] text-[var(--ink-soft)] rounded-lg font-semibold text-sm hover:bg-[var(--bg-sunk)] transition"
                 >
                   Cancel
                 </button>

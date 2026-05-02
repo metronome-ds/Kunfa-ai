@@ -137,7 +137,7 @@ export default function AdminPromoCodesPage() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Tag className="w-6 h-6 text-[var(--accent-ink)]" />
-          <h1 className="text-2xl font-bold text-gray-900">Promo Codes</h1>
+          <h1 className="text-2xl font-bold text-[var(--ink)]">Promo Codes</h1>
         </div>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
@@ -150,28 +150,28 @@ export default function AdminPromoCodesPage() {
 
       {/* Create form */}
       {showCreateForm && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">New Promo Code</h2>
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-6">
+          <h2 className="text-lg font-semibold text-[var(--ink)] mb-4">New Promo Code</h2>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Code</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Code</label>
                 <input
                   type="text"
                   value={newCode}
                   onChange={(e) => setNewCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
                   required
                   maxLength={20}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] uppercase tracking-wider"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] uppercase tracking-wider"
                   placeholder="LAUNCH2024"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tier</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Tier</label>
                 <select
                   value={newTier}
                   onChange={(e) => setNewTier(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 >
                   {TIERS.map(t => (
                     <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
@@ -179,44 +179,44 @@ export default function AdminPromoCodesPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Duration (days)</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Duration (days)</label>
                 <input
                   type="number"
                   value={newDuration}
                   onChange={(e) => setNewDuration(e.target.value)}
                   required
                   min={1}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="30"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Max Uses <span className="text-gray-400">(optional)</span></label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Max Uses <span className="text-[var(--ink-faint)]">(optional)</span></label>
                 <input
                   type="number"
                   value={newMaxUses}
                   onChange={(e) => setNewMaxUses(e.target.value)}
                   min={1}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="Unlimited"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Expires At <span className="text-gray-400">(optional)</span></label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Expires At <span className="text-[var(--ink-faint)]">(optional)</span></label>
                 <input
                   type="date"
                   value={newExpiresAt}
                   onChange={(e) => setNewExpiresAt(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Notes <span className="text-gray-400">(optional)</span></label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Notes <span className="text-[var(--ink-faint)]">(optional)</span></label>
                 <input
                   type="text"
                   value={newNotes}
                   onChange={(e) => setNewNotes(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="For batch 1 investors"
                 />
               </div>
@@ -230,7 +230,7 @@ export default function AdminPromoCodesPage() {
               <button
                 type="button"
                 onClick={() => setShowCreateForm(false)}
-                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-800"
+                className="px-4 py-2 text-sm text-[var(--ink-soft)] hover:text-[var(--ink-2)]"
               >
                 Cancel
               </button>
@@ -252,34 +252,34 @@ export default function AdminPromoCodesPage() {
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--line-strong)]" />
         </div>
       ) : codes.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-[var(--ink-mute)]">
           No promo codes yet. Create your first one.
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 bg-[#F8F9FB]">
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Code</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Tier</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Duration</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Uses</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Expires</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Notes</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-                  <th className="text-right px-4 py-3 font-medium text-gray-600">Actions</th>
+                <tr className="border-b border-[var(--line)] bg-[var(--bg-sunk)]">
+                  <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Code</th>
+                  <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Tier</th>
+                  <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Duration</th>
+                  <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Uses</th>
+                  <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Expires</th>
+                  <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Notes</th>
+                  <th className="text-left px-4 py-3 font-medium text-[var(--ink-soft)]">Status</th>
+                  <th className="text-right px-4 py-3 font-medium text-[var(--ink-soft)]">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {codes.map((pc) => (
-                  <tr key={pc.id} className="border-b border-gray-100 hover:bg-[#F8F9FB]">
+                  <tr key={pc.id} className="border-b border-[var(--line)] hover:bg-[var(--bg-sunk)]">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
-                        <code className="font-mono font-semibold text-gray-900">{pc.code}</code>
+                        <code className="font-mono font-semibold text-[var(--ink)]">{pc.code}</code>
                         <button
                           onClick={() => handleCopy(pc.code, pc.id)}
-                          className="text-gray-400 hover:text-gray-600 transition"
+                          className="text-[var(--ink-faint)] hover:text-[var(--ink-soft)] transition"
                           title="Copy code"
                         >
                           {copiedId === pc.id ? (
@@ -291,18 +291,18 @@ export default function AdminPromoCodesPage() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${TIER_COLORS[pc.tier] || 'bg-gray-100 text-gray-700'}`}>
+                      <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${TIER_COLORS[pc.tier] || 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'}`}>
                         {pc.tier.toUpperCase()}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-600">{pc.duration_days}d</td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 text-[var(--ink-soft)]">{pc.duration_days}d</td>
+                    <td className="px-4 py-3 text-[var(--ink-soft)]">
                       {pc.times_used}{pc.max_uses ? ` / ${pc.max_uses}` : ' / ∞'}
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs">
+                    <td className="px-4 py-3 text-[var(--ink-mute)] text-xs">
                       {pc.expires_at ? new Date(pc.expires_at).toLocaleDateString() : 'Never'}
                     </td>
-                    <td className="px-4 py-3 text-gray-500 text-xs max-w-[180px] truncate">
+                    <td className="px-4 py-3 text-[var(--ink-mute)] text-xs max-w-[180px] truncate">
                       {pc.notes || '—'}
                     </td>
                     <td className="px-4 py-3">

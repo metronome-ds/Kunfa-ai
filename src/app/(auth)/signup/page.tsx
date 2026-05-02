@@ -13,7 +13,7 @@ type SignupStep = 'form' | 'otp'
 export default function SignupPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
       </div>
     }>
@@ -116,7 +116,7 @@ function OtpInput({
           onFocus={(e) => e.target.select()}
           disabled={disabled}
           autoComplete="one-time-code"
-          className="w-11 h-14 sm:w-12 sm:h-16 text-center text-2xl font-semibold bg-white border-2 border-gray-300 rounded-lg text-gray-900 focus:outline-none focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] disabled:bg-gray-50 disabled:text-gray-400 transition-all"
+          className="w-11 h-14 sm:w-12 sm:h-16 text-center text-2xl font-semibold bg-[var(--bg-elev)] border-2 border-[var(--line-strong)] rounded-lg text-[var(--ink)] focus:outline-none focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] disabled:bg-[var(--bg-sunk)] disabled:text-[var(--ink-faint)] transition-all"
         />
       ))}
     </div>
@@ -437,7 +437,7 @@ function SignupContent() {
   // ====== OTP STEP ======
   if (step === 'otp') {
     return (
-      <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block mb-6">
@@ -449,12 +449,12 @@ function SignupContent() {
             </Link>
           </div>
 
-          <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-lg text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
-            <p className="text-sm text-gray-600 mb-1">
+          <div className="bg-[var(--bg-elev)] rounded-xl p-8 border border-[var(--line)] text-center">
+            <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">Check your email</h2>
+            <p className="text-sm text-[var(--ink-soft)] mb-1">
               Enter the 6-digit code we sent to
             </p>
-            <p className="font-semibold text-gray-900 mb-6 break-all">{signupEmail}</p>
+            <p className="font-semibold text-[var(--ink)] mb-6 break-all">{signupEmail}</p>
 
             <div className="mb-4">
               <OtpInput
@@ -466,7 +466,7 @@ function SignupContent() {
             </div>
 
             {otpLoading && !otpSuccess && (
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mb-4">
+              <div className="flex items-center justify-center gap-2 text-sm text-[var(--ink-mute)] mb-4">
                 <div className="w-4 h-4 border-2 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin" />
                 Verifying...
               </div>
@@ -506,7 +506,7 @@ function SignupContent() {
                     type="button"
                     onClick={handleUseDifferentEmail}
                     disabled={otpLoading}
-                    className="text-sm text-gray-500 hover:text-gray-700 font-medium"
+                    className="text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] font-medium"
                   >
                     Use a different email
                   </button>
@@ -533,7 +533,7 @@ function SignupContent() {
       : null
 
   return (
-    <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
@@ -548,17 +548,17 @@ function SignupContent() {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--ink)]/10 mb-3">
                 <Users className="w-6 h-6 text-[var(--accent-ink)]" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900">{inviteHeading}</h1>
+              <h1 className="text-2xl font-bold text-[var(--ink)]">{inviteHeading}</h1>
               {inviteSubheading && (
-                <p className="text-gray-500 mt-2">{inviteSubheading}</p>
+                <p className="text-[var(--ink-mute)] mt-2">{inviteSubheading}</p>
               )}
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-[var(--ink)]">
                 {isTenantContext ? `Join ${tenant?.display_name || tenant?.name}` : 'Create your account'}
               </h1>
-              <p className="text-gray-500 mt-2">
+              <p className="text-[var(--ink-mute)] mt-2">
                 {isTenantContext && tenant?.tagline
                   ? tenant.tagline
                   : claimCompanyName
@@ -569,7 +569,7 @@ function SignupContent() {
           )}
         </div>
 
-        <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-lg">
+        <div className="bg-[var(--bg-elev)] rounded-xl p-8 border border-[var(--line)]">
           {/* Existing user nudge for invite flow */}
           {inviteId && inviteExistingUser && (
             <div className="mb-5 rounded-lg bg-[var(--accent-soft)] border border-[var(--line)] p-4">
@@ -592,7 +592,7 @@ function SignupContent() {
             {/* Role selector — only for normal signups (not invite/claim) */}
             {!claimToken && !inviteId && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">I am a...</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">I am a...</label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
@@ -600,7 +600,7 @@ function SignupContent() {
                     className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-medium transition ${
                       selectedRole === 'startup'
                         ? 'border-[var(--line-strong)] bg-[var(--ink)]/5 text-[var(--accent-ink)]'
-                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                        : 'border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--line-strong)]'
                     }`}
                   >
                     <Building2 className="w-5 h-5" />
@@ -612,7 +612,7 @@ function SignupContent() {
                     className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-medium transition ${
                       selectedRole === 'investor'
                         ? 'border-[var(--line-strong)] bg-[var(--ink)]/5 text-[var(--accent-ink)]'
-                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                        : 'border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--line-strong)]'
                     }`}
                   >
                     <TrendingUp className="w-5 h-5" />
@@ -625,40 +625,40 @@ function SignupContent() {
             {/* Full Name — shown for invite flow */}
             {inviteId && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Full Name</label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   required
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-4 py-3 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="Jane Smith"
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 readOnly={inviteEmailLocked}
-                className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] ${inviteEmailLocked ? 'bg-gray-50' : 'bg-white'}`}
+                className={`w-full px-4 py-3 border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] ${inviteEmailLocked ? 'bg-[var(--bg-sunk)]' : 'bg-[var(--bg-elev)]'}`}
                 placeholder="you@company.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                className="w-full px-4 py-3 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 placeholder="Min 6 characters"
               />
             </div>
@@ -666,14 +666,14 @@ function SignupContent() {
             {/* Confirm Password — only for invite flow */}
             {inviteId && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Confirm Password</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-4 py-3 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="Re-enter password"
                 />
               </div>
@@ -684,9 +684,9 @@ function SignupContent() {
                 type="checkbox"
                 checked={tosAgreed}
                 onChange={(e) => setTosAgreed(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[var(--accent-ink)] focus:ring-[var(--ink)]"
+                className="mt-0.5 h-4 w-4 rounded border-[var(--line-strong)] text-[var(--accent-ink)] focus:ring-[var(--ink)]"
               />
-              <span className="text-xs text-gray-600 leading-relaxed">
+              <span className="text-xs text-[var(--ink-soft)] leading-relaxed">
                 I agree to the{' '}
                 <Link href="/terms" target="_blank" className="text-[var(--accent-ink)] hover:underline">Terms of Service</Link>
                 {' '}and{' '}
@@ -699,7 +699,7 @@ function SignupContent() {
               <button
                 type="button"
                 onClick={() => setShowPromoField(!showPromoField)}
-                className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition"
+                className="flex items-center gap-1.5 text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] transition"
               >
                 <Tag className="w-3.5 h-3.5" />
                 Have a promo code?
@@ -710,7 +710,7 @@ function SignupContent() {
                   type="text"
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                  className="mt-2 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] uppercase tracking-wider"
+                  className="mt-2 w-full px-4 py-3 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] uppercase tracking-wider"
                   placeholder="PROMO CODE"
                 />
               )}
@@ -733,7 +733,7 @@ function SignupContent() {
             </button>
           </form>
 
-          <p className="text-center text-gray-600 text-sm mt-6">
+          <p className="text-center text-[var(--ink-soft)] text-sm mt-6">
             Already have an account?{' '}
             <Link
               href={inviteId ? `/login?invite=${inviteId}` : '/login'}
@@ -746,9 +746,9 @@ function SignupContent() {
 
         {/* Powered by Kunfa */}
         {isTenantContext && tenant?.show_powered_by && (
-          <p className="text-center text-gray-400 text-xs mt-6">
+          <p className="text-center text-[var(--ink-faint)] text-xs mt-6">
             Powered by{' '}
-            <a href="https://kunfa.ai" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-700 font-medium">
+            <a href="https://kunfa.ai" target="_blank" rel="noopener noreferrer" className="text-[var(--ink-mute)] hover:text-[var(--ink-soft)] font-medium">
               Kunfa
             </a>
           </p>

@@ -223,8 +223,8 @@ export default function TermSheetAnalyzerPage() {
         <div className="w-16 h-16 rounded-2xl bg-[var(--ink)]/10 flex items-center justify-center mx-auto mb-6">
           <div className="w-8 h-8 border-3 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">Analyzing Your Term Sheet</h1>
-        <p className="text-gray-500 animate-pulse">{PROCESSING_MESSAGES[processingMsg]}</p>
+        <h1 className="text-2xl font-bold text-[var(--ink)] mb-3">Analyzing Your Term Sheet</h1>
+        <p className="text-[var(--ink-mute)] animate-pulse">{PROCESSING_MESSAGES[processingMsg]}</p>
       </div>
     )
   }
@@ -244,26 +244,26 @@ export default function TermSheetAnalyzerPage() {
               <OverallIcon className="w-6 h-6" />
             </div>
             <div className="flex-1">
-              <h1 className="text-xl font-bold text-gray-900 mb-1">Term Sheet Analysis</h1>
+              <h1 className="text-xl font-bold text-[var(--ink)] mb-1">Term Sheet Analysis</h1>
               <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${overallConfig.badge}`}>
                 {overallConfig.label}
               </span>
-              <p className="text-sm text-gray-600 mt-3">{analysis.summary}</p>
+              <p className="text-sm text-[var(--ink-soft)] mt-3">{analysis.summary}</p>
               {analysis.stats && (
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-[var(--ink-mute)] mt-2">
                   {analysis.stats.total_clauses} clauses analyzed &middot;{' '}
                   {analysis.stats.founder_friendly} founder-friendly &middot;{' '}
                   {analysis.stats.needs_attention} need attention
                 </p>
               )}
-              <p className="text-xs text-gray-400 mt-1">{new Date().toLocaleDateString()}</p>
+              <p className="text-xs text-[var(--ink-faint)] mt-1">{new Date().toLocaleDateString()}</p>
             </div>
           </div>
         </div>
 
         {/* Clause Cards */}
         <div className="space-y-4 mb-8">
-          <h2 className="text-lg font-semibold text-gray-900">Clause-by-Clause Breakdown</h2>
+          <h2 className="text-lg font-semibold text-[var(--ink)]">Clause-by-Clause Breakdown</h2>
           {analysis.clauses.map((clause, i) => {
             const config = RATING_CONFIG[clause.rating] || RATING_CONFIG.standard
             const ClauseIcon = config.icon
@@ -271,23 +271,23 @@ export default function TermSheetAnalyzerPage() {
               <div key={i} className={`rounded-lg border ${config.border} p-5`}>
                 <div className="flex items-center gap-2 mb-3">
                   <ClauseIcon className={`w-4 h-4 ${config.text}`} />
-                  <span className="font-semibold text-gray-900">{clause.name}</span>
+                  <span className="font-semibold text-[var(--ink)]">{clause.name}</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${config.badge}`}>
                     {config.label}
                   </span>
                 </div>
                 <div className="space-y-2 text-sm">
                   <div>
-                    <span className="text-gray-500 font-medium">What the term sheet says:</span>
-                    <p className="text-gray-600 italic mt-0.5 pl-3 border-l-2 border-gray-200">{clause.extracted_text}</p>
+                    <span className="text-[var(--ink-mute)] font-medium">What the term sheet says:</span>
+                    <p className="text-[var(--ink-soft)] italic mt-0.5 pl-3 border-l-2 border-[var(--line)]">{clause.extracted_text}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500 font-medium">What this means:</span>
-                    <p className="text-gray-700 mt-0.5">{clause.explanation}</p>
+                    <span className="text-[var(--ink-mute)] font-medium">What this means:</span>
+                    <p className="text-[var(--ink-soft)] mt-0.5">{clause.explanation}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500 font-medium">Market comparison:</span>
-                    <p className="text-gray-600 mt-0.5">{clause.market_comparison}</p>
+                    <span className="text-[var(--ink-mute)] font-medium">Market comparison:</span>
+                    <p className="text-[var(--ink-soft)] mt-0.5">{clause.market_comparison}</p>
                   </div>
                 </div>
               </div>
@@ -315,7 +315,7 @@ export default function TermSheetAnalyzerPage() {
           )}
           <Link
             href="/services"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-gray-700 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--bg-elev)] text-[var(--ink-soft)] rounded-lg text-sm font-medium border border-[var(--line)] hover:bg-[var(--bg-sunk)] transition"
           >
             <Briefcase className="w-4 h-4" />
             Get Legal Help
@@ -323,7 +323,7 @@ export default function TermSheetAnalyzerPage() {
           </Link>
           <button
             onClick={handleReset}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-gray-700 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--bg-elev)] text-[var(--ink-soft)] rounded-lg text-sm font-medium border border-[var(--line)] hover:bg-[var(--bg-sunk)] transition"
           >
             <RotateCcw className="w-4 h-4" />
             Analyze Another
@@ -346,8 +346,8 @@ export default function TermSheetAnalyzerPage() {
         <div className="w-16 h-16 rounded-2xl bg-[var(--ink)]/10 flex items-center justify-center mx-auto mb-6">
           <FileSearch className="w-8 h-8 text-[var(--accent-ink)]" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">Term Sheet Analyzer</h1>
-        <p className="text-gray-500 max-w-md mx-auto">
+        <h1 className="text-2xl font-bold text-[var(--ink)] mb-3">Term Sheet Analyzer</h1>
+        <p className="text-[var(--ink-mute)] max-w-md mx-auto">
           Upload a term sheet and get an instant AI-powered clause-by-clause analysis with founder-friendliness ratings and market comparisons.
         </p>
       </div>
@@ -367,7 +367,7 @@ export default function TermSheetAnalyzerPage() {
             ? 'border-[var(--line-strong)] bg-[var(--accent-soft)]'
             : file
               ? 'border-emerald-300 bg-emerald-50'
-              : 'border-gray-300 hover:border-[var(--line-strong)]'
+              : 'border-[var(--line-strong)] hover:border-[var(--line-strong)]'
         }`}
       >
         <input
@@ -382,16 +382,16 @@ export default function TermSheetAnalyzerPage() {
         {file ? (
           <div>
             <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-            <p className="text-sm font-medium text-gray-900">{file.name}</p>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-sm font-medium text-[var(--ink)]">{file.name}</p>
+            <p className="text-xs text-[var(--ink-faint)] mt-1">
               {(file.size / (1024 * 1024)).toFixed(1)} MB &middot; Click to change
             </p>
           </div>
         ) : (
           <div>
-            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-sm text-gray-600">Drop your term sheet here or click to browse</p>
-            <p className="text-xs text-gray-400 mt-1">PDF or DOCX &middot; Max 25MB</p>
+            <Upload className="w-8 h-8 text-[var(--ink-faint)] mx-auto mb-2" />
+            <p className="text-sm text-[var(--ink-soft)]">Drop your term sheet here or click to browse</p>
+            <p className="text-xs text-[var(--ink-faint)] mt-1">PDF or DOCX &middot; Max 25MB</p>
           </div>
         )}
       </div>
@@ -410,7 +410,7 @@ export default function TermSheetAnalyzerPage() {
         Analyze Term Sheet
       </button>
 
-      <p className="text-xs text-gray-400 text-center mt-4">
+      <p className="text-xs text-[var(--ink-faint)] text-center mt-4">
         Your document is analyzed securely and never shared. Results can be saved to your Private Docs.
       </p>
     </div>

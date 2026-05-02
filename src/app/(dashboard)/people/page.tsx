@@ -104,7 +104,7 @@ export default function PeoplePage() {
       case 'service_provider':
         return 'bg-[var(--accent-soft)] text-[var(--ink)]';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-[var(--bg-sunk)] text-[var(--ink-2)]';
     }
   };
 
@@ -112,11 +112,11 @@ export default function PeoplePage() {
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+        <h1 className="text-3xl font-bold text-[var(--ink)] flex items-center gap-2">
           <Users className="h-8 w-8 text-[var(--ink)]" />
           People Directory
         </h1>
-        <p className="text-gray-600 mt-2">
+        <p className="text-[var(--ink-soft)] mt-2">
           Connect with founders, investors, and service providers
         </p>
       </div>
@@ -126,7 +126,7 @@ export default function PeoplePage() {
         <div className="space-y-4">
           {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[var(--ink-faint)]" />
             <Input
               type="text"
               placeholder="Search by name, company, or headline..."
@@ -148,7 +148,7 @@ export default function PeoplePage() {
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedRole === filter.value
                     ? 'bg-[var(--ink)] text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
                 }`}
               >
                 {filter.label}
@@ -163,17 +163,17 @@ export default function PeoplePage() {
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--ink)] mb-4" />
-            <p className="text-gray-600">Loading people...</p>
+            <p className="text-[var(--ink-soft)]">Loading people...</p>
           </div>
         </div>
       ) : people.length === 0 ? (
         <Card>
           <div className="text-center py-12">
-            <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <Users className="h-12 w-12 text-[var(--ink-faint)] mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-[var(--ink)] mb-2">
               No people found
             </h3>
-            <p className="text-gray-600">
+            <p className="text-[var(--ink-soft)]">
               Try adjusting your search or filters to find who you're looking for.
             </p>
           </div>
@@ -191,7 +191,7 @@ export default function PeoplePage() {
                 className="flex flex-col h-full"
               >
                 {/* Header with Avatar */}
-                <div className="pb-4 border-b border-gray-100">
+                <div className="pb-4 border-b border-[var(--line)]">
                   <div className="flex items-start gap-3">
                     {person.avatar_url ? (
                       <img
@@ -209,11 +209,11 @@ export default function PeoplePage() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-gray-900 truncate">
+                      <h3 className="font-semibold text-[var(--ink)] truncate">
                         {person.full_name}
                       </h3>
                       {person.headline && (
-                        <p className="text-sm text-gray-600 truncate">
+                        <p className="text-sm text-[var(--ink-soft)] truncate">
                           {person.headline}
                         </p>
                       )}
@@ -225,16 +225,16 @@ export default function PeoplePage() {
                 <div className="py-4 space-y-2 flex-1">
                   {/* Company */}
                   {person.company && (
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <Briefcase className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    <div className="flex items-center gap-2 text-sm text-[var(--ink-soft)]">
+                      <Briefcase className="h-4 w-4 text-[var(--ink-faint)] flex-shrink-0" />
                       <span className="truncate">{person.company}</span>
                     </div>
                   )}
 
                   {/* Location */}
                   {person.location && (
-                    <div className="flex items-center gap-2 text-sm text-gray-700">
-                      <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                    <div className="flex items-center gap-2 text-sm text-[var(--ink-soft)]">
+                      <MapPin className="h-4 w-4 text-[var(--ink-faint)] flex-shrink-0" />
                       <span className="truncate">{person.location}</span>
                     </div>
                   )}
@@ -254,7 +254,7 @@ export default function PeoplePage() {
                         {person.interests.slice(0, 4).map((interest, idx) => (
                           <span
                             key={idx}
-                            className="inline-block px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium"
+                            className="inline-block px-2 py-1 bg-[var(--bg-sunk)] text-[var(--ink-soft)] rounded text-xs font-medium"
                           >
                             {interest}
                           </span>
@@ -302,7 +302,7 @@ export default function PeoplePage() {
                       className={`px-3 py-2 rounded-lg font-medium transition-colors ${
                         currentPage === pageNum
                           ? 'bg-[var(--ink)] text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
                       }`}
                     >
                       {pageNum}
@@ -315,12 +315,12 @@ export default function PeoplePage() {
               {pagination.totalPages > 5 && (
                 <>
                   {currentPage <= pagination.totalPages - 3 && (
-                    <span className="text-gray-700">...</span>
+                    <span className="text-[var(--ink-soft)]">...</span>
                   )}
                   {currentPage < pagination.totalPages - 2 && (
                     <button
                       onClick={() => setCurrentPage(pagination.totalPages)}
-                      className="px-3 py-2 rounded-lg font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"
+                      className="px-3 py-2 rounded-lg font-medium bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)] transition-colors"
                     >
                       {pagination.totalPages}
                     </button>

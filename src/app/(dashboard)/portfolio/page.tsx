@@ -222,7 +222,7 @@ export default function PortfolioPage() {
       <div className="p-8 max-w-7xl mx-auto">
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--ink)] mb-4" />
-          <p className="text-gray-600">Loading portfolio...</p>
+          <p className="text-[var(--ink-soft)]">Loading portfolio...</p>
         </div>
       </div>
     );
@@ -234,8 +234,8 @@ export default function PortfolioPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Portfolio</h1>
-            <p className="text-gray-600 mt-2">Monitor your investments and track performance</p>
+            <h1 className="text-3xl font-bold text-[var(--ink)]">Portfolio</h1>
+            <p className="text-[var(--ink-soft)] mt-2">Monitor your investments and track performance</p>
           </div>
           <Button
             onClick={() => {
@@ -270,8 +270,8 @@ export default function PortfolioPage() {
         <Card>
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Invested</p>
-              <p className="text-2xl font-bold text-gray-900 mt-2">
+              <p className="text-sm font-medium text-[var(--ink-soft)]">Total Invested</p>
+              <p className="text-2xl font-bold text-[var(--ink)] mt-2">
                 {formatCurrency(summary.totalInvested)}
               </p>
             </div>
@@ -284,8 +284,8 @@ export default function PortfolioPage() {
         <Card>
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Current Value</p>
-              <p className="text-2xl font-bold text-gray-900 mt-2">
+              <p className="text-sm font-medium text-[var(--ink-soft)]">Current Value</p>
+              <p className="text-2xl font-bold text-[var(--ink)] mt-2">
                 {formatCurrency(summary.currentValue)}
               </p>
             </div>
@@ -298,8 +298,8 @@ export default function PortfolioPage() {
         <Card>
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Multiple</p>
-              <p className="text-2xl font-bold text-gray-900 mt-2">
+              <p className="text-sm font-medium text-[var(--ink-soft)]">Total Multiple</p>
+              <p className="text-2xl font-bold text-[var(--ink)] mt-2">
                 {summary.totalMultiple.toFixed(2)}x
               </p>
             </div>
@@ -312,8 +312,8 @@ export default function PortfolioPage() {
         <Card>
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Holdings</p>
-              <p className="text-2xl font-bold text-gray-900 mt-2">
+              <p className="text-sm font-medium text-[var(--ink-soft)]">Holdings</p>
+              <p className="text-2xl font-bold text-[var(--ink)] mt-2">
                 {summary.holdingsCount}
               </p>
             </div>
@@ -328,9 +328,9 @@ export default function PortfolioPage() {
       {holdings.length === 0 ? (
         <Card>
           <div className="text-center py-12">
-            <Briefcase className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No investments yet</h3>
-            <p className="text-gray-600 mb-6">
+            <Briefcase className="h-12 w-12 text-[var(--ink-faint)] mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-[var(--ink)] mb-2">No investments yet</h3>
+            <p className="text-[var(--ink-soft)] mb-6">
               Add your first investment from the marketplace or your pipeline
             </p>
             <Button
@@ -346,14 +346,14 @@ export default function PortfolioPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Company</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Stage</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-900">Investment</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-900">Current Value</th>
-                  <th className="text-right py-3 px-4 font-semibold text-gray-900">Multiple</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Status</th>
-                  <th className="text-center py-3 px-4 font-semibold text-gray-900">Actions</th>
+                <tr className="border-b border-[var(--line)]">
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--ink)]">Company</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--ink)]">Stage</th>
+                  <th className="text-right py-3 px-4 font-semibold text-[var(--ink)]">Investment</th>
+                  <th className="text-right py-3 px-4 font-semibold text-[var(--ink)]">Current Value</th>
+                  <th className="text-right py-3 px-4 font-semibold text-[var(--ink)]">Multiple</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--ink)]">Status</th>
+                  <th className="text-center py-3 px-4 font-semibold text-[var(--ink)]">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -375,24 +375,24 @@ export default function PortfolioPage() {
                   };
 
                   return (
-                    <tr key={holding.id} className="border-b border-gray-100 hover:bg-[#F8F9FB]">
+                    <tr key={holding.id} className="border-b border-[var(--line)] hover:bg-[var(--bg-sunk)]">
                       <td className="py-4 px-4">
                         <div>
-                          <p className="font-semibold text-gray-900">{deal?.company_name}</p>
-                          <p className="text-xs text-gray-500 mt-1">{deal?.industry}</p>
+                          <p className="font-semibold text-[var(--ink)]">{deal?.company_name}</p>
+                          <p className="text-xs text-[var(--ink-mute)] mt-1">{deal?.industry}</p>
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-gray-600">{deal?.stage}</td>
+                      <td className="py-4 px-4 text-[var(--ink-soft)]">{deal?.stage}</td>
                       <td className="py-4 px-4 text-right">
-                        <p className="font-semibold text-gray-900">
+                        <p className="font-semibold text-[var(--ink)]">
                           {formatCurrency(holding.investment_amount)}
                         </p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-[var(--ink-mute)]">
                           {formatDate(holding.invested_at)}
                         </p>
                       </td>
                       <td className="py-4 px-4 text-right">
-                        <p className="font-semibold text-gray-900">
+                        <p className="font-semibold text-[var(--ink)]">
                           {formatCurrency(currentValue)}
                         </p>
                         <p className={`text-xs font-medium ${
@@ -402,7 +402,7 @@ export default function PortfolioPage() {
                         </p>
                       </td>
                       <td className="py-4 px-4 text-right">
-                        <p className="font-semibold text-gray-900">{multiple.toFixed(2)}x</p>
+                        <p className="font-semibold text-[var(--ink)]">{multiple.toFixed(2)}x</p>
                         <p className={`text-xs font-medium ${
                           gainLossPercent >= 0 ? 'text-green-600' : 'text-red-600'
                         }`}>
@@ -420,10 +420,10 @@ export default function PortfolioPage() {
                         <div className="flex gap-2 justify-center">
                           <button
                             onClick={() => openEditModal(holding)}
-                            className="p-2 hover:bg-gray-200 rounded transition-colors"
+                            className="p-2 hover:bg-[var(--bg-sunk)] rounded transition-colors"
                             title="Edit valuation"
                           >
-                            <Edit2 className="h-4 w-4 text-gray-600" />
+                            <Edit2 className="h-4 w-4 text-[var(--ink-soft)]" />
                           </button>
                           <button
                             onClick={() => handleDeleteHolding(holding.id)}
@@ -455,7 +455,7 @@ export default function PortfolioPage() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Search for a deal
             </label>
             <Input
@@ -470,11 +470,11 @@ export default function PortfolioPage() {
           </div>
 
           {searchQuery && (
-            <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-lg">
+            <div className="max-h-48 overflow-y-auto border border-[var(--line)] rounded-lg">
               {isSearching ? (
-                <div className="p-4 text-center text-gray-500">Searching...</div>
+                <div className="p-4 text-center text-[var(--ink-mute)]">Searching...</div>
               ) : availableDeals.length === 0 ? (
-                <div className="p-4 text-center text-gray-500 text-sm">
+                <div className="p-4 text-center text-[var(--ink-mute)] text-sm">
                   No deals found
                 </div>
               ) : (
@@ -483,12 +483,12 @@ export default function PortfolioPage() {
                     <button
                       key={deal.id}
                       onClick={() => setSelectedDeal(deal.id)}
-                      className={`w-full text-left p-4 hover:bg-[#F8F9FB] ${
+                      className={`w-full text-left p-4 hover:bg-[var(--bg-sunk)] ${
                         selectedDeal === deal.id ? 'bg-[var(--accent-soft)] border-l-4 border-[var(--ink)]' : ''
                       }`}
                     >
-                      <h4 className="font-semibold text-gray-900">{deal.company_name}</h4>
-                      <p className="text-sm text-gray-600">{deal.industry}</p>
+                      <h4 className="font-semibold text-[var(--ink)]">{deal.company_name}</h4>
+                      <p className="text-sm text-[var(--ink-soft)]">{deal.industry}</p>
                     </button>
                   ))}
                 </div>
@@ -497,7 +497,7 @@ export default function PortfolioPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Investment Amount *
             </label>
             <Input
@@ -511,7 +511,7 @@ export default function PortfolioPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Investment Date
             </label>
             <Input
@@ -524,7 +524,7 @@ export default function PortfolioPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Equity %
             </label>
             <Input
@@ -538,10 +538,10 @@ export default function PortfolioPage() {
             />
           </div>
 
-          <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+          <div className="flex gap-3 justify-end pt-4 border-t border-[var(--line)]">
             <button
               onClick={() => setShowAddModal(false)}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+              className="px-4 py-2 text-[var(--ink-soft)] bg-[var(--bg-sunk)] rounded-lg hover:bg-[var(--bg-sunk)]"
             >
               Cancel
             </button>
@@ -566,7 +566,7 @@ export default function PortfolioPage() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Current Valuation *
             </label>
             <Input
@@ -580,21 +580,21 @@ export default function PortfolioPage() {
           </div>
 
           {editingHolding && (
-            <div className="bg-[#F8F9FB] rounded-lg p-4">
-              <p className="text-xs text-gray-500 mb-2">Original Investment</p>
-              <p className="text-lg font-semibold text-gray-900">
+            <div className="bg-[var(--bg-sunk)] rounded-lg p-4">
+              <p className="text-xs text-[var(--ink-mute)] mb-2">Original Investment</p>
+              <p className="text-lg font-semibold text-[var(--ink)]">
                 {formatCurrency(editingHolding.investment_amount)}
               </p>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-[var(--ink-mute)] mt-2">
                 {formatDate(editingHolding.invested_at)}
               </p>
             </div>
           )}
 
-          <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+          <div className="flex gap-3 justify-end pt-4 border-t border-[var(--line)]">
             <button
               onClick={() => setShowEditModal(false)}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+              className="px-4 py-2 text-[var(--ink-soft)] bg-[var(--bg-sunk)] rounded-lg hover:bg-[var(--bg-sunk)]"
             >
               Cancel
             </button>

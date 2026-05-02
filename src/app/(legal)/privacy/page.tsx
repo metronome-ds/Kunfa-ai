@@ -7,38 +7,38 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[var(--bg-elev)]">
       {/* Nav */}
-      <nav className="border-b border-gray-200 bg-white">
+      <nav className="border-b border-[var(--line)] bg-[var(--bg-elev)]">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[var(--ink)] flex items-center justify-center">
               <span className="text-white font-bold text-lg">K</span>
             </div>
-            <span className="font-bold text-lg text-gray-900">Kunfa.AI</span>
+            <span className="font-bold text-lg text-[var(--ink)]">Kunfa.AI</span>
           </Link>
-          <Link href="/terms" className="text-sm text-gray-500 hover:text-gray-900 transition">
+          <Link href="/terms" className="text-sm text-[var(--ink-mute)] hover:text-[var(--ink)] transition">
             Terms of Service
           </Link>
         </div>
       </nav>
 
       <main className="max-w-4xl mx-auto px-6 py-16">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Privacy Policy</h1>
-        <p className="text-sm text-gray-500 mb-12">Last updated: March 9, 2026</p>
+        <h1 className="text-3xl font-bold text-[var(--ink)] mb-2">Privacy Policy</h1>
+        <p className="text-sm text-[var(--ink-mute)] mb-12">Last updated: March 9, 2026</p>
 
-        <div className="prose prose-gray max-w-none space-y-8 text-gray-700 leading-relaxed">
+        <div className="prose prose-gray max-w-none space-y-8 text-[var(--ink-soft)] leading-relaxed">
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Introduction</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">1. Introduction</h2>
             <p>
               Kunfa.AI (&ldquo;the Platform&rdquo;) is operated by Alif Fund LLC, a company registered in Dubai, UAE. This Privacy Policy describes how we collect, use, store, and share your personal information when you use our Platform. We are committed to protecting your privacy and handling your data in accordance with applicable UAE data protection regulations and international best practices.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">2. Information We Collect</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">2. Information We Collect</h2>
 
-            <h3 className="text-base font-medium text-gray-900 mt-4 mb-2">Personal Information</h3>
+            <h3 className="text-base font-medium text-[var(--ink)] mt-4 mb-2">Personal Information</h3>
             <ul className="list-disc pl-6 space-y-1">
               <li>Name, email address, and job title (provided during registration)</li>
               <li>LinkedIn profile URL (optional, provided during onboarding)</li>
@@ -46,20 +46,20 @@ export default function PrivacyPage() {
               <li>Payment information (processed by Stripe; we do not store card details)</li>
             </ul>
 
-            <h3 className="text-base font-medium text-gray-900 mt-4 mb-2">Company Data</h3>
+            <h3 className="text-base font-medium text-[var(--ink)] mt-4 mb-2">Company Data</h3>
             <ul className="list-disc pl-6 space-y-1">
               <li>Company name, description, industry, stage, country, and website</li>
               <li>Founding team details (names, titles, emails, LinkedIn profiles)</li>
               <li>Financial metrics (raise amount, team size, founded year, traction data)</li>
             </ul>
 
-            <h3 className="text-base font-medium text-gray-900 mt-4 mb-2">Uploaded Documents</h3>
+            <h3 className="text-base font-medium text-[var(--ink)] mt-4 mb-2">Uploaded Documents</h3>
             <ul className="list-disc pl-6 space-y-1">
               <li>Pitch deck files (PDF)</li>
               <li>Financial documents (PDF, optional)</li>
             </ul>
 
-            <h3 className="text-base font-medium text-gray-900 mt-4 mb-2">Usage Data</h3>
+            <h3 className="text-base font-medium text-[var(--ink)] mt-4 mb-2">Usage Data</h3>
             <ul className="list-disc pl-6 space-y-1">
               <li>IP address and device information</li>
               <li>Pages visited, features used, and interaction patterns</li>
@@ -68,7 +68,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">3. How We Use Your Information</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">3. How We Use Your Information</h2>
             <ul className="list-disc pl-6 space-y-2">
               <li><strong>AI Scoring and Analysis:</strong> Your uploaded documents and company data are processed by AI models to generate investment readiness scores, grades, and analysis reports.</li>
               <li><strong>Company Profile Creation:</strong> Information you provide is used to create your public company profile, which is visible to investors on the Platform.</li>
@@ -80,14 +80,14 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Who Can See Your Information</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">4. Who Can See Your Information</h2>
 
-            <h3 className="text-base font-medium text-gray-900 mt-4 mb-2">Public Information</h3>
+            <h3 className="text-base font-medium text-[var(--ink)] mt-4 mb-2">Public Information</h3>
             <p>
               Your company profile — including company name, description, one-liner, industry, stage, country, Kunfa Score, and team information — is publicly visible to all authenticated users of the Platform.
             </p>
 
-            <h3 className="text-base font-medium text-gray-900 mt-4 mb-2">Restricted Information</h3>
+            <h3 className="text-base font-medium text-[var(--ink)] mt-4 mb-2">Restricted Information</h3>
             <p>
               Your uploaded documents (pitch decks and financial documents) are <strong>not publicly accessible</strong>. Access is restricted to:
             </p>
@@ -102,7 +102,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">5. AI Processing</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">5. AI Processing</h2>
             <p>
               Your documents and company data are sent to third-party AI providers (currently Anthropic&apos;s Claude) for analysis and scoring. Important details about this processing:
             </p>
@@ -114,7 +114,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Data Retention and Deletion</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">6. Data Retention and Deletion</h2>
             <p>
               We retain your data for as long as your account is active or as needed to provide services:
             </p>
@@ -130,7 +130,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Third-Party Services</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">7. Third-Party Services</h2>
             <p>
               We use the following third-party services to operate the Platform:
             </p>
@@ -146,7 +146,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">8. Data Security</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">8. Data Security</h2>
             <p>
               We implement appropriate technical and organizational measures to protect your data, including:
             </p>
@@ -163,7 +163,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">9. Your Rights</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">9. Your Rights</h2>
             <p>
               You have the right to:
             </p>
@@ -180,35 +180,35 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">10. Cookies</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">10. Cookies</h2>
             <p>
               The Platform uses essential cookies for authentication and session management. We do not use tracking cookies or third-party advertising cookies. Essential cookies are necessary for the Platform to function and cannot be disabled.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">11. Children&apos;s Privacy</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">11. Children&apos;s Privacy</h2>
             <p>
               The Platform is not intended for use by individuals under the age of 18. We do not knowingly collect personal data from children. If we become aware that we have collected data from a child, we will take steps to delete it promptly.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">12. International Data Transfers</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">12. International Data Transfers</h2>
             <p>
               Your data may be transferred to and processed in countries other than the UAE, including the United States and European Union, where our third-party service providers operate. We ensure appropriate safeguards are in place for such transfers in compliance with applicable data protection laws.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">13. Changes to This Policy</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">13. Changes to This Policy</h2>
             <p>
               We may update this Privacy Policy from time to time. Material changes will be communicated via email or prominent notice on the Platform. Your continued use of the Platform after such changes constitutes acceptance of the updated policy.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">14. Contact</h2>
+            <h2 className="text-xl font-semibold text-[var(--ink)] mb-3">14. Contact</h2>
             <p>
               For questions about this Privacy Policy or our data practices, please contact:
             </p>

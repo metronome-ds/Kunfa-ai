@@ -214,7 +214,7 @@ export default function BrowseCompaniesPage() {
   ].filter(Boolean).length;
 
   return (
-    <div className="flex h-screen bg-[#F8F9FB]">
+    <div className="flex h-screen bg-[var(--bg-sunk)]">
       {/* Sidebar Filter */}
       <CompanyFilter
         onFilterChange={handleFilterChange}
@@ -250,17 +250,17 @@ export default function BrowseCompaniesPage() {
               {Array.from({ length: 6 }).map((_, i) => (
                 <div
                   key={i}
-                  className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse"
+                  className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 animate-pulse"
                 >
                   <div className="flex gap-2 mb-3">
-                    <div className="h-5 bg-gray-200 rounded-full w-20"></div>
-                    <div className="h-5 bg-gray-200 rounded-full w-16"></div>
+                    <div className="h-5 bg-[var(--bg-sunk)] rounded-full w-20"></div>
+                    <div className="h-5 bg-[var(--bg-sunk)] rounded-full w-16"></div>
                   </div>
-                  <div className="h-6 bg-gray-200 rounded mb-2 w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-4 w-full"></div>
-                  <div className="flex justify-between items-end pt-4 border-t border-gray-100">
-                    <div className="h-8 bg-gray-200 rounded w-24"></div>
-                    <div className="h-14 w-14 bg-gray-200 rounded-full"></div>
+                  <div className="h-6 bg-[var(--bg-sunk)] rounded mb-2 w-3/4"></div>
+                  <div className="h-4 bg-[var(--bg-sunk)] rounded mb-4 w-full"></div>
+                  <div className="flex justify-between items-end pt-4 border-t border-[var(--line)]">
+                    <div className="h-8 bg-[var(--bg-sunk)] rounded w-24"></div>
+                    <div className="h-14 w-14 bg-[var(--bg-sunk)] rounded-full"></div>
                   </div>
                 </div>
               ))}
@@ -271,10 +271,10 @@ export default function BrowseCompaniesPage() {
               <div className="inline-flex items-center justify-center h-20 w-20 bg-[#F0F7FF] rounded-full mb-6">
                 <Rocket className="h-10 w-10 text-[var(--accent-ink)]" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              <h3 className="text-xl font-semibold text-[var(--ink)] mb-2">
                 No companies found
               </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              <p className="text-[var(--ink-soft)] mb-6 max-w-md mx-auto">
                 {activeFilterCount > 0
                   ? 'Try adjusting your filters to see more companies.'
                   : 'Be the first to get scored! Submit your pitch deck and get an AI-powered investment analysis in minutes.'}
@@ -329,7 +329,7 @@ export default function BrowseCompaniesPage() {
                           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                             pagination.page === pageNum
                               ? 'bg-[var(--ink)] text-white'
-                              : 'bg-white text-gray-700 border border-gray-200 hover:bg-[#F8F9FB]'
+                              : 'bg-[var(--bg-elev)] text-[var(--ink-soft)] border border-[var(--line)] hover:bg-[var(--bg-sunk)]'
                           }`}
                         >
                           {pageNum}

@@ -9,7 +9,7 @@ import KunfaLogo from '@/components/common/KunfaLogo'
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
       </div>
     }>
@@ -107,10 +107,10 @@ function ResetPasswordContent() {
 
   if (initializing) {
     return (
-      <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)] mx-auto mb-4" />
-          <p className="text-sm text-gray-500">Verifying your reset link...</p>
+          <p className="text-sm text-[var(--ink-mute)]">Verifying your reset link...</p>
         </div>
       </div>
     )
@@ -118,15 +118,15 @@ function ResetPasswordContent() {
 
   if (!sessionReady) {
     return (
-      <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
           <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
             <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Reset link expired or invalid</h2>
-          <p className="text-sm text-gray-500 mb-6">Please request a new password reset link.</p>
+          <h2 className="text-xl font-bold text-[var(--ink)] mb-2">Reset link expired or invalid</h2>
+          <p className="text-sm text-[var(--ink-mute)] mb-6">Please request a new password reset link.</p>
           <Link
             href="/login"
             className="inline-block px-6 py-3 bg-[var(--ink)] text-white rounded-lg font-semibold hover:bg-[var(--ink-2)] transition"
@@ -140,15 +140,15 @@ function ResetPasswordContent() {
 
   if (success) {
     return (
-      <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
         <div className="w-full max-w-md text-center">
           <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
             <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Password updated</h2>
-          <p className="text-sm text-gray-500 mb-6">Your password has been reset successfully.</p>
+          <h2 className="text-xl font-bold text-[var(--ink)] mb-2">Password updated</h2>
+          <p className="text-sm text-[var(--ink-mute)] mb-6">Your password has been reset successfully.</p>
           <Link
             href="/login"
             className="inline-block px-6 py-3 bg-[var(--ink)] text-white rounded-lg font-semibold hover:bg-[var(--ink-2)] transition"
@@ -161,17 +161,17 @@ function ResetPasswordContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
             <KunfaLogo height={32} />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">Set a new password</h1>
-          <p className="text-gray-500 mt-2">Enter your new password below</p>
+          <h1 className="text-2xl font-bold text-[var(--ink)]">Set a new password</h1>
+          <p className="text-[var(--ink-mute)] mt-2">Enter your new password below</p>
         </div>
 
-        <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-lg">
+        <div className="bg-[var(--bg-elev)] rounded-xl p-8 border border-[var(--line)]">
           {error && (
             <div className="mb-4 rounded-lg bg-red-50 p-3 border border-red-200">
               <p className="text-red-700 text-sm">{error}</p>
@@ -180,7 +180,7 @@ function ResetPasswordContent() {
 
           <form onSubmit={handleReset} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">New Password</label>
               <input
                 type="password"
                 value={password}
@@ -188,12 +188,12 @@ function ResetPasswordContent() {
                 placeholder="Min 6 characters"
                 required
                 minLength={6}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
+                className="w-full rounded-lg border border-[var(--line-strong)] bg-[var(--bg-elev)] px-4 py-3 text-[var(--ink)] placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Confirm Password</label>
               <input
                 type="password"
                 value={confirmPassword}
@@ -201,7 +201,7 @@ function ResetPasswordContent() {
                 placeholder="Re-enter your password"
                 required
                 minLength={6}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
+                className="w-full rounded-lg border border-[var(--line-strong)] bg-[var(--bg-elev)] px-4 py-3 text-[var(--ink)] placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
               />
             </div>
 

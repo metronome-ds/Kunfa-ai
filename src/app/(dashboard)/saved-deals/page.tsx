@@ -116,7 +116,7 @@ export default function SavedDealsPage() {
       <div className="p-8 max-w-7xl mx-auto">
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--ink)] mb-4" />
-          <p className="text-gray-600">Loading saved deals...</p>
+          <p className="text-[var(--ink-soft)]">Loading saved deals...</p>
         </div>
       </div>
     );
@@ -128,8 +128,8 @@ export default function SavedDealsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Watchlist</h1>
-            <p className="text-gray-600 mt-2">Companies you&apos;re tracking</p>
+            <h1 className="text-3xl font-bold text-[var(--ink)]">Watchlist</h1>
+            <p className="text-[var(--ink-soft)] mt-2">Companies you&apos;re tracking</p>
           </div>
           <Link href="/deals">
             <Button icon={<Plus className="h-4 w-4" />}>
@@ -150,10 +150,10 @@ export default function SavedDealsPage() {
       {savedDeals.length === 0 ? (
         <Card>
           <div className="text-center py-12">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-lg font-semibold text-[var(--ink)] mb-2">
               No saved companies yet
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-[var(--ink-soft)] mb-6">
               Browse the marketplace to find companies and add them to your watchlist
             </p>
             <Link href="/deals">
@@ -167,7 +167,7 @@ export default function SavedDealsPage() {
         <>
           {/* Sort Controls */}
           <div className="mb-6 flex items-center gap-4">
-            <span className="text-sm text-gray-600 flex items-center gap-2">
+            <span className="text-sm text-[var(--ink-soft)] flex items-center gap-2">
               <ArrowUpDown className="h-4 w-4" />
               Sort by:
             </span>
@@ -183,7 +183,7 @@ export default function SavedDealsPage() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     sortBy === option.value
                       ? 'bg-[var(--ink)] text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
                   }`}
                 >
                   {option.label}
@@ -201,7 +201,7 @@ export default function SavedDealsPage() {
               const funding = formatRaiseAmount(company.raise_amount);
 
               return (
-                <div key={item.id} className="bg-white rounded-xl border border-gray-200 hover:border-[var(--line-strong)] hover:shadow-lg transition-all duration-200 overflow-hidden">
+                <div key={item.id} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] hover:border-[var(--line-strong)] hover:shadow-lg transition-all duration-200 overflow-hidden">
                   <div className="p-6">
                     {/* Badges */}
                     <div className="flex items-center gap-2 mb-3">
@@ -211,27 +211,27 @@ export default function SavedDealsPage() {
                         </span>
                       )}
                       {company.stage && (
-                        <span className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
+                        <span className="px-2.5 py-1 bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-xs font-semibold rounded-full">
                           {company.stage}
                         </span>
                       )}
                     </div>
 
                     {/* Company Name */}
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">{company.company_name}</h3>
+                    <h3 className="text-lg font-bold text-[var(--ink)] mb-2">{company.company_name}</h3>
 
                     {/* Description */}
                     {company.description && (
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-4">{company.description}</p>
+                      <p className="text-sm text-[var(--ink-soft)] line-clamp-2 mb-4">{company.description}</p>
                     )}
 
                     {/* Footer */}
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between pt-4 border-t border-[var(--line)]">
                       <div>
                         {funding && (
                           <>
-                            <p className="text-xs text-gray-500">Funding</p>
-                            <p className="text-base font-semibold text-gray-900">{funding}</p>
+                            <p className="text-xs text-[var(--ink-mute)]">Funding</p>
+                            <p className="text-base font-semibold text-[var(--ink)]">{funding}</p>
                           </>
                         )}
                       </div>
@@ -282,13 +282,13 @@ export default function SavedDealsPage() {
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <div>
-                <p className="text-sm text-gray-600">Total Saved</p>
-                <p className="text-2xl font-bold text-gray-900 mt-2">{savedDeals.length}</p>
+                <p className="text-sm text-[var(--ink-soft)]">Total Saved</p>
+                <p className="text-2xl font-bold text-[var(--ink)] mt-2">{savedDeals.length}</p>
               </div>
             </Card>
             <Card>
               <div>
-                <p className="text-sm text-gray-600">Avg Score</p>
+                <p className="text-sm text-[var(--ink-soft)]">Avg Score</p>
                 <p className="text-2xl font-bold text-[var(--ink)] mt-2">
                   {savedDeals.length > 0
                     ? Math.round(
@@ -301,7 +301,7 @@ export default function SavedDealsPage() {
             </Card>
             <Card>
               <div>
-                <p className="text-sm text-gray-600">Industries</p>
+                <p className="text-sm text-[var(--ink-soft)]">Industries</p>
                 <p className="text-2xl font-bold text-green-600 mt-2">
                   {new Set(savedDeals.map((d) => d.company_pages?.industry).filter(Boolean)).size}
                 </p>

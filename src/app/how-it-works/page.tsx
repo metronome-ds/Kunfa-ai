@@ -82,19 +82,19 @@ const WEIGHTS = [
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[var(--bg-elev)]">
       {/* Nav */}
-      <nav className="border-b border-gray-200 bg-white">
+      <nav className="border-b border-[var(--line)] bg-[var(--bg-elev)]">
         <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-[var(--ink)] flex items-center justify-center">
               <span className="text-white font-bold text-lg">K</span>
             </div>
-            <span className="font-bold text-lg text-gray-900">Kunfa.AI</span>
+            <span className="font-bold text-lg text-[var(--ink)]">Kunfa.AI</span>
           </Link>
           <Link
             href="/dashboard"
-            className="text-sm text-gray-500 hover:text-gray-900 transition"
+            className="text-sm text-[var(--ink-mute)] hover:text-[var(--ink)] transition"
           >
             Dashboard
           </Link>
@@ -107,10 +107,10 @@ export default function HowItWorksPage() {
           <p className="text-xs font-semibold text-[var(--accent-ink)] uppercase tracking-wider mb-3">
             How it works
           </p>
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl font-bold text-[var(--ink)] mb-4">
             How the Kunfa Score is calculated
           </h1>
-          <p className="text-lg text-gray-600 leading-relaxed">
+          <p className="text-lg text-[var(--ink-soft)] leading-relaxed">
             Every company on Kunfa is scored on six dimensions. We use stage-adjusted
             weights so early-stage companies are judged on team and market, while
             growth-stage companies are judged on traction and financials.
@@ -119,10 +119,10 @@ export default function HowItWorksPage() {
 
         {/* 75+ callout */}
         <section className="mb-12 rounded-2xl border border-[var(--line-strong)]/20 bg-[var(--ink)]/5 p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
+          <h2 className="text-lg font-semibold text-[var(--ink)] mb-2">
             The 75+ threshold
           </h2>
-          <p className="text-sm text-gray-700 leading-relaxed">
+          <p className="text-sm text-[var(--ink-soft)] leading-relaxed">
             Companies with a Kunfa Score of <strong>75 or higher</strong> become
             eligible for investor discovery — they appear in the browse directory and
             can be added to investor pipelines and watchlists. Companies below 75 stay
@@ -132,18 +132,18 @@ export default function HowItWorksPage() {
 
         {/* 6 dimensions */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">The six dimensions</h2>
+          <h2 className="text-2xl font-bold text-[var(--ink)] mb-6">The six dimensions</h2>
           <div className="grid sm:grid-cols-2 gap-4">
             {DIMENSIONS.map((d) => (
               <div
                 key={d.name}
-                className="rounded-xl border border-gray-200 bg-white p-5"
+                className="rounded-xl border border-[var(--line)] bg-[var(--bg-elev)] p-5"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xl">{d.icon}</span>
-                  <h3 className="text-sm font-semibold text-gray-900">{d.name}</h3>
+                  <h3 className="text-sm font-semibold text-[var(--ink)]">{d.name}</h3>
                 </div>
-                <p className="text-xs text-gray-600 leading-relaxed">{d.description}</p>
+                <p className="text-xs text-[var(--ink-soft)] leading-relaxed">{d.description}</p>
               </div>
             ))}
           </div>
@@ -151,10 +151,10 @@ export default function HowItWorksPage() {
 
         {/* Stage weights */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+          <h2 className="text-2xl font-bold text-[var(--ink)] mb-3">
             Stage-adjusted weights
           </h2>
-          <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+          <p className="text-sm text-[var(--ink-soft)] mb-6 leading-relaxed">
             The same score framework scales with company stage. Pre-seed founders
             don&apos;t need $10M in revenue — they need a credible team and market.
             Series B companies don&apos;t get a pass on financials.
@@ -163,16 +163,16 @@ export default function HowItWorksPage() {
             {WEIGHTS.map((col) => (
               <div
                 key={col.stage}
-                className="rounded-xl border border-gray-200 bg-white p-5"
+                className="rounded-xl border border-[var(--line)] bg-[var(--bg-elev)] p-5"
               >
-                <h3 className="text-sm font-semibold text-gray-900 mb-3">
+                <h3 className="text-sm font-semibold text-[var(--ink)] mb-3">
                   {col.stage}
                 </h3>
                 <div className="space-y-2">
                   {col.rows.map((r) => (
                     <div key={r.label} className="flex items-center justify-between">
-                      <span className="text-xs text-gray-600">{r.label}</span>
-                      <span className="text-xs font-semibold text-gray-900 tabular-nums">
+                      <span className="text-xs text-[var(--ink-soft)]">{r.label}</span>
+                      <span className="text-xs font-semibold text-[var(--ink)] tabular-nums">
                         {r.pct}%
                       </span>
                     </div>
@@ -185,10 +185,10 @@ export default function HowItWorksPage() {
 
         {/* How to improve */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+          <h2 className="text-2xl font-bold text-[var(--ink)] mb-3">
             How to improve your score
           </h2>
-          <ul className="space-y-3 text-sm text-gray-700 leading-relaxed">
+          <ul className="space-y-3 text-sm text-[var(--ink-soft)] leading-relaxed">
             <li className="flex gap-3">
               <span className="text-[var(--accent-ink)] font-bold">1.</span>
               <span>
@@ -229,7 +229,7 @@ export default function HowItWorksPage() {
           </p>
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-white text-[var(--accent-ink)] rounded-lg text-sm font-semibold hover:bg-white/90 transition"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--bg-elev)] text-[var(--accent-ink)] rounded-lg text-sm font-semibold hover:bg-[var(--bg-elev)]/90 transition"
           >
             Get Your Kunfa Score
           </Link>

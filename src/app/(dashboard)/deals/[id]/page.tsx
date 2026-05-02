@@ -96,10 +96,10 @@ export default function DealDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F8F9FB]">
+      <div className="flex items-center justify-center min-h-screen bg-[var(--bg-sunk)]">
         <div className="text-center">
           <Loader2 className="h-12 w-12 animate-spin text-[var(--ink)] mx-auto mb-4" />
-          <p className="text-gray-600">Loading deal details...</p>
+          <p className="text-[var(--ink-soft)]">Loading deal details...</p>
         </div>
       </div>
     );
@@ -107,13 +107,13 @@ export default function DealDetailPage() {
 
   if (error || !deal) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#F8F9FB] p-6">
-        <div className="max-w-md bg-white rounded-lg border border-red-200 p-6">
+      <div className="flex items-center justify-center min-h-screen bg-[var(--bg-sunk)] p-6">
+        <div className="max-w-md bg-[var(--bg-elev)] rounded-lg border border-red-200 p-6">
           <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-900 text-center mb-2">
+          <h2 className="text-xl font-bold text-[var(--ink)] text-center mb-2">
             Error Loading Deal
           </h2>
-          <p className="text-gray-600 text-center mb-6">{error}</p>
+          <p className="text-[var(--ink-soft)] text-center mb-6">{error}</p>
           <Button onClick={() => router.back()} variant="primary" className="w-full">
             Go Back
           </Button>
@@ -141,13 +141,13 @@ export default function DealDetailPage() {
     .join(' ');
 
   return (
-    <div className="min-h-screen bg-[#F8F9FB]">
+    <div className="min-h-screen bg-[var(--bg-sunk)]">
       {/* Hero Section */}
-      <div className="bg-white border-b border-gray-200 p-8">
+      <div className="bg-[var(--bg-elev)] border-b border-[var(--line)] p-8">
         <div className="max-w-6xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 mb-4"
+            className="flex items-center gap-1 text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] mb-4"
           >
             <ArrowLeft className="h-4 w-4" />
             Back
@@ -160,22 +160,22 @@ export default function DealDetailPage() {
                 <span className="px-3 py-1 bg-[var(--accent-soft)] text-[var(--ink)] text-sm font-semibold rounded-full">
                   {industry}
                 </span>
-                <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full">
+                <span className="px-3 py-1 bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-sm font-semibold rounded-full">
                   {stageLabel}
                 </span>
                 {company.country && (
-                  <span className="px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full">
+                  <span className="px-3 py-1 bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-sm font-medium rounded-full">
                     {company.country}
                   </span>
                 )}
               </div>
 
               {/* Title */}
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              <h1 className="text-4xl font-bold text-[var(--ink)] mb-2">
                 {companyName}
               </h1>
               {company.description && (
-                <p className="text-lg text-gray-600">{company.description}</p>
+                <p className="text-lg text-[var(--ink-soft)]">{company.description}</p>
               )}
 
               {/* Links */}
@@ -208,10 +208,10 @@ export default function DealDetailPage() {
               {score !== null && score !== undefined && (
                 <div
                   className={`w-24 h-24 rounded-full flex items-center justify-center font-bold text-3xl ${
-                    scoreRange?.bgColor || 'bg-gray-100'
+                    scoreRange?.bgColor || 'bg-[var(--bg-sunk)]'
                   }`}
                 >
-                  <span className={scoreRange?.textColor || 'text-gray-600'}>
+                  <span className={scoreRange?.textColor || 'text-[var(--ink-soft)]'}>
                     {score}
                   </span>
                 </div>
@@ -249,7 +249,7 @@ export default function DealDetailPage() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-[var(--bg-elev)] border-b border-[var(--line)]">
         <div className="max-w-6xl mx-auto flex items-center gap-8 px-8">
           {(['overview', 'analysis'] as const).map(
             (tab) => (
@@ -259,7 +259,7 @@ export default function DealDetailPage() {
                 className={`px-4 py-4 font-medium border-b-2 transition-colors capitalize ${
                   activeTab === tab
                     ? 'border-[var(--ink)] text-[var(--ink)]'
-                    : 'border-transparent text-gray-600 hover:text-gray-900'
+                    : 'border-transparent text-[var(--ink-soft)] hover:text-[var(--ink)]'
                 }`}
               >
                 {tab}
@@ -275,46 +275,46 @@ export default function DealDetailPage() {
           <div className="space-y-8">
             {/* Key Metrics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-sm text-gray-600 mb-2">Funding Requested</p>
-                <p className="text-2xl font-bold text-gray-900">{formattedFunding}</p>
+              <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
+                <p className="text-sm text-[var(--ink-soft)] mb-2">Funding Requested</p>
+                <p className="text-2xl font-bold text-[var(--ink)]">{formattedFunding}</p>
               </div>
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-sm text-gray-600 mb-2">Team Size</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
+                <p className="text-sm text-[var(--ink-soft)] mb-2">Team Size</p>
+                <p className="text-2xl font-bold text-[var(--ink)]">
                   {company.team_size || 'N/A'}
                 </p>
               </div>
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-sm text-gray-600 mb-2">Founded</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
+                <p className="text-sm text-[var(--ink-soft)] mb-2">Founded</p>
+                <p className="text-2xl font-bold text-[var(--ink)]">
                   {company.founded_year || 'N/A'}
                 </p>
               </div>
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <p className="text-sm text-gray-600 mb-2">Founder</p>
-                <p className="text-lg font-bold text-gray-900">
+              <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
+                <p className="text-sm text-[var(--ink-soft)] mb-2">Founder</p>
+                <p className="text-lg font-bold text-[var(--ink)]">
                   {company.founder_name || 'N/A'}
                 </p>
                 {company.founder_title && (
-                  <p className="text-sm text-gray-500">{company.founder_title}</p>
+                  <p className="text-sm text-[var(--ink-mute)]">{company.founder_title}</p>
                 )}
               </div>
             </div>
 
             {/* Problem & Solution */}
             {(company.problem_summary || company.solution_summary) && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
                 {company.problem_summary && (
                   <div className="mb-4">
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">Problem</h3>
-                    <p className="text-gray-700">{company.problem_summary}</p>
+                    <h3 className="text-lg font-bold text-[var(--ink)] mb-2">Problem</h3>
+                    <p className="text-[var(--ink-soft)]">{company.problem_summary}</p>
                   </div>
                 )}
                 {company.solution_summary && (
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-2">Solution</h3>
-                    <p className="text-gray-700">{company.solution_summary}</p>
+                    <h3 className="text-lg font-bold text-[var(--ink)] mb-2">Solution</h3>
+                    <p className="text-[var(--ink-soft)]">{company.solution_summary}</p>
                   </div>
                 )}
               </div>
@@ -322,50 +322,50 @@ export default function DealDetailPage() {
 
             {/* Business Model */}
             {company.business_model && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Business Model</h3>
-                <p className="text-gray-700">{company.business_model}</p>
+              <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
+                <h3 className="text-lg font-bold text-[var(--ink)] mb-2">Business Model</h3>
+                <p className="text-[var(--ink-soft)]">{company.business_model}</p>
               </div>
             )}
 
             {/* Traction */}
             {company.traction && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Traction</h3>
-                <p className="text-gray-700">{company.traction}</p>
+              <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
+                <h3 className="text-lg font-bold text-[var(--ink)] mb-2">Traction</h3>
+                <p className="text-[var(--ink-soft)]">{company.traction}</p>
               </div>
             )}
 
             {/* Use of Funds */}
             {company.use_of_funds && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Use of Funds</h3>
-                <p className="text-gray-700">{company.use_of_funds}</p>
+              <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
+                <h3 className="text-lg font-bold text-[var(--ink)] mb-2">Use of Funds</h3>
+                <p className="text-[var(--ink-soft)]">{company.use_of_funds}</p>
               </div>
             )}
 
             {/* Key Risks */}
             {company.key_risks && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Key Risks</h3>
-                <p className="text-gray-700">{company.key_risks}</p>
+              <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
+                <h3 className="text-lg font-bold text-[var(--ink)] mb-2">Key Risks</h3>
+                <p className="text-[var(--ink-soft)]">{company.key_risks}</p>
               </div>
             )}
 
             {/* Notes */}
             {deal.notes && (
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Notes</h3>
-                <p className="text-gray-700">{deal.notes}</p>
+              <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
+                <h3 className="text-lg font-bold text-[var(--ink)] mb-2">Notes</h3>
+                <p className="text-[var(--ink-soft)]">{deal.notes}</p>
               </div>
             )}
           </div>
         )}
 
         {activeTab === 'analysis' && (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">Detailed AI analysis coming soon</p>
+          <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-8 text-center">
+            <AlertCircle className="h-12 w-12 text-[var(--ink-faint)] mx-auto mb-4" />
+            <p className="text-[var(--ink-soft)]">Detailed AI analysis coming soon</p>
           </div>
         )}
       </div>
@@ -373,18 +373,18 @@ export default function DealDetailPage() {
       {/* Creator Info */}
       {deal.creator && (
         <div className="max-w-6xl mx-auto px-8 mb-8">
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="font-bold text-gray-900 mb-4">Deal Creator</h3>
+          <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
+            <h3 className="font-bold text-[var(--ink)] mb-4">Deal Creator</h3>
             <div className="flex items-start justify-between">
               <div>
-                <p className="font-semibold text-gray-900">
+                <p className="font-semibold text-[var(--ink)]">
                   {deal.creator.full_name || 'Unknown'}
                 </p>
                 {deal.creator.job_title && (
-                  <p className="text-sm text-gray-600">{deal.creator.job_title}</p>
+                  <p className="text-sm text-[var(--ink-soft)]">{deal.creator.job_title}</p>
                 )}
                 {deal.creator.company_name && (
-                  <p className="text-sm text-gray-600">{deal.creator.company_name}</p>
+                  <p className="text-sm text-[var(--ink-soft)]">{deal.creator.company_name}</p>
                 )}
               </div>
 

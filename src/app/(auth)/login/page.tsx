@@ -11,7 +11,7 @@ import { useTenantBranding } from '@/lib/use-tenant-branding'
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
       </div>
     }>
@@ -192,7 +192,7 @@ function LoginContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
@@ -202,10 +202,10 @@ function LoginContent() {
               <KunfaLogo height={32} />
             )}
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-[var(--ink)]">
             {isTenantContext ? `Welcome to ${tenant?.display_name || tenant?.name}` : 'Welcome back'}
           </h1>
-          <p className="text-gray-500 mt-2">
+          <p className="text-[var(--ink-mute)] mt-2">
             {isTenantContext && tenant?.tagline
               ? tenant.tagline
               : inviteId
@@ -216,7 +216,7 @@ function LoginContent() {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl p-8 border border-gray-200 shadow-lg">
+        <div className="bg-[var(--bg-elev)] rounded-xl p-8 border border-[var(--line)]">
           {/* Forgot Password View */}
           {showForgot ? (
             forgotSent ? (
@@ -226,9 +226,9 @@ function LoginContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <h2 className="text-lg font-bold text-gray-900 mb-2">Check your email</h2>
-                <p className="text-sm text-gray-500 mb-6">
-                  We sent a password reset link to <strong className="text-gray-900">{forgotEmail}</strong>
+                <h2 className="text-lg font-bold text-[var(--ink)] mb-2">Check your email</h2>
+                <p className="text-sm text-[var(--ink-mute)] mb-6">
+                  We sent a password reset link to <strong className="text-[var(--ink)]">{forgotEmail}</strong>
                 </p>
                 <button
                   onClick={() => { setShowForgot(false); setForgotSent(false); setForgotEmail('') }}
@@ -239,8 +239,8 @@ function LoginContent() {
               </div>
             ) : (
               <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-1">Reset your password</h2>
-                <p className="text-sm text-gray-500 mb-5">Enter your email and we&apos;ll send you a reset link.</p>
+                <h2 className="text-lg font-bold text-[var(--ink)] mb-1">Reset your password</h2>
+                <p className="text-sm text-[var(--ink-mute)] mb-5">Enter your email and we&apos;ll send you a reset link.</p>
 
                 {forgotError && (
                   <div className="mb-4 rounded-lg bg-red-50 p-3 border border-red-200">
@@ -250,14 +250,14 @@ function LoginContent() {
 
                 <form onSubmit={handleForgotPassword} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Email Address</label>
                     <input
                       type="email"
                       value={forgotEmail}
                       onChange={(e) => setForgotEmail(e.target.value)}
                       placeholder="you@example.com"
                       required
-                      className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
+                      className="w-full rounded-lg border border-[var(--line-strong)] bg-[var(--bg-elev)] px-4 py-3 text-[var(--ink)] placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
                     />
                   </div>
                   <button
@@ -271,7 +271,7 @@ function LoginContent() {
 
                 <button
                   onClick={() => { setShowForgot(false); setForgotError('') }}
-                  className="mt-4 text-sm text-gray-500 hover:text-gray-700 font-medium w-full text-center"
+                  className="mt-4 text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] font-medium w-full text-center"
                 >
                   Back to sign in
                 </button>
@@ -302,7 +302,7 @@ function LoginContent() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-[var(--ink-soft)] mb-1">
                     Email Address
                   </label>
                   <input
@@ -312,13 +312,13 @@ function LoginContent() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
                     required
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
+                    className="w-full rounded-lg border border-[var(--line-strong)] bg-[var(--bg-elev)] px-4 py-3 text-[var(--ink)] placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
                   />
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="password" className="block text-sm font-medium text-[var(--ink-soft)]">
                       Password
                     </label>
                     <button
@@ -337,7 +337,7 @@ function LoginContent() {
                     placeholder="Enter your password"
                     required
                     minLength={6}
-                    className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
+                    className="w-full rounded-lg border border-[var(--line-strong)] bg-[var(--bg-elev)] px-4 py-3 text-[var(--ink)] placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
                   />
                 </div>
 
@@ -356,7 +356,7 @@ function LoginContent() {
 
               {/* Hide signup link for invitation-only tenants */}
               {!(isTenantContext && tenant?.signup_mode === 'invitation_only') && (
-                <p className="text-center text-gray-500 text-sm mt-6">
+                <p className="text-center text-[var(--ink-mute)] text-sm mt-6">
                   Don&apos;t have an account?{' '}
                   <Link href="/signup" className="text-[var(--accent-ink)] font-medium hover:underline">
                     Create one
@@ -369,9 +369,9 @@ function LoginContent() {
 
         {/* Powered by Kunfa */}
         {isTenantContext && tenant?.show_powered_by && (
-          <p className="text-center text-gray-400 text-xs mt-6">
+          <p className="text-center text-[var(--ink-faint)] text-xs mt-6">
             Powered by{' '}
-            <a href="https://kunfa.ai" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-700 font-medium">
+            <a href="https://kunfa.ai" target="_blank" rel="noopener noreferrer" className="text-[var(--ink-mute)] hover:text-[var(--ink-soft)] font-medium">
               Kunfa
             </a>
           </p>

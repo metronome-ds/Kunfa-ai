@@ -146,7 +146,7 @@ function activityIcon(type: ActivityItem['type']) {
     case 'claim':
       return <Award className="w-4 h-4 text-rose-600" />
     default:
-      return <Activity className="w-4 h-4 text-gray-500" />
+      return <Activity className="w-4 h-4 text-[var(--ink-mute)]" />
   }
 }
 
@@ -251,8 +251,8 @@ export default function AdminAnalyticsPage() {
         <div className="flex items-center gap-3">
           <ShieldCheck className="w-6 h-6 text-[var(--accent-ink)]" />
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Platform Analytics</h1>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <h1 className="text-2xl font-bold text-[var(--ink)]">Platform Analytics</h1>
+            <p className="text-xs text-[var(--ink-mute)] mt-0.5">
               Last updated {formatRelative(data.generatedAt)} · auto-refreshes every 60s
             </p>
           </div>
@@ -260,7 +260,7 @@ export default function AdminAnalyticsPage() {
         <button
           onClick={() => fetchAnalytics(false)}
           disabled={refreshing}
-          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-gray-700 bg-white border border-gray-200 hover:bg-[#F8F9FB] transition disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-[var(--ink-soft)] bg-[var(--bg-elev)] border border-[var(--line)] hover:bg-[var(--bg-sunk)] transition disabled:opacity-50"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh
@@ -368,25 +368,25 @@ export default function AdminAnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
         <Card title="Most viewed companies">
           {data.dealRoom.mostViewedCompanies.length === 0 ? (
-            <div className="text-sm text-gray-400 py-8 text-center">No views yet</div>
+            <div className="text-sm text-[var(--ink-faint)] py-8 text-center">No views yet</div>
           ) : (
             <div className="divide-y divide-gray-100">
               {data.dealRoom.mostViewedCompanies.map((c, idx) => (
                 <div key={c.company_id} className="flex items-center justify-between py-2.5">
                   <div className="flex items-center gap-3 min-w-0">
-                    <span className="text-xs font-medium text-gray-400 w-4">{idx + 1}</span>
+                    <span className="text-xs font-medium text-[var(--ink-faint)] w-4">{idx + 1}</span>
                     {c.slug ? (
                       <Link
                         href={`/company/${c.slug}`}
-                        className="text-sm text-gray-900 hover:text-[var(--accent-ink)] truncate"
+                        className="text-sm text-[var(--ink)] hover:text-[var(--accent-ink)] truncate"
                       >
                         {c.company_name}
                       </Link>
                     ) : (
-                      <span className="text-sm text-gray-900 truncate">{c.company_name}</span>
+                      <span className="text-sm text-[var(--ink)] truncate">{c.company_name}</span>
                     )}
                   </div>
-                  <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full">
+                  <span className="text-xs font-medium text-[var(--ink-soft)] bg-[var(--bg-sunk)] px-2 py-0.5 rounded-full">
                     {c.views} {c.views === 1 ? 'view' : 'views'}
                   </span>
                 </div>
@@ -397,16 +397,16 @@ export default function AdminAnalyticsPage() {
 
         <Card title="Recent deal room viewers">
           {data.dealRoom.recentViewers.length === 0 ? (
-            <div className="text-sm text-gray-400 py-8 text-center">No viewers yet</div>
+            <div className="text-sm text-[var(--ink-faint)] py-8 text-center">No viewers yet</div>
           ) : (
             <div className="divide-y divide-gray-100 max-h-96 overflow-y-auto">
               {data.dealRoom.recentViewers.map((v, idx) => (
                 <div key={`${v.viewer_email}-${idx}`} className="py-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-900 truncate max-w-[60%]">{v.viewer_email}</span>
-                    <span className="text-xs text-gray-400">{formatRelative(v.created_at)}</span>
+                    <span className="text-sm text-[var(--ink)] truncate max-w-[60%]">{v.viewer_email}</span>
+                    <span className="text-xs text-[var(--ink-faint)]">{formatRelative(v.created_at)}</span>
                   </div>
-                  <div className="text-xs text-gray-500 mt-0.5">
+                  <div className="text-xs text-[var(--ink-mute)] mt-0.5">
                     viewed{' '}
                     {v.slug ? (
                       <Link href={`/company/${v.slug}`} className="text-[var(--accent-ink)] hover:underline">
@@ -426,21 +426,21 @@ export default function AdminAnalyticsPage() {
       {/* Row 4 — Activity feed */}
       <Card title="Recent activity" className="mb-8">
         {data.recentActivity.length === 0 ? (
-          <div className="text-sm text-gray-400 py-8 text-center">No recent activity</div>
+          <div className="text-sm text-[var(--ink-faint)] py-8 text-center">No recent activity</div>
         ) : (
           <div className="divide-y divide-gray-100">
             {data.recentActivity.map(item => (
               <div key={item.id} className="flex items-center gap-3 py-3">
-                <div className="w-8 h-8 rounded-full bg-[#F8F9FB] flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-[var(--bg-sunk)] flex items-center justify-center flex-shrink-0">
                   {activityIcon(item.type)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900 truncate">
+                  <p className="text-sm text-[var(--ink)] truncate">
                     <span className="font-medium">{item.actor}</span>{' '}
-                    <span className="text-gray-600">{item.description}</span>
+                    <span className="text-[var(--ink-soft)]">{item.description}</span>
                   </p>
                 </div>
-                <span className="text-xs text-gray-400 flex-shrink-0">
+                <span className="text-xs text-[var(--ink-faint)] flex-shrink-0">
                   {formatRelative(item.created_at)}
                 </span>
               </div>
@@ -453,18 +453,18 @@ export default function AdminAnalyticsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card title="Companies by source">
           {sourceRows.length === 0 ? (
-            <div className="text-sm text-gray-400 py-8 text-center">No companies</div>
+            <div className="text-sm text-[var(--ink-faint)] py-8 text-center">No companies</div>
           ) : (
             <div className="space-y-3">
               {sourceRows.map(row => (
                 <div key={row.key}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-gray-600">{row.label}</span>
-                    <span className="text-xs font-medium text-gray-900">
-                      {row.value} <span className="text-gray-400">({row.pct}%)</span>
+                    <span className="text-xs text-[var(--ink-soft)]">{row.label}</span>
+                    <span className="text-xs font-medium text-[var(--ink)]">
+                      {row.value} <span className="text-[var(--ink-faint)]">({row.pct}%)</span>
                     </span>
                   </div>
-                  <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-[var(--bg-sunk)] rounded-full overflow-hidden">
                     <div
                       className="h-full bg-[var(--ink)] rounded-full"
                       style={{ width: `${row.pct}%` }}
@@ -483,7 +483,7 @@ export default function AdminAnalyticsPage() {
             <StatRow label="Pending" value={data.team.pending} accent="amber" />
             {data.team.totalInvites > 0 && (
               <div className="pt-2">
-                <div className="flex h-2 bg-gray-100 rounded-full overflow-hidden">
+                <div className="flex h-2 bg-[var(--bg-sunk)] rounded-full overflow-hidden">
                   <div
                     className="bg-emerald-500"
                     style={{ width: `${(data.team.accepted / data.team.totalInvites) * 100}%` }}
@@ -530,16 +530,16 @@ function MetricCard({ icon, label, value, breakdown, accent }: MetricCardProps) 
   }[accent]
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+    <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
       <div className="flex items-center justify-between mb-3">
         <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${accentClasses}`}>
           {icon}
         </div>
-        <BarChart3 className="w-4 h-4 text-gray-300" />
+        <BarChart3 className="w-4 h-4 text-[var(--ink-faint)]" />
       </div>
-      <div className="text-2xl font-bold text-gray-900">{value.toLocaleString()}</div>
-      <div className="text-xs text-gray-500 mt-0.5">{label}</div>
-      <div className="text-[11px] text-gray-400 mt-2">{breakdown}</div>
+      <div className="text-2xl font-bold text-[var(--ink)]">{value.toLocaleString()}</div>
+      <div className="text-xs text-[var(--ink-mute)] mt-0.5">{label}</div>
+      <div className="text-[11px] text-[var(--ink-faint)] mt-2">{breakdown}</div>
     </div>
   )
 }
@@ -552,9 +552,9 @@ interface CardProps {
 
 function Card({ title, children, className = '' }: CardProps) {
   return (
-    <div className={`bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden ${className}`}>
-      <div className="px-5 py-3 border-b border-gray-100">
-        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+    <div className={`bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] overflow-hidden ${className}`}>
+      <div className="px-5 py-3 border-b border-[var(--line)]">
+        <h3 className="text-sm font-semibold text-[var(--ink)]">{title}</h3>
       </div>
       <div className="px-5 py-4">{children}</div>
     </div>
@@ -577,8 +577,8 @@ function StatRow({ label, value, accent }: StatRowProps) {
 
   return (
     <div className="flex items-center justify-between">
-      <span className="text-xs text-gray-600">{label}</span>
-      <span className={`text-sm font-semibold ${accent ? valueClass : 'text-gray-900'}`}>
+      <span className="text-xs text-[var(--ink-soft)]">{label}</span>
+      <span className={`text-sm font-semibold ${accent ? valueClass : 'text-[var(--ink)]'}`}>
         {value.toLocaleString()}
       </span>
     </div>

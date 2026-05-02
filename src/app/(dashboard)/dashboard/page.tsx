@@ -128,7 +128,7 @@ interface ActivityItem {
 // ── Helpers ──
 
 function getScoreColor(score: number | null) {
-  if (!score) return 'text-gray-400';
+  if (!score) return 'text-[var(--ink-faint)]';
   if (score >= 80) return 'text-emerald-600';
   if (score >= 60) return 'text-[var(--ink)]';
   if (score >= 40) return 'text-yellow-600';
@@ -136,7 +136,7 @@ function getScoreColor(score: number | null) {
 }
 
 function getScoreBg(score: number | null) {
-  if (!score) return 'bg-[#F8F9FB] border-gray-200';
+  if (!score) return 'bg-[var(--bg-sunk)] border-[var(--line)]';
   if (score >= 80) return 'bg-emerald-50 border-emerald-200';
   if (score >= 60) return 'bg-[var(--accent-soft)] border-[var(--line)]';
   if (score >= 40) return 'bg-yellow-50 border-yellow-200';
@@ -144,7 +144,7 @@ function getScoreBg(score: number | null) {
 }
 
 function getScoreBadgeColor(score: number | null) {
-  if (!score) return 'bg-gray-100 text-gray-500';
+  if (!score) return 'bg-[var(--bg-sunk)] text-[var(--ink-mute)]';
   if (score >= 80) return 'bg-emerald-100 text-emerald-700';
   if (score >= 60) return 'bg-[var(--accent-soft)] text-[var(--ink)]';
   if (score >= 40) return 'bg-yellow-100 text-yellow-700';
@@ -194,7 +194,7 @@ const STAGE_COLORS: Record<string, string> = {
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center text-gray-500">Loading...</div>}>
+    <Suspense fallback={<div className="p-8 text-center text-[var(--ink-mute)]">Loading...</div>}>
       <DashboardContent />
     </Suspense>
   );
@@ -408,7 +408,7 @@ function DashboardContent() {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--line-strong)] mb-4" />
-          <p className="text-gray-600">Loading dashboard...</p>
+          <p className="text-[var(--ink-soft)]">Loading dashboard...</p>
         </div>
       </div>
     );
@@ -434,10 +434,10 @@ function DashboardContent() {
     return (
       <div className="p-8 max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
+          <h1 className="text-3xl font-bold text-[var(--ink)]">
             Welcome back{userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}!
           </h1>
-          <p className="text-gray-500 mt-1">Manage your startup profile and track your investment readiness.</p>
+          <p className="text-[var(--ink-mute)] mt-1">Manage your startup profile and track your investment readiness.</p>
         </div>
 
         {/* Payment Success Banner */}
@@ -448,8 +448,8 @@ function DashboardContent() {
                 <CheckCircle className="w-4 h-4 text-emerald-600" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Payment confirmed!</p>
-                <p className="text-xs text-gray-500 mt-0.5">Your Readiness Report is being generated. You&apos;ll see it below when it&apos;s ready.</p>
+                <p className="text-sm font-semibold text-[var(--ink)]">Payment confirmed!</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">Your Readiness Report is being generated. You&apos;ll see it below when it&apos;s ready.</p>
               </div>
             </div>
           </div>
@@ -464,8 +464,8 @@ function DashboardContent() {
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-900">Company claimed successfully!</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Upload your pitch deck to get your AI-powered investment readiness score.</p>
+                  <p className="text-sm font-semibold text-[var(--ink)]">Company claimed successfully!</p>
+                  <p className="text-xs text-[var(--ink-mute)] mt-0.5">Upload your pitch deck to get your AI-powered investment readiness score.</p>
                 </div>
               </div>
               {canEdit && company && !company.overall_score && (
@@ -488,8 +488,8 @@ function DashboardContent() {
                 <Clock className="w-4 h-4 text-amber-600" />
               </div>
               <div>
-                <p className="text-sm font-semibold text-gray-900">Claim submitted for review</p>
-                <p className="text-xs text-gray-500 mt-0.5">Your claim request has been submitted. We&apos;ll notify you by email once it&apos;s approved.</p>
+                <p className="text-sm font-semibold text-[var(--ink)]">Claim submitted for review</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">Your claim request has been submitted. We&apos;ll notify you by email once it&apos;s approved.</p>
               </div>
             </div>
           </div>
@@ -498,15 +498,15 @@ function DashboardContent() {
         {company ? (
           <>
             {/* Score + Company Card */}
-            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+            <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-6">
               <div className="flex items-start gap-6">
                 <div className={`w-24 h-24 rounded-2xl border-2 flex flex-col items-center justify-center flex-shrink-0 ${getScoreBg(company.overall_score)}`}>
                   <span className={`text-4xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
-                  <span className="text-[10px] text-gray-400 mt-0.5">/ 100</span>
+                  <span className="text-[10px] text-[var(--ink-faint)] mt-0.5">/ 100</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-xl font-bold text-gray-900">{company.company_name}</h2>
-                  {company.one_liner && <p className="text-gray-500 text-sm mt-1">{company.one_liner}</p>}
+                  <h2 className="text-xl font-bold text-[var(--ink)]">{company.company_name}</h2>
+                  {company.one_liner && <p className="text-[var(--ink-mute)] text-sm mt-1">{company.one_liner}</p>}
                   <div className="flex flex-wrap items-center gap-2 mt-3">
                     {company.industry && <span className="px-2.5 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-medium">{company.industry}</span>}
                     {company.stage && <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">{company.stage}</span>}
@@ -516,7 +516,7 @@ function DashboardContent() {
                         {company.raising_amount ? `Raising ${company.raising_amount}` : 'Currently Raising'}
                       </span>
                     )}
-                    {scored !== null && <span className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">Scored {scored}d ago</span>}
+                    {scored !== null && <span className="px-2.5 py-0.5 rounded-full bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-xs font-medium">Scored {scored}d ago</span>}
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 flex-shrink-0">
@@ -532,24 +532,24 @@ function DashboardContent() {
 
             {/* Quick Stats */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+              <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-lg flex items-center justify-center"><Star className="w-5 h-5 text-[var(--accent-ink)]" /></div>
-                  <div><p className="text-xs text-gray-500 font-medium">Kunfa Score</p><p className={`text-2xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</p></div>
+                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Kunfa Score</p><p className={`text-2xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</p></div>
                 </div>
               </div>
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+              <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-lg flex items-center justify-center"><Clock className="w-5 h-5 text-[var(--ink)]" /></div>
-                  <div><p className="text-xs text-gray-500 font-medium">Days Since Scored</p><p className="text-2xl font-bold text-gray-900">{scored ?? '—'}</p></div>
+                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Days Since Scored</p><p className="text-2xl font-bold text-[var(--ink)]">{scored ?? '—'}</p></div>
                 </div>
               </div>
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+              <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center"><CheckCircle className="w-5 h-5 text-purple-600" /></div>
-                  <div><p className="text-xs text-gray-500 font-medium">Profile Completeness</p><p className="text-2xl font-bold text-gray-900">{completeness}%</p></div>
+                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Profile Completeness</p><p className="text-2xl font-bold text-[var(--ink)]">{completeness}%</p></div>
                 </div>
-                <div className="mt-3 w-full bg-gray-100 rounded-full h-1.5">
+                <div className="mt-3 w-full bg-[var(--bg-sunk)] rounded-full h-1.5">
                   <div className="bg-purple-500 h-1.5 rounded-full transition-all" style={{ width: `${completeness}%` }} />
                 </div>
               </div>
@@ -565,10 +565,10 @@ function DashboardContent() {
                     </svg>
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-gray-900">
+                    <h3 className="text-sm font-semibold text-[var(--ink)]">
                       {company.overall_score == null ? 'Get your Kunfa Score to unlock investor discovery' : 'Your Kunfa Score is below 75'}
                     </h3>
-                    <p className="text-xs text-gray-600 mt-1 leading-relaxed">
+                    <p className="text-xs text-[var(--ink-soft)] mt-1 leading-relaxed">
                       {company.overall_score == null
                         ? 'Upload your pitch deck and financials to get scored. Companies with a Kunfa Score of 75+ become eligible for investor matching on the platform.'
                         : 'Improve your score to 75+ to unlock investor discovery. Update your pitch deck and financials, then re-score to see your new result.'}
@@ -585,7 +585,7 @@ function DashboardContent() {
                       )}
                       <Link
                         href="/how-it-works"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-[#F8F9FB] transition"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--bg-elev)] border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
                       >
                         How scoring works
                       </Link>
@@ -629,8 +629,8 @@ function DashboardContent() {
                 {paid && hasReport ? (
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-900">Kunfa Readiness Report</h3>
-                      <p className="text-xs text-gray-600 mt-0.5">Your full AI-powered investment analysis is ready.</p>
+                      <h3 className="text-sm font-semibold text-[var(--ink)]">Kunfa Readiness Report</h3>
+                      <p className="text-xs text-[var(--ink-soft)] mt-0.5">Your full AI-powered investment analysis is ready.</p>
                     </div>
                     <Link href={`/report/${company.submission_id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition">View Report</Link>
                   </div>
@@ -639,13 +639,13 @@ function DashboardContent() {
                     <div className="flex items-center gap-3">
                       <Loader2 className="w-5 h-5 text-[var(--accent-ink)] animate-spin flex-shrink-0" />
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-900">Report Generating...</h3>
-                        <p className="text-xs text-gray-600 mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
+                        <h3 className="text-sm font-semibold text-[var(--ink)]">Report Generating...</h3>
+                        <p className="text-xs text-[var(--ink-soft)] mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
                       </div>
                     </div>
                     <button
                       onClick={() => loadStartupData()}
-                      className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-[#F8F9FB] transition"
+                      className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
                     >
                       <RefreshCw className="w-4 h-4" /> Check Status
                     </button>
@@ -653,8 +653,8 @@ function DashboardContent() {
                 ) : (
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-semibold text-gray-900">Unlock Your Full Readiness Report</h3>
-                      <p className="text-xs text-gray-600 mt-0.5">Detailed analysis, sector benchmarks, and actionable recommendations.</p>
+                      <h3 className="text-sm font-semibold text-[var(--ink)]">Unlock Your Full Readiness Report</h3>
+                      <p className="text-xs text-[var(--ink-soft)] mt-0.5">Detailed analysis, sector benchmarks, and actionable recommendations.</p>
                     </div>
                     <button
                       onClick={async () => {
@@ -683,18 +683,18 @@ function DashboardContent() {
                 { label: 'Find Investors', href: '/investors', icon: '🔍' },
                 { label: 'Score Details', href: company.submission_id ? `/score/${company.submission_id}` : '#', icon: '📊' },
               ].map((link) => (
-                <Link key={link.label} href={link.href} className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 hover:border-gray-300 hover:shadow transition text-center">
+                <Link key={link.label} href={link.href} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4 hover:border-[var(--line-strong)] hover:shadow transition text-center">
                   <span className="text-2xl mb-2 block">{link.icon}</span>
-                  <span className="text-sm font-medium text-gray-700">{link.label}</span>
+                  <span className="text-sm font-medium text-[var(--ink-soft)]">{link.label}</span>
                 </Link>
               ))}
             </div>
           </>
         ) : (
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-4"><Star className="w-8 h-8 text-gray-400" /></div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Get Your Kunfa Score</h2>
-            <p className="text-gray-500 text-sm mb-6 max-w-md mx-auto">Upload your pitch deck to get your AI-powered investment readiness score and create your company profile.</p>
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-12 text-center">
+            <div className="w-16 h-16 bg-[var(--bg-sunk)] rounded-2xl flex items-center justify-center mx-auto mb-4"><Star className="w-8 h-8 text-[var(--ink-faint)]" /></div>
+            <h2 className="text-lg font-semibold text-[var(--ink)] mb-2">Get Your Kunfa Score</h2>
+            <p className="text-[var(--ink-mute)] text-sm mb-6 max-w-md mx-auto">Upload your pitch deck to get your AI-powered investment readiness score and create your company profile.</p>
             {canEdit && (
               <button
                 onClick={() => setShowScoreModal(true)}
@@ -743,8 +743,8 @@ function DashboardContent() {
 
 
       {/* Stage Breakdown */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-8">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Deal Stage Breakdown</h2>
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-8">
+        <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-4">Deal Stage Breakdown</h2>
         {totalStageDeals > 0 ? (
           <>
             {/* Horizontal bar with tooltips */}
@@ -777,7 +777,7 @@ function DashboardContent() {
               {/* Tooltip */}
               {hoveredStage && allDealsByStage[hoveredStage.stage] && (
                 <div
-                  className="absolute z-10 bg-white border border-gray-200 shadow-lg rounded-lg p-3 pointer-events-none"
+                  className="absolute z-10 bg-[var(--bg-elev)] border border-[var(--line)] rounded-lg p-3 pointer-events-none"
                   style={{
                     left: `${hoveredStage.x}px`,
                     bottom: '100%',
@@ -787,10 +787,10 @@ function DashboardContent() {
                     maxWidth: '240px',
                   }}
                 >
-                  <p className="text-xs font-semibold text-gray-900 mb-1.5">{formatStageLabel(hoveredStage.stage)}</p>
+                  <p className="text-xs font-semibold text-[var(--ink)] mb-1.5">{formatStageLabel(hoveredStage.stage)}</p>
                   <ul className="space-y-0.5">
                     {allDealsByStage[hoveredStage.stage].map((d, i) => (
-                      <li key={i} className="text-xs text-gray-600 truncate">{d.company_name}</li>
+                      <li key={i} className="text-xs text-[var(--ink-soft)] truncate">{d.company_name}</li>
                     ))}
                   </ul>
                 </div>
@@ -801,23 +801,23 @@ function DashboardContent() {
               {(Object.entries(stageCounts) as [string, number][]).map(([stage, count]) => (
                 <div key={stage} className="flex items-center gap-2">
                   <div className={`w-3 h-3 rounded-sm ${STAGE_COLORS[stage]}`} />
-                  <span className="text-xs text-gray-600">{formatStageLabel(stage)}</span>
-                  <span className="text-xs font-semibold text-gray-900">{count}</span>
+                  <span className="text-xs text-[var(--ink-soft)]">{formatStageLabel(stage)}</span>
+                  <span className="text-xs font-semibold text-[var(--ink)]">{count}</span>
                 </div>
               ))}
             </div>
           </>
         ) : (
-          <p className="text-sm text-gray-400 py-4 text-center">No deals in pipeline yet. <Link href="/deals" className="text-[var(--accent-ink)] hover:underline">Browse companies</Link> to get started.</p>
+          <p className="text-sm text-[var(--ink-faint)] py-4 text-center">No deals in pipeline yet. <Link href="/deals" className="text-[var(--accent-ink)] hover:underline">Browse companies</Link> to get started.</p>
         )}
       </div>
 
       {/* Two-column: Top Deals + Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
         {/* Top Deals Table — 3 cols */}
-        <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <div className="lg:col-span-3 bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Pipeline Deals</h2>
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Pipeline Deals</h2>
             <Link href="/pipeline" className="text-xs text-[var(--accent-ink)] font-medium hover:underline flex items-center gap-1">
               View Pipeline <ArrowRight className="w-3 h-3" />
             </Link>
@@ -825,19 +825,19 @@ function DashboardContent() {
           {topDeals.length > 0 ? (
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left text-xs font-medium text-gray-400 pb-3">Company</th>
-                  <th className="text-left text-xs font-medium text-gray-400 pb-3">Score</th>
-                  <th className="text-left text-xs font-medium text-gray-400 pb-3">Stage</th>
-                  <th className="text-right text-xs font-medium text-gray-400 pb-3">Raise</th>
-                  <th className="text-right text-xs font-medium text-gray-400 pb-3">Days</th>
+                <tr className="border-b border-[var(--line)]">
+                  <th className="text-left text-xs font-medium text-[var(--ink-faint)] pb-3">Company</th>
+                  <th className="text-left text-xs font-medium text-[var(--ink-faint)] pb-3">Score</th>
+                  <th className="text-left text-xs font-medium text-[var(--ink-faint)] pb-3">Stage</th>
+                  <th className="text-right text-xs font-medium text-[var(--ink-faint)] pb-3">Raise</th>
+                  <th className="text-right text-xs font-medium text-[var(--ink-faint)] pb-3">Days</th>
                 </tr>
               </thead>
               <tbody>
                 {topDeals.map(deal => (
-                  <tr key={deal.id} className="border-b border-gray-50 last:border-0 hover:bg-[#F8F9FB] transition cursor-pointer" onClick={() => { if (deal.slug) window.location.href = `/company/${deal.slug}`; }}>
+                  <tr key={deal.id} className="border-b border-[var(--line)] last:border-0 hover:bg-[var(--bg-sunk)] transition cursor-pointer" onClick={() => { if (deal.slug) window.location.href = `/company/${deal.slug}`; }}>
                     <td className="py-3 pr-3">
-                      <span className="text-sm font-medium text-gray-900">{deal.company_name}</span>
+                      <span className="text-sm font-medium text-[var(--ink)]">{deal.company_name}</span>
                     </td>
                     <td className="py-3 pr-3">
                       <span className={`text-xs font-bold px-2 py-0.5 rounded ${getScoreBadgeColor(deal.score)}`}>
@@ -845,13 +845,13 @@ function DashboardContent() {
                       </span>
                     </td>
                     <td className="py-3 pr-3">
-                      <span className="text-xs text-gray-600">{formatStageLabel(deal.stage)}</span>
+                      <span className="text-xs text-[var(--ink-soft)]">{formatStageLabel(deal.stage)}</span>
                     </td>
                     <td className="py-3 text-right">
-                      <span className="text-xs text-gray-600">{deal.raise_amount ? formatCompact(deal.raise_amount) : '—'}</span>
+                      <span className="text-xs text-[var(--ink-soft)]">{deal.raise_amount ? formatCompact(deal.raise_amount) : '—'}</span>
                     </td>
                     <td className="py-3 text-right">
-                      <span className="text-xs text-gray-400">{deal.days_in_stage}d</span>
+                      <span className="text-xs text-[var(--ink-faint)]">{deal.days_in_stage}d</span>
                     </td>
                   </tr>
                 ))}
@@ -859,32 +859,32 @@ function DashboardContent() {
             </table>
           ) : (
             <div className="text-center py-8">
-              <TrendingUp className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-400">No deals in pipeline yet</p>
+              <TrendingUp className="w-8 h-8 text-[var(--ink-faint)] mx-auto mb-2" />
+              <p className="text-sm text-[var(--ink-faint)]">No deals in pipeline yet</p>
             </div>
           )}
         </div>
 
         {/* Recent Activity — 2 cols */}
-        <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Recent Activity</h2>
+        <div className="lg:col-span-2 bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+          <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-4">Recent Activity</h2>
           {activity.length > 0 ? (
             <div className="space-y-1">
               {activity.map(item => (
-                <div key={item.id} className="py-2.5 border-b border-gray-50 last:border-0">
+                <div key={item.id} className="py-2.5 border-b border-[var(--line)] last:border-0">
                   {item.href ? (
-                    <Link href={item.href} className="text-sm text-gray-700 hover:text-[var(--accent-ink)] transition">{item.text}</Link>
+                    <Link href={item.href} className="text-sm text-[var(--ink-soft)] hover:text-[var(--accent-ink)] transition">{item.text}</Link>
                   ) : (
-                    <p className="text-sm text-gray-700">{item.text}</p>
+                    <p className="text-sm text-[var(--ink-soft)]">{item.text}</p>
                   )}
-                  <p className="text-xs text-gray-400 mt-0.5">{timeAgo(item.time)}</p>
+                  <p className="text-xs text-[var(--ink-faint)] mt-0.5">{timeAgo(item.time)}</p>
                 </div>
               ))}
             </div>
           ) : (
             <div className="text-center py-8">
-              <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-400">No recent activity</p>
+              <Clock className="w-8 h-8 text-[var(--ink-faint)] mx-auto mb-2" />
+              <p className="text-sm text-[var(--ink-faint)]">No recent activity</p>
               <Link href="/deals" className="text-xs text-[var(--accent-ink)] hover:underline mt-2 inline-block">Browse companies to get started</Link>
             </div>
           )}
@@ -893,24 +893,24 @@ function DashboardContent() {
 
       {/* Pipeline Deals Table */}
       {allDealsFlat.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mt-8">
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mt-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Pipeline Deals</h2>
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Pipeline Deals</h2>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--ink-faint)]" />
               <input
                 type="text"
                 value={pipelineSearch}
                 onChange={(e) => setPipelineSearch(e.target.value)}
                 placeholder="Search companies..."
-                className="pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] w-56"
+                className="pl-9 pr-3 py-1.5 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] w-56"
               />
             </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-100">
+                <tr className="border-b border-[var(--line)]">
                   {[
                     { key: 'company_name', label: 'Company', align: 'left' },
                     { key: 'score', label: 'Score', align: 'left' },
@@ -922,7 +922,7 @@ function DashboardContent() {
                   ].map((col) => (
                     <th
                       key={col.key}
-                      className={`text-${col.align} text-xs font-medium text-gray-400 pb-3 cursor-pointer hover:text-gray-600 transition select-none`}
+                      className={`text-${col.align} text-xs font-medium text-[var(--ink-faint)] pb-3 cursor-pointer hover:text-[var(--ink-soft)] transition select-none`}
                       onClick={() =>
                         setPipelineSort((prev) =>
                           prev.key === col.key ? { key: col.key, asc: !prev.asc } : { key: col.key, asc: true }
@@ -958,14 +958,14 @@ function DashboardContent() {
                   });
                   return sorted.map((deal) => (
                     <>
-                      <tr key={deal.id} className="border-b border-gray-50 last:border-0 hover:bg-[#F8F9FB] transition">
+                      <tr key={deal.id} className="border-b border-[var(--line)] last:border-0 hover:bg-[var(--bg-sunk)] transition">
                         <td className="py-3 pr-3">
                           {deal.slug ? (
-                            <Link href={`/company/${deal.slug}`} className="text-sm font-medium text-gray-900 hover:text-[var(--accent-ink)] transition">
+                            <Link href={`/company/${deal.slug}`} className="text-sm font-medium text-[var(--ink)] hover:text-[var(--accent-ink)] transition">
                               {deal.company_name}
                             </Link>
                           ) : (
-                            <span className="text-sm font-medium text-gray-900">{deal.company_name}</span>
+                            <span className="text-sm font-medium text-[var(--ink)]">{deal.company_name}</span>
                           )}
                         </td>
                         <td className="py-3 pr-3">
@@ -979,16 +979,16 @@ function DashboardContent() {
                           </span>
                         </td>
                         <td className="py-3 pr-3 text-right">
-                          <span className="text-xs text-gray-600">{deal.raise_amount ? formatCompact(deal.raise_amount) : '—'}</span>
+                          <span className="text-xs text-[var(--ink-soft)]">{deal.raise_amount ? formatCompact(deal.raise_amount) : '—'}</span>
                         </td>
                         <td className="py-3 pr-3">
-                          <span className="text-xs text-gray-600">{deal.assigned_to_name || '—'}</span>
+                          <span className="text-xs text-[var(--ink-soft)]">{deal.assigned_to_name || '—'}</span>
                         </td>
                         <td className="py-3 pr-3">
                           <div>
-                            <span className="text-xs text-gray-600">{deal.next_action || '—'}</span>
+                            <span className="text-xs text-[var(--ink-soft)]">{deal.next_action || '—'}</span>
                             {deal.next_action_date && (
-                              <span className="text-[10px] text-gray-400 ml-1">({deal.next_action_date})</span>
+                              <span className="text-[10px] text-[var(--ink-faint)] ml-1">({deal.next_action_date})</span>
                             )}
                           </div>
                         </td>
@@ -998,7 +998,7 @@ function DashboardContent() {
                             className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition ${
                               expandedDealId === deal.id
                                 ? 'bg-[var(--accent-soft)] text-[var(--ink)]'
-                                : 'text-gray-500 hover:bg-gray-100'
+                                : 'text-[var(--ink-mute)] hover:bg-[var(--bg-sunk)]'
                             }`}
                           >
                             <MessageSquare className="w-3.5 h-3.5" />
@@ -1008,7 +1008,7 @@ function DashboardContent() {
                       </tr>
                       {expandedDealId === deal.id && currentUserId && (
                         <tr key={`${deal.id}-notes`}>
-                          <td colSpan={7} className="px-4 py-3 bg-[#F8F9FB] border-b border-gray-100">
+                          <td colSpan={7} className="px-4 py-3 bg-[var(--bg-sunk)] border-b border-[var(--line)]">
                             <NotesTimeline dealId={deal.id} currentUserId={currentUserId} />
                           </td>
                         </tr>

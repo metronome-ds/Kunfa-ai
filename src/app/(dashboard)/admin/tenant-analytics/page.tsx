@@ -81,7 +81,7 @@ export default function TenantAnalyticsPage() {
   }
 
   if (!isTenantContext) {
-    return <div className="p-8 max-w-4xl mx-auto text-center"><h1 className="text-xl font-semibold text-gray-900">Tenant context required</h1></div>;
+    return <div className="p-8 max-w-4xl mx-auto text-center"><h1 className="text-xl font-semibold text-[var(--ink)]">Tenant context required</h1></div>;
   }
 
   if (!isAdmin) {
@@ -103,19 +103,19 @@ export default function TenantAnalyticsPage() {
     <div className="p-8 max-w-6xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Analytics</h1>
-          <p className="text-gray-500 text-sm mt-1">Insights into your network activity</p>
+          <h1 className="text-2xl font-bold text-[var(--ink)]">Analytics</h1>
+          <p className="text-[var(--ink-mute)] text-sm mt-1">Insights into your network activity</p>
         </div>
-        <BarChart3 className="w-8 h-8 text-gray-300" />
+        <BarChart3 className="w-8 h-8 text-[var(--ink-faint)]" />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {cards.map((c) => (
-          <div key={c.label} className="bg-white rounded-xl border border-gray-200 p-5">
+          <div key={c.label} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">{c.label}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">{c.value}</p>
+                <p className="text-sm font-medium text-[var(--ink-mute)]">{c.label}</p>
+                <p className="text-3xl font-bold text-[var(--ink)] mt-1">{c.value}</p>
               </div>
               <div className={`p-2.5 rounded-lg ${c.bg}`}>{c.icon}</div>
             </div>
@@ -125,10 +125,10 @@ export default function TenantAnalyticsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Member Growth */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Member Growth</h2>
-            <button onClick={() => downloadCsv('member-growth.csv', data.member_growth as unknown as Record<string, unknown>[])} className="text-xs text-gray-400 hover:text-gray-700"><Download className="w-4 h-4" /></button>
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Member Growth</h2>
+            <button onClick={() => downloadCsv('member-growth.csv', data.member_growth as unknown as Record<string, unknown>[])} className="text-xs text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"><Download className="w-4 h-4" /></button>
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <LineChart data={data.member_growth}>
@@ -142,10 +142,10 @@ export default function TenantAnalyticsPage() {
         </div>
 
         {/* Deal Flow Funnel */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Deal Flow Funnel</h2>
-            <button onClick={() => downloadCsv('deal-funnel.csv', data.deal_flow_funnel as unknown as Record<string, unknown>[])} className="text-xs text-gray-400 hover:text-gray-700"><Download className="w-4 h-4" /></button>
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Deal Flow Funnel</h2>
+            <button onClick={() => downloadCsv('deal-funnel.csv', data.deal_flow_funnel as unknown as Record<string, unknown>[])} className="text-xs text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"><Download className="w-4 h-4" /></button>
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={data.deal_flow_funnel} layout="vertical">
@@ -161,10 +161,10 @@ export default function TenantAnalyticsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Sector Breakdown */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Sector Breakdown</h2>
-            <button onClick={() => downloadCsv('sector-breakdown.csv', data.sector_breakdown as unknown as Record<string, unknown>[])} className="text-xs text-gray-400 hover:text-gray-700"><Download className="w-4 h-4" /></button>
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Sector Breakdown</h2>
+            <button onClick={() => downloadCsv('sector-breakdown.csv', data.sector_breakdown as unknown as Record<string, unknown>[])} className="text-xs text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"><Download className="w-4 h-4" /></button>
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
@@ -179,10 +179,10 @@ export default function TenantAnalyticsPage() {
         </div>
 
         {/* Stage Breakdown */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Stage Breakdown</h2>
-            <button onClick={() => downloadCsv('stage-breakdown.csv', data.stage_breakdown as unknown as Record<string, unknown>[])} className="text-xs text-gray-400 hover:text-gray-700"><Download className="w-4 h-4" /></button>
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Stage Breakdown</h2>
+            <button onClick={() => downloadCsv('stage-breakdown.csv', data.stage_breakdown as unknown as Record<string, unknown>[])} className="text-xs text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"><Download className="w-4 h-4" /></button>
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={data.stage_breakdown}>
@@ -197,30 +197,30 @@ export default function TenantAnalyticsPage() {
       </div>
 
       {/* Top Deals */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Top Deals by Score</h2>
-          <button onClick={() => downloadCsv('top-deals.csv', data.top_deals as unknown as Record<string, unknown>[])} className="text-xs text-gray-400 hover:text-gray-700"><Download className="w-4 h-4" /></button>
+          <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Top Deals by Score</h2>
+          <button onClick={() => downloadCsv('top-deals.csv', data.top_deals as unknown as Record<string, unknown>[])} className="text-xs text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"><Download className="w-4 h-4" /></button>
         </div>
         {data.top_deals.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-6">No scored deals yet</p>
+          <p className="text-sm text-[var(--ink-faint)] text-center py-6">No scored deals yet</p>
         ) : (
           <table className="w-full divide-y divide-gray-50">
-            <thead className="bg-gray-50/50">
+            <thead className="bg-[var(--bg-sunk)]/50">
               <tr>
                 {['Company', 'Score', 'Raise'].map((h) => (
-                  <th key={h} className="text-left px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">{h}</th>
+                  <th key={h} className="text-left px-4 py-2 text-xs font-semibold text-[var(--ink-mute)] uppercase tracking-wider">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {data.top_deals.map((d) => (
-                <tr key={d.id} className="hover:bg-gray-50/50">
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                <tr key={d.id} className="hover:bg-[var(--bg-sunk)]/50">
+                  <td className="px-4 py-3 text-sm font-medium text-[var(--ink)]">
                     {d.slug ? <Link href={`/company/${d.slug}`} className="hover:text-[var(--accent-ink)]">{d.company_name}</Link> : d.company_name}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-700">{d.score ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm text-gray-500">{d.raise_amount ? formatCompact(Number(d.raise_amount)) : '—'}</td>
+                  <td className="px-4 py-3 text-sm text-[var(--ink-soft)]">{d.score ?? '—'}</td>
+                  <td className="px-4 py-3 text-sm text-[var(--ink-mute)]">{d.raise_amount ? formatCompact(Number(d.raise_amount)) : '—'}</td>
                 </tr>
               ))}
             </tbody>

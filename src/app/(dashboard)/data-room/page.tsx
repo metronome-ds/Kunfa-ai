@@ -69,8 +69,8 @@ export default function DataRoomPage() {
         <div className="w-16 h-16 rounded-2xl bg-[var(--ink)]/10 flex items-center justify-center mx-auto mb-6">
           <FolderOpen className="w-8 h-8 text-[var(--accent-ink)]" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">Your Deal Room</h1>
-        <p className="text-gray-500 mb-8 max-w-md mx-auto">
+        <h1 className="text-2xl font-bold text-[var(--ink)] mb-3">Your Deal Room</h1>
+        <p className="text-[var(--ink-mute)] mb-8 max-w-md mx-auto">
           Get your Kunfa Score to create your company profile and deal room. Upload pitch decks, financials, and more to share with investors.
         </p>
         <Link

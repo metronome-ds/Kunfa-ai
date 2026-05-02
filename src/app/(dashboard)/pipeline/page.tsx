@@ -99,7 +99,7 @@ const PIPELINE_STAGES = [
 ] as const;
 
 function getScoreBadgeColor(score: number | null) {
-  if (!score) return 'bg-gray-100 text-gray-500';
+  if (!score) return 'bg-[var(--bg-sunk)] text-[var(--ink-mute)]';
   if (score >= 80) return 'bg-emerald-100 text-emerald-700';
   if (score >= 60) return 'bg-[var(--accent-soft)] text-[var(--ink)]';
   if (score >= 40) return 'bg-yellow-100 text-yellow-700';
@@ -394,16 +394,16 @@ export default function PipelinePage() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Deal Pipeline</h1>
+          <h1 className="text-2xl font-bold text-[var(--ink)]">Deal Pipeline</h1>
         </div>
         <div className="grid grid-cols-6 gap-3">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 min-h-[400px]">
-              <div className="h-6 bg-gray-200 rounded w-20 mb-4 animate-pulse" />
+            <div key={i} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-3 min-h-[400px]">
+              <div className="h-6 bg-[var(--bg-sunk)] rounded w-20 mb-4 animate-pulse" />
               {[1, 2].map((j) => (
-                <div key={j} className="bg-[#F8F9FB] rounded-lg p-3 mb-2 animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2" />
-                  <div className="h-3 bg-gray-200 rounded w-1/2" />
+                <div key={j} className="bg-[var(--bg-sunk)] rounded-lg p-3 mb-2 animate-pulse">
+                  <div className="h-4 bg-[var(--bg-sunk)] rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-[var(--bg-sunk)] rounded w-1/2" />
                 </div>
               ))}
             </div>
@@ -447,7 +447,7 @@ export default function PipelinePage() {
 
       {/* Filter Bar */}
       <div className="flex items-center gap-1 mb-4">
-        <span className="text-xs font-medium text-gray-500 mr-2">Show:</span>
+        <span className="text-xs font-medium text-[var(--ink-mute)] mr-2">Show:</span>
         {([
           { key: 'all', label: 'All deals' },
           { key: 'mine', label: 'My deals' },
@@ -459,7 +459,7 @@ export default function PipelinePage() {
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
               dealFilter === f.key
                 ? 'bg-[var(--ink)] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
             }`}
           >
             {f.label}
@@ -472,11 +472,11 @@ export default function PipelinePage() {
         <div className="mb-6">
           <button
             onClick={() => setShowInvites(!showInvites)}
-            className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 mb-3"
+            className="flex items-center gap-2 text-sm font-semibold text-[var(--ink-soft)] hover:text-[var(--ink)] mb-3"
           >
             <Mail className="w-4 h-4 text-[var(--accent-ink)]" />
             Pending Invites
-            <span className="text-xs font-normal text-gray-500">({invites.length})</span>
+            <span className="text-xs font-normal text-[var(--ink-mute)]">({invites.length})</span>
             {showInvites ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
@@ -488,20 +488,20 @@ export default function PipelinePage() {
                 return (
                   <div
                     key={invite.id}
-                    className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm"
+                    className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-3"
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="text-sm font-medium text-gray-900 truncate">{invite.company_name}</h4>
+                      <h4 className="text-sm font-medium text-[var(--ink)] truncate">{invite.company_name}</h4>
                       <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded flex-shrink-0 ml-1 ${badge.color}`}>
                         {badge.label}
                       </span>
                     </div>
 
                     {invite.invited_email && (
-                      <p className="text-[11px] text-gray-500 truncate">{invite.invited_email}</p>
+                      <p className="text-[11px] text-[var(--ink-mute)] truncate">{invite.invited_email}</p>
                     )}
 
-                    <p className="text-[10px] text-gray-400 mt-1">Invited {dateStr}</p>
+                    <p className="text-[10px] text-[var(--ink-faint)] mt-1">Invited {dateStr}</p>
 
                     {invite.overall_score !== null && (
                       <span className={`inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded mt-2 ${getScoreBadgeColor(invite.overall_score)}`}>
@@ -556,13 +556,13 @@ export default function PipelinePage() {
           onDragLeave={handleDragLeave}
           onDrop={handleDropOnWatchlist}
           className={`rounded-xl p-3 transition-colors ${
-            dragOverColumn === 'watchlist' ? 'bg-amber-50 ring-2 ring-amber-300/50' : 'bg-gray-100'
+            dragOverColumn === 'watchlist' ? 'bg-amber-50 ring-2 ring-amber-300/50' : 'bg-[var(--bg-sunk)]'
           }`}
         >
           <div className="flex items-center gap-2 mb-4 px-1">
             <Bookmark className="w-3.5 h-3.5 text-amber-500" />
-            <h3 className="text-sm font-semibold text-gray-900">Watchlist</h3>
-            <span className="text-xs text-gray-500 ml-auto">{watchlist.length}</span>
+            <h3 className="text-sm font-semibold text-[var(--ink)]">Watchlist</h3>
+            <span className="text-xs text-[var(--ink-mute)] ml-auto">{watchlist.length}</span>
           </div>
 
           <div className="space-y-2">
@@ -609,14 +609,14 @@ export default function PipelinePage() {
                     raising_target_close: item.raising_target_close,
                   });
                 }}
-                className="bg-white rounded-lg p-3 border border-gray-200 hover:border-amber-300 cursor-pointer active:cursor-grabbing transition group shadow-sm"
+                className="bg-[var(--bg-elev)] rounded-lg p-3 border border-[var(--line)] hover:border-amber-300 cursor-pointer active:cursor-grabbing transition group"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <CompanyLogo name={item.company_name} logoUrl={item.logo_url} size="sm" />
-                    <h4 className="text-sm font-medium text-gray-900 truncate">{item.company_name}</h4>
+                    <h4 className="text-sm font-medium text-[var(--ink)] truncate">{item.company_name}</h4>
                   </div>
-                  <GripVertical data-grip className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5" />
+                  <GripVertical data-grip className="w-3.5 h-3.5 text-[var(--ink-faint)] group-hover:text-[var(--ink-mute)] flex-shrink-0 mt-0.5" />
                 </div>
 
                 <div className="flex items-center gap-1.5 mt-2 flex-wrap">
@@ -644,14 +644,14 @@ export default function PipelinePage() {
 
                 {item.industry && (
                   <div className="mt-2">
-                    <span className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                    <span className="text-[10px] text-[var(--ink-mute)] bg-[var(--bg-sunk)] px-1.5 py-0.5 rounded">
                       {item.industry}
                     </span>
                   </div>
                 )}
 
                 {item.one_liner && (
-                  <p className="text-[10px] text-gray-500 mt-2 line-clamp-2">
+                  <p className="text-[10px] text-[var(--ink-mute)] mt-2 line-clamp-2">
                     {truncate(item.one_liner, 80)}
                   </p>
                 )}
@@ -660,7 +660,7 @@ export default function PipelinePage() {
 
             {watchlist.length === 0 && (
               <div className="text-center py-8 px-2">
-                <p className="text-gray-500 text-xs mb-3">No companies watchlisted yet.</p>
+                <p className="text-[var(--ink-mute)] text-xs mb-3">No companies watchlisted yet.</p>
                 <Link
                   href="/deals"
                   className="text-[var(--accent-ink)] text-xs hover:text-[var(--ink)] underline"
@@ -685,13 +685,13 @@ export default function PipelinePage() {
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDropOnPipelineStage(e, stage.key)}
               className={`rounded-xl p-3 transition-colors ${
-                isDragOver ? 'bg-[#F0F7FF] ring-2 ring-[var(--ink)]/30' : 'bg-gray-100'
+                isDragOver ? 'bg-[#F0F7FF] ring-2 ring-[var(--ink)]/30' : 'bg-[var(--bg-sunk)]'
               }`}
             >
               <div className="flex items-center gap-2 mb-4 px-1">
                 <div className={`w-2.5 h-2.5 rounded-full ${stage.color}`} />
-                <h3 className="text-sm font-semibold text-gray-900">{stage.label}</h3>
-                <span className="text-xs text-gray-500 ml-auto">
+                <h3 className="text-sm font-semibold text-[var(--ink)]">{stage.label}</h3>
+                <span className="text-xs text-[var(--ink-mute)] ml-auto">
                   {cards.length}{dealFilter !== 'all' && cards.length !== allCards.length ? `/${allCards.length}` : ''}
                 </span>
               </div>
@@ -703,8 +703,8 @@ export default function PipelinePage() {
                     draggable
                     onDragStart={() => handleDragStartDeal(deal, stage.key)}
                     onClick={(e) => handleDealClick(deal, e)}
-                    className={`bg-white rounded-lg p-3 border hover:border-gray-300 cursor-pointer active:cursor-grabbing transition group shadow-sm ${
-                      selectedDeal?.id === deal.id ? 'border-[var(--line-strong)] ring-1 ring-[var(--ink)]/30' : 'border-gray-200'
+                    className={`bg-[var(--bg-elev)] rounded-lg p-3 border hover:border-[var(--line-strong)] cursor-pointer active:cursor-grabbing transition group ${
+                      selectedDeal?.id === deal.id ? 'border-[var(--line-strong)] ring-1 ring-[var(--ink)]/30' : 'border-[var(--line)]'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
@@ -713,9 +713,9 @@ export default function PipelinePage() {
                         {deal.priority_flag && (
                           <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400 flex-shrink-0" />
                         )}
-                        <h4 className="text-sm font-medium text-gray-900 truncate">{deal.company_name}</h4>
+                        <h4 className="text-sm font-medium text-[var(--ink)] truncate">{deal.company_name}</h4>
                       </div>
-                      <GripVertical data-grip className="w-3.5 h-3.5 text-gray-300 group-hover:text-gray-500 flex-shrink-0 mt-0.5" />
+                      <GripVertical data-grip className="w-3.5 h-3.5 text-[var(--ink-faint)] group-hover:text-[var(--ink-mute)] flex-shrink-0 mt-0.5" />
                     </div>
 
                     <div className="flex items-center gap-1.5 mt-2 flex-wrap">
@@ -743,21 +743,21 @@ export default function PipelinePage() {
 
                     <div className="flex items-center gap-2 mt-2 flex-wrap">
                       {(deal.industry || deal.sector) && (
-                        <span className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] text-[var(--ink-mute)] bg-[var(--bg-sunk)] px-1.5 py-0.5 rounded">
                           {deal.industry || deal.sector}
                         </span>
                       )}
                     </div>
 
                     {deal.one_liner && (
-                      <p className="text-[10px] text-gray-500 mt-2 line-clamp-2">
+                      <p className="text-[10px] text-[var(--ink-mute)] mt-2 line-clamp-2">
                         {truncate(deal.one_liner, 80)}
                       </p>
                     )}
 
                     {/* Next action + date */}
                     {deal.next_action && (
-                      <div className="flex items-center gap-1 mt-2 text-[10px] text-gray-500">
+                      <div className="flex items-center gap-1 mt-2 text-[10px] text-[var(--ink-mute)]">
                         <CalendarDays className="w-3 h-3 flex-shrink-0" />
                         <span className="truncate">
                           {truncate(deal.next_action, 30)}
@@ -768,12 +768,12 @@ export default function PipelinePage() {
 
                     {/* Footer: days + assigned */}
                     <div className="flex items-center justify-between mt-2">
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-[10px] text-[var(--ink-faint)]">
                         {deal.days_in_stage}d in stage
                       </p>
                       {deal.assigned_to_name && (
                         <span
-                          className="w-5 h-5 rounded-full bg-gray-200 text-[8px] font-semibold text-gray-600 flex items-center justify-center flex-shrink-0"
+                          className="w-5 h-5 rounded-full bg-[var(--bg-sunk)] text-[8px] font-semibold text-[var(--ink-soft)] flex items-center justify-center flex-shrink-0"
                           title={deal.assigned_to_name}
                         >
                           {getInitials(deal.assigned_to_name)}
@@ -785,7 +785,7 @@ export default function PipelinePage() {
 
                 {cards.length === 0 && (
                   <div className="text-center py-8 px-2">
-                    <p className="text-gray-500 text-xs">
+                    <p className="text-[var(--ink-mute)] text-xs">
                       {stage.key === 'sourced'
                         ? 'Drag from watchlist or browse companies'
                         : 'No deals'}
