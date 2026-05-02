@@ -10,6 +10,7 @@ import {
   Bookmark,
   DollarSign,
   Brain,
+  Briefcase,
   Star,
   Clock,
   ExternalLink,
@@ -31,6 +32,7 @@ import ImprovementTips from '@/components/scoring/ImprovementTips';
 import DealRoomActivityCard from '@/components/dashboard/DealRoomActivityCard';
 import WwipDashboard from '@/components/dashboard/WwipDashboard';
 import { useTenant } from '@/components/TenantProvider';
+import { PageHead, StatCard, SectionHead, EmptyState, WelcomeBanner, Button, LinkText } from '@/components/ui/design-system';
 
 interface UserProfile {
   id: string;
@@ -714,73 +716,31 @@ function DashboardContent() {
   const totalStageDeals = Object.values(stageCounts).reduce((a, b) => a + b, 0);
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-[#007CF8] flex items-center justify-center text-white text-lg font-bold">
-            {(userProfile?.full_name || 'U').charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {activeEntityName || userProfile?.fund_name || `${userProfile?.full_name || 'Investor'}'s Dashboard`}
-            </h1>
-            <p className="text-gray-500 text-sm mt-0.5">
-              Welcome back{userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <Link href="/companies/new" className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#007CF8] text-white rounded-lg text-sm font-semibold hover:bg-[#0066D6] transition">
-            <PlusCircle className="w-4 h-4" /> Add Company
-          </Link>
-          <Link href="/deals" className="inline-flex items-center gap-2 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-semibold hover:bg-[#F8F9FB] transition">
-            <Compass className="w-4 h-4" /> Browse Companies
-          </Link>
-        </div>
+    <div>
+      <WelcomeBanner
+        title={`Welcome back${userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}`}
+        body="Every new Kunfa member receives a $100 credit toward AI-assisted deal scoring and diligence. Apply it on any deal in your inbox."
+        cta={<Button variant="on-dark" href="/deals">Browse deals</Button>}
+      />
+
+      <PageHead
+        title={activeEntityName || userProfile?.fund_name || 'Platform Overview'}
+        subtitle="A live view of your portfolio, the Kunfa marketplace, and the deals scored by our intelligence layer this week."
+        cta={
+          <Button variant="primary" href="/deals" iconRight={<ArrowRight size={14} />}>
+            Browse Deals
+          </Button>
+        }
+      />
+
+      {/* Stat Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
+        <StatCard label="Pipeline Deals" value={String(investorStats.pipelineDeals)} foot={`Tracking ${investorStats.pipelineDeals}`} icon={<Briefcase size={14} />} />
+        <StatCard label="Watchlisted" value={String(investorStats.watchlisted)} foot={`${investorStats.watchlisted} saved`} icon={<Bookmark size={14} />} />
+        <StatCard label="Total Pipeline Value" value={formatCompact(investorStats.totalPipelineValue)} foot="Across all deals" icon={<DollarSign size={14} />} />
+        <StatCard label="Avg Kunfa Score" value={investorStats.avgKunfaScore ? String(investorStats.avgKunfaScore) : '—'} foot="Scored deals" icon={<Brain size={14} />} />
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Pipeline Deals</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{investorStats.pipelineDeals}</p>
-            </div>
-            <div className="p-2.5 rounded-lg bg-blue-100"><TrendingUp className="w-5 h-5 text-blue-600" /></div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Watchlisted</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{investorStats.watchlisted}</p>
-            </div>
-            <div className="p-2.5 rounded-lg bg-amber-100"><Bookmark className="w-5 h-5 text-amber-600" /></div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Total Pipeline Value</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{formatCompact(investorStats.totalPipelineValue)}</p>
-            </div>
-            <div className="p-2.5 rounded-lg bg-emerald-100"><DollarSign className="w-5 h-5 text-emerald-600" /></div>
-          </div>
-        </div>
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
-          <div className="flex items-start justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Avg Kunfa Score</p>
-              <p className={`text-3xl font-bold mt-1 ${getScoreColor(investorStats.avgKunfaScore)}`}>
-                {investorStats.avgKunfaScore ?? '—'}
-              </p>
-            </div>
-            <div className="p-2.5 rounded-lg bg-purple-100"><Brain className="w-5 h-5 text-purple-600" /></div>
-          </div>
-        </div>
-      </div>
 
       {/* Stage Breakdown */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-8">
