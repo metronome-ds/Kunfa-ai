@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { createClient } from '@supabase/supabase-js';
 import { loginAs, TEST_ACCOUNTS, TEST_PASSWORD } from './helpers/auth';
 
 /**
@@ -668,5 +669,47 @@ test.describe('KUN-30 Phase 2: White-Label Tenant Features', () => {
       await expect(page.getByText(/Website URL must start with/)).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Classification' })).not.toBeVisible();
     });
+  });
+
+  // =========================================================================
+  // CLEANUP — Remove QA-created test data after all tests complete.
+  // Deletes company_pages rows whose name starts with "QA " (created by the
+  // upload flow test). Also removes associated deals and watchlist_items.
+  // Uses the service role client so it bypasses RLS.
+  // =========================================================================
+  test.afterAll(async () => {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!url || !key) {
+      console.log('[CLEANUP] Skipping — no SUPABASE_SERVICE_ROLE_KEY in env');
+      return;
+    }
+    try {
+      const db = createClient(url, key, { auth: { autoRefreshToken: false, persistSession: false } });
+
+      // Find QA-created companies
+      const { data: qaCompanies } = await db
+        .from('company_pages')
+        .select('id')
+        .like('company_name', 'QA %');
+
+      if (!qaCompanies || qaCompanies.length === 0) return;
+
+      const ids = qaCompanies.map((c) => c.id);
+      console.log(`[CLEANUP] Removing ${ids.length} QA test companies`);
+
+      // Cascade: deals + watchlist first (FK constraints)
+      await db.from('deals').delete().in('company_id', ids);
+      await db.from('watchlist_items').delete().in('company_id', ids);
+      await db.from('dealroom_documents').delete().in('company_id', ids);
+      await db.from('share_invitations').delete().in('company_id', ids);
+
+      // Then the companies themselves
+      await db.from('company_pages').delete().in('id', ids);
+
+      console.log(`[CLEANUP] Done — ${ids.length} QA companies removed`);
+    } catch (err) {
+      console.error('[CLEANUP] Failed:', err);
+    }
   });
 });
