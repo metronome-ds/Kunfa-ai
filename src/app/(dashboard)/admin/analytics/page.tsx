@@ -268,7 +268,7 @@ export default function AdminAnalyticsPage() {
       </div>
 
       {/* Row 1 — Key metrics cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <MetricCard
           icon={<Users className="w-5 h-5" />}
           label="Total Users"
@@ -300,7 +300,7 @@ export default function AdminAnalyticsPage() {
       </div>
 
       {/* Row 2 — Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <Card title="Signups (last 30 days)">
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -365,7 +365,7 @@ export default function AdminAnalyticsPage() {
       </div>
 
       {/* Row 3 — Tables */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-1 md:grid-cols-2 gap-4 mb-8">
         <Card title="Most viewed companies">
           {data.dealRoom.mostViewedCompanies.length === 0 ? (
             <div className="text-sm text-[var(--ink-faint)] py-8 text-center">No views yet</div>
@@ -450,7 +450,7 @@ export default function AdminAnalyticsPage() {
       </Card>
 
       {/* Row 5 — Platform health */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-1 md:grid-cols-3 gap-4">
         <Card title="Companies by source">
           {sourceRows.length === 0 ? (
             <div className="text-sm text-[var(--ink-faint)] py-8 text-center">No companies</div>

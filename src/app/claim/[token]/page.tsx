@@ -102,7 +102,7 @@ export default function ClaimPage() {
   if (!companyInfo?.valid) {
     return (
       <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
-        <div className="w-full max-w-md text-center">
+        <div className="w-full w-full md:max-w-md text-center">
           <div className="mb-6">
             <KunfaLogo height={32} />
           </div>
@@ -123,7 +123,7 @@ export default function ClaimPage() {
     if (result.approved) {
       return (
         <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
-          <div className="w-full max-w-md text-center">
+          <div className="w-full w-full md:max-w-md text-center">
             <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -141,7 +141,7 @@ export default function ClaimPage() {
     if (result.pending) {
       return (
         <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
-          <div className="w-full max-w-md text-center">
+          <div className="w-full w-full md:max-w-md text-center">
             <div className="w-16 h-16 rounded-full bg-yellow-100 flex items-center justify-center mx-auto mb-6">
               <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -168,7 +168,7 @@ export default function ClaimPage() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+      <div className="w-full w-full md:max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
             {branding?.logo_url ? (

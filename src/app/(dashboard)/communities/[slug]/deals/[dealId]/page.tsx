@@ -186,7 +186,7 @@ export default function DealDiscussionPage() {
 
   if (!deal) {
     return (
-      <div className="max-w-lg mx-auto py-20 px-4 text-center">
+      <div className="w-full md:max-w-lg mx-auto py-20 px-4 text-center">
         <h1 className="text-xl font-bold text-[var(--ink)] mb-2">Deal Not Found</h1>
         <button onClick={() => router.push(`/communities/${slug}`)} className="text-sm text-[var(--accent-ink)] hover:underline">Back to community</button>
       </div>

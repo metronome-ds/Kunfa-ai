@@ -193,7 +193,7 @@ function LoginContent() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+      <div className="w-full w-full md:max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
             {isTenantContext && tenant?.logo_url ? (

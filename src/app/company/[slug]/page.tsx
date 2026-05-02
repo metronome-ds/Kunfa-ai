@@ -487,7 +487,7 @@ export default async function CompanyPublicPage({
         {hasFunding && (
           <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] p-6 border border-[var(--line)]">
             <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-4">Funding</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               {raiseFormatted && (
                 <div>
                   <p className="text-xs text-[var(--ink-mute)] mb-1">Raise Amount</p>

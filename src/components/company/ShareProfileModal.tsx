@@ -113,7 +113,7 @@ export function ShareProfileModal({ companyId, companyName, isOpen, onClose }: S
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-[var(--bg-elev)] rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-[var(--bg-elev)] rounded-xl w-full w-full md:max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-[var(--bg-elev)] border-b border-[var(--line)] px-6 py-4 flex items-center justify-between rounded-t-xl z-10">
           <h2 className="text-lg font-bold text-[var(--ink)]">Share Profile</h2>
           <button onClick={onClose} className="p-1 text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"><X className="w-5 h-5" /></button>

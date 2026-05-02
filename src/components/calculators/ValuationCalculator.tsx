@@ -164,7 +164,7 @@ export function ValuationCalculator() {
           {/* DCF Results */}
           <Card title="DCF Valuation Results">
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm font-medium text-[var(--ink-soft)]">PV of Cash Flows</p>
                   <p className="text-2xl font-bold text-[var(--ink)] mt-2">
@@ -455,7 +455,7 @@ export function ValuationCalculator() {
 
       {/* Summary Comparison */}
       <Card title="Valuation Summary" subtitle="Compare valuations across all methods">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
             <p className="text-xs font-medium text-purple-700 uppercase">DCF Valuation</p>
             <p className="text-2xl font-bold text-purple-600 mt-2">

@@ -110,7 +110,7 @@ export default function CreateTenantPage() {
         {/* Basic Info */}
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Basic Info</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Name *</label>
               <input
@@ -149,7 +149,7 @@ export default function CreateTenantPage() {
         {/* Domain */}
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Domain</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Subdomain</label>
               <div className="flex items-center">
@@ -189,7 +189,7 @@ export default function CreateTenantPage() {
               className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             />
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Primary Color</label>
               <div className="flex items-center gap-2">
@@ -235,7 +235,7 @@ export default function CreateTenantPage() {
         {/* Features */}
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Features</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {Object.entries(features).map(([key, enabled]) => (
               <label key={key} className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--bg-sunk)] cursor-pointer">
                 <input

@@ -396,7 +396,7 @@ export default function PipelinePage() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-[var(--ink)]">Deal Pipeline</h1>
         </div>
-        <div className="grid grid-cols-6 gap-3">
+        <div className="grid grid-cols-6 gap-3 overflow-x-auto">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-3 min-h-[400px]">
               <div className="h-6 bg-[var(--bg-sunk)] rounded w-20 mb-4 animate-pulse" />
@@ -481,7 +481,7 @@ export default function PipelinePage() {
           </button>
 
           {showInvites && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 overflow-x-auto">
               {invites.map((invite) => {
                 const badge = getInviteStatusBadge(invite);
                 const dateStr = new Date(invite.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
@@ -549,7 +549,7 @@ export default function PipelinePage() {
       )}
 
       {/* Kanban Board: 6 columns */}
-      <div className="grid grid-cols-6 gap-3 min-h-[500px]">
+      <div className="grid grid-cols-6 gap-3 overflow-x-auto min-h-[500px]">
         {/* Watchlist Column */}
         <div
           onDragOver={(e) => handleDragOver(e, 'watchlist')}

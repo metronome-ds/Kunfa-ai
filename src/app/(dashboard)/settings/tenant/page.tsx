@@ -127,7 +127,7 @@ export default function TenantSettingsPage() {
         <div className="space-y-6">
           <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
             <h2 className="text-lg font-semibold text-[var(--ink)]">Identity</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Display Name</label>
                 <input type="text" value={form.display_name || ''} onChange={(e) => updateField('display_name', e.target.value)} className={INPUT_CLASS} />
@@ -145,7 +145,7 @@ export default function TenantSettingsPage() {
 
           <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
             <h2 className="text-lg font-semibold text-[var(--ink)]">Visual</h2>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Logo URL</label>
                 <input type="url" value={form.logo_url || ''} onChange={(e) => updateField('logo_url', e.target.value)} className={INPUT_CLASS} />
@@ -155,7 +155,7 @@ export default function TenantSettingsPage() {
                 <input type="url" value={form.favicon_url || ''} onChange={(e) => updateField('favicon_url', e.target.value)} className={INPUT_CLASS} />
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Primary Color</label>
                 <div className="flex items-center gap-2">
@@ -190,7 +190,7 @@ export default function TenantSettingsPage() {
       {activeTab === 'email' && (
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Email Configuration</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">From Name</label>
               <input type="text" value={form.email_from_name || ''} onChange={(e) => updateField('email_from_name', e.target.value)} placeholder="Your Organization" className={INPUT_CLASS} />
@@ -243,7 +243,7 @@ export default function TenantSettingsPage() {
       {activeTab === 'legal' && (
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Legal</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Privacy Policy URL</label>
               <input type="url" value={form.privacy_policy_url || ''} onChange={(e) => updateField('privacy_policy_url', e.target.value)} className={INPUT_CLASS} />

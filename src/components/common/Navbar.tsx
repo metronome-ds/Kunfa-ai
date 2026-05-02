@@ -581,7 +581,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
       {/* Create Entity Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
-          <div className="bg-[var(--bg-elev)] rounded-xl w-full max-w-md mx-4 p-6">
+          <div className="bg-[var(--bg-elev)] rounded-xl w-full w-full md:max-w-md mx-4 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-[#111827]">
                 Create New {createEntityType === 'fund' ? 'Fund' : 'Company'}

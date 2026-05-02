@@ -122,7 +122,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
           <h4 className="text-xl font-bold mb-2">
             Unlock Your Full Investment Readiness Report
           </h4>
-          <p className="text-indigo-200 text-sm mb-6 max-w-md mx-auto">
+          <p className="text-indigo-200 text-sm mb-6 w-full md:max-w-md mx-auto">
             Detailed analysis, sector benchmarks, and actionable recommendations to strengthen your fundraise
           </p>
           <button
@@ -151,7 +151,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
       </div>
 
       {/* Dimension Cards — after CTA */}
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         {(Object.entries(result.dimensions) as [string, typeof result.dimensions.team][])
           .filter(([, dim]) => dim && typeof dim === 'object')
           .map(([key, dim]) => {

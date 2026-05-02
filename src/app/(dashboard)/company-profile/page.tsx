@@ -282,7 +282,7 @@ export default function CompanyProfilePage() {
             <FileText className="w-8 h-8 text-[var(--ink-faint)]" />
           </div>
           <h2 className="text-lg font-semibold text-[var(--ink)] mb-2">No company profile yet</h2>
-          <p className="text-[var(--ink-mute)] text-sm mb-6 max-w-md mx-auto">
+          <p className="text-[var(--ink-mute)] text-sm mb-6 w-full md:max-w-md mx-auto">
             Get your Kunfa Score to create your company profile. Investors will be able to discover and evaluate your startup.
           </p>
           <Link
@@ -503,7 +503,7 @@ export default function CompanyProfilePage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Company Name</label>
               <input type="text" value={editForm.company_name}
@@ -614,7 +614,7 @@ export default function CompanyProfilePage() {
                       <X className="w-4 h-4" />
                     </button>
                   )}
-                  <div className={`grid grid-cols-2 gap-3 ${i > 0 ? 'pr-6' : ''}`}>
+                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${i > 0 ? 'pr-6' : ''}`}>
                     <div>
                       <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Name {i === 0 ? '*' : ''}</label>
                       <input type="text" value={member.name}
@@ -740,7 +740,7 @@ export default function CompanyProfilePage() {
         {(raiseFormatted || company.stage || company.use_of_funds) && (
           <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
             <h2 className="text-sm font-semibold text-[var(--ink)] uppercase tracking-wider mb-3">Funding</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-3">
+            <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-3 gap-4 mb-3">
               {raiseFormatted && (
                 <div>
                   <p className="text-[10px] text-[var(--ink-mute)] mb-0.5">Raise Amount</p>

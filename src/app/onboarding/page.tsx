@@ -241,7 +241,7 @@ export default function InvestorOnboardingPage() {
                 <p className="text-[var(--ink-faint)] text-sm">Help us match you with the right deals</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-[var(--ink-faint)] mb-1">AUM (USD)</label>
                   <input
@@ -255,7 +255,7 @@ export default function InvestorOnboardingPage() {
                 <div />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-[var(--ink-faint)] mb-1">Min Check Size (USD)</label>
                   <input

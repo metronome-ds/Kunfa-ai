@@ -158,7 +158,7 @@ export function EngagementScore() {
         </div>
 
         {/* Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-1 md:grid-cols-3 gap-4">
           {engagementItems.map((item) => {
             const Icon = item.icon;
             const contribution = item.count * item.weight;

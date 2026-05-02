@@ -207,7 +207,7 @@ export default function AdminClaimsPage() {
       {/* Rejection reason modal */}
       {rejectingId && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[var(--bg-elev)] rounded-xl p-6 w-full max-w-md">
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 w-full w-full md:max-w-md">
             <h3 className="text-lg font-semibold text-[var(--ink)] mb-4">Rejection Reason</h3>
             <textarea
               value={rejectionReason}

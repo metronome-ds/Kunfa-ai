@@ -314,7 +314,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
               )}
 
               {(deal.industry || deal.company_stage) && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {deal.industry && (
                     <div>
                       <label className={labelClass}>Industry</label>
@@ -411,7 +411,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
               </div>
 
               {/* Deal Size + Source */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Deal Size ($)</label>
                   <input
@@ -458,7 +458,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
                   </div>
 
                   {/* Valuations */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label className={labelClass}>Pre-Money ($)</label>
                       <input
@@ -534,7 +534,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
               {/* Key Contact */}
               <div>
                 <label className={labelClass}>Key Contact</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <input
                     type="text"
                     value={form.contact_name}

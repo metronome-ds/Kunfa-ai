@@ -794,7 +794,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             </div>
 
             {/* Country + Website */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Country / HQ *</label>
                 <input type="text" value={companyCountry} onChange={(e) => setCompanyCountry(e.target.value)}
@@ -829,7 +829,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         {/* STEP 3: Founder & Team */}
         {!initialLoading && step === 'founder' && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Founder Name *</label>
                 <input type="text" value={founderName} onChange={(e) => setFounderName(e.target.value)}
@@ -882,7 +882,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                     >
                       <X className="w-4 h-4" />
                     </button>
-                    <div className="grid grid-cols-2 gap-3 pr-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-6">
                       <div>
                         <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Name *</label>
                         <input

@@ -175,7 +175,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative bg-[var(--bg-elev)] rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-[var(--bg-elev)] rounded-xl w-full w-full md:max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-[var(--bg-elev)] border-b border-[var(--line)] px-6 py-4 flex items-center justify-between rounded-t-xl z-10">
           <h2 className="text-lg font-bold text-[var(--ink)]">Edit Company</h2>
@@ -271,7 +271,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
           </div>
 
           {/* Industry + Stage */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Industry</label>
               <select
@@ -301,7 +301,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
           </div>
 
           {/* Country + Website */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Country / HQ</label>
               <input
@@ -337,7 +337,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
           </div>
 
           {/* Raise Amount + Team Size */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Raise Amount (USD)</label>
               <input
@@ -373,7 +373,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
           </div>
 
           {/* Founder Name + Title */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Founder Name</label>
               <input
@@ -434,7 +434,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
                     placeholder="$2M"
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className={labelClass}>Instrument</label>
                     <select

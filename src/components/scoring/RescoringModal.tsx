@@ -597,7 +597,7 @@ export default function RescoringModal({
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {(['team', 'market', 'product', 'financial'] as const).map((key) => {
                 const dim = scoreResult.dimensions[key]
                 const labels: Record<string, string> = {

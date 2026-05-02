@@ -119,7 +119,7 @@ export default function CommunityHubPage() {
 
   if (error === 'not_member') {
     return (
-      <div className="max-w-lg mx-auto py-20 px-4 text-center">
+      <div className="w-full md:max-w-lg mx-auto py-20 px-4 text-center">
         <Users className="w-12 h-12 text-[var(--ink-faint)] mx-auto mb-4" />
         <h1 className="text-xl font-bold text-[var(--ink)] mb-2">Members Only</h1>
         <p className="text-[var(--ink-mute)] mb-6">You don&apos;t have access to this community. Ask an admin for an invite.</p>
@@ -130,7 +130,7 @@ export default function CommunityHubPage() {
 
   if (!community || error) {
     return (
-      <div className="max-w-lg mx-auto py-20 px-4 text-center">
+      <div className="w-full md:max-w-lg mx-auto py-20 px-4 text-center">
         <h1 className="text-xl font-bold text-[var(--ink)] mb-2">Community Not Found</h1>
         <button onClick={() => router.push('/communities')} className="text-sm text-[var(--accent-ink)] hover:underline">Back to Communities</button>
       </div>
@@ -527,7 +527,7 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
       {/* Share Deal Modal */}
       {showShareModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[var(--bg-elev)] rounded-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 w-full w-full md:max-w-lg max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-[var(--ink)]">Share a Deal</h3>
               <button onClick={() => { setShowShareModal(false); setShareMode(null); setShareError('') }} className="text-[var(--ink-faint)] hover:text-[var(--ink-soft)]">
@@ -600,7 +600,7 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
                 <textarea value={extDesc} onChange={e => setExtDesc(e.target.value)} rows={2}
                   className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
                   placeholder="Description" />
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <select value={extSector} onChange={e => setExtSector(e.target.value)}
                     className="px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]">
                     <option value="">Sector</option>
@@ -894,7 +894,7 @@ function MembersTab({ slug, community }: { slug: string; community: Community })
       {/* Invite modal */}
       {showInviteModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-[var(--bg-elev)] rounded-xl p-6 w-full max-w-md">
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 w-full w-full md:max-w-md">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-[var(--ink)]">Invite Members</h3>
               <button onClick={() => { setShowInviteModal(false); setInviteResult(null) }} className="text-[var(--ink-faint)] hover:text-[var(--ink-soft)]"><X className="w-5 h-5" /></button>

@@ -166,7 +166,7 @@ function CreateCommunityForm() {
               <h2 className="text-lg font-semibold text-[var(--ink)] mb-1">Community Mode</h2>
               <p className="text-sm text-[var(--ink-mute)]">Choose how your community operates.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 type="button"
                 onClick={() => setMode('network')}

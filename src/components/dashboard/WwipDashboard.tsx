@@ -82,7 +82,7 @@ export default function WwipDashboard() {
         <p className="text-[var(--ink-mute)] mt-1">{tenant?.tagline || 'Overview of your network activity'}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {cards.map((c) => (
           <div key={c.label} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
             <div className="flex items-start justify-between">

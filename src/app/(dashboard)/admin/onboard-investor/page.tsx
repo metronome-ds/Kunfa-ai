@@ -103,7 +103,7 @@ export default function OnboardInvestorPage() {
 
   if (success) {
     return (
-      <div className="p-8 max-w-md mx-auto text-center">
+      <div className="p-8 w-full md:max-w-md mx-auto text-center">
         <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
           <Check className="w-8 h-8 text-emerald-600" />
         </div>
@@ -165,7 +165,7 @@ export default function OnboardInvestorPage() {
             <h2 className="font-semibold text-[var(--ink)]">Investment Profile</h2>
             <MultiSelect label="Sector Interests" values={form.sector_interests} options={SECTORS} onToggle={(v) => toggleArr('sector_interests', v)} />
             <MultiSelect label="Stage Focus" values={form.stage_focus} options={STAGES} onToggle={(v) => toggleArr('stage_focus', v)} />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Field label="Check Size Min (USD)" type="number" value={form.check_size_min} onChange={(v) => update('check_size_min', v)} />
               <Field label="Check Size Max (USD)" type="number" value={form.check_size_max} onChange={(v) => update('check_size_max', v)} />
             </div>

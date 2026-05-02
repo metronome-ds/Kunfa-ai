@@ -186,7 +186,7 @@ export default function RoomPage() {
 
         {/* Password gate */}
         {status === 'password' && (
-          <div className="max-w-md mx-auto py-16">
+          <div className="w-full md:max-w-md mx-auto py-16">
             <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-8 text-center">
               <Lock className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-4" />
               {company && (
@@ -258,7 +258,7 @@ export default function RoomPage() {
                 <p className="text-sm text-[var(--ink-mute)]">No documents available</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 md:grid-cols-3 gap-4">
                 {documents.map(doc => (
                   <div
                     key={doc.id}

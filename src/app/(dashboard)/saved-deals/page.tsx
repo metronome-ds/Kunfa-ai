@@ -279,7 +279,7 @@ export default function SavedDealsPage() {
           </div>
 
           {/* Stats */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <div>
                 <p className="text-sm text-[var(--ink-soft)]">Total Saved</p>

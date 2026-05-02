@@ -7,8 +7,8 @@ type ModalSize = 'sm' | 'md' | 'lg';
 
 const sizeStyles: Record<ModalSize, string> = {
   sm: 'max-w-sm',
-  md: 'max-w-md',
-  lg: 'max-w-lg',
+  md: 'w-full md:max-w-md',
+  lg: 'w-full md:max-w-lg',
 };
 
 interface ModalProps {

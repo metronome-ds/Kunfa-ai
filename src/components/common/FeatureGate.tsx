@@ -127,7 +127,7 @@ function UpgradePrompt({ feature }: { feature: string }) {
 
   if (!config) {
     return (
-      <div className="max-w-lg mx-auto py-16 px-4 text-center">
+      <div className="w-full md:max-w-lg mx-auto py-16 px-4 text-center">
         <p className="text-[var(--ink-mute)]">This feature requires an upgraded plan.</p>
       </div>
     )
@@ -163,13 +163,13 @@ function UpgradePrompt({ feature }: { feature: string }) {
   }
 
   return (
-    <div className="max-w-lg mx-auto py-16 px-4">
+    <div className="w-full md:max-w-lg mx-auto py-16 px-4">
       <div className="text-center mb-8">
         <div className="w-16 h-16 rounded-2xl bg-[var(--accent-soft)] flex items-center justify-center mx-auto mb-6">
           <Icon className="w-8 h-8 text-[var(--accent-ink)]" />
         </div>
         <h1 className="text-2xl font-bold text-[var(--ink)] mb-3">{config.title}</h1>
-        <p className="text-[var(--ink-mute)] max-w-md mx-auto">{config.description}</p>
+        <p className="text-[var(--ink-mute)] w-full md:max-w-md mx-auto">{config.description}</p>
       </div>
 
       <div className="bg-[var(--bg-elev)] border border-[var(--line)] rounded-xl p-6 mb-6">

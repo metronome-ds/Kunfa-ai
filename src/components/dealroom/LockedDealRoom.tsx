@@ -151,7 +151,7 @@ export default function LockedDealRoom({ companyId, companyName, onUnlock }: Loc
               <p className="text-sm text-[var(--ink-mute)]">No documents in the deal room yet.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pointer-events-none select-none filter blur-[2px] opacity-70">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 md:grid-cols-3 gap-4 pointer-events-none select-none filter blur-[2px] opacity-70">
               {docs.map(doc => (
                 <div
                   key={doc.id}
@@ -179,7 +179,7 @@ export default function LockedDealRoom({ companyId, companyName, onUnlock }: Loc
         {/* Email gate overlay */}
         {!loading && docs.length > 0 && (
           <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-elev)]/60 backdrop-blur-sm">
-            <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 max-w-md w-full mx-4">
+            <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 w-full md:max-w-md w-full mx-4">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-[var(--ink)]/10 flex items-center justify-center flex-shrink-0">
                   <Lock className="w-5 h-5 text-[var(--accent-ink)]" />

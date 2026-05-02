@@ -164,7 +164,7 @@ export default function ScoreResultsPage() {
             )}
 
             {/* Category Scores */}
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
               {(Object.entries(result.dimensions) as [string, { score: number; letter_grade: string; headline: string }][]).map(([key, dim]) => (
                 <div key={key} className="bg-[var(--bg-elev)] rounded-xl p-5 border border-[var(--line)]">
                   <div className="flex items-center justify-between mb-2">
@@ -185,7 +185,7 @@ export default function ScoreResultsPage() {
               <button
                 onClick={handleUnlock}
                 disabled={unlocking}
-                className="w-full max-w-md bg-[var(--ink)] text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-[var(--ink-2)] transition disabled:opacity-50"
+                className="w-full w-full md:max-w-md bg-[var(--ink)] text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-[var(--ink-2)] transition disabled:opacity-50"
               >
                 {unlocking ? 'Redirecting to checkout...' : 'Unlock Your Full Kunfa Readiness Report — $59'}
               </button>
@@ -193,7 +193,7 @@ export default function ScoreResultsPage() {
               {slug && (
                 <Link
                   href={`/company/${slug}`}
-                  className="w-full max-w-md text-center border-2 border-[var(--line-strong)] text-[var(--ink-soft)] px-8 py-4 rounded-xl font-semibold text-base hover:border-[var(--line-strong)] hover:text-[var(--accent-ink)] transition"
+                  className="w-full w-full md:max-w-md text-center border-2 border-[var(--line-strong)] text-[var(--ink-soft)] px-8 py-4 rounded-xl font-semibold text-base hover:border-[var(--line-strong)] hover:text-[var(--accent-ink)] transition"
                 >
                   View My Company Profile &rarr;
                 </Link>

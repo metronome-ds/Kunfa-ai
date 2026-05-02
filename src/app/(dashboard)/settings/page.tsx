@@ -82,7 +82,7 @@ function ChangePasswordSection() {
         </div>
       )}
 
-      <form onSubmit={handleChangePassword} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <form onSubmit={handleChangePassword} className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className={LABEL_CLASS}>New Password</label>
           <input
@@ -219,7 +219,7 @@ function PlanBillingSection() {
           <Tag className="w-4 h-4 text-[var(--ink-faint)]" />
           Redeem a Promo Code
         </h3>
-        <div className="flex gap-2 max-w-md">
+        <div className="flex gap-2 w-full md:max-w-md">
           <input
             type="text"
             value={promoCode}
@@ -489,7 +489,7 @@ export default function SettingsPage() {
           <User className="w-5 h-5 text-[var(--ink-faint)]" />
           Personal Info
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className={LABEL_CLASS}>Full Name</label>
             <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} className={INPUT_CLASS} />
@@ -546,7 +546,7 @@ export default function SettingsPage() {
           {canEditCompany && (
             <p className="text-xs text-[var(--ink-mute)] mb-5">Changes here will sync to your public company profile.</p>
           )}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={LABEL_CLASS}>Company Name</label>
               <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} disabled={!canEditCompany} className={canEditCompany ? INPUT_CLASS : DISABLED_CLASS} />
@@ -613,7 +613,7 @@ export default function SettingsPage() {
             <Briefcase className="w-5 h-5 text-[var(--ink-faint)]" />
             Investment Profile
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className={LABEL_CLASS}>Fund Name</label>
               <input type="text" value={fundName} onChange={(e) => setFundName(e.target.value)} placeholder="Your fund or firm" className={INPUT_CLASS} />
@@ -697,7 +697,7 @@ export default function SettingsPage() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-[var(--bg-elev)] rounded-xl max-w-md w-full mx-4 p-6">
+          <div className="bg-[var(--bg-elev)] rounded-xl w-full md:max-w-md w-full mx-4 p-6">
             <div className="flex items-center gap-3 mb-4">
               <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100">
                 <AlertTriangle className="w-5 h-5 text-red-600" />

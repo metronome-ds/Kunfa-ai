@@ -133,7 +133,7 @@ export default function HowItWorksPage() {
         {/* 6 dimensions */}
         <section className="mb-16">
           <h2 className="text-2xl font-bold text-[var(--ink)] mb-6">The six dimensions</h2>
-          <div className="grid sm:grid-cols-2 gap-4">
+          <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
             {DIMENSIONS.map((d) => (
               <div
                 key={d.name}
@@ -159,7 +159,7 @@ export default function HowItWorksPage() {
             don&apos;t need $10M in revenue — they need a credible team and market.
             Series B companies don&apos;t get a pass on financials.
           </p>
-          <div className="grid md:grid-cols-3 gap-4">
+          <div className="grid md:grid-cols-1 md:grid-cols-3 gap-4">
             {WEIGHTS.map((col) => (
               <div
                 key={col.stage}
@@ -223,7 +223,7 @@ export default function HowItWorksPage() {
         {/* CTA */}
         <section className="rounded-2xl bg-gradient-to-br from-[var(--ink)] to-indigo-700 p-8 text-center text-white">
           <h2 className="text-2xl font-bold mb-2">Ready to get scored?</h2>
-          <p className="text-sm text-white/80 mb-6 max-w-md mx-auto">
+          <p className="text-sm text-white/80 mb-6 w-full md:max-w-md mx-auto">
             Upload your pitch deck and get a full Kunfa Score across all six dimensions
             in minutes.
           </p>

@@ -11,7 +11,7 @@ export default function CapTablePage() {
           <PieChart className="w-8 h-8 text-[var(--accent-ink)]" />
         </div>
         <h1 className="text-2xl font-bold text-[var(--ink)] mb-3">Cap Table Management</h1>
-        <p className="text-[var(--ink-mute)] max-w-md mx-auto">
+        <p className="text-[var(--ink-mute)] w-full md:max-w-md mx-auto">
           Visual cap table with ownership tracking, dilution modeling, and investor-ready exports. Coming soon.
         </p>
       </div>

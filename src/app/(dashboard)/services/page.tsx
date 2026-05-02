@@ -289,7 +289,7 @@ function DiscoveryCallForm() {
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Full Name *</label>
           <input
@@ -407,7 +407,7 @@ function ProviderApplicationForm() {
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Company / Individual Name *</label>
           <input

@@ -202,7 +202,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                   className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Expires in (days)</label>
                   <input

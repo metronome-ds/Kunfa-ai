@@ -11,7 +11,7 @@ export default function ValuationCalculatorPage() {
           <Calculator className="w-8 h-8 text-[var(--accent-ink)]" />
         </div>
         <h1 className="text-2xl font-bold text-[var(--ink)] mb-3">AI Valuation Calculator</h1>
-        <p className="text-[var(--ink-mute)] max-w-md mx-auto">
+        <p className="text-[var(--ink-mute)] w-full md:max-w-md mx-auto">
           Multi-method valuation with DCF, comparable companies, revenue multiples, and AI-recommended approach. Coming soon.
         </p>
       </div>

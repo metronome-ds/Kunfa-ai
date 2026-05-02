@@ -231,7 +231,7 @@ export default function InvitationsPage() {
       {/* Create Modal */}
       {modalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-[var(--bg-elev)] rounded-xl p-6 max-w-md w-full">
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 w-full md:max-w-md w-full">
             <h3 className="font-semibold text-[var(--ink)] mb-4">Generate Code</h3>
             <div className="space-y-3">
               <div>
@@ -267,7 +267,7 @@ export default function InvitationsPage() {
       {/* Bulk Modal */}
       {bulkOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-[var(--bg-elev)] rounded-xl p-6 max-w-md w-full">
+          <div className="bg-[var(--bg-elev)] rounded-xl p-6 w-full md:max-w-md w-full">
             <h3 className="font-semibold text-[var(--ink)] mb-4">Bulk Generate</h3>
             <div className="space-y-3">
               <div>

@@ -117,7 +117,7 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
         {/* Basic Info */}
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Basic Info</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Name</label>
               <input type="text" value={form.name || ''} onChange={(e) => updateField('name', e.target.value)} className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]" />
@@ -127,7 +127,7 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
               <input type="text" value={form.display_name || ''} onChange={(e) => updateField('display_name', e.target.value)} className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]" />
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Slug</label>
               <input type="text" value={form.slug || ''} onChange={(e) => updateField('slug', e.target.value)} className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]" />
@@ -160,7 +160,7 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
         {/* Domain */}
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Domain</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Subdomain</label>
               <div className="flex items-center">
@@ -178,7 +178,7 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
         {/* Branding */}
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Branding</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Logo URL</label>
               <input type="url" value={form.logo_url || ''} onChange={(e) => updateField('logo_url', e.target.value)} className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]" />
@@ -188,7 +188,7 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
               <input type="url" value={form.favicon_url || ''} onChange={(e) => updateField('favicon_url', e.target.value)} className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]" />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Primary Color</label>
               <div className="flex items-center gap-2">
@@ -238,7 +238,7 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
         {/* Legal */}
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Legal</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Privacy Policy URL</label>
               <input type="url" value={form.privacy_policy_url || ''} onChange={(e) => updateField('privacy_policy_url', e.target.value)} className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]" />
@@ -253,7 +253,7 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
         {/* Features */}
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Features</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {Object.entries(form.features || {}).map(([key, enabled]) => (
               <label key={key} className="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--bg-sunk)] cursor-pointer">
                 <input
@@ -271,7 +271,7 @@ export default function EditTenantPage({ params }: { params: Promise<{ id: strin
         {/* Limits */}
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 space-y-4">
           <h2 className="text-lg font-semibold text-[var(--ink)]">Limits</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {['max_members', 'max_startups', 'max_deals', 'max_documents', 'max_storage_gb'].map(field => (
               <div key={field}>
                 <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">

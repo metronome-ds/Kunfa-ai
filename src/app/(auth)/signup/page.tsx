@@ -438,7 +438,7 @@ function SignupContent() {
   if (step === 'otp') {
     return (
       <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
-        <div className="w-full max-w-md">
+        <div className="w-full w-full md:max-w-md">
           <div className="text-center mb-8">
             <Link href="/" className="inline-block mb-6">
               {isTenantContext && tenant?.logo_url ? (
@@ -534,7 +534,7 @@ function SignupContent() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+      <div className="w-full w-full md:max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
             {isTenantContext && tenant?.logo_url ? (
@@ -593,7 +593,7 @@ function SignupContent() {
             {!claimToken && !inviteId && (
               <div>
                 <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">I am a...</label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => setSelectedRole('startup')}

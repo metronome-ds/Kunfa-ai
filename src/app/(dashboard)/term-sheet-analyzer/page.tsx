@@ -347,7 +347,7 @@ export default function TermSheetAnalyzerPage() {
           <FileSearch className="w-8 h-8 text-[var(--accent-ink)]" />
         </div>
         <h1 className="text-2xl font-bold text-[var(--ink)] mb-3">Term Sheet Analyzer</h1>
-        <p className="text-[var(--ink-mute)] max-w-md mx-auto">
+        <p className="text-[var(--ink-mute)] w-full md:max-w-md mx-auto">
           Upload a term sheet and get an instant AI-powered clause-by-clause analysis with founder-friendliness ratings and market comparisons.
         </p>
       </div>

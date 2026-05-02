@@ -531,7 +531,7 @@ function DashboardContent() {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-lg flex items-center justify-center"><Star className="w-5 h-5 text-[var(--accent-ink)]" /></div>
@@ -694,7 +694,7 @@ function DashboardContent() {
           <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-12 text-center">
             <div className="w-16 h-16 bg-[var(--bg-sunk)] rounded-2xl flex items-center justify-center mx-auto mb-4"><Star className="w-8 h-8 text-[var(--ink-faint)]" /></div>
             <h2 className="text-lg font-semibold text-[var(--ink)] mb-2">Get Your Kunfa Score</h2>
-            <p className="text-[var(--ink-mute)] text-sm mb-6 max-w-md mx-auto">Upload your pitch deck to get your AI-powered investment readiness score and create your company profile.</p>
+            <p className="text-[var(--ink-mute)] text-sm mb-6 w-full md:max-w-md mx-auto">Upload your pitch deck to get your AI-powered investment readiness score and create your company profile.</p>
             {canEdit && (
               <button
                 onClick={() => setShowScoreModal(true)}

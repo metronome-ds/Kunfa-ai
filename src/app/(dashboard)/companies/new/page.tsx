@@ -639,7 +639,7 @@ export default function AddCompanyPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Website URL</label>
               <input type="text" value={form.website_url} onChange={(e) => updateField('website_url', e.target.value)} className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="https://example.com" />
@@ -650,7 +650,7 @@ export default function AddCompanyPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Industry</label>
               <select value={form.sector} onChange={(e) => updateField('sector', e.target.value)} className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]">
@@ -667,7 +667,7 @@ export default function AddCompanyPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Raise Amount (USD)</label>
               <input type="number" value={form.raise_amount} onChange={(e) => updateField('raise_amount', e.target.value)} className="w-full px-4 py-2.5 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="e.g. 2000000" />

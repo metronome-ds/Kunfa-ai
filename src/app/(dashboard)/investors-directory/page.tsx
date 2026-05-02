@@ -111,7 +111,7 @@ export default function InvestorsDirectoryPage() {
           <p className="text-sm text-[var(--ink-mute)] mt-1">Investors in your network will appear here.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 md:grid-cols-3 gap-4">
           {investors.map((inv) => {
             const firm = inv.fund_name || inv.company_name;
             return (

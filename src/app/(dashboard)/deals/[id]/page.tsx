@@ -108,7 +108,7 @@ export default function DealDetailPage() {
   if (error || !deal) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[var(--bg-sunk)] p-6">
-        <div className="max-w-md bg-[var(--bg-elev)] rounded-lg border border-red-200 p-6">
+        <div className="w-full md:max-w-md bg-[var(--bg-elev)] rounded-lg border border-red-200 p-6">
           <AlertCircle className="h-12 w-12 text-red-600 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-[var(--ink)] text-center mb-2">
             Error Loading Deal

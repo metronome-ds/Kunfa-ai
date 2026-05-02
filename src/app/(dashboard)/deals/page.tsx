@@ -274,7 +274,7 @@ export default function BrowseCompaniesPage() {
               <h3 className="text-xl font-semibold text-[var(--ink)] mb-2">
                 No companies found
               </h3>
-              <p className="text-[var(--ink-soft)] mb-6 max-w-md mx-auto">
+              <p className="text-[var(--ink-soft)] mb-6 w-full md:max-w-md mx-auto">
                 {activeFilterCount > 0
                   ? 'Try adjusting your filters to see more companies.'
                   : 'Be the first to get scored! Submit your pitch deck and get an AI-powered investment analysis in minutes.'}

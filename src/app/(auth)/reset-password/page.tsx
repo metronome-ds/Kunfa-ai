@@ -119,7 +119,7 @@ function ResetPasswordContent() {
   if (!sessionReady) {
     return (
       <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
-        <div className="w-full max-w-md text-center">
+        <div className="w-full w-full md:max-w-md text-center">
           <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
             <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -141,7 +141,7 @@ function ResetPasswordContent() {
   if (success) {
     return (
       <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
-        <div className="w-full max-w-md text-center">
+        <div className="w-full w-full md:max-w-md text-center">
           <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
             <svg className="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -162,7 +162,7 @@ function ResetPasswordContent() {
 
   return (
     <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+      <div className="w-full w-full md:max-w-md">
         <div className="text-center mb-8">
           <Link href="/" className="inline-block mb-6">
             <KunfaLogo height={32} />
