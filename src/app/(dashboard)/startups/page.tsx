@@ -114,16 +114,21 @@ export default function StartupsPage() {
   const stages = Array.from(new Set(startups.map((s) => s.stage).filter(Boolean))) as string[];
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Startups</h1>
-        <p className="text-gray-500 text-sm mt-1">Explore startups in your network</p>
+    <div>
+      <div style={{
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24,
+        marginBottom: 36, paddingBottom: 24, borderBottom: '1px solid var(--line)',
+      }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 38, lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: 8 }}>Startups</h1>
+          <p style={{ color: 'var(--ink-soft)', fontSize: 14 }}>Every Kunfa-onboarded company. Verified, scored, and updated quarterly.</p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex flex-wrap gap-3 items-center">
+      <div style={{ background: 'var(--bg-elev)', border: '1px solid var(--line)', borderRadius: 'var(--radius-lg)', padding: 16, marginBottom: 24, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center' }}>
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search startups..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" style={{ color: 'var(--ink-mute)' }} />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search startups..." style={{ width: '100%', paddingLeft: 36, paddingRight: 12, paddingTop: 8, paddingBottom: 8, border: '1px solid var(--line-strong)', borderRadius: 5, fontSize: 13, background: 'var(--bg)', color: 'var(--ink)', outline: 'none' }} />
         </div>
         <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
           <option value="">All industries</option>
