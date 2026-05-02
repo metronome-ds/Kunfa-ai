@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Users, UserPlus, Trash2, X, RefreshCw } from 'lucide-react'
+import { PageHead, Button as DSButton, Card } from '@/components/ui/design-system'
 
 interface TeamMember {
   id: string
@@ -233,30 +234,20 @@ export default function TeamPage() {
     entityMode ? m.role === 'owner' : m.id === 'owner'
 
   const inputClass =
-    'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]'
+    'w-full px-3 py-2 border rounded-[5px] text-sm placeholder:text-[var(--ink-mute)] focus:outline-none focus:border-[var(--ink)] focus:shadow-[var(--focus-ring)]'
+    + ' bg-[var(--bg)] border-[var(--line-strong)] text-[var(--ink)]'
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Users className="w-6 h-6 text-[#007CF8]" />
-            Team
-          </h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Manage your team members and permissions
-          </p>
-        </div>
-        {canManage && (
-          <button
-            onClick={() => setShowInvite(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#007CF8] text-white rounded-lg text-sm font-semibold hover:bg-[#0066D6] transition"
-          >
-            <UserPlus className="w-4 h-4" />
+    <div>
+      <PageHead
+        title="Team"
+        subtitle="Manage your team members and permissions"
+        cta={canManage ? (
+          <DSButton variant="primary" onClick={() => setShowInvite(true)} icon={<UserPlus size={14} />}>
             Invite Member
-          </button>
-        )}
-      </div>
+          </DSButton>
+        ) : undefined}
+      />
 
       {success && (
         <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-6">
@@ -277,10 +268,10 @@ export default function TeamPage() {
       )}
 
       {!loading && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="rounded-[var(--radius-lg)] border border-[var(--line)] overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="bg-[#F8F9FB] border-b border-gray-200">
+              <tr className="bg-[var(--bg-sunk)] border-b border-[var(--line)]">
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Member</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
                 <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
