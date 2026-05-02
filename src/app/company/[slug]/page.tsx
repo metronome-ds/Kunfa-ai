@@ -416,7 +416,7 @@ export default async function CompanyPublicPage({
 
         {/* Overview */}
         {company.description && (
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] p-6 border border-[var(--line)]">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Overview</h2>
             <p className="text-gray-600 leading-relaxed">{company.description}</p>
           </div>
@@ -434,7 +434,7 @@ export default async function CompanyPublicPage({
 
         {/* Team */}
         {hasTeamSection && (
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] p-6 border border-[var(--line)]">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Team</h2>
 
             {/* Team member cards */}
@@ -485,7 +485,7 @@ export default async function CompanyPublicPage({
 
         {/* Funding */}
         {hasFunding && (
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] p-6 border border-[var(--line)]">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Funding</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
               {raiseFormatted && (
@@ -512,7 +512,7 @@ export default async function CompanyPublicPage({
 
         {/* Traction */}
         {company.traction && (
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] p-6 border border-[var(--line)]">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Traction</h2>
             <p className="text-gray-600 leading-relaxed">{company.traction}</p>
           </div>
@@ -520,7 +520,7 @@ export default async function CompanyPublicPage({
 
         {/* AI Analysis */}
         {hasAnalysis && (
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+          <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] p-6 border border-[var(--line)]">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">AI Analysis</h2>
             <div className="space-y-5">
               {company.problem_summary && (
