@@ -416,19 +416,28 @@ export default function PipelinePage() {
   return (
     <div className="p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div style={{
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24,
+        marginBottom: 36, paddingBottom: 24, borderBottom: '1px solid var(--line)',
+      }}>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Deal Pipeline</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            {watchlist.length} watchlisted &middot; {totalDeals} deal{totalDeals !== 1 ? 's' : ''} in pipeline
+          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 38, lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: 8 }}>
+            Deal Pipeline
+          </h1>
+          <p style={{ color: 'var(--ink-soft)', fontSize: 14 }}>
+            {watchlist.length} watchlisted · {totalDeals} deal{totalDeals !== 1 ? 's' : ''} in pipeline
           </p>
         </div>
         <Link
           href="/deals"
-          className="flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
+          style={{
+            display: 'inline-flex', alignItems: 'center', gap: 7,
+            padding: '9px 16px', borderRadius: 6, fontSize: 13, fontWeight: 500,
+            background: 'var(--ink)', color: '#fafaf7', textDecoration: 'none',
+          }}
         >
-          Browse Companies
-          <ArrowRight className="w-4 h-4" />
+          Browse Deals
+          <ArrowRight size={14} />
         </Link>
       </div>
 
