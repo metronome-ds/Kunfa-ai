@@ -203,6 +203,7 @@ export default function DashboardPage() {
 }
 
 function DashboardContent() {
+  const isMobile = useIsMobile();
   const { isTenantContext, isLoading: tenantLoading } = useTenant();
   const searchParams = useSearchParams();
   const paidParam = searchParams.get('paid') === 'true';
@@ -716,7 +717,6 @@ function DashboardContent() {
 
   // ─── INVESTOR DASHBOARD ──────────────────────────────────
   const totalStageDeals = Object.values(stageCounts).reduce((a, b) => a + b, 0);
-  const isMobile = useIsMobile();
 
   // Mobile layout — completely different structure per m-screens.jsx
   if (isMobile) {
