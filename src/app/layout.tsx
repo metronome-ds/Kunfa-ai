@@ -1,5 +1,27 @@
 import type { Metadata, Viewport } from "next";
+import { Newsreader, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+
+const newsreader = Newsreader({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-newsreader",
+  weight: ["400", "500", "600"],
+});
+
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter-tight",
+  weight: ["400", "500", "600"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-jetbrains-mono",
+  weight: ["400", "500"],
+});
 
 export const metadata: Metadata = {
   title: "Kunfa — Venture Intelligence",
@@ -27,7 +49,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${newsreader.variable} ${interTight.variable} ${jetbrainsMono.variable}`}>
       <body className="antialiased">
         {children}
       </body>
