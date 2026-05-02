@@ -734,7 +734,7 @@ function DashboardContent() {
       />
 
       {/* Stat Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
+      <div className="stat-grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
         <StatCard label="Pipeline Deals" value={String(investorStats.pipelineDeals)} foot={`Tracking ${investorStats.pipelineDeals}`} icon={<Briefcase size={14} />} />
         <StatCard label="Watchlisted" value={String(investorStats.watchlisted)} foot={`${investorStats.watchlisted} saved`} icon={<Bookmark size={14} />} />
         <StatCard label="Total Pipeline Value" value={formatCompact(investorStats.totalPipelineValue)} foot="Across all deals" icon={<DollarSign size={14} />} />

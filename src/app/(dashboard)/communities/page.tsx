@@ -83,14 +83,14 @@ export default function CommunitiesPage() {
         <Tabs tabs={TABS} active={tab} onChange={setTab} />
 
         {/* 3-column stat row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32 }}>
+        <div className="stat-grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 32 }}>
           <StatCard label="Members" value={String(communities.reduce((s, c) => s + c.memberCount, 0))} icon={<Users size={14} />} />
           <StatCard label="Discussions this week" value={String(communities.reduce((s, c) => s + c.dealCount, 0))} icon={<MessageCircle size={14} />} />
           <StatCard label="Communities" value={String(communities.length)} icon={<TrendingUp size={14} />} />
         </div>
 
         {/* Two-column layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 28 }}>
+        <div className="community-grid-responsive" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 28 }}>
           {/* Left: Community list */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>

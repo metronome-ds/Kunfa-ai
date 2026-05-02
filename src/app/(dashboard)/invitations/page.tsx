@@ -20,7 +20,7 @@ export default function InvitationsPage() {
       />
 
       {/* Invite cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
+      <div className="invite-grid-responsive" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
         {/* Invite a Startup */}
         <Card>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>

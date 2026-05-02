@@ -1,14 +1,25 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Menu } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import Link from 'next/link';
+import { Menu, LayoutDashboard, Briefcase, MessageCircle, Mail, User } from 'lucide-react';
 import { Sidebar } from '@/components/common/Sidebar';
 import { Topbar } from '@/components/common/Topbar';
 import { TenantProvider } from '@/components/TenantProvider';
 
 const STORAGE_KEY = 'kunfa-sidebar-collapsed';
 
+const MOBILE_TABS = [
+  { label: 'Home', icon: LayoutDashboard, href: '/dashboard' },
+  { label: 'Deals', icon: Briefcase, href: '/deals' },
+  { label: 'Community', icon: MessageCircle, href: '/communities' },
+  { label: 'Invites', icon: Mail, href: '/invitations' },
+  { label: 'Profile', icon: User, href: '/settings' },
+];
+
 export function DashboardShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -27,6 +38,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     });
   }
 
+  const isTabActive = (href: string) =>
+    pathname === href || (href !== '/dashboard' && pathname.startsWith(href + '/'));
+
   return (
     <TenantProvider>
       <div
@@ -39,7 +53,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           background: 'var(--bg)',
         }}
       >
-        {/* Desktop sidebar */}
+        {/* Desktop sidebar — hidden on mobile */}
         <div className="hidden md:block">
           <Sidebar collapsed={collapsed} onToggle={toggleCollapsed} />
         </div>
@@ -56,7 +70,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
         {/* Main Content */}
         <div className="min-w-0 flex flex-col md:col-start-2">
-          {/* Mobile hamburger */}
+          {/* Mobile hamburger — hidden on desktop */}
           <button
             onClick={() => setMobileOpen(true)}
             className="md:hidden fixed top-4 left-4 z-30 p-2 rounded-lg border"
@@ -65,8 +79,28 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <Menu className="w-5 h-5" style={{ color: 'var(--ink-soft)' }} />
           </button>
 
-          {/* Topbar */}
-          <Topbar />
+          {/* Topbar — hidden on mobile */}
+          <div className="hidden md:block">
+            <Topbar />
+          </div>
+
+          {/* Mobile nav header — shown on mobile only */}
+          <div
+            className="md:hidden flex items-center justify-between"
+            style={{
+              padding: '12px 16px',
+              background: 'var(--bg)',
+            }}
+          >
+            <div style={{ width: 40 }} /> {/* spacer for hamburger */}
+            <span style={{
+              fontFamily: 'var(--serif)', fontSize: 18, letterSpacing: '-0.01em',
+              color: 'var(--ink)',
+            }}>
+              Kunfa
+            </span>
+            <div style={{ width: 40 }} />
+          </div>
 
           {/* Page content */}
           <main
@@ -80,6 +114,24 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </main>
         </div>
       </div>
+
+      {/* Mobile tab bar */}
+      <nav className="mobile-tabbar">
+        {MOBILE_TABS.map((tab) => {
+          const active = isTabActive(tab.href);
+          const Icon = tab.icon;
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={`mobile-tab ${active ? 'active' : ''}`}
+            >
+              <Icon size={22} />
+              <span>{tab.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </TenantProvider>
   );
 }
