@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { PageHead, Accordion, Button } from '@/components/ui/design-system';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 
 const FAQS = [
   { question: "What is Kunfa?", answer: "Kunfa is an AI-powered venture intelligence platform. We help accredited investors source, score, and manage early-stage deals — and help founders get investment-ready and matched with the right capital." },
@@ -17,6 +19,69 @@ const FAQS = [
 ];
 
 export default function FAQPage() {
+  const isMobile = useIsMobile();
+  const [openIdx, setOpenIdx] = useState(0);
+
+  if (isMobile) {
+    return (
+      <div style={{ padding: '0 20px' }}>
+        <p style={{ fontSize: 13, color: 'var(--ink-soft)', margin: '4px 0 16px' }}>
+          Everything you need to know about Kunfa, our membership model, and how the platform works.
+        </p>
+
+        <div style={{ background: 'var(--bg-elev)', border: '1px solid var(--line)', borderRadius: 14, overflow: 'hidden', marginTop: 4 }}>
+          {FAQS.map((f, i) => (
+            <div key={i} style={{ borderBottom: i < FAQS.length - 1 ? '1px solid var(--line)' : 'none' }}>
+              <button
+                onClick={() => setOpenIdx(openIdx === i ? -1 : i)}
+                style={{
+                  width: '100%', padding: '16px 18px', display: 'flex', alignItems: 'center',
+                  justifyContent: 'space-between', textAlign: 'left', fontSize: 13.5, fontWeight: 500,
+                  gap: 10, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink)',
+                }}
+              >
+                <span>{f.question}</span>
+                <ChevronDown size={14} style={{
+                  color: openIdx === i ? 'var(--ink)' : 'var(--ink-mute)',
+                  transition: 'transform 200ms', flexShrink: 0,
+                  transform: openIdx === i ? 'rotate(180deg)' : undefined,
+                }} />
+              </button>
+              {openIdx === i && (
+                <div style={{ padding: '0 18px 16px', fontSize: 12.5, lineHeight: 1.6, color: 'var(--ink-soft)' }}>
+                  {f.answer}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div style={{
+          background: 'var(--ink)', color: '#f4f3ee', borderRadius: 14,
+          padding: '18px 20px', marginTop: 14, position: 'relative', overflow: 'hidden',
+        }}>
+          <div style={{
+            position: 'absolute', left: -60, top: '50%', transform: 'translateY(-50%)',
+            width: 160, height: 160, borderRadius: '50%',
+            background: 'radial-gradient(circle, var(--accent) 0%, transparent 70%)',
+            opacity: 0.18, pointerEvents: 'none',
+          }} />
+          <h3 style={{ color: '#f4f3ee', fontSize: 17, marginBottom: 4, position: 'relative', zIndex: 1 }}>Still have questions?</h3>
+          <p style={{ color: 'rgba(244,243,238,0.65)', fontSize: 12.5, marginBottom: 12, position: 'relative', zIndex: 1 }}>
+            Drop us a line and our team will get back within 24 hours.
+          </p>
+          <button style={{
+            background: '#fff', color: 'var(--ink)', padding: '10px 16px',
+            borderRadius: 99, fontSize: 12.5, fontWeight: 600,
+            position: 'relative', zIndex: 1, border: 'none', cursor: 'pointer',
+          }}>
+            Contact us
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <PageHead
