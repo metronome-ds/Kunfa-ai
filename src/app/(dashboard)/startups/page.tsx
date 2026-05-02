@@ -156,7 +156,7 @@ export default function StartupsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 md:grid-cols-3 gap-4">
           {startups.map((s) => (
-            <Link key={s.id} href={`/company/${s.slug}`} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5 hover:border-[var(--line-strong)] hover:shadow-sm transition">
+            <Link key={s.id} href={`/company/${s.slug}`} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5 hover:border-[var(--line-strong)]  transition">
               <div className="flex items-start gap-3 mb-3">
                 {s.logo_url ? (
                   // eslint-disable-next-line @next/next/no-img-element

@@ -19,7 +19,7 @@ export default function CalculatorsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* LBO Calculator */}
         <Link href="/calculators/lbo">
-          <Card className="h-full cursor-pointer hover:shadow-lg transition-shadow">
+          <Card className="h-full cursor-pointer  ">
             <div className="flex flex-col h-full">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -47,7 +47,7 @@ export default function CalculatorsPage() {
 
         {/* Valuation Calculator */}
         <Link href="/calculators/valuation">
-          <Card className="h-full cursor-pointer hover:shadow-lg transition-shadow">
+          <Card className="h-full cursor-pointer  ">
             <div className="flex flex-col h-full">
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -75,7 +75,7 @@ export default function CalculatorsPage() {
 
         {/* DD Checklist */}
         <Link href="/calculators/dd-checklist">
-          <Card className="h-full cursor-pointer hover:shadow-lg transition-shadow">
+          <Card className="h-full cursor-pointer  ">
             <div className="flex flex-col h-full">
               <div className="flex items-start justify-between mb-4">
                 <div>

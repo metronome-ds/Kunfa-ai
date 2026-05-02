@@ -262,7 +262,7 @@ export default function RoomPage() {
                 {documents.map(doc => (
                   <div
                     key={doc.id}
-                    className="bg-[var(--bg-elev)] border border-[var(--line)] rounded-xl p-5 hover:border-[var(--line-strong)]/30 hover:shadow-md transition"
+                    className="bg-[var(--bg-elev)] border border-[var(--line)] rounded-xl p-5 hover:border-[var(--line-strong)]/30  transition"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <span className="text-3xl">{getFileIcon(doc.file_type)}</span>

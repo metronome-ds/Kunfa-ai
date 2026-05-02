@@ -42,7 +42,7 @@ export default function DebtProviderSection() {
 
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           {providers.map((provider) => (
-            <div key={provider.name} className="bg-[var(--bg-elev)] rounded-2xl p-6 border border-[var(--line)] hover:shadow-lg transition-shadow text-left">
+            <div key={provider.name} className="bg-[var(--bg-elev)] rounded-2xl p-6 border border-[var(--line)]   text-left">
               <div className="text-3xl mb-4">{provider.icon}</div>
               <h3 className="text-lg font-bold text-kunfa-navy mb-2">{provider.name}</h3>
               <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full mb-4 ${provider.typeColor}`}>

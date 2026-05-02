@@ -139,7 +139,7 @@ export function CompanyCard({
 
   return (
     <Link href={`/company/${company.slug}`}>
-      <div className="h-full bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] hover:border-[var(--line-strong)]/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden cursor-pointer">
+      <div className="h-full bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] hover:border-[var(--line-strong)]/60  hover:-translate-y-0.5 transition-all duration-200 overflow-hidden cursor-pointer">
         <div className="p-6">
           {/* Header: badges + watchlist */}
           <div className="flex items-start justify-between mb-3">

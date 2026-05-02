@@ -72,7 +72,7 @@ function PipelineDealCard({
   };
 
   return (
-    <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-4 mb-3 hover:shadow-md transition-shadow">
+    <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-4 mb-3  ">
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
         <div className="flex-1 min-w-0">

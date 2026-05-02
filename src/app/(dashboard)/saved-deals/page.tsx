@@ -201,7 +201,7 @@ export default function SavedDealsPage() {
               const funding = formatRaiseAmount(company.raise_amount);
 
               return (
-                <div key={item.id} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] hover:border-[var(--line-strong)] hover:shadow-lg transition-all duration-200 overflow-hidden">
+                <div key={item.id} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] hover:border-[var(--line-strong)]  transition-all duration-200 overflow-hidden">
                   <div className="p-6">
                     {/* Badges */}
                     <div className="flex items-center gap-2 mb-3">

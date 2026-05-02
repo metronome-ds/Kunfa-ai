@@ -45,7 +45,7 @@ function getStageColor(stage: string) {
 function DealCard({ id, company_name, industry, stage, overall_score, funding_amount_requested }: DealCardProps) {
   return (
     <Link href={`/deals/${id}`}>
-      <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-4 hover:shadow-md hover:border-[var(--line)] transition-all cursor-pointer">
+      <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-4  hover:border-[var(--line)] transition-all cursor-pointer">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
             <h3 className="font-semibold text-[var(--ink)] text-sm">{company_name}</h3>

@@ -69,7 +69,7 @@ export function RecentActivity({
       {items.map((item) => {
         const color = item.color || 'blue';
         const Content = (
-          <div className="flex items-start gap-4 p-4 bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] hover:shadow-sm transition-shadow">
+          <div className="flex items-start gap-4 p-4 bg-[var(--bg-elev)] rounded-lg border border-[var(--line)]  ">
             <div className={`p-2 rounded-lg flex-shrink-0 ${colorClasses[color]}`}>
               <item.icon className={`h-5 w-5 ${iconColorClasses[color]}`} />
             </div>

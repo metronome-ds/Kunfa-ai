@@ -184,7 +184,7 @@ export default function PeoplePage() {
             {people.map((person) => (
               <div
                 key={person.id}
-                className="hover:shadow-lg transition-shadow cursor-pointer"
+                className="  cursor-pointer"
                 onClick={() => handleViewProfile(person.user_id)}
               >
               <Card

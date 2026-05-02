@@ -41,7 +41,7 @@ function ActionCard({ title, description, icon: Icon, href, color }: QuickAction
     <Link href={href}>
       <div
         className={cn(
-          'bg-[var(--bg-elev)] rounded-xl p-6 border cursor-pointer transition-all hover:shadow-md',
+          'bg-[var(--bg-elev)] rounded-xl p-6 border cursor-pointer transition-all ',
           colorClasses[color]
         )}
       >

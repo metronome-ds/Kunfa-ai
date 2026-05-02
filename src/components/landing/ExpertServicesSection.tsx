@@ -43,7 +43,7 @@ export default function ExpertServicesSection() {
           {highlights.map((item) => (
             <div
               key={item.title}
-              className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 text-left hover:border-[var(--line-strong)]/40 hover:shadow-md transition-all"
+              className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 text-left hover:border-[var(--line-strong)]/40  transition-all"
             >
               <span className="text-2xl mb-3 block">{item.icon}</span>
               <h3 className="text-sm font-bold text-[var(--ink)] mb-1">{item.title}</h3>

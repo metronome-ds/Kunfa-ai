@@ -61,7 +61,7 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
 
   return (
     <Link href={`/deals/${deal.id}`}>
-      <div className="h-full bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] hover:border-[var(--line-strong)] hover:shadow-lg transition-all duration-200 overflow-hidden cursor-pointer">
+      <div className="h-full bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] hover:border-[var(--line-strong)]  transition-all duration-200 overflow-hidden cursor-pointer">
         {/* Card Content */}
         <div className="p-6">
           {/* Header with Save Button */}

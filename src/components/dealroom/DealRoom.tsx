@@ -417,7 +417,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
               return (
                 <div
                   key={doc.id}
-                  className="group border border-[var(--line)] rounded-lg p-4 hover:border-[var(--line-strong)]/30 hover:shadow-sm transition relative"
+                  className="group border border-[var(--line)] rounded-lg p-4 hover:border-[var(--line-strong)]/30  transition relative"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <span className="text-2xl">{getFileIcon(doc.file_type)}</span>
