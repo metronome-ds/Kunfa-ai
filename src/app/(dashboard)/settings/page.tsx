@@ -6,8 +6,8 @@ import { supabase } from '@/lib/supabase';
 import { Save, LogOut, Check, Lock, AlertTriangle, User, Building2, Briefcase, CreditCard, Tag } from 'lucide-react';
 import { STAGES, INDUSTRIES } from '@/lib/constants';
 
-const INPUT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all';
-const SELECT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all';
+const INPUT_CLASS = 'w-full rounded-[5px] border border-[var(--line-strong)] bg-[var(--bg)] px-3 py-2.5 text-[13.5px] text-[var(--ink)] focus:border-[var(--ink)] focus:shadow-[var(--focus-ring)] outline-none transition-all';
+const SELECT_CLASS = 'w-full rounded-[5px] border border-[var(--line-strong)] bg-[var(--bg)] px-3 py-2.5 text-[13.5px] text-[var(--ink)] focus:border-[var(--ink)] focus:shadow-[var(--focus-ring)] outline-none transition-all';
 const DISABLED_CLASS = 'w-full rounded-lg border border-gray-200 bg-[#F8F9FB] px-4 py-2.5 text-sm text-gray-500 cursor-not-allowed';
 const LABEL_CLASS = 'block text-sm font-medium text-gray-700 mb-1.5';
 
@@ -64,7 +64,7 @@ function ChangePasswordSection() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+    <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] border border-[var(--line)] p-6 mb-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
         <Lock className="w-5 h-5 text-gray-400" />
         Change Password
@@ -195,7 +195,7 @@ function PlanBillingSection() {
   if (loading) return null;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+    <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] border border-[var(--line)] p-6 mb-6">
       <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
         <CreditCard className="w-5 h-5 text-gray-400" />
         Plan & Billing
@@ -473,13 +473,18 @@ export default function SettingsPage() {
       {/* Toast */}
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
-        <p className="text-gray-500 text-sm mt-1">Manage your account and profile information.</p>
+      <div style={{
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 24,
+        marginBottom: 36, paddingBottom: 24, borderBottom: '1px solid var(--line)',
+      }}>
+        <div>
+          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 38, lineHeight: 1.1, letterSpacing: '-0.02em', marginBottom: 8 }}>Settings</h1>
+          <p style={{ color: 'var(--ink-soft)', fontSize: 14 }}>Manage your account and profile information.</p>
+        </div>
       </div>
 
       {/* Section A — Personal Info */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+      <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] border border-[var(--line)] p-6 mb-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
           <User className="w-5 h-5 text-gray-400" />
           Personal Info
@@ -530,7 +535,7 @@ export default function SettingsPage() {
 
       {/* Section B — Startup: Company Information */}
       {showCompanySection && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+        <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] border border-[var(--line)] p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-1 flex items-center gap-2">
             <Building2 className="w-5 h-5 text-gray-400" />
             Company Information
@@ -603,7 +608,7 @@ export default function SettingsPage() {
 
       {/* Section B — Investor: Fund Information */}
       {showFundSection && (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+        <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] border border-[var(--line)] p-6 mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-5 flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-gray-400" />
             Investment Profile
