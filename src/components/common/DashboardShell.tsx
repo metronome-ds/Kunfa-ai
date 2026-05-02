@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Menu } from 'lucide-react';
 import { Sidebar } from '@/components/common/Sidebar';
-import { Navbar } from '@/components/common/Navbar';
+import { Topbar } from '@/components/common/Topbar';
 import { TenantProvider } from '@/components/TenantProvider';
 
 const STORAGE_KEY = 'kunfa-sidebar-collapsed';
@@ -29,45 +29,57 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <TenantProvider>
-    <div className="flex h-screen bg-[#F8F9FB]">
-      {/* Desktop sidebar */}
-      <div className="hidden md:block">
-        <Sidebar collapsed={collapsed} onToggle={toggleCollapsed} />
-      </div>
-
-      {/* Mobile overlay sidebar */}
-      {mobileOpen && (
-        <>
-          <div className="fixed inset-0 bg-black/30 z-40 md:hidden" onClick={() => setMobileOpen(false)} />
-          <div className="fixed left-0 top-0 h-full z-50 md:hidden">
-            <Sidebar collapsed={false} onToggle={() => setMobileOpen(false)} />
-          </div>
-        </>
-      )}
-
-      {/* Main Content */}
       <div
-        className={`flex flex-col flex-1 overflow-hidden transition-all duration-200 ${
-          mounted ? (collapsed ? 'md:ml-16' : 'md:ml-64') : 'md:ml-64'
-        }`}
+        className="min-h-screen"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: mounted
+            ? `${collapsed ? '64px' : 'var(--sidebar-w)'} 1fr`
+            : 'var(--sidebar-w) 1fr',
+          background: 'var(--bg)',
+        }}
       >
-        {/* Mobile hamburger + Navbar */}
-        <div className="relative">
+        {/* Desktop sidebar */}
+        <div className="hidden md:block">
+          <Sidebar collapsed={collapsed} onToggle={toggleCollapsed} />
+        </div>
+
+        {/* Mobile overlay sidebar */}
+        {mobileOpen && (
+          <>
+            <div className="fixed inset-0 bg-black/30 z-40 md:hidden" onClick={() => setMobileOpen(false)} />
+            <div className="fixed left-0 top-0 h-full z-50 md:hidden">
+              <Sidebar collapsed={false} onToggle={() => setMobileOpen(false)} />
+            </div>
+          </>
+        )}
+
+        {/* Main Content */}
+        <div className="min-w-0 flex flex-col md:col-start-2">
+          {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen(true)}
-            className="md:hidden fixed top-4 left-4 z-30 p-2 bg-white rounded-lg shadow-md border border-gray-200"
+            className="md:hidden fixed top-4 left-4 z-30 p-2 rounded-lg border"
+            style={{ background: 'var(--bg-elev)', borderColor: 'var(--line)' }}
           >
-            <Menu className="w-5 h-5 text-gray-600" />
+            <Menu className="w-5 h-5" style={{ color: 'var(--ink-soft)' }} />
           </button>
-          <Navbar />
-        </div>
 
-        {/* Content Area */}
-        <div className="flex-1 overflow-auto pt-16">
-          <div className="min-h-screen">{children}</div>
+          {/* Topbar */}
+          <Topbar />
+
+          {/* Page content */}
+          <main
+            style={{
+              padding: 'var(--page-pt) var(--page-px) var(--page-pb)',
+              maxWidth: 'var(--page-max)',
+              width: '100%',
+            }}
+          >
+            {children}
+          </main>
         </div>
       </div>
-    </div>
     </TenantProvider>
   );
 }

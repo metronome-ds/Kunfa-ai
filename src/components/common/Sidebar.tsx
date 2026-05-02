@@ -4,283 +4,82 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
+  LayoutDashboard,
+  Briefcase,
+  Store,
+  MessageCircle,
+  Rocket,
+  Users,
+  Mail,
+  HelpCircle,
+  FolderTree,
+  Shield,
+  Wallet,
   Settings,
   LogOut,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  Compass,
-  TrendingUp,
-  Users,
-  Building2,
-  FolderOpen,
-  Gift,
-  Star,
-  Upload,
-  LayoutDashboard,
-  Landmark,
-  PlusCircle,
-  Bookmark,
-  ShieldCheck,
   BarChart3,
-  Briefcase,
-  FileSearch,
-  PieChart,
-  Calculator,
+  Building2,
+  Upload,
+  ShieldCheck,
   Tag,
-  Rocket,
+  PlusCircle,
   UserPlus,
   Ticket,
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import KunfaLogo from '@/components/common/KunfaLogo';
 import { isSuperAdmin } from '@/lib/super-admins';
 import { canAccessFeature } from '@/lib/subscription';
 import { useTenant } from '@/components/TenantProvider';
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
 interface NavItem {
   label: string;
   icon: React.ReactNode;
-  href?: string;
+  href: string;
+  badge?: string;
   requiredTier?: string;
-  tierBadge?: string;
 }
 
-// Investor navigation — clean and focused
-const investorNavSections: Record<string, NavItem[]> = {
-  OVERVIEW: [
-    {
-      label: 'Dashboard',
-      icon: <LayoutDashboard className="h-5 w-5" />,
-      href: '/dashboard',
-    },
-  ],
-  DISCOVER: [
-    {
-      label: 'Browse Companies',
-      icon: <Compass className="h-5 w-5" />,
-      href: '/deals',
-    },
-  ],
-  'DEAL FLOW': [
-    {
-      label: 'Add Company',
-      icon: <PlusCircle className="h-5 w-5" />,
-      href: '/companies/new',
-    },
-    {
-      label: 'Pipeline',
-      icon: <TrendingUp className="h-5 w-5" />,
-      href: '/pipeline',
-    },
-    {
-      label: 'Saved Deals',
-      icon: <Bookmark className="h-5 w-5" />,
-      href: '/saved-deals',
-    },
-  ],
-  COMMUNITIES: [
-    {
-      label: 'Communities',
-      icon: <Users className="h-5 w-5" />,
-      href: '/communities',
-    },
-  ],
-};
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
 
-const investorBottomSections: NavItem[] = [
-  {
-    label: 'Team',
-    icon: <Users className="h-5 w-5" />,
-    href: '/team',
-  },
-  {
-    label: 'Settings',
-    icon: <Settings className="h-5 w-5" />,
-    href: '/settings',
-  },
-];
-
-// Startup navigation sections
-const startupNavSections: Record<string, NavItem[]> = {
-  'MY COMPANY': [
-    {
-      label: 'Dashboard',
-      icon: <LayoutDashboard className="h-5 w-5" />,
-      href: '/dashboard',
-    },
-    {
-      label: 'Company Profile',
-      icon: <Building2 className="h-5 w-5" />,
-      href: '/company-profile',
-    },
-    {
-      label: 'Data Room',
-      icon: <FolderOpen className="h-5 w-5" />,
-      href: '/data-room',
-    },
-  ],
-  FUNDING: [
-    {
-      label: 'Investors',
-      icon: <Users className="h-5 w-5" />,
-      href: '/investors',
-    },
-    {
-      label: 'Debt Partners',
-      icon: <Landmark className="h-5 w-5" />,
-      href: '/debt-partners',
-    },
-  ],
-  REWARDS: [
-    {
-      label: 'Points',
-      icon: <Star className="h-5 w-5" />,
-      href: '/points',
-    },
-    {
-      label: 'Rewards Catalog',
-      icon: <Gift className="h-5 w-5" />,
-      href: '/rewards',
-    },
-  ],
-  GROW: [
-    {
-      label: 'Services',
-      icon: <Briefcase className="h-5 w-5" />,
-      href: '/services',
-    },
-  ],
-  TOOLS: [
-    {
-      label: 'Term Sheet Analyzer',
-      icon: <FileSearch className="h-5 w-5" />,
-      href: '/term-sheet-analyzer',
-    },
-    {
-      label: 'Cap Table',
-      icon: <PieChart className="h-5 w-5" />,
-      href: '/cap-table',
-      requiredTier: 'cap_table',
-      tierBadge: 'GROWTH',
-    },
-    {
-      label: 'Valuation Calculator',
-      icon: <Calculator className="h-5 w-5" />,
-      href: '/valuation-calculator',
-      requiredTier: 'valuation_calculator',
-      tierBadge: 'GROWTH',
-    },
-  ],
-};
-
-const startupBottomSections: NavItem[] = [
-  {
-    label: 'Team',
-    icon: <Users className="h-5 w-5" />,
-    href: '/team',
-  },
-  {
-    label: 'Settings',
-    icon: <Settings className="h-5 w-5" />,
-    href: '/settings',
-  },
-];
-
-function TierBadge({ text }: { text: string }) {
-  return (
-    <span className="bg-[#007CF8] text-white text-[10px] rounded px-1.5 py-0.5 font-medium leading-none">
-      {text}
-    </span>
-  );
-}
-
-// Append ?tenant=<slug> to a path when a tenant query param is active in the
-// current URL. This keeps dev-mode tenant context alive across navigations
-// (on subdomain deploys, tenantParam is null and hrefs are unchanged).
 function withTenantParam(path: string, tenantParam: string | null): string {
   if (!tenantParam) return path;
   const sep = path.includes('?') ? '&' : '?';
   return `${path}${sep}tenant=${encodeURIComponent(tenantParam)}`;
 }
 
-interface SidebarSectionProps {
-  title: string;
-  items: NavItem[];
-  pathname: string;
-  collapsed: boolean;
-  userTier: string;
-  tenantParam: string | null;
+function getInitials(name: string): string {
+  return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 }
 
-function SidebarSection({ title, items, pathname, collapsed, userTier, tenantParam }: SidebarSectionProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+// ---------------------------------------------------------------------------
+// Navigation definitions
+// ---------------------------------------------------------------------------
 
-  if (collapsed) {
-    return (
-      <div className="mb-2 space-y-1">
-        {items.map((item) => {
-          const isActive =
-            pathname === item.href ||
-            (item.href !== '/' && pathname.startsWith(item.href + '/'));
-          return (
-            <Link
-              key={item.label}
-              href={withTenantParam(item.href || '#', tenantParam)}
-              className={`flex items-center justify-center p-2.5 rounded-lg transition-all ${
-                isActive
-                  ? 'bg-[#F0F7FF] text-[#007CF8]'
-                  : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
-              }`}
-              title={item.label}
-            >
-              {item.icon}
-            </Link>
-          );
-        })}
-      </div>
-    );
-  }
+const PRIMARY_NAV: NavItem[] = [
+  { label: 'Dashboard', icon: <LayoutDashboard size={15} />, href: '/dashboard' },
+  { label: 'Deals', icon: <Briefcase size={15} />, href: '/deals' },
+  { label: 'Marketplace', icon: <Store size={15} />, href: '/services' },
+  { label: 'Community', icon: <MessageCircle size={15} />, href: '/communities' },
+  { label: 'Startups', icon: <Rocket size={15} />, href: '/startups' },
+  { label: 'Investors', icon: <Users size={15} />, href: '/investors' },
+  { label: 'Invitations', icon: <Mail size={15} />, href: '/invitations' },
+  { label: 'FAQ', icon: <HelpCircle size={15} />, href: '/faq' },
+];
 
-  return (
-    <div className="mb-4">
-      <button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between px-4 py-2 text-[11px] font-semibold text-[#9CA3AF] hover:text-[#4B5563] transition-colors uppercase tracking-wider"
-      >
-        <span>{title}</span>
-        <ChevronDown
-          className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-0' : '-rotate-90'}`}
-        />
-      </button>
-      {isExpanded && (
-        <div className="space-y-1 mt-1">
-          {items.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href !== '/' && pathname.startsWith(item.href + '/'));
-            const showBadge = item.requiredTier && !canAccessFeature(userTier, item.requiredTier);
-            return (
-              <Link
-                key={item.label}
-                href={withTenantParam(item.href || '#', tenantParam)}
-                className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all ${
-                  isActive
-                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
-                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
-                }`}
-              >
-                {item.icon}
-                <span className="text-sm flex-1">{item.label}</span>
-                {showBadge && item.tierBadge && <TierBadge text={item.tierBadge} />}
-              </Link>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
+const JOIN_NAV: NavItem[] = [
+  { label: 'Founder Onboarding', icon: <FolderTree size={15} />, href: '/onboarding' },
+  { label: 'Join as Investor', icon: <Shield size={15} />, href: '/join-investor' },
+];
+
+// ---------------------------------------------------------------------------
+// Sidebar Component
+// ---------------------------------------------------------------------------
 
 interface SidebarProps {
   collapsed?: boolean;
@@ -297,9 +96,9 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const [isTenantAdmin, setIsTenantAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tenantParam, setTenantParam] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
-  // Snapshot ?tenant= from the URL on mount and whenever pathname changes, so
-  // sidebar hrefs can preserve it across navigations (dev mode).
   useEffect(() => {
     if (typeof window === 'undefined') return;
     setTenantParam(new URLSearchParams(window.location.search).get('tenant'));
@@ -308,31 +107,27 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   useEffect(() => {
     const loadUserData = async () => {
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
+        const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           const { data: profile } = await supabase
             .from('profiles')
-            .select('role, is_admin')
+            .select('role, is_admin, full_name')
             .eq('user_id', user.id)
             .single();
 
           setUserRole(profile?.role || 'investor');
           setIsAdmin(profile?.is_admin === true);
           setIsSuperAdminUser(isSuperAdmin(user.email));
+          setUserName(profile?.full_name || null);
+          setUserEmail(user.email || null);
 
-          // Fetch tier
           try {
             const tierRes = await fetch('/api/subscription');
             if (tierRes.ok) {
               const tierData = await tierRes.json();
               setUserTier(tierData.tier || 'free');
             }
-          } catch {
-            // Default to free
-          }
+          } catch { /* default free */ }
         }
       } catch (err) {
         console.error('Error loading user data:', err);
@@ -341,12 +136,10 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         setLoading(false);
       }
     };
-
     loadUserData();
   }, []);
 
-  // Tenant admin check — isolated effect so it re-fires cleanly whenever the
-  // tenant context resolves, independent of the main user-data load.
+  // Tenant admin check — isolated effect
   useEffect(() => {
     if (!isTenantContext || !tenant?.id) {
       setIsTenantAdmin(false);
@@ -355,13 +148,9 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     let cancelled = false;
     (async () => {
       try {
-        // Forward ?tenant= from window.location.search so middleware can
-        // resolve the tenant in dev mode and inject x-tenant-* headers.
         const params = new URLSearchParams(window.location.search);
-        const tenantParam = params.get('tenant');
-        const url = tenantParam
-          ? `/api/tenant/admin-check?tenant=${encodeURIComponent(tenantParam)}`
-          : '/api/tenant/admin-check';
+        const tp = params.get('tenant');
+        const url = tp ? `/api/tenant/admin-check?tenant=${encodeURIComponent(tp)}` : '/api/tenant/admin-check';
         const res = await fetch(url, { credentials: 'include' });
         if (!res.ok) return;
         const d = await res.json();
@@ -376,219 +165,373 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
     window.location.href = '/login';
   };
 
-  const isStartup = userRole === 'founder' || userRole === 'startup';
-
-  // Tenant nav mode: when in tenant context, show tenant-specific navigation
+  // Build navigation for tenant context
   const tenantFeatures = tenant?.features || {};
-  const tenantNavSections: Record<string, NavItem[]> = isTenantContext
+  const tenantNavItems: NavItem[] = isTenantContext
     ? (() => {
-        const sections: Record<string, NavItem[]> = {
-          OVERVIEW: [
-            { label: 'Dashboard', icon: <LayoutDashboard className="h-5 w-5" />, href: '/dashboard' },
-          ],
-        };
-        const networkItems: NavItem[] = [];
+        const items: NavItem[] = [
+          { label: 'Dashboard', icon: <LayoutDashboard size={15} />, href: '/dashboard' },
+        ];
         if (tenantFeatures.deals_browse !== false)
-          networkItems.push({ label: 'Deals', icon: <Compass className="h-5 w-5" />, href: '/deals' });
+          items.push({ label: 'Deals', icon: <Briefcase size={15} />, href: '/deals' });
         if (tenantFeatures.startup_directory !== false)
-          networkItems.push({ label: 'Startups', icon: <Rocket className="h-5 w-5" />, href: '/startups' });
+          items.push({ label: 'Startups', icon: <Rocket size={15} />, href: '/startups' });
         if (tenantFeatures.investor_directory !== false)
-          networkItems.push({ label: 'Investors', icon: <Users className="h-5 w-5" />, href: '/investors-directory' });
-        if (networkItems.length > 0) sections.NETWORK = networkItems;
-
-        if (isTenantAdmin) {
-          const manageItems: NavItem[] = [];
-          if (tenantFeatures.onboard_startup !== false)
-            manageItems.push({ label: 'Onboard Startup', icon: <PlusCircle className="h-5 w-5" />, href: '/admin/onboard-startup' });
-          if (tenantFeatures.onboard_investor !== false)
-            manageItems.push({ label: 'Onboard Investor', icon: <UserPlus className="h-5 w-5" />, href: '/admin/onboard-investor' });
-          if (tenantFeatures.invitation_codes !== false)
-            manageItems.push({ label: 'Invitations', icon: <Ticket className="h-5 w-5" />, href: '/admin/invitations' });
-          manageItems.push({ label: 'Analytics', icon: <BarChart3 className="h-5 w-5" />, href: '/admin/tenant-analytics' });
-          if (manageItems.length > 0) sections.MANAGE = manageItems;
-        }
-        return sections;
+          items.push({ label: 'Investors', icon: <Users size={15} />, href: '/investors-directory' });
+        return items;
       })()
-    : {};
-
-  const tenantBottomSections: NavItem[] = isTenantAdmin
-    ? [{ label: 'Settings', icon: <Settings className="h-5 w-5" />, href: '/settings/tenant' }]
     : [];
 
-  const navigationSections = isTenantContext
-    ? tenantNavSections
-    : isStartup
-      ? startupNavSections
-      : investorNavSections;
-  const bottomSections = isTenantContext
-    ? tenantBottomSections
-    : isStartup
-      ? startupBottomSections
-      : investorBottomSections;
-  const tagline = isStartup ? 'Startup Growth Platform' : 'Deal Flow Intelligence';
+  const tenantManageItems: NavItem[] = isTenantContext && isTenantAdmin
+    ? (() => {
+        const items: NavItem[] = [];
+        if (tenantFeatures.onboard_startup !== false)
+          items.push({ label: 'Onboard Startup', icon: <PlusCircle size={15} />, href: '/admin/onboard-startup' });
+        if (tenantFeatures.onboard_investor !== false)
+          items.push({ label: 'Onboard Investor', icon: <UserPlus size={15} />, href: '/admin/onboard-investor' });
+        if (tenantFeatures.invitation_codes !== false)
+          items.push({ label: 'Invitations', icon: <Ticket size={15} />, href: '/admin/invitations' });
+        items.push({ label: 'Analytics', icon: <BarChart3 size={15} />, href: '/admin/tenant-analytics' });
+        return items;
+      })()
+    : [];
+
+  const displayName = isTenantContext
+    ? (tenant?.display_name || tenant?.name || 'Kunfa')
+    : 'Kunfa';
+
+  const isActive = (href: string) =>
+    pathname === href || (href !== '/dashboard' && pathname.startsWith(href + '/'));
+
+  const initials = userName ? getInitials(userName) : 'U';
+  const roleLabel = isTenantAdmin ? 'Admin' : userRole === 'investor' ? 'Investor' : userRole === 'founder' || userRole === 'startup' ? 'Founder' : 'Member';
+
+  // ── Render ────────────────────────────────────────────────────────────
+
+  const navItems = isTenantContext ? tenantNavItems : PRIMARY_NAV;
 
   return (
-    <div
-      className={`fixed left-0 top-0 h-screen bg-white border-r border-[#E5E7EB] flex flex-col overflow-hidden transition-all duration-200 ${
-        collapsed ? 'w-16' : 'w-64'
-      }`}
+    <aside
+      className="flex flex-col sticky top-0 h-screen"
+      style={{
+        width: collapsed ? 64 : 'var(--sidebar-w)',
+        background: 'var(--ink)',
+        color: '#e8e7e0',
+        borderRight: '1px solid var(--ink)',
+        transition: 'width 200ms',
+      }}
     >
-      {/* Logo */}
-      <div className={`border-b border-[#E5E7EB] ${collapsed ? 'p-3 flex items-center justify-center' : 'p-6'}`}>
-        <Link href={withTenantParam('/dashboard', tenantParam)} className="block hover:opacity-80 transition-opacity">
-          {collapsed ? (
-            isTenantContext && tenant?.logo_url ? (
-              <img src={tenant.logo_url} alt={tenant.display_name || tenant.name} className="h-6 w-6 object-contain" />
-            ) : (
-              <span className="text-[#111827] font-bold text-lg">K</span>
-            )
+      {/* Brand */}
+      <div
+        className="flex items-center gap-[11px]"
+        style={{
+          padding: collapsed ? '22px 16px 18px' : '22px 22px 18px',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+        }}
+      >
+        <Link href={withTenantParam('/dashboard', tenantParam)} className="flex items-center gap-[11px] hover:opacity-90 transition-opacity">
+          {isTenantContext && tenant?.logo_url ? (
+            <img src={tenant.logo_url} alt={displayName} className="h-7 w-7 object-contain rounded" />
           ) : (
-            isTenantContext && tenant?.logo_url ? (
-              <img src={tenant.logo_url} alt={tenant.display_name || tenant.name} className="h-6 object-contain" />
-            ) : (
-              <KunfaLogo height={24} />
-            )
+            <div
+              className="grid place-items-center shrink-0"
+              style={{
+                width: 28, height: 28,
+                background: 'var(--accent)',
+                borderRadius: 4,
+                fontFamily: 'var(--serif)',
+                fontWeight: 500,
+                color: 'var(--ink)',
+                fontSize: 17,
+                lineHeight: 1,
+              }}
+            >
+              K
+            </div>
+          )}
+          {!collapsed && (
+            <div className="flex flex-col gap-[2px]">
+              <span style={{ fontFamily: 'var(--serif)', fontSize: 19, letterSpacing: '-0.01em', color: '#f4f3ee', lineHeight: 1 }}>
+                {displayName}
+              </span>
+              <span style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(232,231,224,0.45)' }}>
+                Venture Intelligence
+              </span>
+            </div>
           )}
         </Link>
-        {!collapsed && (
-          <p className="text-xs text-[#9CA3AF] mt-2">
-            {isTenantContext ? (tenant?.display_name || tenant?.name || tagline) : tagline}
-          </p>
-        )}
       </div>
 
       {/* Navigation */}
-      <div className={`flex-1 overflow-y-auto py-4 space-y-2 ${collapsed ? 'px-2' : 'px-3'}`}>
+      <nav
+        className="flex-1 flex flex-col gap-[2px] overflow-y-auto"
+        style={{ padding: collapsed ? '18px 8px' : '18px 12px' }}
+      >
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[#9CA3AF]"></div>
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2" style={{ borderColor: 'rgba(232,231,224,0.3)' }} />
           </div>
         ) : (
-          Object.entries(navigationSections).map(([title, items]) => (
-            <SidebarSection key={title} title={title} items={items} pathname={pathname} collapsed={collapsed} userTier={userTier} tenantParam={tenantParam} />
-          ))
+          <>
+            {navItems.map((item) => {
+              const active = isActive(item.href);
+              const href = withTenantParam(item.href, tenantParam);
+              return (
+                <Link
+                  key={item.label}
+                  href={href}
+                  className="flex items-center gap-[10px] w-full text-left transition-[background,color]"
+                  style={{
+                    padding: collapsed ? '8px' : '8px 10px',
+                    borderRadius: 5,
+                    fontSize: 13,
+                    color: active ? '#f4f3ee' : 'rgba(232,231,224,0.72)',
+                    background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
+                    justifyContent: collapsed ? 'center' : undefined,
+                    transitionDuration: '120ms',
+                  }}
+                  title={collapsed ? item.label : undefined}
+                  onMouseEnter={(e) => {
+                    if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                    e.currentTarget.style.color = '#f4f3ee';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active) e.currentTarget.style.background = 'transparent';
+                    if (!active) e.currentTarget.style.color = 'rgba(232,231,224,0.72)';
+                  }}
+                >
+                  <span className="shrink-0" style={{ opacity: 0.85 }}>{item.icon}</span>
+                  {!collapsed && <span className="flex-1">{item.label}</span>}
+                  {!collapsed && item.badge && (
+                    <span
+                      className="shrink-0"
+                      style={{
+                        fontSize: 10, fontWeight: 500,
+                        background: 'var(--accent)', color: 'var(--ink)',
+                        padding: '1px 6px', borderRadius: 99,
+                      }}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+
+            {/* Tenant MANAGE section */}
+            {isTenantContext && tenantManageItems.length > 0 && (
+              <>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'rgba(232,231,224,0.4)', padding: '18px 10px 8px' }}>
+                  Manage
+                </div>
+                {tenantManageItems.map((item) => {
+                  const active = isActive(item.href);
+                  const href = withTenantParam(item.href, tenantParam);
+                  return (
+                    <Link
+                      key={item.label}
+                      href={href}
+                      className="flex items-center gap-[10px] w-full text-left transition-[background,color]"
+                      style={{
+                        padding: '8px 10px', borderRadius: 5, fontSize: 13,
+                        color: active ? '#f4f3ee' : 'rgba(232,231,224,0.72)',
+                        background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
+                        transitionDuration: '120ms',
+                      }}
+                      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#f4f3ee'; }}
+                      onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; if (!active) e.currentTarget.style.color = 'rgba(232,231,224,0.72)'; }}
+                    >
+                      <span className="shrink-0" style={{ opacity: 0.85 }}>{item.icon}</span>
+                      {!collapsed && <span className="flex-1">{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </>
+            )}
+
+            {/* JOIN section (main platform only) */}
+            {!isTenantContext && (
+              <>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'rgba(232,231,224,0.4)', padding: '18px 10px 8px' }}>
+                  Join
+                </div>
+                {JOIN_NAV.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="flex items-center gap-[10px] w-full text-left transition-[background,color]"
+                      style={{
+                        padding: '8px 10px', borderRadius: 5, fontSize: 13,
+                        color: active ? '#f4f3ee' : 'rgba(232,231,224,0.72)',
+                        background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
+                        transitionDuration: '120ms',
+                      }}
+                      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#f4f3ee'; }}
+                      onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; if (!active) e.currentTarget.style.color = 'rgba(232,231,224,0.72)'; }}
+                    >
+                      <span className="shrink-0" style={{ opacity: 0.85 }}>{item.icon}</span>
+                      {!collapsed && <span className="flex-1">{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </>
+            )}
+
+            {/* Super admin links */}
+            {isSuperAdminUser && !isTenantContext && (
+              <>
+                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'rgba(232,231,224,0.4)', padding: '18px 10px 8px' }}>
+                  Admin
+                </div>
+                {[
+                  { label: 'Analytics', icon: <BarChart3 size={15} />, href: '/admin/analytics' },
+                  { label: 'Tenants', icon: <Building2 size={15} />, href: '/admin/tenants' },
+                ].map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      className="flex items-center gap-[10px] w-full text-left transition-[background,color]"
+                      style={{
+                        padding: '8px 10px', borderRadius: 5, fontSize: 13,
+                        color: active ? '#f4f3ee' : 'rgba(232,231,224,0.72)',
+                        background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
+                        transitionDuration: '120ms',
+                      }}
+                      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#f4f3ee'; }}
+                      onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; if (!active) e.currentTarget.style.color = 'rgba(232,231,224,0.72)'; }}
+                    >
+                      <span className="shrink-0" style={{ opacity: 0.85 }}>{item.icon}</span>
+                      {!collapsed && <span className="flex-1">{item.label}</span>}
+                    </Link>
+                  );
+                })}
+                {isAdmin && (
+                  <>
+                    {[
+                      { label: 'Claims', icon: <ShieldCheck size={15} />, href: '/admin/claims' },
+                      { label: 'Imports', icon: <Upload size={15} />, href: '/admin/imports' },
+                      { label: 'Promo Codes', icon: <Tag size={15} />, href: '/admin/promo-codes' },
+                    ].map((item) => {
+                      const active = isActive(item.href);
+                      return (
+                        <Link
+                          key={item.label}
+                          href={item.href}
+                          className="flex items-center gap-[10px] w-full text-left transition-[background,color]"
+                          style={{
+                            padding: '8px 10px', borderRadius: 5, fontSize: 13,
+                            color: active ? '#f4f3ee' : 'rgba(232,231,224,0.72)',
+                            background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
+                            transitionDuration: '120ms',
+                          }}
+                          onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#f4f3ee'; }}
+                          onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; if (!active) e.currentTarget.style.color = 'rgba(232,231,224,0.72)'; }}
+                        >
+                          <span className="shrink-0" style={{ opacity: 0.85 }}>{item.icon}</span>
+                          {!collapsed && <span className="flex-1">{item.label}</span>}
+                        </Link>
+                      );
+                    })}
+                  </>
+                )}
+              </>
+            )}
+          </>
         )}
-      </div>
+      </nav>
 
-      {/* Bottom */}
-      <div className={`border-t border-[#E5E7EB] ${collapsed ? 'p-2' : 'p-3'} space-y-3`}>
-        <div className="space-y-1">
-          {isSuperAdminUser && !isTenantContext && (
-            <>
-              <Link
-                href="/admin/analytics"
-                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
-                  pathname === '/admin/analytics'
-                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
-                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
-                }`}
-                title={collapsed ? 'Analytics' : undefined}
-              >
-                <BarChart3 className="h-5 w-5" />
-                {!collapsed && <span className="text-sm">Analytics</span>}
-              </Link>
-              <Link
-                href="/admin/tenants"
-                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
-                  pathname.startsWith('/admin/tenants')
-                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
-                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
-                }`}
-                title={collapsed ? 'Tenants' : undefined}
-              >
-                <Building2 className="h-5 w-5" />
-                {!collapsed && <span className="text-sm">Tenants</span>}
-              </Link>
-            </>
-          )}
-          {isAdmin && !isTenantContext && (
-            <>
-              <Link
-                href="/admin/claims"
-                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
-                  pathname === '/admin/claims'
-                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
-                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
-                }`}
-                title={collapsed ? 'Claims' : undefined}
-              >
-                <ShieldCheck className="h-5 w-5" />
-                {!collapsed && <span className="text-sm">Claims</span>}
-              </Link>
-              <Link
-                href="/admin/imports"
-                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
-                  pathname === '/admin/imports'
-                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
-                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
-                }`}
-                title={collapsed ? 'Imports' : undefined}
-              >
-                <Upload className="h-5 w-5" />
-                {!collapsed && <span className="text-sm">Imports</span>}
-              </Link>
-              <Link
-                href="/admin/promo-codes"
-                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
-                  pathname === '/admin/promo-codes'
-                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
-                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
-                }`}
-                title={collapsed ? 'Promo Codes' : undefined}
-              >
-                <Tag className="h-5 w-5" />
-                {!collapsed && <span className="text-sm">Promo Codes</span>}
-              </Link>
-            </>
-          )}
-          {bottomSections.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              pathname.startsWith(item.href + '/');
-            return (
-              <Link
-                key={item.label}
-                href={withTenantParam(item.href || '#', tenantParam)}
-                className={`flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg transition-all ${
-                  isActive
-                    ? 'bg-[#F0F7FF] text-[#007CF8] font-medium'
-                    : 'text-[#4B5563] hover:bg-[#F8F9FB] hover:text-[#111827]'
-                }`}
-                title={collapsed ? item.label : undefined}
-              >
-                {item.icon}
-                {!collapsed && <span className="text-sm">{item.label}</span>}
-              </Link>
-            );
-          })}
+      {/* Wallet pill */}
+      {!collapsed && (
+        <div
+          className="flex items-center justify-between mx-3 mb-1.5"
+          style={{
+            padding: '10px 12px',
+            borderRadius: 6,
+            background: 'rgba(255,255,255,0.04)',
+            fontSize: 12,
+          }}
+        >
+          <span className="flex items-center gap-[7px]" style={{ color: 'rgba(232,231,224,0.6)' }}>
+            <Wallet size={13} />
+            Wallet
+          </span>
+          <span style={{ color: 'var(--accent)', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>
+            $100
+          </span>
         </div>
+      )}
 
+      {/* Bottom: Settings + Tenant powered-by */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        {/* Settings link */}
+        {(isTenantAdmin || !isTenantContext) && (
+          <Link
+            href={withTenantParam(isTenantContext ? '/settings/tenant' : '/settings', tenantParam)}
+            className="flex items-center gap-[10px] mx-3 mt-2 transition-[background,color]"
+            style={{
+              padding: '8px 10px', borderRadius: 5, fontSize: 13,
+              color: isActive('/settings') ? '#f4f3ee' : 'rgba(232,231,224,0.72)',
+              background: isActive('/settings') ? 'rgba(255,255,255,0.07)' : 'transparent',
+              transitionDuration: '120ms',
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#f4f3ee'; }}
+            onMouseLeave={(e) => { if (!isActive('/settings')) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(232,231,224,0.72)'; } }}
+          >
+            <Settings size={15} style={{ opacity: 0.85 }} />
+            {!collapsed && <span>Settings</span>}
+          </Link>
+        )}
+
+        {/* Powered by Kunfa */}
         {isTenantContext && tenant?.show_powered_by && !collapsed && (
-          <div className="px-4 py-2 text-[10px] text-[#9CA3AF] text-center border-t border-[#F3F4F6]">
-            Powered by <span className="font-semibold text-[#4B5563]">Kunfa</span>
+          <div style={{ fontSize: 10, color: 'rgba(232,231,224,0.35)', textAlign: 'center', padding: '8px 0' }}>
+            Powered by <span style={{ fontWeight: 500, color: 'rgba(232,231,224,0.5)' }}>Kunfa</span>
           </div>
         )}
 
-        <button
-          onClick={handleLogout}
-          className={`w-full flex items-center ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-4 py-2.5'} rounded-lg text-[#4B5563] hover:bg-red-50 hover:text-[#EF4444] transition-all`}
-          title={collapsed ? 'Sign Out' : undefined}
+        {/* User block */}
+        <div
+          className="flex items-center gap-[10px]"
+          style={{ padding: '14px 18px 18px', borderTop: '1px solid rgba(255,255,255,0.06)' }}
         >
-          <LogOut className="h-5 w-5" />
-          {!collapsed && <span className="text-sm">Sign Out</span>}
-        </button>
-
-        {/* Toggle button */}
-        {onToggle && (
-          <button
-            onClick={onToggle}
-            className="w-full flex items-center justify-center p-2 rounded-lg text-[#9CA3AF] hover:text-[#111827] hover:bg-[#F8F9FB] transition-all"
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          <div
+            className="grid place-items-center shrink-0"
+            style={{
+              width: 30, height: 30, borderRadius: '50%',
+              background: 'linear-gradient(135deg, var(--accent), oklch(0.55 0.10 50))',
+              color: 'var(--ink)', fontSize: 12, fontWeight: 500,
+            }}
           >
-            {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-          </button>
-        )}
+            {initials}
+          </div>
+          {!collapsed && (
+            <div className="flex flex-col min-w-0" style={{ lineHeight: 1.25 }}>
+              <span className="truncate" style={{ fontSize: 13, color: '#f4f3ee' }}>
+                {userName || userEmail || 'User'}
+              </span>
+              <span style={{ fontSize: 10, color: 'rgba(232,231,224,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                {roleLabel}
+              </span>
+            </div>
+          )}
+          {!collapsed && (
+            <button
+              onClick={handleLogout}
+              className="ml-auto shrink-0 transition-colors"
+              style={{ color: 'rgba(232,231,224,0.4)', padding: 4, borderRadius: 4 }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = '#f4f3ee'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(232,231,224,0.4)'; e.currentTarget.style.background = 'transparent'; }}
+              title="Sign out"
+            >
+              <LogOut size={14} />
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+    </aside>
   );
 }
