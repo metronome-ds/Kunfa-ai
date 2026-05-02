@@ -195,7 +195,7 @@ export function getScoreColor(score: number | null | undefined): string {
   }
 
   if (score >= 60) {
-    return 'text-blue-600';
+    return 'text-[var(--ink)]';
   }
 
   if (score >= 40) {
@@ -223,7 +223,7 @@ export function getScoreBackgroundColor(score: number | null | undefined): strin
   }
 
   if (score >= 60) {
-    return 'bg-blue-100';
+    return 'bg-[var(--accent-soft)]';
   }
 
   if (score >= 40) {

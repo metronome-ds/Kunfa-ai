@@ -49,8 +49,8 @@ const ORDER: (keyof DimensionScores)[] = [
 
 function getBarColor(score: number): string {
   // Raw dimension scores are 0-25
-  if (score >= 20) return 'bg-[#007CF8]'
-  if (score >= 15) return 'bg-blue-400'
+  if (score >= 20) return 'bg-[var(--ink)]'
+  if (score >= 15) return 'bg-[var(--accent)]'
   if (score >= 10) return 'bg-amber-400'
   return 'bg-red-400'
 }
@@ -58,7 +58,7 @@ function getBarColor(score: number): string {
 function getGradeColor(grade: string | null | undefined): string {
   if (!grade) return 'bg-gray-100 text-gray-500'
   if (grade.startsWith('A')) return 'bg-green-50 text-green-700'
-  if (grade.startsWith('B')) return 'bg-blue-50 text-blue-700'
+  if (grade.startsWith('B')) return 'bg-[var(--accent-soft)] text-[var(--ink)]'
   if (grade.startsWith('C')) return 'bg-amber-50 text-amber-700'
   return 'bg-red-50 text-red-700'
 }
@@ -100,7 +100,7 @@ export default function ScoreBreakdown({
         <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
         {typeof overallScore === 'number' && (
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold text-[#007CF8]">{overallScore}</span>
+            <span className="text-2xl font-bold text-[var(--accent-ink)]">{overallScore}</span>
             <span className="text-xs text-gray-400">/100</span>
           </div>
         )}

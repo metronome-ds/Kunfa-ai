@@ -28,8 +28,8 @@ export default function CalculatorsPage() {
                     Leveraged Buyout analysis
                   </p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <BarChart3 className="h-6 w-6 text-blue-600" />
+                <div className="p-3 bg-[var(--accent-soft)] rounded-lg">
+                  <BarChart3 className="h-6 w-6 text-[var(--ink)]" />
                 </div>
               </div>
               <p className="text-sm text-gray-600 flex-1">

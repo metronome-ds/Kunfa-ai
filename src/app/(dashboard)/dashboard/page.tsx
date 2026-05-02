@@ -130,7 +130,7 @@ interface ActivityItem {
 function getScoreColor(score: number | null) {
   if (!score) return 'text-gray-400';
   if (score >= 80) return 'text-emerald-600';
-  if (score >= 60) return 'text-blue-600';
+  if (score >= 60) return 'text-[var(--ink)]';
   if (score >= 40) return 'text-yellow-600';
   return 'text-red-600';
 }
@@ -138,7 +138,7 @@ function getScoreColor(score: number | null) {
 function getScoreBg(score: number | null) {
   if (!score) return 'bg-[#F8F9FB] border-gray-200';
   if (score >= 80) return 'bg-emerald-50 border-emerald-200';
-  if (score >= 60) return 'bg-blue-50 border-blue-200';
+  if (score >= 60) return 'bg-[var(--accent-soft)] border-[var(--line)]';
   if (score >= 40) return 'bg-yellow-50 border-yellow-200';
   return 'bg-red-50 border-red-200';
 }
@@ -146,7 +146,7 @@ function getScoreBg(score: number | null) {
 function getScoreBadgeColor(score: number | null) {
   if (!score) return 'bg-gray-100 text-gray-500';
   if (score >= 80) return 'bg-emerald-100 text-emerald-700';
-  if (score >= 60) return 'bg-blue-100 text-blue-700';
+  if (score >= 60) return 'bg-[var(--accent-soft)] text-[var(--ink)]';
   if (score >= 40) return 'bg-yellow-100 text-yellow-700';
   return 'bg-red-100 text-red-700';
 }
@@ -184,7 +184,7 @@ function timeAgo(dateStr: string): string {
 
 const STAGE_COLORS: Record<string, string> = {
   sourced: 'bg-gray-400',
-  screening: 'bg-blue-500',
+  screening: 'bg-[var(--accent-soft)]0',
   due_diligence: 'bg-purple-500',
   term_sheet: 'bg-amber-500',
   closed: 'bg-emerald-500',
@@ -407,7 +407,7 @@ function DashboardContent() {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#007CF8] mb-4" />
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--line-strong)] mb-4" />
           <p className="text-gray-600">Loading dashboard...</p>
         </div>
       </div>
@@ -471,7 +471,7 @@ function DashboardContent() {
               {canEdit && company && !company.overall_score && (
                 <button
                   onClick={() => setShowScoreModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition flex-shrink-0"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition flex-shrink-0"
                 >
                   <Star className="w-4 h-4" /> Get Your Score
                 </button>
@@ -508,7 +508,7 @@ function DashboardContent() {
                   <h2 className="text-xl font-bold text-gray-900">{company.company_name}</h2>
                   {company.one_liner && <p className="text-gray-500 text-sm mt-1">{company.one_liner}</p>}
                   <div className="flex flex-wrap items-center gap-2 mt-3">
-                    {company.industry && <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">{company.industry}</span>}
+                    {company.industry && <span className="px-2.5 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-medium">{company.industry}</span>}
                     {company.stage && <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">{company.stage}</span>}
                     {company.is_raising && (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
@@ -520,10 +520,10 @@ function DashboardContent() {
                   </div>
                 </div>
                 <div className="flex flex-col gap-2 flex-shrink-0">
-                  <Link href={`/company/${company.slug}`} target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition">
+                  <Link href={`/company/${company.slug}`} target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition">
                     View Public Profile <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
-                  <Link href="/company-profile" className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">
+                  <Link href="/company-profile" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition">
                     <RefreshCw className="w-3.5 h-3.5" /> Manage Profile
                   </Link>
                 </div>
@@ -534,13 +534,13 @@ function DashboardContent() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><Star className="w-5 h-5 text-[#007CF8]" /></div>
+                  <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-lg flex items-center justify-center"><Star className="w-5 h-5 text-[var(--accent-ink)]" /></div>
                   <div><p className="text-xs text-gray-500 font-medium">Kunfa Score</p><p className={`text-2xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</p></div>
                 </div>
               </div>
               <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"><Clock className="w-5 h-5 text-blue-600" /></div>
+                  <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-lg flex items-center justify-center"><Clock className="w-5 h-5 text-[var(--ink)]" /></div>
                   <div><p className="text-xs text-gray-500 font-medium">Days Since Scored</p><p className="text-2xl font-bold text-gray-900">{scored ?? '—'}</p></div>
                 </div>
               </div>
@@ -577,7 +577,7 @@ function DashboardContent() {
                       {canEdit && (
                         <button
                           onClick={() => setShowScoreModal(true)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
                         >
                           <RefreshCw className="w-4 h-4" />
                           {company.overall_score == null ? 'Get Your Score' : 'Re-score My Company'}
@@ -623,7 +623,7 @@ function DashboardContent() {
             {company.submission_id && (
               <div className={`rounded-xl p-5 mb-6 border ${
                 paid && hasReport ? 'bg-emerald-50 border-emerald-200'
-                  : paid ? 'bg-blue-50 border-blue-200'
+                  : paid ? 'bg-[var(--accent-soft)] border-[var(--line)]'
                   : 'bg-amber-50 border-amber-200'
               }`}>
                 {paid && hasReport ? (
@@ -632,12 +632,12 @@ function DashboardContent() {
                       <h3 className="text-sm font-semibold text-gray-900">Kunfa Readiness Report</h3>
                       <p className="text-xs text-gray-600 mt-0.5">Your full AI-powered investment analysis is ready.</p>
                     </div>
-                    <Link href={`/report/${company.submission_id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition">View Report</Link>
+                    <Link href={`/report/${company.submission_id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition">View Report</Link>
                   </div>
                 ) : paid ? (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <Loader2 className="w-5 h-5 text-[#007CF8] animate-spin flex-shrink-0" />
+                      <Loader2 className="w-5 h-5 text-[var(--accent-ink)] animate-spin flex-shrink-0" />
                       <div>
                         <h3 className="text-sm font-semibold text-gray-900">Report Generating...</h3>
                         <p className="text-xs text-gray-600 mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
@@ -666,7 +666,7 @@ function DashboardContent() {
                         } catch { /* ignore */ } finally { setCheckoutLoading(false); }
                       }}
                       disabled={checkoutLoading}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition disabled:opacity-50"
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition disabled:opacity-50"
                     >
                       {checkoutLoading ? 'Redirecting...' : 'Unlock Report — $59'}
                     </button>
@@ -698,7 +698,7 @@ function DashboardContent() {
             {canEdit && (
               <button
                 onClick={() => setShowScoreModal(true)}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--ink)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition"
               >
                 Get Your Kunfa Score
               </button>
@@ -808,7 +808,7 @@ function DashboardContent() {
             </div>
           </>
         ) : (
-          <p className="text-sm text-gray-400 py-4 text-center">No deals in pipeline yet. <Link href="/deals" className="text-[#007CF8] hover:underline">Browse companies</Link> to get started.</p>
+          <p className="text-sm text-gray-400 py-4 text-center">No deals in pipeline yet. <Link href="/deals" className="text-[var(--accent-ink)] hover:underline">Browse companies</Link> to get started.</p>
         )}
       </div>
 
@@ -818,7 +818,7 @@ function DashboardContent() {
         <div className="lg:col-span-3 bg-white rounded-xl border border-gray-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Pipeline Deals</h2>
-            <Link href="/pipeline" className="text-xs text-[#007CF8] font-medium hover:underline flex items-center gap-1">
+            <Link href="/pipeline" className="text-xs text-[var(--accent-ink)] font-medium hover:underline flex items-center gap-1">
               View Pipeline <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -873,7 +873,7 @@ function DashboardContent() {
               {activity.map(item => (
                 <div key={item.id} className="py-2.5 border-b border-gray-50 last:border-0">
                   {item.href ? (
-                    <Link href={item.href} className="text-sm text-gray-700 hover:text-[#007CF8] transition">{item.text}</Link>
+                    <Link href={item.href} className="text-sm text-gray-700 hover:text-[var(--accent-ink)] transition">{item.text}</Link>
                   ) : (
                     <p className="text-sm text-gray-700">{item.text}</p>
                   )}
@@ -885,7 +885,7 @@ function DashboardContent() {
             <div className="text-center py-8">
               <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
               <p className="text-sm text-gray-400">No recent activity</p>
-              <Link href="/deals" className="text-xs text-[#007CF8] hover:underline mt-2 inline-block">Browse companies to get started</Link>
+              <Link href="/deals" className="text-xs text-[var(--accent-ink)] hover:underline mt-2 inline-block">Browse companies to get started</Link>
             </div>
           )}
         </div>
@@ -903,7 +903,7 @@ function DashboardContent() {
                 value={pipelineSearch}
                 onChange={(e) => setPipelineSearch(e.target.value)}
                 placeholder="Search companies..."
-                className="pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] w-56"
+                className="pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] w-56"
               />
             </div>
           </div>
@@ -961,7 +961,7 @@ function DashboardContent() {
                       <tr key={deal.id} className="border-b border-gray-50 last:border-0 hover:bg-[#F8F9FB] transition">
                         <td className="py-3 pr-3">
                           {deal.slug ? (
-                            <Link href={`/company/${deal.slug}`} className="text-sm font-medium text-gray-900 hover:text-[#007CF8] transition">
+                            <Link href={`/company/${deal.slug}`} className="text-sm font-medium text-gray-900 hover:text-[var(--accent-ink)] transition">
                               {deal.company_name}
                             </Link>
                           ) : (
@@ -997,7 +997,7 @@ function DashboardContent() {
                             onClick={() => setExpandedDealId(expandedDealId === deal.id ? null : deal.id)}
                             className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition ${
                               expandedDealId === deal.id
-                                ? 'bg-blue-100 text-blue-700'
+                                ? 'bg-[var(--accent-soft)] text-[var(--ink)]'
                                 : 'text-gray-500 hover:bg-gray-100'
                             }`}
                           >

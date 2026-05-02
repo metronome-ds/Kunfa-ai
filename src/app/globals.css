@@ -4,8 +4,8 @@
 
 :root {
   /* Noor Modern Design System */
-  --primary: #007CF8;
-  --primary-hover: #0066D6;
+  --primary: var(--ink);
+  --primary-hover: var(--ink-2);
   --primary-light: #F0F7FF;
 
   --surface: #FFFFFF;
@@ -16,7 +16,7 @@
   --text-tertiary: #9CA3AF;
 
   --border: #E5E7EB;
-  --border-focus: #007CF8;
+  --border-focus: var(--ink);
 
   --success: #10B981;
   --warning: #F59E0B;
@@ -33,9 +33,9 @@
   --color-accent: var(--primary);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-kunfa: #007CF8;
+  --color-kunfa: var(--ink);
   --color-kunfa-light: #F0F7FF;
-  --color-kunfa-dark: #0066D6;
+  --color-kunfa-dark: var(--ink-2);
   --color-kunfa-green: #10B981;
   --color-kunfa-green-dark: #059669;
   --color-kunfa-navy: #111827;
@@ -72,7 +72,7 @@ select {
 
 /* ===== Global Button Classes ===== */
 .btn-primary {
-  background-color: #007CF8;
+  background-color: var(--ink);
   color: white;
   font-weight: 600;
   padding: 0.625rem 1.25rem;
@@ -81,7 +81,7 @@ select {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 .btn-primary:hover {
-  background-color: #0066D6;
+  background-color: var(--ink-2);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 .btn-outline {
@@ -103,10 +103,10 @@ select {
   font-size: 0.875rem;
   font-weight: 500;
   background-color: #F0F7FF;
-  color: #007CF8;
+  color: var(--accent-ink);
 }
 .text-gradient-green {
-  background: linear-gradient(to right, #007CF8, #0066D6);
+  background: linear-gradient(to right, var(--ink), var(--ink-2));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -156,7 +156,7 @@ select {
 /* Score circle */
 .score-circle {
   background: conic-gradient(
-    #007CF8 calc(var(--score) * 1%),
+    var(--accent) calc(var(--score) * 1%),
     #E5E7EB calc(var(--score) * 1%)
   );
 }
@@ -173,7 +173,7 @@ select {
 }
 .upload-zone:hover,
 .upload-zone.dragover {
-  border-color: #007CF8;
+  border-color: var(--accent-ink);
   background-color: #F0F7FF;
 }
 

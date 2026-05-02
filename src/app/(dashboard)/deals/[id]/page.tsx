@@ -98,7 +98,7 @@ export default function DealDetailPage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#F8F9FB]">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <Loader2 className="h-12 w-12 animate-spin text-[var(--ink)] mx-auto mb-4" />
           <p className="text-gray-600">Loading deal details...</p>
         </div>
       </div>
@@ -157,7 +157,7 @@ export default function DealDetailPage() {
             <div className="flex-1">
               {/* Badges */}
               <div className="flex items-center gap-2 mb-4">
-                <span className="px-3 py-1 bg-blue-100 text-blue-700 text-sm font-semibold rounded-full">
+                <span className="px-3 py-1 bg-[var(--accent-soft)] text-[var(--ink)] text-sm font-semibold rounded-full">
                   {industry}
                 </span>
                 <span className="px-3 py-1 bg-gray-100 text-gray-700 text-sm font-semibold rounded-full">
@@ -185,7 +185,7 @@ export default function DealDetailPage() {
                     href={company.website_url.startsWith('http') ? company.website_url : `https://${company.website_url}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700"
+                    className="flex items-center gap-2 text-[var(--ink)] hover:text-[var(--ink)]"
                   >
                     <Globe className="h-4 w-4" />
                     Visit Website
@@ -194,7 +194,7 @@ export default function DealDetailPage() {
                 {company.slug && (
                   <Link
                     href={`/company/${company.slug}`}
-                    className="flex items-center gap-2 text-[#007CF8] hover:text-[#0066D6]"
+                    className="flex items-center gap-2 text-[var(--accent-ink)] hover:text-[var(--ink)]"
                   >
                     <ExternalLink className="h-4 w-4" />
                     View Full Profile
@@ -258,7 +258,7 @@ export default function DealDetailPage() {
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-4 font-medium border-b-2 transition-colors capitalize ${
                   activeTab === tab
-                    ? 'border-blue-600 text-blue-600'
+                    ? 'border-[var(--ink)] text-[var(--ink)]'
                     : 'border-transparent text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -391,7 +391,7 @@ export default function DealDetailPage() {
               {deal.creator.user_id && (
                 <Link
                   href={`/profile/${deal.creator.user_id}`}
-                  className="px-4 py-2 bg-blue-50 text-blue-600 text-sm font-medium rounded-lg hover:bg-blue-100"
+                  className="px-4 py-2 bg-[var(--accent-soft)] text-[var(--ink)] text-sm font-medium rounded-lg hover:bg-[var(--accent-soft)]"
                 >
                   View Profile
                 </Link>

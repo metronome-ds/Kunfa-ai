@@ -150,7 +150,7 @@ export default function AdminImportsPage() {
 
   const statusColors: Record<string, string> = {
     raw: 'bg-gray-100 text-gray-700',
-    cleaned: 'bg-blue-50 text-blue-700',
+    cleaned: 'bg-[var(--accent-soft)] text-[var(--ink)]',
     promoted: 'bg-emerald-50 text-emerald-700',
     rejected: 'bg-red-50 text-red-700',
     duplicate: 'bg-amber-50 text-amber-700',
@@ -160,14 +160,14 @@ export default function AdminImportsPage() {
     <div className="max-w-6xl mx-auto px-6 py-10">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <ShieldCheck className="w-6 h-6 text-[#007CF8]" />
+          <ShieldCheck className="w-6 h-6 text-[var(--accent-ink)]" />
           <h1 className="text-2xl font-bold text-gray-900">Company Imports</h1>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={handleCleanBatch}
             disabled={actionLoading === 'clean' || stats.raw === 0}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 transition disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[var(--accent-soft)] text-[var(--ink)] hover:bg-[var(--accent-soft)] transition disabled:opacity-50"
           >
             {actionLoading === 'clean' ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
@@ -220,7 +220,7 @@ export default function AdminImportsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#007CF8]" />
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--line-strong)]" />
         </div>
       ) : records.length === 0 ? (
         <div className="text-center py-12 text-gray-500">

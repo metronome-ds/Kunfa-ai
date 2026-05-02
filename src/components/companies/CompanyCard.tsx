@@ -139,7 +139,7 @@ export function CompanyCard({
 
   return (
     <Link href={`/company/${company.slug}`}>
-      <div className="h-full bg-white rounded-xl border border-gray-200 hover:border-[#007CF8]/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden cursor-pointer">
+      <div className="h-full bg-white rounded-xl border border-gray-200 hover:border-[var(--line-strong)]/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden cursor-pointer">
         <div className="p-6">
           {/* Header: badges + watchlist */}
           <div className="flex items-start justify-between mb-3">
@@ -163,7 +163,7 @@ export function CompanyCard({
                 </span>
               )}
               {company.industry && (
-                <span className="px-2.5 py-1 bg-[#F0F7FF] text-[#007CF8] text-xs font-semibold rounded-full">
+                <span className="px-2.5 py-1 bg-[#F0F7FF] text-[var(--accent-ink)] text-xs font-semibold rounded-full">
                   {company.industry}
                 </span>
               )}
@@ -236,7 +236,7 @@ export function CompanyCard({
 
           {/* Actions: Pipeline + View Profile */}
           <div className="flex items-center justify-between pt-3">
-            <span className="text-sm text-[#007CF8] font-medium hover:underline">
+            <span className="text-sm text-[var(--accent-ink)] font-medium hover:underline">
               View Profile &rarr;
             </span>
 
@@ -247,7 +247,7 @@ export function CompanyCard({
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   pipelineAdded
                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 cursor-default'
-                    : 'bg-[#007CF8]/10 text-[#007CF8] hover:bg-[#007CF8]/20 border border-transparent'
+                    : 'bg-[var(--ink)]/10 text-[var(--accent-ink)] hover:bg-[var(--ink)]/20 border border-transparent'
                 }`}
                 title={pipelineAdded ? 'Already in pipeline' : 'Add to pipeline'}
               >

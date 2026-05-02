@@ -115,7 +115,7 @@ export default function SavedDealsPage() {
     return (
       <div className="p-8 max-w-7xl mx-auto">
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4" />
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--ink)] mb-4" />
           <p className="text-gray-600">Loading saved deals...</p>
         </div>
       </div>
@@ -182,7 +182,7 @@ export default function SavedDealsPage() {
                   onClick={() => setSortBy(option.value as SortBy)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     sortBy === option.value
-                      ? 'bg-[#007CF8] text-white'
+                      ? 'bg-[var(--ink)] text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -201,12 +201,12 @@ export default function SavedDealsPage() {
               const funding = formatRaiseAmount(company.raise_amount);
 
               return (
-                <div key={item.id} className="bg-white rounded-xl border border-gray-200 hover:border-blue-400 hover:shadow-lg transition-all duration-200 overflow-hidden">
+                <div key={item.id} className="bg-white rounded-xl border border-gray-200 hover:border-[var(--line-strong)] hover:shadow-lg transition-all duration-200 overflow-hidden">
                   <div className="p-6">
                     {/* Badges */}
                     <div className="flex items-center gap-2 mb-3">
                       {company.industry && (
-                        <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                        <span className="px-2.5 py-1 bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-semibold rounded-full">
                           {company.industry}
                         </span>
                       )}
@@ -251,7 +251,7 @@ export default function SavedDealsPage() {
                       {company.slug && (
                         <Link
                           href={`/company/${company.slug}`}
-                          className="flex items-center gap-1 text-sm text-[#007CF8] hover:text-[#0066D6] font-medium"
+                          className="flex items-center gap-1 text-sm text-[var(--accent-ink)] hover:text-[var(--ink)] font-medium"
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                           View Profile
@@ -260,7 +260,7 @@ export default function SavedDealsPage() {
                       <div className="flex-1" />
                       <button
                         onClick={() => handleAddToPipeline(item.company_id)}
-                        className="px-3 py-1 bg-[#007CF8] text-white text-xs font-medium rounded hover:bg-blue-700 transition-colors"
+                        className="px-3 py-1 bg-[var(--ink)] text-white text-xs font-medium rounded hover:opacity-90 transition-colors"
                       >
                         Add to Pipeline
                       </button>
@@ -289,7 +289,7 @@ export default function SavedDealsPage() {
             <Card>
               <div>
                 <p className="text-sm text-gray-600">Avg Score</p>
-                <p className="text-2xl font-bold text-blue-600 mt-2">
+                <p className="text-2xl font-bold text-[var(--ink)] mt-2">
                   {savedDeals.length > 0
                     ? Math.round(
                         savedDeals.reduce((sum, d) => sum + (d.company_pages?.overall_score || 0), 0) /

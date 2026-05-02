@@ -166,7 +166,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
   }
 
   const inputClass =
-    'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]'
+    'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]'
   const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 
   return (
@@ -213,9 +213,9 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
                     </div>
                   </div>
                 ) : (
-                  <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-[#007CF8] transition bg-gray-50">
+                  <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-[var(--line-strong)] transition bg-gray-50">
                     {logoUploading ? (
-                      <div className="w-5 h-5 border-2 border-[#007CF8] border-t-transparent rounded-full animate-spin" />
+                      <div className="w-5 h-5 border-2 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin" />
                     ) : (
                       <Upload className="w-5 h-5 text-gray-400" />
                     )}
@@ -410,7 +410,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
                 role="switch"
                 aria-checked={form.is_raising}
                 onClick={() => updateField('is_raising', !form.is_raising)}
-                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#007CF8]/30 focus:ring-offset-2 ${
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ink)]/30 focus:ring-offset-2 ${
                   form.is_raising ? 'bg-emerald-500' : 'bg-gray-300'
                 }`}
               >
@@ -478,7 +478,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
                 <button
                   type="button"
                   onClick={() => updateField('is_public', !form.is_public)}
-                  className={`relative w-10 h-5 rounded-full transition ${form.is_public ? 'bg-[#007CF8]' : 'bg-gray-300'}`}
+                  className={`relative w-10 h-5 rounded-full transition ${form.is_public ? 'bg-[var(--ink)]' : 'bg-gray-300'}`}
                 >
                   <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.is_public ? 'translate-x-5' : 'translate-x-0.5'}`} />
                 </button>
@@ -492,7 +492,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 py-2.5 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition disabled:opacity-50"
+              className="flex-1 py-2.5 bg-[var(--ink)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>

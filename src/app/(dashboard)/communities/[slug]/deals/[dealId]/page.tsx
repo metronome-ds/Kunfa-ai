@@ -35,7 +35,7 @@ const EMOJIS = [
 
 const INTEREST_OPTIONS = [
   { value: 'pass', label: 'Pass', color: 'bg-gray-100 text-gray-600 border-gray-200' },
-  { value: 'watching', label: 'Watching', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { value: 'watching', label: 'Watching', color: 'bg-[var(--accent-soft)] text-[var(--ink)] border-[var(--line)]' },
   { value: 'interested', label: 'Interested', color: 'bg-amber-50 text-amber-700 border-amber-200' },
   { value: 'committed', label: 'Committed', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
 ]
@@ -181,14 +181,14 @@ export default function DealDiscussionPage() {
   }
 
   if (loading) {
-    return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-[#007CF8]" /></div>
+    return <div className="flex items-center justify-center py-20"><Loader2 className="w-6 h-6 animate-spin text-[var(--accent-ink)]" /></div>
   }
 
   if (!deal) {
     return (
       <div className="max-w-lg mx-auto py-20 px-4 text-center">
         <h1 className="text-xl font-bold text-gray-900 mb-2">Deal Not Found</h1>
-        <button onClick={() => router.push(`/communities/${slug}`)} className="text-sm text-[#007CF8] hover:underline">Back to community</button>
+        <button onClick={() => router.push(`/communities/${slug}`)} className="text-sm text-[var(--accent-ink)] hover:underline">Back to community</button>
       </div>
     )
   }
@@ -221,14 +221,14 @@ export default function DealDiscussionPage() {
           <div className="flex-1">
             <div className="flex items-center gap-2">
               {deal.company ? (
-                <Link href={`/company/${deal.company.slug}`} className="text-xl font-bold text-gray-900 hover:text-[#007CF8]">{name}</Link>
+                <Link href={`/company/${deal.company.slug}`} className="text-xl font-bold text-gray-900 hover:text-[var(--accent-ink)]">{name}</Link>
               ) : (
                 <span className="text-xl font-bold text-gray-900">{name}</span>
               )}
               {score != null && (
                 <span className={`text-sm font-bold px-2 py-0.5 rounded ${
                   score >= 80 ? 'bg-emerald-100 text-emerald-700' :
-                  score >= 60 ? 'bg-blue-100 text-blue-700' :
+                  score >= 60 ? 'bg-[var(--accent-soft)] text-[var(--ink)]' :
                   score >= 40 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
                 }`}>{score}</span>
               )}
@@ -239,7 +239,7 @@ export default function DealDiscussionPage() {
               {stage && <span>{stage}</span>}
               {amount ? <><span>·</span><span className="font-medium text-gray-700">{formatAmount(amount)}</span></> : null}
               {deal.external_docs_url && (
-                <a href={deal.external_docs_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[#007CF8] hover:underline ml-2">
+                <a href={deal.external_docs_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-[var(--accent-ink)] hover:underline ml-2">
                   <ExternalLink className="w-3.5 h-3.5" /> Docs
                 </a>
               )}
@@ -271,7 +271,7 @@ export default function DealDiscussionPage() {
           <div className="flex items-center gap-3 text-xs text-gray-400">
             <div className="flex h-2 rounded-full overflow-hidden gap-0.5 flex-1">
               {deal.interestBreakdown.pass > 0 && <div className="bg-gray-300" style={{ flex: deal.interestBreakdown.pass }} />}
-              {deal.interestBreakdown.watching > 0 && <div className="bg-blue-400" style={{ flex: deal.interestBreakdown.watching }} />}
+              {deal.interestBreakdown.watching > 0 && <div className="bg-[var(--accent)]" style={{ flex: deal.interestBreakdown.watching }} />}
               {deal.interestBreakdown.interested > 0 && <div className="bg-amber-400" style={{ flex: deal.interestBreakdown.interested }} />}
               {deal.interestBreakdown.committed > 0 && <div className="bg-emerald-400" style={{ flex: deal.interestBreakdown.committed }} />}
             </div>
@@ -290,13 +290,13 @@ export default function DealDiscussionPage() {
             value={newComment}
             onChange={e => setNewComment(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleComment()}
-            className="flex-1 px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+            className="flex-1 px-3 py-2.5 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             placeholder="Add a comment..."
           />
           <button
             onClick={handleComment}
             disabled={!newComment.trim() || posting}
-            className="px-4 py-2.5 bg-[#007CF8] text-white text-sm font-medium rounded-lg hover:bg-[#0066D6] disabled:opacity-50"
+            className="px-4 py-2.5 bg-[var(--ink)] text-white text-sm font-medium rounded-lg hover:bg-[var(--ink-2)] disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
           </button>
@@ -354,7 +354,7 @@ function CommentCard({
     <div className={`bg-white rounded-xl border border-gray-200 p-4 ${isReply ? 'border-gray-100' : ''}`}>
       <div className="flex items-start justify-between mb-1">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-[#007CF8]/10 flex items-center justify-center text-xs font-semibold text-[#007CF8]">
+          <div className="w-7 h-7 rounded-full bg-[var(--ink)]/10 flex items-center justify-center text-xs font-semibold text-[var(--accent-ink)]">
             {(comment.authorName || '?')[0].toUpperCase()}
           </div>
           <span className="text-sm font-medium text-gray-900">{comment.authorName}</span>
@@ -373,7 +373,7 @@ function CommentCard({
               key={emoji}
               onClick={() => onReact(emoji)}
               className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition ${
-                r?.hasReacted ? 'bg-[#007CF8]/10 text-[#007CF8]' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                r?.hasReacted ? 'bg-[var(--ink)]/10 text-[var(--accent-ink)]' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
               }`}
             >
               <Icon className="w-3 h-3" />
@@ -395,11 +395,11 @@ function CommentCard({
             value={replyContent}
             onChange={e => setReplyContent(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && onReply()}
-            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             placeholder="Write a reply..."
             autoFocus
           />
-          <button onClick={onReply} disabled={!replyContent?.trim()} className="px-3 py-2 bg-[#007CF8] text-white text-sm rounded-lg hover:bg-[#0066D6] disabled:opacity-50">Reply</button>
+          <button onClick={onReply} disabled={!replyContent?.trim()} className="px-3 py-2 bg-[var(--ink)] text-white text-sm rounded-lg hover:bg-[var(--ink-2)] disabled:opacity-50">Reply</button>
         </div>
       )}
     </div>

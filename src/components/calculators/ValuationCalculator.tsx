@@ -80,7 +80,7 @@ export function ValuationCalculator() {
           onClick={() => setSelectedTab('dcf')}
           className={`px-4 py-3 font-medium border-b-2 transition-colors ${
             selectedTab === 'dcf'
-              ? 'border-blue-600 text-blue-600'
+              ? 'border-[var(--ink)] text-[var(--ink)]'
               : 'border-transparent text-gray-600 hover:text-gray-900'
           }`}
         >
@@ -90,7 +90,7 @@ export function ValuationCalculator() {
           onClick={() => setSelectedTab('comps')}
           className={`px-4 py-3 font-medium border-b-2 transition-colors ${
             selectedTab === 'comps'
-              ? 'border-blue-600 text-blue-600'
+              ? 'border-[var(--ink)] text-[var(--ink)]'
               : 'border-transparent text-gray-600 hover:text-gray-900'
           }`}
         >
@@ -100,7 +100,7 @@ export function ValuationCalculator() {
           onClick={() => setSelectedTab('vc')}
           className={`px-4 py-3 font-medium border-b-2 transition-colors ${
             selectedTab === 'vc'
-              ? 'border-blue-600 text-blue-600'
+              ? 'border-[var(--ink)] text-[var(--ink)]'
               : 'border-transparent text-gray-600 hover:text-gray-900'
           }`}
         >
@@ -191,9 +191,9 @@ export function ValuationCalculator() {
               </div>
 
               {/* Enterprise Value */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm font-medium text-blue-900">Enterprise Value</p>
-                <p className="text-3xl font-bold text-blue-600 mt-2">
+              <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-4">
+                <p className="text-sm font-medium text-[var(--ink)]">Enterprise Value</p>
+                <p className="text-3xl font-bold text-[var(--ink)] mt-2">
                   {formatCurrency(dcfResult.enterpriseValue)}
                 </p>
               </div>
@@ -210,9 +210,9 @@ export function ValuationCalculator() {
                       <span className="font-medium text-gray-900">{formatCurrency(pv)}</span>
                     </div>
                   ))}
-                  <div className="flex items-center justify-between py-2 px-4 bg-blue-50 rounded border border-blue-200 mt-4">
-                    <span className="text-sm font-medium text-blue-900">Total PV of Cash Flows</span>
-                    <span className="font-bold text-blue-600">{formatCurrency(dcfResult.sumPVCashFlows)}</span>
+                  <div className="flex items-center justify-between py-2 px-4 bg-[var(--accent-soft)] rounded border border-[var(--line)] mt-4">
+                    <span className="text-sm font-medium text-[var(--ink)]">Total PV of Cash Flows</span>
+                    <span className="font-bold text-[var(--ink)]">{formatCurrency(dcfResult.sumPVCashFlows)}</span>
                   </div>
                   <div className="flex items-center justify-between py-2 px-4 bg-green-50 rounded border border-green-200">
                     <span className="text-sm font-medium text-green-900">PV of Terminal Value</span>
@@ -295,15 +295,15 @@ export function ValuationCalculator() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm font-medium text-blue-900">Valuation by EBITDA</p>
+              <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-4">
+                <p className="text-sm font-medium text-[var(--ink)]">Valuation by EBITDA</p>
                 <div className="flex items-end justify-between mt-2">
                   <div>
-                    <p className="text-xs text-blue-700">
+                    <p className="text-xs text-[var(--ink)]">
                       {formatCurrency(compsInputs.ebitda)} × {compsInputs.evEbitdaMultiple}x
                     </p>
                   </div>
-                  <p className="text-3xl font-bold text-blue-600">
+                  <p className="text-3xl font-bold text-[var(--ink)]">
                     {formatCurrency(compsResult.valuationByEBITDA)}
                   </p>
                 </div>
@@ -393,12 +393,12 @@ export function ValuationCalculator() {
           <Card title="Valuation & Investment Terms">
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm font-medium text-blue-900">Pre-Money Valuation</p>
-                  <p className="text-3xl font-bold text-blue-600 mt-2">
+                <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-4">
+                  <p className="text-sm font-medium text-[var(--ink)]">Pre-Money Valuation</p>
+                  <p className="text-3xl font-bold text-[var(--ink)] mt-2">
                     {formatCurrency(vcResult.preMoneyValuation)}
                   </p>
-                  <p className="text-xs text-blue-700 mt-2">Company value before investment</p>
+                  <p className="text-xs text-[var(--ink)] mt-2">Company value before investment</p>
                 </div>
 
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -470,9 +470,9 @@ export function ValuationCalculator() {
             </p>
           </div>
 
-          <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-xs font-medium text-blue-700 uppercase">Post-Money (VC)</p>
-            <p className="text-2xl font-bold text-blue-600 mt-2">
+          <div className="text-center p-4 bg-[var(--accent-soft)] rounded-lg border border-[var(--line)]">
+            <p className="text-xs font-medium text-[var(--ink)] uppercase">Post-Money (VC)</p>
+            <p className="text-2xl font-bold text-[var(--ink)] mt-2">
               {formatCurrency(vcResult.postMoneyValuation)}
             </p>
           </div>

@@ -60,7 +60,7 @@ export default function InvestorsDirectoryPage() {
   }, [isTenantContext, search, sector]);
 
   if (isLoading) {
-    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" /></div>;
   }
 
   if (!isTenantContext) {
@@ -94,7 +94,7 @@ export default function InvestorsDirectoryPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6 flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name or firm..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name or firm..." className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]" />
         </div>
         <select value={sector} onChange={(e) => setSector(e.target.value)} className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
           <option value="">All sectors</option>
@@ -103,7 +103,7 @@ export default function InvestorsDirectoryPage() {
       </div>
 
       {loading ? (
-        <div className="py-12 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8] mx-auto" /></div>
+        <div className="py-12 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)] mx-auto" /></div>
       ) : investors.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
@@ -121,7 +121,7 @@ export default function InvestorsDirectoryPage() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={inv.avatar_url} alt={inv.full_name || ''} className="w-12 h-12 rounded-full object-cover" />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 text-white flex items-center justify-center font-semibold">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[var(--ink)] to-purple-500 text-white flex items-center justify-center font-semibold">
                       {(inv.full_name || '?').charAt(0)}
                     </div>
                   )}
@@ -142,7 +142,7 @@ export default function InvestorsDirectoryPage() {
                 {inv.sector_interests && inv.sector_interests.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-2">
                     {inv.sector_interests.slice(0, 3).map((s) => (
-                      <span key={s} className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">{s}</span>
+                      <span key={s} className="text-xs px-2 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--ink)]">{s}</span>
                     ))}
                     {inv.sector_interests.length > 3 && <span className="text-xs text-gray-400">+{inv.sector_interests.length - 3}</span>}
                   </div>

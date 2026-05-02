@@ -32,7 +32,7 @@ interface PipelineKanbanProps {
 }
 
 const STAGES = [
-  { id: 'sourcing', label: 'Sourcing', color: 'bg-blue-50', borderColor: 'border-blue-200' },
+  { id: 'sourcing', label: 'Sourcing', color: 'bg-[var(--accent-soft)]', borderColor: 'border-[var(--line)]' },
   { id: 'screening', label: 'Screening', color: 'bg-purple-50', borderColor: 'border-purple-200' },
   { id: 'diligence', label: 'Diligence', color: 'bg-orange-50', borderColor: 'border-orange-200' },
   { id: 'close', label: 'Close', color: 'bg-green-50', borderColor: 'border-green-200' },
@@ -111,7 +111,7 @@ function PipelineDealCard({
 
       {/* Follow-up Date */}
       {deal.follow_up_date && (
-        <p className="text-xs text-blue-600 mb-3">
+        <p className="text-xs text-[var(--ink)] mb-3">
           Follow-up: {formatDate(deal.follow_up_date)}
         </p>
       )}
@@ -119,7 +119,7 @@ function PipelineDealCard({
       {/* Action Buttons */}
       <div className="flex gap-2 mb-3">
         <Link href={`/deals/${deal.deal_id}`} className="flex-1">
-          <button className="w-full px-2 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 transition-colors flex items-center justify-center gap-1">
+          <button className="w-full px-2 py-1.5 text-xs font-medium text-[var(--ink)] bg-[var(--accent-soft)] rounded hover:bg-[var(--accent-soft)] transition-colors flex items-center justify-center gap-1">
             <Eye className="h-3 w-3" />
             View
           </button>

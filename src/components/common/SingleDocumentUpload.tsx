@@ -245,21 +245,21 @@ export function SingleDocumentUpload({
             disabled || state.status === 'uploading'
               ? 'opacity-60 cursor-not-allowed'
               : dragOver
-                ? 'border-[#007CF8] bg-blue-50'
+                ? 'border-[var(--line-strong)] bg-[var(--accent-soft)]'
                 : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'
           }`}
         >
           {state.status === 'uploading' ? (
             <>
-              <Loader2 className="w-6 h-6 text-[#007CF8] animate-spin" />
+              <Loader2 className="w-6 h-6 text-[var(--accent-ink)] animate-spin" />
               <p className="text-xs text-gray-600 truncate max-w-full">
                 Uploading {state.fileName}…
               </p>
             </>
           ) : (
             <>
-              <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
-                <Upload className="w-5 h-5 text-[#007CF8]" />
+              <div className="w-10 h-10 rounded-full bg-[var(--accent-soft)] flex items-center justify-center">
+                <Upload className="w-5 h-5 text-[var(--accent-ink)]" />
               </div>
               <p className="text-sm font-medium text-gray-900">
                 Drop a file here, or click to browse

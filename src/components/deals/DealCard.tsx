@@ -61,7 +61,7 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
 
   return (
     <Link href={`/deals/${deal.id}`}>
-      <div className="h-full bg-white rounded-xl border border-gray-200 hover:border-blue-400 hover:shadow-lg transition-all duration-200 overflow-hidden cursor-pointer">
+      <div className="h-full bg-white rounded-xl border border-gray-200 hover:border-[var(--line-strong)] hover:shadow-lg transition-all duration-200 overflow-hidden cursor-pointer">
         {/* Card Content */}
         <div className="p-6">
           {/* Header with Save Button */}
@@ -69,7 +69,7 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
             <div className="flex-1">
               {/* Badges */}
               <div className="flex items-center gap-2 mb-3">
-                <span className="px-2.5 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                <span className="px-2.5 py-1 bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-semibold rounded-full">
                   {industry}
                 </span>
                 <span className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
@@ -91,7 +91,7 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
               title={saved ? 'Remove from watchlist' : 'Add to watchlist'}
             >
               {saved ? (
-                <BookmarkCheck className="h-5 w-5 text-blue-600 fill-blue-600" />
+                <BookmarkCheck className="h-5 w-5 text-[var(--ink)] fill-[var(--accent)]" />
               ) : (
                 <Bookmark className="h-5 w-5 text-gray-400 hover:text-gray-600" />
               )}
@@ -135,7 +135,7 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
               <Link
                 href={`/company/${slug}`}
                 onClick={(e) => e.stopPropagation()}
-                className="text-sm text-[#007CF8] hover:text-[#0066D6] font-medium hover:underline"
+                className="text-sm text-[var(--accent-ink)] hover:text-[var(--ink)] font-medium hover:underline"
               >
                 View Profile &rarr;
               </Link>

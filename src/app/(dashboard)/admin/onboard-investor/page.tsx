@@ -85,7 +85,7 @@ export default function OnboardInvestorPage() {
   };
 
   if (isLoading || isAdmin === null) {
-    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" /></div>;
   }
 
   if (!isTenantContext || !hasFeature) {
@@ -127,13 +127,13 @@ export default function OnboardInvestorPage() {
           <div key={label} className="flex items-center flex-1">
             <div className={`flex items-center gap-2`}>
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${
-                i < step ? 'bg-[#007CF8] text-white' : i === step ? 'bg-[#007CF8] text-white ring-4 ring-blue-100' : 'bg-gray-100 text-gray-400'
+                i < step ? 'bg-[var(--ink)] text-white' : i === step ? 'bg-[var(--ink)] text-white ring-4 ring-[var(--accent-soft)]' : 'bg-gray-100 text-gray-400'
               }`}>
                 {i < step ? <Check className="w-4 h-4" /> : i + 1}
               </div>
               <span className={`text-xs hidden md:inline ${i === step ? 'font-semibold text-gray-900' : 'text-gray-400'}`}>{label}</span>
             </div>
-            {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 ${i < step ? 'bg-[#007CF8]' : 'bg-gray-200'}`} />}
+            {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 ${i < step ? 'bg-[var(--ink)]' : 'bg-gray-200'}`} />}
           </div>
         ))}
       </div>
@@ -209,11 +209,11 @@ export default function OnboardInvestorPage() {
             <ChevronLeft className="w-4 h-4" /> Back
           </button>
           {step < STEPS.length - 1 ? (
-            <button onClick={() => setStep((s) => s + 1)} disabled={!canNext} className="inline-flex items-center gap-1 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] disabled:opacity-50">
+            <button onClick={() => setStep((s) => s + 1)} disabled={!canNext} className="inline-flex items-center gap-1 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] disabled:opacity-50">
               Next <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
-            <button onClick={submit} disabled={submitting} className="inline-flex items-center gap-1 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] disabled:opacity-50">
+            <button onClick={submit} disabled={submitting} className="inline-flex items-center gap-1 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] disabled:opacity-50">
               {submitting ? 'Sending…' : 'Send Invitation'}
             </button>
           )}
@@ -227,7 +227,7 @@ function Field({ label, value, onChange, type = 'text' }: { label: string; value
   return (
     <div>
       <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]" />
+      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]" />
     </div>
   );
 }
@@ -240,7 +240,7 @@ function MultiSelect({ label, values, options, onToggle }: { label: string; valu
         {options.map((o) => {
           const active = values.includes(o);
           return (
-            <button key={o} type="button" onClick={() => onToggle(o)} className={`text-xs px-2.5 py-1 rounded-full border ${active ? 'bg-[#007CF8] text-white border-[#007CF8]' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'}`}>
+            <button key={o} type="button" onClick={() => onToggle(o)} className={`text-xs px-2.5 py-1 rounded-full border ${active ? 'bg-[var(--ink)] text-white border-[var(--line-strong)]' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'}`}>
               {o}
             </button>
           );

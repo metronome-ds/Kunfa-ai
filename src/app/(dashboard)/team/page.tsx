@@ -19,7 +19,7 @@ interface TeamMember {
 function getRoleBadge(role: string) {
   switch (role) {
     case 'owner':
-      return 'bg-[#F0F7FF] text-[#007CF8]'
+      return 'bg-[#F0F7FF] text-[var(--accent-ink)]'
     case 'admin':
       return 'bg-red-100 text-red-700'
     case 'member':
@@ -262,7 +262,7 @@ export default function TeamPage() {
 
       {loading && (
         <div className="text-center py-16">
-          <div className="w-8 h-8 border-2 border-[#007CF8] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="w-8 h-8 border-2 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-gray-500 text-sm">Loading team...</p>
         </div>
       )}
@@ -307,7 +307,7 @@ export default function TeamPage() {
                       <select
                         value={member.role}
                         onChange={(e) => handleChangeRole(member.id, e.target.value)}
-                        className="text-xs font-medium px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#007CF8]"
+                        className="text-xs font-medium px-2 py-1 rounded-lg border border-gray-200 bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-[var(--ink)]"
                       >
                         {inlineRoleOptions.map((r) => (
                           <option key={r} value={r}>
@@ -331,7 +331,7 @@ export default function TeamPage() {
                           <button
                             onClick={() => handleResend(member.id, member.email)}
                             disabled={resending === member.id || resendCooldown[member.id]}
-                            className="px-2 py-1 text-xs font-medium text-[#007CF8] hover:bg-blue-50 transition rounded-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                            className="px-2 py-1 text-xs font-medium text-[var(--accent-ink)] hover:bg-[var(--accent-soft)] transition rounded-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
                             title="Resend invite"
                           >
                             <RefreshCw className={`w-3 h-3 ${resending === member.id ? 'animate-spin' : ''}`} />
@@ -364,7 +364,7 @@ export default function TeamPage() {
               {canManage && (
                 <button
                   onClick={() => setShowInvite(true)}
-                  className="text-[#007CF8] text-sm font-semibold hover:underline"
+                  className="text-[var(--accent-ink)] text-sm font-semibold hover:underline"
                 >
                   Invite a team member
                 </button>
@@ -429,7 +429,7 @@ export default function TeamPage() {
                 <button
                   type="submit"
                   disabled={inviting || !inviteName || !inviteEmail}
-                  className="flex-1 py-2.5 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition disabled:opacity-50"
+                  className="flex-1 py-2.5 bg-[var(--ink)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition disabled:opacity-50"
                 >
                   {inviting ? 'Sending...' : 'Send Invitation'}
                 </button>

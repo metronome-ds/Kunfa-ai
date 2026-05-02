@@ -34,7 +34,7 @@ export default function CreateTenantPage() {
   const [slug, setSlug] = useState('')
   const [subdomain, setSubdomain] = useState('')
   const [customDomain, setCustomDomain] = useState('')
-  const [primaryColor, setPrimaryColor] = useState('#007CF8')
+  const [primaryColor, setPrimaryColor] = useState('#1c1c28')
   const [secondaryColor, setSecondaryColor] = useState('#1F2937')
   const [accentColor, setAccentColor] = useState('#10B981')
   const [logoUrl, setLogoUrl] = useState('')
@@ -119,7 +119,7 @@ export default function CreateTenantPage() {
                 onChange={(e) => { setName(e.target.value); if (!slug) setSlug('') }}
                 required
                 placeholder="Acme Capital"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
               />
             </div>
             <div>
@@ -130,7 +130,7 @@ export default function CreateTenantPage() {
                 onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                 required
                 placeholder="acme-capital"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
               />
             </div>
           </div>
@@ -141,7 +141,7 @@ export default function CreateTenantPage() {
               value={tagline}
               onChange={(e) => setTagline(e.target.value)}
               placeholder="Your investment platform"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             />
           </div>
         </div>
@@ -158,7 +158,7 @@ export default function CreateTenantPage() {
                   value={subdomain}
                   onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                   placeholder="acme"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-l-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-l-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 />
                 <span className="px-3 py-2 bg-gray-50 border border-l-0 border-gray-300 rounded-r-lg text-sm text-gray-500">.kunfa.ai</span>
               </div>
@@ -170,7 +170,7 @@ export default function CreateTenantPage() {
                 value={customDomain}
                 onChange={(e) => setCustomDomain(e.target.value.toLowerCase())}
                 placeholder="deals.acme.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
               />
             </div>
           </div>
@@ -186,7 +186,7 @@ export default function CreateTenantPage() {
               value={logoUrl}
               onChange={(e) => setLogoUrl(e.target.value)}
               placeholder="https://..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             />
           </div>
           <div className="grid grid-cols-3 gap-4">
@@ -221,11 +221,11 @@ export default function CreateTenantPage() {
             <label className="block text-sm font-medium text-gray-700 mb-2">Signup Mode</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" value="invitation_only" checked={signupMode === 'invitation_only'} onChange={(e) => setSignupMode(e.target.value)} className="text-[#007CF8]" />
+                <input type="radio" value="invitation_only" checked={signupMode === 'invitation_only'} onChange={(e) => setSignupMode(e.target.value)} className="text-[var(--accent-ink)]" />
                 <span className="text-sm text-gray-700">Invitation Only</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" value="open" checked={signupMode === 'open'} onChange={(e) => setSignupMode(e.target.value)} className="text-[#007CF8]" />
+                <input type="radio" value="open" checked={signupMode === 'open'} onChange={(e) => setSignupMode(e.target.value)} className="text-[var(--accent-ink)]" />
                 <span className="text-sm text-gray-700">Open Registration</span>
               </label>
             </div>
@@ -242,7 +242,7 @@ export default function CreateTenantPage() {
                   type="checkbox"
                   checked={enabled}
                   onChange={() => toggleFeature(key)}
-                  className="h-4 w-4 rounded border-gray-300 text-[#007CF8] focus:ring-[#007CF8]"
+                  className="h-4 w-4 rounded border-gray-300 text-[var(--accent-ink)] focus:ring-[var(--ink)]"
                 />
                 <span className="text-sm text-gray-700">{key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
               </label>
@@ -263,7 +263,7 @@ export default function CreateTenantPage() {
           <button
             type="submit"
             disabled={loading || !name || !slug}
-            className="px-6 py-2.5 bg-[#007CF8] text-white rounded-lg font-medium text-sm hover:bg-[#0066D6] transition disabled:opacity-50"
+            className="px-6 py-2.5 bg-[var(--ink)] text-white rounded-lg font-medium text-sm hover:bg-[var(--ink-2)] transition disabled:opacity-50"
           >
             {loading ? 'Creating...' : 'Create Tenant'}
           </button>

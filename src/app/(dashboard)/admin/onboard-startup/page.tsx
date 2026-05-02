@@ -258,7 +258,7 @@ export default function OnboardStartupPage() {
   if (isLoading || isAdmin === null) {
     return (
       <div className="p-8 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
       </div>
     )
   }
@@ -339,7 +339,7 @@ export default function OnboardStartupPage() {
                   value={claimEmail}
                   onChange={(e) => setClaimEmail(e.target.value)}
                   placeholder="founder@startup.com"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 />
               </label>
               <label className="block mt-3">
@@ -351,7 +351,7 @@ export default function OnboardStartupPage() {
                   onChange={(e) => setClaimMessage(e.target.value)}
                   rows={2}
                   placeholder="Hi — we've added your company to our network…"
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                  className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 />
               </label>
               {claimError && (
@@ -362,7 +362,7 @@ export default function OnboardStartupPage() {
               <button
                 onClick={sendClaimInvite}
                 disabled={claimSending || !claimEmail.trim()}
-                className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] disabled:opacity-50"
+                className="mt-3 w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] disabled:opacity-50"
               >
                 {claimSending && <Loader2 className="w-4 h-4 animate-spin" />}
                 {claimSending ? 'Sending…' : 'Send Claim Invitation'}
@@ -421,9 +421,9 @@ export default function OnboardStartupPage() {
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold flex-shrink-0 ${
                   i < step
-                    ? 'bg-[#007CF8] text-white'
+                    ? 'bg-[var(--ink)] text-white'
                     : i === step
-                      ? 'bg-[#007CF8] text-white ring-4 ring-blue-100'
+                      ? 'bg-[var(--ink)] text-white ring-4 ring-[var(--accent-soft)]'
                       : 'bg-gray-100 text-gray-400'
                 }`}
               >
@@ -439,7 +439,7 @@ export default function OnboardStartupPage() {
             </div>
             {i < STEPS.length - 1 && (
               <div
-                className={`flex-1 h-0.5 mx-2 ${i < step ? 'bg-[#007CF8]' : 'bg-gray-200'}`}
+                className={`flex-1 h-0.5 mx-2 ${i < step ? 'bg-[var(--ink)]' : 'bg-gray-200'}`}
               />
             )}
           </div>
@@ -660,7 +660,7 @@ export default function OnboardStartupPage() {
           {step < STEPS.length - 1 ? (
             <button
               onClick={goNext}
-              className="inline-flex items-center gap-1 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6]"
+              className="inline-flex items-center gap-1 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)]"
             >
               Next <ChevronRight className="w-4 h-4" />
             </button>
@@ -668,7 +668,7 @@ export default function OnboardStartupPage() {
             <button
               onClick={submit}
               disabled={submitting}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] disabled:opacity-50"
             >
               {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
               {submitting ? 'Submitting…' : 'Submit'}
@@ -712,7 +712,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
       />
       {helpText && <p className="text-[11px] text-gray-500 mt-1">{helpText}</p>}
     </label>
@@ -735,7 +735,7 @@ function TextareaField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={3}
-        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
       />
     </label>
   )
@@ -758,7 +758,7 @@ function Select({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
       >
         {options.map((o) => (
           <option key={o} value={o}>

@@ -39,7 +39,7 @@ function timeAgo(dateStr: string): string {
 }
 
 const activityIcon = (type: string) => {
-  if (type === 'startup') return <Rocket className="w-4 h-4 text-blue-600" />;
+  if (type === 'startup') return <Rocket className="w-4 h-4 text-[var(--ink)]" />;
   if (type === 'investor') return <Users className="w-4 h-4 text-emerald-600" />;
   return <Briefcase className="w-4 h-4 text-purple-600" />;
 };
@@ -70,7 +70,7 @@ export default function WwipDashboard() {
 
   const cards = [
     { label: 'Capital Deployed', value: formatCompact(stats.capital_deployed), icon: <DollarSign className="w-5 h-5 text-emerald-600" />, bg: 'bg-emerald-100' },
-    { label: 'Active Deals', value: stats.active_deals.toString(), icon: <TrendingUp className="w-5 h-5 text-blue-600" />, bg: 'bg-blue-100' },
+    { label: 'Active Deals', value: stats.active_deals.toString(), icon: <TrendingUp className="w-5 h-5 text-[var(--ink)]" />, bg: 'bg-[var(--accent-soft)]' },
     { label: 'Network Size', value: stats.network_size.toString(), icon: <Users className="w-5 h-5 text-purple-600" />, bg: 'bg-purple-100' },
     { label: 'New This Month', value: stats.new_this_month.toString(), icon: <UserPlus className="w-5 h-5 text-amber-600" />, bg: 'bg-amber-100' },
   ];
@@ -102,7 +102,7 @@ export default function WwipDashboard() {
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Recent Activity</h2>
         {loading ? (
           <div className="py-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8] mx-auto" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)] mx-auto" />
           </div>
         ) : activity.length === 0 ? (
           <div className="text-center py-12">

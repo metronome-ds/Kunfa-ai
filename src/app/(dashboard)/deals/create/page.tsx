@@ -251,7 +251,7 @@ export default function CreateDealPage() {
         <div className="mb-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4"
+            className="flex items-center gap-2 text-[var(--ink)] hover:text-[var(--ink)] mb-4"
           >
             <ChevronLeft className="h-5 w-5" />
             Back
@@ -274,7 +274,7 @@ export default function CreateDealPage() {
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-[#007CF8] h-full transition-all"
+              className="bg-[var(--ink)] h-full transition-all"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -288,7 +288,7 @@ export default function CreateDealPage() {
                 disabled={i > currentStepIndex}
                 className={`text-xs font-medium capitalize transition-colors ${
                   i === currentStepIndex
-                    ? 'text-blue-600'
+                    ? 'text-[var(--ink)]'
                     : i < currentStepIndex
                       ? 'text-green-600 cursor-pointer'
                       : 'text-gray-400 cursor-not-allowed'
@@ -338,7 +338,7 @@ export default function CreateDealPage() {
                   value={formData.company_description}
                   onChange={(e) => handleInputChange('company_description', e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--ink)] text-gray-900 placeholder-gray-400"
                 />
               </div>
 
@@ -349,7 +349,7 @@ export default function CreateDealPage() {
                 <select
                   value={formData.industry}
                   onChange={(e) => handleInputChange('industry', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--ink)] text-gray-900 placeholder-gray-400"
                 >
                   <option value="">Select an industry</option>
                   {INDUSTRIES.map((industry) => (
@@ -389,7 +389,7 @@ export default function CreateDealPage() {
                 <select
                   value={formData.stage}
                   onChange={(e) => handleInputChange('stage', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--ink)] text-gray-900 placeholder-gray-400"
                 >
                   {DEAL_STAGES.map((stage) => (
                     <option key={stage.value} value={stage.value}>
@@ -468,7 +468,7 @@ export default function CreateDealPage() {
                   value={formData.problem_statement}
                   onChange={(e) => handleInputChange('problem_statement', e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--ink)] text-gray-900 placeholder-gray-400"
                 />
               </div>
 
@@ -481,7 +481,7 @@ export default function CreateDealPage() {
                   value={formData.solution}
                   onChange={(e) => handleInputChange('solution', e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--ink)] text-gray-900 placeholder-gray-400"
                 />
               </div>
 
@@ -573,8 +573,8 @@ export default function CreateDealPage() {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-700">
+              <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-4">
+                <p className="text-sm text-[var(--ink)]">
                   Once you submit, your deal will be reviewed by our system and made available
                   to investors. You'll receive an AI analysis within 24 hours.
                 </p>

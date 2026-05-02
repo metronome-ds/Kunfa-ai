@@ -403,7 +403,7 @@ export default function AddCompanyPage() {
       )}
 
       {status === 'scoring' && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6 text-center">
+        <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-xl p-6 mb-6 text-center">
           <div className="w-10 h-10 border-3 border-[var(--ink)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-sm font-medium text-[var(--ink)]">AI is scoring this company...</p>
           <p className="text-xs text-[var(--ink-mute)] mt-1">Analyzing pitch deck and generating insights</p>
@@ -466,7 +466,7 @@ export default function AddCompanyPage() {
                       {doc.error && ` · ${doc.error}`}
                     </p>
                   </div>
-                  {doc.uploading && <Loader2 className="w-4 h-4 text-[#007CF8] animate-spin flex-shrink-0" />}
+                  {doc.uploading && <Loader2 className="w-4 h-4 text-[var(--accent-ink)] animate-spin flex-shrink-0" />}
                   <button
                     type="button"
                     onClick={() => removeDoc(i)}
@@ -480,7 +480,7 @@ export default function AddCompanyPage() {
                 <button
                   type="button"
                   onClick={() => docInputRef.current?.click()}
-                  className="text-xs text-[#007CF8] font-medium hover:underline"
+                  className="text-xs text-[var(--accent-ink)] font-medium hover:underline"
                 >
                   + Add more files
                 </button>
@@ -510,7 +510,7 @@ export default function AddCompanyPage() {
               value={inviteForm.companyName}
               onChange={(e) => setInviteForm(f => ({ ...f, companyName: e.target.value }))}
               required
-              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)]"
+              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
               placeholder="Acme Corp"
             />
           </div>
@@ -522,7 +522,7 @@ export default function AddCompanyPage() {
               value={inviteForm.founderEmail}
               onChange={(e) => setInviteForm(f => ({ ...f, founderEmail: e.target.value }))}
               required
-              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)]"
+              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
               placeholder="founder@company.com"
             />
           </div>
@@ -533,7 +533,7 @@ export default function AddCompanyPage() {
               type="text"
               value={inviteForm.founderName}
               onChange={(e) => setInviteForm(f => ({ ...f, founderName: e.target.value }))}
-              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)]"
+              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
               placeholder="Jane Smith (optional)"
             />
           </div>
@@ -544,7 +544,7 @@ export default function AddCompanyPage() {
               value={inviteForm.message}
               onChange={(e) => setInviteForm(f => ({ ...f, message: e.target.value }))}
               rows={5}
-              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)] resize-none"
+              className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)] resize-none"
             />
             <p className="text-xs text-[var(--ink-mute)] mt-1">This message will appear in the invite email.</p>
           </div>
@@ -564,8 +564,8 @@ export default function AddCompanyPage() {
       {(tab === 'manual' || (tab === 'pdf' && form.company_name)) && status !== 'scoring' && (
         <form onSubmit={handleSubmit} className="space-y-4">
           {tab === 'pdf' && form.company_name && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
-              <p className="text-sm text-[#007CF8]">
+            <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-3 mb-2">
+              <p className="text-sm text-[var(--accent-ink)]">
                 Fields extracted from PDF. Review and edit as needed.
               </p>
             </div>
@@ -585,7 +585,7 @@ export default function AddCompanyPage() {
                 <button
                   type="button"
                   onClick={() => docInputRef.current?.click()}
-                  className="inline-flex items-center gap-1 px-2 py-1 border border-dashed border-[var(--line-strong)] rounded text-xs text-[var(--ink-mute)] hover:border-[var(--ink)] hover:text-[#007CF8]"
+                  className="inline-flex items-center gap-1 px-2 py-1 border border-dashed border-[var(--line-strong)] rounded text-xs text-[var(--ink-mute)] hover:border-[var(--ink)] hover:text-[var(--accent-ink)]"
                 >
                   + Add file
                 </button>
@@ -608,7 +608,7 @@ export default function AddCompanyPage() {
                 ) : (
                   <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-[var(--line-strong)] flex items-center justify-center hover:border-[var(--ink)] transition bg-[var(--bg-sunk)]">
                     {logoUploading ? (
-                      <Loader2 className="w-5 h-5 text-[#007CF8] animate-spin" />
+                      <Loader2 className="w-5 h-5 text-[var(--accent-ink)] animate-spin" />
                     ) : (
                       <Upload className="w-5 h-5 text-[var(--ink-mute)]" />
                     )}
@@ -633,7 +633,7 @@ export default function AddCompanyPage() {
                 value={form.company_name}
                 onChange={(e) => updateField('company_name', e.target.value)}
                 required
-                className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)]"
+                className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]"
                 placeholder="Acme Corp"
               />
             </div>
@@ -642,25 +642,25 @@ export default function AddCompanyPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Website URL</label>
-              <input type="text" value={form.website_url} onChange={(e) => updateField('website_url', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)]" placeholder="https://example.com" />
+              <input type="text" value={form.website_url} onChange={(e) => updateField('website_url', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="https://example.com" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Company LinkedIn</label>
-              <input type="text" value={form.company_linkedin_url} onChange={(e) => updateField('company_linkedin_url', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)]" placeholder="https://linkedin.com/company/..." />
+              <input type="text" value={form.company_linkedin_url} onChange={(e) => updateField('company_linkedin_url', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="https://linkedin.com/company/..." />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Industry</label>
-              <select value={form.sector} onChange={(e) => updateField('sector', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)]">
+              <select value={form.sector} onChange={(e) => updateField('sector', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]">
                 <option value="">Select industry</option>
                 {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Stage</label>
-              <select value={form.stage} onChange={(e) => updateField('stage', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)]">
+              <select value={form.stage} onChange={(e) => updateField('stage', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]">
                 <option value="">Select stage</option>
                 {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
@@ -670,22 +670,22 @@ export default function AddCompanyPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Raise Amount (USD)</label>
-              <input type="number" value={form.raise_amount} onChange={(e) => updateField('raise_amount', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)]" placeholder="e.g. 2000000" />
+              <input type="number" value={form.raise_amount} onChange={(e) => updateField('raise_amount', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="e.g. 2000000" />
             </div>
             <div>
               <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Team Size</label>
-              <input type="number" value={form.team_size} onChange={(e) => updateField('team_size', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)]" placeholder="e.g. 12" />
+              <input type="number" value={form.team_size} onChange={(e) => updateField('team_size', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="e.g. 12" />
             </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Founded Year</label>
-            <input type="number" value={form.founded_year} onChange={(e) => updateField('founded_year', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)]" placeholder="e.g. 2023" />
+            <input type="number" value={form.founded_year} onChange={(e) => updateField('founded_year', e.target.value)} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)]" placeholder="e.g. 2023" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Description</label>
-            <textarea value={form.description} onChange={(e) => updateField('description', e.target.value)} rows={3} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[var(--ink)] resize-none" placeholder="Brief company description..." />
+            <textarea value={form.description} onChange={(e) => updateField('description', e.target.value)} rows={3} className="w-full px-4 py-2.5 bg-white border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder:text-[var(--ink-mute)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--ink)] resize-none" placeholder="Brief company description..." />
           </div>
 
           <button

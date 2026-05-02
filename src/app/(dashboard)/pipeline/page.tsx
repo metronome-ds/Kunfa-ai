@@ -92,7 +92,7 @@ type DragItem =
 
 const PIPELINE_STAGES = [
   { key: 'sourced', label: 'Sourced', color: 'bg-gray-400' },
-  { key: 'screening', label: 'Screening', color: 'bg-blue-500' },
+  { key: 'screening', label: 'Screening', color: 'bg-[var(--accent-soft)]0' },
   { key: 'due_diligence', label: 'Due Diligence', color: 'bg-purple-500' },
   { key: 'term_sheet', label: 'Term Sheet', color: 'bg-amber-500' },
   { key: 'closed', label: 'Closed', color: 'bg-green-500' },
@@ -101,7 +101,7 @@ const PIPELINE_STAGES = [
 function getScoreBadgeColor(score: number | null) {
   if (!score) return 'bg-gray-100 text-gray-500';
   if (score >= 80) return 'bg-emerald-100 text-emerald-700';
-  if (score >= 60) return 'bg-blue-100 text-blue-700';
+  if (score >= 60) return 'bg-[var(--accent-soft)] text-[var(--ink)]';
   if (score >= 40) return 'bg-yellow-100 text-yellow-700';
   return 'bg-red-100 text-red-700';
 }
@@ -382,7 +382,7 @@ export default function PipelinePage() {
   function getInviteStatusBadge(invite: InviteCard) {
     if (invite.claim_status === 'claimed') {
       if (invite.overall_score) return { label: 'Scored', color: 'bg-emerald-100 text-emerald-700' };
-      return { label: 'Claimed', color: 'bg-blue-100 text-blue-700' };
+      return { label: 'Claimed', color: 'bg-[var(--accent-soft)] text-[var(--ink)]' };
     }
     return { label: 'Pending', color: 'bg-amber-100 text-amber-700' };
   }
@@ -458,7 +458,7 @@ export default function PipelinePage() {
             onClick={() => setDealFilter(f.key)}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
               dealFilter === f.key
-                ? 'bg-[#007CF8] text-white'
+                ? 'bg-[var(--ink)] text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -474,7 +474,7 @@ export default function PipelinePage() {
             onClick={() => setShowInvites(!showInvites)}
             className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-gray-900 mb-3"
           >
-            <Mail className="w-4 h-4 text-[#007CF8]" />
+            <Mail className="w-4 h-4 text-[var(--accent-ink)]" />
             Pending Invites
             <span className="text-xs font-normal text-gray-500">({invites.length})</span>
             {showInvites ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -515,7 +515,7 @@ export default function PipelinePage() {
                           <button
                             onClick={() => handleResendInvite(invite)}
                             disabled={resendingId === invite.id || cancellingId === invite.id}
-                            className="flex items-center gap-1 text-[10px] text-[#007CF8] hover:text-[#0066D6] font-medium disabled:opacity-50"
+                            className="flex items-center gap-1 text-[10px] text-[var(--accent-ink)] hover:text-[var(--ink)] font-medium disabled:opacity-50"
                           >
                             <RefreshCw className={`w-3 h-3 ${resendingId === invite.id ? 'animate-spin' : ''}`} />
                             {resendingId === invite.id ? 'Sending...' : 'Resend'}
@@ -533,7 +533,7 @@ export default function PipelinePage() {
                       {invite.claim_status === 'claimed' && invite.slug && (
                         <Link
                           href={`/company/${invite.slug}`}
-                          className="flex items-center gap-1 text-[10px] text-[#007CF8] hover:text-[#0066D6] font-medium"
+                          className="flex items-center gap-1 text-[10px] text-[var(--accent-ink)] hover:text-[var(--ink)] font-medium"
                         >
                           <Check className="w-3 h-3" />
                           View
@@ -663,7 +663,7 @@ export default function PipelinePage() {
                 <p className="text-gray-500 text-xs mb-3">No companies watchlisted yet.</p>
                 <Link
                   href="/deals"
-                  className="text-[#007CF8] text-xs hover:text-[#0066D6] underline"
+                  className="text-[var(--accent-ink)] text-xs hover:text-[var(--ink)] underline"
                 >
                   Browse companies
                 </Link>
@@ -685,7 +685,7 @@ export default function PipelinePage() {
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDropOnPipelineStage(e, stage.key)}
               className={`rounded-xl p-3 transition-colors ${
-                isDragOver ? 'bg-[#F0F7FF] ring-2 ring-[#007CF8]/30' : 'bg-gray-100'
+                isDragOver ? 'bg-[#F0F7FF] ring-2 ring-[var(--ink)]/30' : 'bg-gray-100'
               }`}
             >
               <div className="flex items-center gap-2 mb-4 px-1">
@@ -704,7 +704,7 @@ export default function PipelinePage() {
                     onDragStart={() => handleDragStartDeal(deal, stage.key)}
                     onClick={(e) => handleDealClick(deal, e)}
                     className={`bg-white rounded-lg p-3 border hover:border-gray-300 cursor-pointer active:cursor-grabbing transition group shadow-sm ${
-                      selectedDeal?.id === deal.id ? 'border-[#007CF8] ring-1 ring-[#007CF8]/30' : 'border-gray-200'
+                      selectedDeal?.id === deal.id ? 'border-[var(--line-strong)] ring-1 ring-[var(--ink)]/30' : 'border-gray-200'
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">

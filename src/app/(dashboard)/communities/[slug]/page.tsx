@@ -49,14 +49,14 @@ const EMOJIS = [
 
 const INTEREST_OPTIONS = [
   { value: 'pass', label: 'Pass', color: 'bg-gray-100 text-gray-600' },
-  { value: 'watching', label: 'Watching', color: 'bg-blue-100 text-blue-700' },
+  { value: 'watching', label: 'Watching', color: 'bg-[var(--accent-soft)] text-[var(--ink)]' },
   { value: 'interested', label: 'Interested', color: 'bg-amber-100 text-amber-700' },
   { value: 'committed', label: 'Committed', color: 'bg-emerald-100 text-emerald-700' },
 ]
 
 const ROLE_BADGES: Record<string, string> = {
   admin: 'bg-violet-100 text-violet-700',
-  deal_lead: 'bg-blue-100 text-blue-700',
+  deal_lead: 'bg-[var(--accent-soft)] text-[var(--ink)]',
   member: 'bg-gray-100 text-gray-600',
   observer: 'bg-gray-50 text-gray-400',
 }
@@ -112,7 +112,7 @@ export default function CommunityHubPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-6 h-6 animate-spin text-[#007CF8]" />
+        <Loader2 className="w-6 h-6 animate-spin text-[var(--accent-ink)]" />
       </div>
     )
   }
@@ -123,7 +123,7 @@ export default function CommunityHubPage() {
         <Users className="w-12 h-12 text-gray-300 mx-auto mb-4" />
         <h1 className="text-xl font-bold text-gray-900 mb-2">Members Only</h1>
         <p className="text-gray-500 mb-6">You don&apos;t have access to this community. Ask an admin for an invite.</p>
-        <button onClick={() => router.push('/communities')} className="text-sm text-[#007CF8] hover:underline">Back to Communities</button>
+        <button onClick={() => router.push('/communities')} className="text-sm text-[var(--accent-ink)] hover:underline">Back to Communities</button>
       </div>
     )
   }
@@ -132,7 +132,7 @@ export default function CommunityHubPage() {
     return (
       <div className="max-w-lg mx-auto py-20 px-4 text-center">
         <h1 className="text-xl font-bold text-gray-900 mb-2">Community Not Found</h1>
-        <button onClick={() => router.push('/communities')} className="text-sm text-[#007CF8] hover:underline">Back to Communities</button>
+        <button onClick={() => router.push('/communities')} className="text-sm text-[var(--accent-ink)] hover:underline">Back to Communities</button>
       </div>
     )
   }
@@ -152,7 +152,7 @@ export default function CommunityHubPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{community.name}</h1>
             {community.description && <p className="text-gray-500 mt-1">{community.description}</p>}
-            {community.thesis && <p className="text-sm text-[#007CF8] mt-1 italic">{community.thesis}</p>}
+            {community.thesis && <p className="text-sm text-[var(--accent-ink)] mt-1 italic">{community.thesis}</p>}
             <div className="flex items-center gap-3 mt-2 text-sm text-gray-400">
               <span>{community.memberCount} members</span>
               <span>·</span>
@@ -276,14 +276,14 @@ function FeedTab({ slug, community }: { slug: string; community: Community }) {
           value={newPost}
           onChange={e => setNewPost(e.target.value)}
           rows={3}
-          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] resize-none"
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
           placeholder="Share an update with the community..."
         />
         <div className="flex justify-end mt-2">
           <button
             onClick={handlePost}
             disabled={!newPost.trim() || posting}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#007CF8] text-white text-sm font-medium rounded-lg hover:bg-[#0066D6] transition disabled:opacity-50"
+            className="flex items-center gap-1.5 px-4 py-2 bg-[var(--ink)] text-white text-sm font-medium rounded-lg hover:bg-[var(--ink-2)] transition disabled:opacity-50"
           >
             <Send className="w-3.5 h-3.5" />
             {posting ? 'Posting...' : 'Post'}
@@ -329,7 +329,7 @@ function PostCard({
     <div className="bg-white rounded-xl border border-gray-200 p-4">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 rounded-full bg-[#007CF8]/10 flex items-center justify-center text-xs font-semibold text-[#007CF8]">
+          <div className="w-8 h-8 rounded-full bg-[var(--ink)]/10 flex items-center justify-center text-xs font-semibold text-[var(--accent-ink)]">
             {(post.authorName || '?')[0].toUpperCase()}
           </div>
           <div>
@@ -355,7 +355,7 @@ function PostCard({
               key={emoji}
               onClick={() => onReact(emoji)}
               className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition ${
-                r?.hasReacted ? 'bg-[#007CF8]/10 text-[#007CF8]' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
+                r?.hasReacted ? 'bg-[var(--ink)]/10 text-[var(--accent-ink)]' : 'bg-gray-50 text-gray-400 hover:bg-gray-100'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -380,11 +380,11 @@ function PostCard({
             value={replyContent}
             onChange={e => setReplyContent(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && onReply()}
-            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             placeholder="Write a reply..."
             autoFocus
           />
-          <button onClick={onReply} disabled={!replyContent.trim()} className="px-3 py-2 bg-[#007CF8] text-white text-sm rounded-lg hover:bg-[#0066D6] disabled:opacity-50">Reply</button>
+          <button onClick={onReply} disabled={!replyContent.trim()} className="px-3 py-2 bg-[var(--ink)] text-white text-sm rounded-lg hover:bg-[var(--ink-2)] disabled:opacity-50">Reply</button>
         </div>
       )}
     </div>
@@ -506,7 +506,7 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
         <div className="mb-4">
           <button
             onClick={() => setShowShareModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-[#007CF8] text-white text-sm font-medium rounded-lg hover:bg-[#0066D6] transition"
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-[var(--ink)] text-white text-sm font-medium rounded-lg hover:bg-[var(--ink-2)] transition"
           >
             <TrendingUp className="w-4 h-4" />
             Share a Deal
@@ -539,14 +539,14 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
               <div className="space-y-3">
                 <button
                   onClick={() => setShareMode('kunfa')}
-                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-[#007CF8] transition"
+                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-[var(--line-strong)] transition"
                 >
                   <div className="font-medium text-gray-900">From Kunfa</div>
                   <div className="text-sm text-gray-500">Search for a company already on the platform</div>
                 </button>
                 <button
                   onClick={() => setShareMode('external')}
-                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-[#007CF8] transition"
+                  className="w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-[var(--line-strong)] transition"
                 >
                   <div className="font-medium text-gray-900">External Deal</div>
                   <div className="text-sm text-gray-500">Add a company not yet on Kunfa</div>
@@ -560,7 +560,7 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
                     type="text"
                     value={searchQuery}
                     onChange={e => handleSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                     placeholder="Search company name..."
                     autoFocus
                   />
@@ -580,7 +580,7 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
                       {c.ai_score && (
                         <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
                           c.ai_score >= 80 ? 'bg-emerald-100 text-emerald-700' :
-                          c.ai_score >= 60 ? 'bg-blue-100 text-blue-700' :
+                          c.ai_score >= 60 ? 'bg-[var(--accent-soft)] text-[var(--ink)]' :
                           c.ai_score >= 40 ? 'bg-amber-100 text-amber-700' :
                           'bg-red-100 text-red-700'
                         }`}>
@@ -595,33 +595,33 @@ function DealsTab({ slug, community }: { slug: string; community: Community }) {
             ) : (
               <form onSubmit={handleShareExternal} className="space-y-3">
                 <input type="text" value={extName} onChange={e => setExtName(e.target.value)} required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="Company name *" />
                 <textarea value={extDesc} onChange={e => setExtDesc(e.target.value)} rows={2}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] resize-none"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
                   placeholder="Description" />
                 <div className="grid grid-cols-2 gap-3">
                   <select value={extSector} onChange={e => setExtSector(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]">
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]">
                     <option value="">Sector</option>
                     {['Fintech', 'SaaS', 'Healthtech', 'E-commerce', 'Edtech', 'Logistics', 'AI/ML', 'Cleantech', 'Other'].map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                   <select value={extStage} onChange={e => setExtStage(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]">
+                    className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]">
                     <option value="">Stage</option>
                     {['Pre-seed', 'Seed', 'Series A', 'Series B', 'Series C+', 'Growth'].map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
                 </div>
                 <input type="number" value={extAmount} onChange={e => setExtAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="Raise amount (USD)" />
                 <input type="url" value={extDocs} onChange={e => setExtDocs(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="Docs URL (optional)" />
                 {shareError && <p className="text-red-600 text-sm">{shareError}</p>}
                 <div className="flex justify-between items-center">
                   <button type="button" onClick={() => setShareMode(null)} className="text-sm text-gray-500 hover:text-gray-700">← Back</button>
-                  <button type="submit" disabled={shareLoading} className="px-4 py-2 bg-[#007CF8] text-white text-sm font-medium rounded-lg hover:bg-[#0066D6] disabled:opacity-50">
+                  <button type="submit" disabled={shareLoading} className="px-4 py-2 bg-[var(--ink)] text-white text-sm font-medium rounded-lg hover:bg-[var(--ink-2)] disabled:opacity-50">
                     {shareLoading ? 'Sharing...' : 'Share Deal'}
                   </button>
                 </div>
@@ -657,19 +657,19 @@ function DealCard({ deal, slug, onInterest }: { deal: DealItem; slug: string; on
           <div>
             <div className="flex items-center gap-2">
               {deal.company ? (
-                <Link href={`/company/${deal.company.slug}`} className="font-semibold text-gray-900 hover:text-[#007CF8]">{name}</Link>
+                <Link href={`/company/${deal.company.slug}`} className="font-semibold text-gray-900 hover:text-[var(--accent-ink)]">{name}</Link>
               ) : (
                 <span className="font-semibold text-gray-900">{name}</span>
               )}
               {score != null && (
                 <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${
                   score >= 80 ? 'bg-emerald-100 text-emerald-700' :
-                  score >= 60 ? 'bg-blue-100 text-blue-700' :
+                  score >= 60 ? 'bg-[var(--accent-soft)] text-[var(--ink)]' :
                   score >= 40 ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
                 }`}>{score}</span>
               )}
               {deal.external_docs_url && (
-                <a href={deal.external_docs_url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#007CF8]">
+                <a href={deal.external_docs_url} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--accent-ink)]">
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               )}
@@ -685,7 +685,7 @@ function DealCard({ deal, slug, onInterest }: { deal: DealItem; slug: string; on
         <div className="flex items-center gap-2">
           <Link
             href={`/communities/${slug}/deals/${deal.id}`}
-            className="flex items-center gap-1 text-xs text-gray-400 hover:text-[#007CF8]"
+            className="flex items-center gap-1 text-xs text-gray-400 hover:text-[var(--accent-ink)]"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             {deal.commentCount}
@@ -701,7 +701,7 @@ function DealCard({ deal, slug, onInterest }: { deal: DealItem; slug: string; on
       {total > 0 && (
         <div className="flex h-2 rounded-full overflow-hidden gap-0.5 mb-2">
           {deal.interestBreakdown.pass > 0 && <div className="bg-gray-300" style={{ flex: deal.interestBreakdown.pass }} />}
-          {deal.interestBreakdown.watching > 0 && <div className="bg-blue-400" style={{ flex: deal.interestBreakdown.watching }} />}
+          {deal.interestBreakdown.watching > 0 && <div className="bg-[var(--accent)]" style={{ flex: deal.interestBreakdown.watching }} />}
           {deal.interestBreakdown.interested > 0 && <div className="bg-amber-400" style={{ flex: deal.interestBreakdown.interested }} />}
           {deal.interestBreakdown.committed > 0 && <div className="bg-emerald-400" style={{ flex: deal.interestBreakdown.committed }} />}
         </div>
@@ -728,7 +728,7 @@ function DealCard({ deal, slug, onInterest }: { deal: DealItem; slug: string; on
                 <button
                   key={opt.value}
                   onClick={() => { onInterest(opt.value); setShowInterest(false) }}
-                  className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 ${deal.myInterest === opt.value ? 'font-medium text-[#007CF8]' : 'text-gray-700'}`}
+                  className={`w-full text-left px-3 py-1.5 text-sm hover:bg-gray-50 ${deal.myInterest === opt.value ? 'font-medium text-[var(--accent-ink)]' : 'text-gray-700'}`}
                 >
                   {opt.label}
                 </button>
@@ -814,7 +814,7 @@ function MembersTab({ slug, community }: { slug: string; community: Community })
         <div className="mb-4">
           <button
             onClick={() => setShowInviteModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2.5 bg-[#007CF8] text-white text-sm font-medium rounded-lg hover:bg-[#0066D6] transition"
+            className="flex items-center gap-1.5 px-4 py-2.5 bg-[var(--ink)] text-white text-sm font-medium rounded-lg hover:bg-[var(--ink-2)] transition"
           >
             <UserPlus className="w-4 h-4" />
             Invite Members
@@ -838,7 +838,7 @@ function MembersTab({ slug, community }: { slug: string; community: Community })
               <tr key={m.id} className="border-b border-gray-100 hover:bg-[#F8F9FB]">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full bg-[#007CF8]/10 flex items-center justify-center text-xs font-semibold text-[#007CF8]">
+                    <div className="w-7 h-7 rounded-full bg-[var(--ink)]/10 flex items-center justify-center text-xs font-semibold text-[var(--accent-ink)]">
                       {(m.name || m.email || '?')[0].toUpperCase()}
                     </div>
                     <div>
@@ -903,7 +903,7 @@ function MembersTab({ slug, community }: { slug: string; community: Community })
               value={inviteEmails}
               onChange={e => setInviteEmails(e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] resize-none"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
               placeholder={"ahmed@example.com\nsarah@example.com"}
             />
             <p className="text-xs text-gray-400 mt-1 mb-3">One email per line or comma-separated</p>
@@ -913,7 +913,7 @@ function MembersTab({ slug, community }: { slug: string; community: Community })
               <button
                 onClick={handleInvite}
                 disabled={inviteLoading}
-                className="px-4 py-2 bg-[#007CF8] text-white text-sm font-medium rounded-lg hover:bg-[#0066D6] disabled:opacity-50"
+                className="px-4 py-2 bg-[var(--ink)] text-white text-sm font-medium rounded-lg hover:bg-[var(--ink-2)] disabled:opacity-50"
               >
                 {inviteLoading ? 'Sending...' : 'Send Invites'}
               </button>

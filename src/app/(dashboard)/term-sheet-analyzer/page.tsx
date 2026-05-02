@@ -220,8 +220,8 @@ export default function TermSheetAnalyzerPage() {
   if (processing) {
     return (
       <div className="max-w-2xl mx-auto py-24 px-4 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-[#007CF8]/10 flex items-center justify-center mx-auto mb-6">
-          <div className="w-8 h-8 border-3 border-[#007CF8] border-t-transparent rounded-full animate-spin" />
+        <div className="w-16 h-16 rounded-2xl bg-[var(--ink)]/10 flex items-center justify-center mx-auto mb-6">
+          <div className="w-8 h-8 border-3 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">Analyzing Your Term Sheet</h1>
         <p className="text-gray-500 animate-pulse">{PROCESSING_MESSAGES[processingMsg]}</p>
@@ -301,7 +301,7 @@ export default function TermSheetAnalyzerPage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               {saving ? 'Saving...' : 'Save to Private Docs'}
@@ -343,8 +343,8 @@ export default function TermSheetAnalyzerPage() {
   return (
     <div className="max-w-2xl mx-auto py-16 px-4">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-2xl bg-[#007CF8]/10 flex items-center justify-center mx-auto mb-6">
-          <FileSearch className="w-8 h-8 text-[#007CF8]" />
+        <div className="w-16 h-16 rounded-2xl bg-[var(--ink)]/10 flex items-center justify-center mx-auto mb-6">
+          <FileSearch className="w-8 h-8 text-[var(--accent-ink)]" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">Term Sheet Analyzer</h1>
         <p className="text-gray-500 max-w-md mx-auto">
@@ -364,10 +364,10 @@ export default function TermSheetAnalyzerPage() {
         onClick={() => fileInputRef.current?.click()}
         className={`border-2 border-dashed rounded-xl p-10 text-center transition cursor-pointer ${
           dragOver
-            ? 'border-[#007CF8] bg-blue-50'
+            ? 'border-[var(--line-strong)] bg-[var(--accent-soft)]'
             : file
               ? 'border-emerald-300 bg-emerald-50'
-              : 'border-gray-300 hover:border-[#007CF8]'
+              : 'border-gray-300 hover:border-[var(--line-strong)]'
         }`}
       >
         <input
@@ -405,7 +405,7 @@ export default function TermSheetAnalyzerPage() {
       <button
         onClick={handleAnalyze}
         disabled={!file}
-        className="w-full mt-6 py-3 bg-[#007CF8] text-white rounded-lg text-sm font-semibold hover:bg-[#0066D6] transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full mt-6 py-3 bg-[var(--ink)] text-white rounded-lg text-sm font-semibold hover:bg-[var(--ink-2)] transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Analyze Term Sheet
       </button>

@@ -53,7 +53,7 @@ export default function AdminTenantsPage() {
         </div>
         <Link
           href="/admin/tenants/create"
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#007CF8] text-white rounded-lg font-medium text-sm hover:bg-[#0066D6] transition"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[var(--ink)] text-white rounded-lg font-medium text-sm hover:bg-[var(--ink-2)] transition"
         >
           <Plus className="h-4 w-4" />
           Create Tenant
@@ -62,7 +62,7 @@ export default function AdminTenantsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center py-16">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
         </div>
       ) : tenants.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
@@ -71,7 +71,7 @@ export default function AdminTenantsPage() {
           <p className="text-gray-500 text-sm mb-6">Create your first white-label tenant to get started.</p>
           <Link
             href="/admin/tenants/create"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#007CF8] text-white rounded-lg font-medium text-sm hover:bg-[#0066D6] transition"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-[var(--ink)] text-white rounded-lg font-medium text-sm hover:bg-[var(--ink-2)] transition"
           >
             <Plus className="h-4 w-4" />
             Create Tenant
@@ -100,7 +100,7 @@ export default function AdminTenantsPage() {
                       ) : (
                         <div
                           className="h-8 w-8 rounded flex items-center justify-center text-white text-xs font-bold"
-                          style={{ backgroundColor: t.primary_color || '#007CF8' }}
+                          style={{ backgroundColor: t.primary_color || '#1c1c28' }}
                         >
                           {t.name.charAt(0)}
                         </div>
@@ -140,7 +140,7 @@ export default function AdminTenantsPage() {
                   <td className="px-6 py-4 text-right">
                     <Link
                       href={`/admin/tenants/${t.id}`}
-                      className="text-sm text-[#007CF8] hover:text-[#0066D6] font-medium"
+                      className="text-sm text-[var(--accent-ink)] hover:text-[var(--ink)] font-medium"
                     >
                       Edit
                     </Link>

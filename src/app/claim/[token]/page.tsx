@@ -27,7 +27,7 @@ interface CompanyInfo {
 function getScoreColor(score: number | null | undefined) {
   if (!score) return 'text-gray-500 bg-gray-100 border-gray-200'
   if (score >= 80) return 'text-emerald-700 bg-emerald-50 border-emerald-200'
-  if (score >= 60) return 'text-blue-700 bg-blue-50 border-blue-200'
+  if (score >= 60) return 'text-[var(--ink)] bg-[var(--accent-soft)] border-[var(--line)]'
   if (score >= 40) return 'text-yellow-700 bg-yellow-50 border-yellow-200'
   return 'text-red-700 bg-red-50 border-red-200'
 }
@@ -94,7 +94,7 @@ export default function ClaimPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
       </div>
     )
   }
@@ -110,7 +110,7 @@ export default function ClaimPage() {
           <p className="text-gray-600 mb-6">
             This claim link is invalid or the company has already been claimed.
           </p>
-          <Link href="/" className="text-[#007CF8] hover:underline text-sm font-medium">
+          <Link href="/" className="text-[var(--accent-ink)] hover:underline text-sm font-medium">
             Go to Kunfa
           </Link>
         </div>
@@ -151,7 +151,7 @@ export default function ClaimPage() {
             <p className="text-gray-600 mb-6">
               Your email domain doesn&apos;t match the company website, so your claim has been submitted for admin review. You&apos;ll receive an email once it&apos;s been reviewed.
             </p>
-            <Link href="/dashboard" className="text-[#007CF8] hover:underline text-sm font-medium">
+            <Link href="/dashboard" className="text-[var(--accent-ink)] hover:underline text-sm font-medium">
               Go to Dashboard
             </Link>
           </div>
@@ -201,7 +201,7 @@ export default function ClaimPage() {
               )}
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 {companyInfo.industry && (
-                  <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                  <span className="px-2.5 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-medium">
                     {companyInfo.industry}
                   </span>
                 )}
@@ -229,7 +229,7 @@ export default function ClaimPage() {
             <button
               onClick={handleClaim}
               disabled={claiming}
-              className="w-full py-3 bg-[#007CF8] text-white rounded-lg font-semibold hover:bg-[#0066D6] transition disabled:opacity-50"
+              className="w-full py-3 bg-[var(--ink)] text-white rounded-lg font-semibold hover:bg-[var(--ink-2)] transition disabled:opacity-50"
             >
               {claiming ? 'Claiming...' : 'Claim This Company'}
             </button>
@@ -243,7 +243,7 @@ export default function ClaimPage() {
 
             <Link
               href={`/signup?${signupQuery}`}
-              className="w-full block text-center py-3 bg-[#007CF8] text-white rounded-lg font-semibold hover:bg-[#0066D6] transition"
+              className="w-full block text-center py-3 bg-[var(--ink)] text-white rounded-lg font-semibold hover:bg-[var(--ink-2)] transition"
             >
               Sign Up & Claim
             </Link>
@@ -252,7 +252,7 @@ export default function ClaimPage() {
               Already have an account?{' '}
               <Link
                 href={`/login?${loginQuery}`}
-                className="text-[#007CF8] font-medium hover:underline"
+                className="text-[var(--accent-ink)] font-medium hover:underline"
               >
                 Sign in
               </Link>

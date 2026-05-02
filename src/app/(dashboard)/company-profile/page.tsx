@@ -52,7 +52,7 @@ interface CompanyData {
 function getScoreColor(score: number | null) {
   if (!score) return 'text-gray-400'
   if (score >= 80) return 'text-emerald-600'
-  if (score >= 60) return 'text-blue-600'
+  if (score >= 60) return 'text-[var(--ink)]'
   if (score >= 40) return 'text-yellow-600'
   return 'text-red-600'
 }
@@ -60,7 +60,7 @@ function getScoreColor(score: number | null) {
 function getScoreBg(score: number | null) {
   if (!score) return 'bg-[#F8F9FB] border-gray-200'
   if (score >= 80) return 'bg-emerald-50 border-emerald-200'
-  if (score >= 60) return 'bg-blue-50 border-blue-200'
+  if (score >= 60) return 'bg-[var(--accent-soft)] border-[var(--line)]'
   if (score >= 40) return 'bg-yellow-50 border-yellow-200'
   return 'bg-red-50 border-red-200'
 }
@@ -78,8 +78,8 @@ function daysSince(dateStr: string) {
   return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
 }
 
-const INPUT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8] focus:border-transparent'
-const SELECT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8] focus:border-transparent'
+const INPUT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent'
+const SELECT_CLASS = 'w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent'
 
 export default function CompanyProfilePage() {
   const [company, setCompany] = useState<CompanyData | null>(null)
@@ -287,7 +287,7 @@ export default function CompanyProfilePage() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--ink)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition"
           >
             Get Your Kunfa Score
           </Link>
@@ -352,7 +352,7 @@ export default function CompanyProfilePage() {
             {/* Tags */}
             <div className="flex flex-wrap items-center gap-2 mt-3">
               {company.industry && (
-                <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                <span className="px-2.5 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-medium">
                   {company.industry}
                 </span>
               )}
@@ -386,7 +386,7 @@ export default function CompanyProfilePage() {
                   href={company.company_linkedin_url.startsWith('http') ? company.company_linkedin_url : `https://${company.company_linkedin_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 transition"
+                  className="inline-flex items-center gap-1 text-xs text-[var(--ink)] hover:text-[var(--ink)] transition"
                 >
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                   LinkedIn
@@ -400,7 +400,7 @@ export default function CompanyProfilePage() {
             <Link
               href={`/company/${company.slug}`}
               target="_blank"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
             >
               View Public Profile
               <ExternalLink className="w-3.5 h-3.5" />
@@ -408,7 +408,7 @@ export default function CompanyProfilePage() {
             {canEdit && (
               <button
                 onClick={() => setShowRescore(true)}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Update My Score
@@ -438,7 +438,7 @@ export default function CompanyProfilePage() {
             >
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-[#007CF8]" />
+                  <Check className="w-3.5 h-3.5 text-[var(--accent-ink)]" />
                   Copied!
                 </>
               ) : (
@@ -455,7 +455,7 @@ export default function CompanyProfilePage() {
       {/* Save success */}
       {saveSuccess && (
         <div className="rounded-xl p-3 mb-6 bg-green-50 border border-green-200 flex items-center gap-2">
-          <Check className="w-4 h-4 text-[#007CF8]" />
+          <Check className="w-4 h-4 text-[var(--accent-ink)]" />
           <p className="text-sm text-green-700">Profile updated successfully.</p>
         </div>
       )}
@@ -596,7 +596,7 @@ export default function CompanyProfilePage() {
                 <button
                   type="button"
                   onClick={() => setEditTeam([...editTeam, { name: '', title: '', email: '', linkedin: '' }])}
-                  className="text-sm text-[#007CF8] font-medium hover:text-[#0066D6] transition"
+                  className="text-sm text-[var(--accent-ink)] font-medium hover:text-[var(--ink)] transition"
                 >
                   + Add Co-Founder
                 </button>
@@ -653,7 +653,7 @@ export default function CompanyProfilePage() {
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition disabled:opacity-50"
+              className="px-6 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition disabled:opacity-50"
             >
               {saving ? 'Saving...' : 'Save Changes'}
             </button>
@@ -671,7 +671,7 @@ export default function CompanyProfilePage() {
       {company.submission_id && (
         <div className={`rounded-xl p-4 mb-6 border ${
           paid && hasReport ? 'bg-emerald-50 border-emerald-200'
-            : paid ? 'bg-blue-50 border-blue-200'
+            : paid ? 'bg-[var(--accent-soft)] border-[var(--line)]'
             : 'bg-amber-50 border-amber-200'
         }`}>
           {paid && hasReport ? (
@@ -682,7 +682,7 @@ export default function CompanyProfilePage() {
               </div>
               <Link
                 href={`/report/${company.submission_id}`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
               >
                 View Report
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -691,7 +691,7 @@ export default function CompanyProfilePage() {
           ) : paid ? (
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <Loader2 className="w-5 h-5 text-[#007CF8] animate-spin flex-shrink-0" />
+                <Loader2 className="w-5 h-5 text-[var(--accent-ink)] animate-spin flex-shrink-0" />
                 <div>
                   <h3 className="text-sm font-semibold text-gray-900">Report Generating...</h3>
                   <p className="text-xs text-gray-500 mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
@@ -787,7 +787,7 @@ export default function CompanyProfilePage() {
                         href={member.linkedin.startsWith('http') ? member.linkedin : `https://${member.linkedin}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-600 hover:text-blue-800 flex-shrink-0"
+                        className="text-[var(--ink)] hover:text-[var(--ink)] flex-shrink-0"
                       >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
                       </a>

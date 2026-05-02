@@ -41,7 +41,7 @@ export function useTenantBranding() {
 function applyBranding(tenant: TenantBranding) {
   const root = document.documentElement
 
-  if (tenant.primary_color && tenant.primary_color !== '#007CF8') {
+  if (tenant.primary_color && tenant.primary_color !== '#1c1c28') {
     root.style.setProperty('--primary', tenant.primary_color)
     root.style.setProperty('--border-focus', tenant.primary_color)
   }

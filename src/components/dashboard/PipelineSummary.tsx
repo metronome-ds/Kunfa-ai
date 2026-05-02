@@ -13,7 +13,7 @@ interface PipelineSummaryProps {
 }
 
 const stageConfig: Record<PipelineStage, { label: string; color: string; bgColor: string }> = {
-  sourcing: { label: 'Sourcing', color: 'bg-blue-500', bgColor: 'bg-blue-100' },
+  sourcing: { label: 'Sourcing', color: 'bg-[var(--accent-soft)]0', bgColor: 'bg-[var(--accent-soft)]' },
   screening: { label: 'Screening', color: 'bg-purple-500', bgColor: 'bg-purple-100' },
   diligence: { label: 'Diligence', color: 'bg-orange-500', bgColor: 'bg-orange-100' },
   close: { label: 'Close', color: 'bg-green-500', bgColor: 'bg-green-100' },

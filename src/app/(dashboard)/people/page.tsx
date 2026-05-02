@@ -102,7 +102,7 @@ export default function PeoplePage() {
       case 'investor':
         return 'bg-green-100 text-green-800';
       case 'service_provider':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-[var(--accent-soft)] text-[var(--ink)]';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -113,7 +113,7 @@ export default function PeoplePage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-          <Users className="h-8 w-8 text-blue-600" />
+          <Users className="h-8 w-8 text-[var(--ink)]" />
           People Directory
         </h1>
         <p className="text-gray-600 mt-2">
@@ -147,7 +147,7 @@ export default function PeoplePage() {
                 }}
                 className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                   selectedRole === filter.value
-                    ? 'bg-[#007CF8] text-white'
+                    ? 'bg-[var(--ink)] text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
@@ -162,7 +162,7 @@ export default function PeoplePage() {
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4" />
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--ink)] mb-4" />
             <p className="text-gray-600">Loading people...</p>
           </div>
         </div>
@@ -200,7 +200,7 @@ export default function PeoplePage() {
                         className="h-16 w-16 rounded-full object-cover flex-shrink-0"
                       />
                     ) : (
-                      <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+                      <div className="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-[var(--ink-2)] flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
                         {person.full_name
                           .split(' ')
                           .map((n) => n[0])
@@ -301,7 +301,7 @@ export default function PeoplePage() {
                       onClick={() => setCurrentPage(pageNum)}
                       className={`px-3 py-2 rounded-lg font-medium transition-colors ${
                         currentPage === pageNum
-                          ? 'bg-[#007CF8] text-white'
+                          ? 'bg-[var(--ink)] text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
                     >

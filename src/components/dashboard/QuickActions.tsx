@@ -19,7 +19,7 @@ interface QuickActionsProps {
 }
 
 const colorClasses = {
-  blue: 'hover:bg-blue-50 border-blue-100',
+  blue: 'hover:bg-[var(--accent-soft)] border-[var(--line)]',
   green: 'hover:bg-green-50 border-green-100',
   purple: 'hover:bg-purple-50 border-purple-100',
   orange: 'hover:bg-orange-50 border-orange-100',
@@ -28,7 +28,7 @@ const colorClasses = {
 };
 
 const iconColorClasses = {
-  blue: 'text-blue-600',
+  blue: 'text-[var(--ink)]',
   green: 'text-green-600',
   purple: 'text-purple-600',
   orange: 'text-orange-600',

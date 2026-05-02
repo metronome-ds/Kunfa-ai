@@ -119,7 +119,7 @@ export default function InvitationsPage() {
   };
 
   if (isLoading || isAdmin === null) {
-    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" /></div>;
   }
 
   if (!isTenantContext || !hasFeature) {
@@ -152,7 +152,7 @@ export default function InvitationsPage() {
           <button onClick={() => setBulkOpen(true)} className="inline-flex items-center gap-1.5 px-3 py-2 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50">
             <Package className="w-4 h-4" /> Bulk Generate
           </button>
-          <button onClick={() => setModalOpen(true)} className="inline-flex items-center gap-1.5 px-3 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6]">
+          <button onClick={() => setModalOpen(true)} className="inline-flex items-center gap-1.5 px-3 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)]">
             <Plus className="w-4 h-4" /> Generate Code
           </button>
         </div>
@@ -175,7 +175,7 @@ export default function InvitationsPage() {
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {loading ? (
-          <div className="py-12 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8] mx-auto" /></div>
+          <div className="py-12 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)] mx-auto" /></div>
         ) : filtered.length === 0 ? (
           <div className="py-16 text-center">
             <Ticket className="w-10 h-10 text-gray-300 mx-auto mb-3" />
@@ -198,7 +198,7 @@ export default function InvitationsPage() {
                   <tr key={inv.id} className="hover:bg-gray-50/50">
                     <td className="px-4 py-3 font-mono font-semibold text-gray-900 text-sm">{inv.code}</td>
                     <td className="px-4 py-3">
-                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${inv.type === 'startup' ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${inv.type === 'startup' ? 'bg-[var(--accent-soft)] text-[var(--ink)]' : 'bg-emerald-100 text-emerald-700'}`}>
                         {inv.type}
                       </span>
                     </td>
@@ -256,7 +256,7 @@ export default function InvitationsPage() {
             </div>
             <div className="flex justify-end gap-2 mt-5">
               <button onClick={() => setModalOpen(false)} className="px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
-              <button onClick={createOne} disabled={creating} className="px-3 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] disabled:opacity-50">
+              <button onClick={createOne} disabled={creating} className="px-3 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] disabled:opacity-50">
                 {creating ? 'Creating…' : 'Generate'}
               </button>
             </div>
@@ -288,7 +288,7 @@ export default function InvitationsPage() {
             </div>
             <div className="flex justify-end gap-2 mt-5">
               <button onClick={() => setBulkOpen(false)} className="px-3 py-2 text-sm text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
-              <button onClick={createBulk} disabled={creating} className="px-3 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] disabled:opacity-50">
+              <button onClick={createBulk} disabled={creating} className="px-3 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] disabled:opacity-50">
                 {creating ? 'Generating…' : `Generate ${bulkForm.count}`}
               </button>
             </div>

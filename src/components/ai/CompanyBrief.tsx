@@ -63,7 +63,7 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
         <button
           onClick={handleGenerateBrief}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#007CF8] text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--ink)] text-white rounded-lg font-medium hover:opacity-90 disabled:bg-gray-400 transition-colors"
         >
           {loading ? (
             <>

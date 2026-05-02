@@ -113,7 +113,7 @@ function rowToTenantConfig(row: Record<string, unknown>): TenantConfig {
     logo_url: (row.logo_url as string) || null,
     logo_dark_url: (row.logo_dark_url as string) || null,
     favicon_url: (row.favicon_url as string) || null,
-    primary_color: (row.primary_color as string) || '#007CF8',
+    primary_color: (row.primary_color as string) || '#1c1c28',
     secondary_color: (row.secondary_color as string) || '#1F2937',
     accent_color: (row.accent_color as string) || '#10B981',
     font_family: (row.font_family as string) || 'Inter',

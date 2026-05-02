@@ -60,14 +60,14 @@ IRR: ${formatPercentage(result.irr)}
 
   const getColorForMOIC = (moic: number) => {
     if (moic >= 3) return 'text-green-600';
-    if (moic >= 2) return 'text-blue-600';
+    if (moic >= 2) return 'text-[var(--ink)]';
     if (moic >= 1.5) return 'text-yellow-600';
     return 'text-red-600';
   };
 
   const getColorForIRR = (irr: number) => {
     if (irr >= 30) return 'text-green-600';
-    if (irr >= 20) return 'text-blue-600';
+    if (irr >= 20) return 'text-[var(--ink)]';
     if (irr >= 10) return 'text-yellow-600';
     return 'text-red-600';
   };
@@ -304,7 +304,7 @@ IRR: ${formatPercentage(result.irr)}
                       const moic = data?.moic || 0;
                       let bgColor = 'bg-red-50 text-red-700';
                       if (moic >= 3) bgColor = 'bg-green-50 text-green-700';
-                      else if (moic >= 2) bgColor = 'bg-blue-50 text-blue-700';
+                      else if (moic >= 2) bgColor = 'bg-[var(--accent-soft)] text-[var(--ink)]';
                       else if (moic >= 1.5) bgColor = 'bg-yellow-50 text-yellow-700';
 
                       return (

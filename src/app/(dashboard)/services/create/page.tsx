@@ -134,7 +134,7 @@ export default function CreateServicePage() {
       <div className="mb-8">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4"
+          className="flex items-center gap-2 text-[var(--ink)] hover:text-[var(--ink)] font-medium mb-4"
         >
           <ArrowLeft className="h-5 w-5" />
           Back to Services
@@ -180,7 +180,7 @@ export default function CreateServicePage() {
               value={form.description}
               onChange={handleInputChange}
               rows={6}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent resize-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent resize-none"
               required
             />
           </div>
@@ -194,7 +194,7 @@ export default function CreateServicePage() {
               name="service_type"
               value={form.service_type}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent"
               required
             >
               {SERVICE_TYPES.map((type) => (
@@ -255,13 +255,13 @@ export default function CreateServicePage() {
                 {form.expertise_areas.map((area, index) => (
                   <div
                     key={index}
-                    className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                    className="inline-flex items-center gap-2 px-3 py-1 bg-[var(--accent-soft)] text-[var(--ink)] rounded-full text-sm"
                   >
                     {area}
                     <button
                       type="button"
                       onClick={() => removeExpertise(index)}
-                      className="hover:text-blue-900"
+                      className="hover:text-[var(--ink)]"
                     >
                       <X className="h-4 w-4" />
                     </button>

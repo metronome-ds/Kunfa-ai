@@ -10,7 +10,7 @@ const SIZES = {
 } as const
 
 const COLORS = [
-  'bg-blue-100 text-blue-700',
+  'bg-[var(--accent-soft)] text-[var(--ink)]',
   'bg-emerald-100 text-emerald-700',
   'bg-purple-100 text-purple-700',
   'bg-amber-100 text-amber-700',

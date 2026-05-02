@@ -72,7 +72,7 @@ export default function VoiceRecorder({ onRecordingComplete, recording }: VoiceR
   }
 
   return (
-    <div className={`upload-zone ${isRecording ? 'border-red-400 bg-red-50' : recording ? 'border-kunfa bg-blue-50' : ''}`}>
+    <div className={`upload-zone ${isRecording ? 'border-red-400 bg-red-50' : recording ? 'border-kunfa bg-[var(--accent-soft)]' : ''}`}>
       {recording ? (
         <div className="flex items-center justify-center gap-3">
           <svg className="w-5 h-5 text-kunfa" fill="none" stroke="currentColor" viewBox="0 0 24 24">

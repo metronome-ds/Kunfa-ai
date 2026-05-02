@@ -85,7 +85,7 @@ export default function MyDealsPage() {
       case 'active':
         return 'bg-green-100 text-green-700';
       case 'closed':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-[var(--accent-soft)] text-[var(--ink)]';
       case 'rejected':
         return 'bg-red-100 text-red-700';
       case 'archived':
@@ -131,7 +131,7 @@ export default function MyDealsPage() {
               onClick={() => setStatusFilter(status)}
               className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                 statusFilter === status
-                  ? 'bg-[#007CF8] text-white'
+                  ? 'bg-[var(--ink)] text-white'
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-[#F8F9FB]'
               }`}
             >
@@ -155,7 +155,7 @@ export default function MyDealsPage() {
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
-              <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+              <Loader2 className="h-12 w-12 animate-spin text-[var(--ink)] mx-auto mb-4" />
               <p className="text-gray-600">Loading your deals...</p>
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function MyDealsPage() {
                     <td className="px-6 py-4">
                       <Link
                         href={`/deals/${deal.id}`}
-                        className="text-blue-600 hover:text-blue-700 font-medium"
+                        className="text-[var(--ink)] hover:text-[var(--ink)] font-medium"
                       >
                         {deal.company_name}
                       </Link>

@@ -131,7 +131,7 @@ export default function ViewProfilePage() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#F8F9FB]">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4" />
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--ink)] mb-4" />
           <p className="text-gray-600">Loading profile...</p>
         </div>
       </div>
@@ -145,7 +145,7 @@ export default function ViewProfilePage() {
           <p className="text-gray-600 text-lg">Profile not found</p>
           <button
             onClick={() => router.push('/people')}
-            className="text-blue-600 hover:text-blue-700 font-medium mt-4"
+            className="text-[var(--ink)] hover:text-[var(--ink)] font-medium mt-4"
           >
             Back to People Directory
           </button>
@@ -160,7 +160,7 @@ export default function ViewProfilePage() {
       <div className="p-8 max-w-4xl mx-auto">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-6"
+          className="flex items-center gap-2 text-[var(--ink)] hover:text-[var(--ink)] font-medium mb-6"
         >
           <ArrowLeft className="h-5 w-5" />
           Back
@@ -168,7 +168,7 @@ export default function ViewProfilePage() {
       </div>
 
       {/* Header Background */}
-      <div className="h-32 bg-gradient-to-r from-blue-600 to-blue-700" />
+      <div className="h-32 bg-gradient-to-r from-[var(--ink)] to-[var(--ink-2)]" />
 
       {/* Profile Card */}
       <div className="max-w-4xl mx-auto px-6 -mt-20 mb-8">
@@ -183,7 +183,7 @@ export default function ViewProfilePage() {
                   className="w-24 h-24 rounded-full object-cover mb-4"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl font-bold mb-4">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-[var(--ink-2)] flex items-center justify-center text-white text-2xl font-bold mb-4">
                   {profile.full_name
                     .split(' ')
                     .map((n) => n[0])
@@ -207,7 +207,7 @@ export default function ViewProfilePage() {
               {/* Role Badge */}
               {profile.role && (
                 <div className="inline-block mb-4">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-[var(--accent-soft)] text-[var(--ink)]">
                     <Briefcase size={16} className="mr-2" />
                     {profile.role.charAt(0).toUpperCase() +
                       profile.role.slice(1).replace('_', ' ')}
@@ -259,7 +259,7 @@ export default function ViewProfilePage() {
                   href={profile.linkedin_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mt-4"
+                  className="inline-flex items-center gap-2 text-[var(--ink)] hover:text-[var(--ink)] font-medium mt-4"
                 >
                   <ExternalLink size={16} />
                   LinkedIn Profile

@@ -33,9 +33,9 @@ export function Input({
         )}
         <input
           className={`w-full px-4 py-2 ${icon ? 'pl-10' : ''} border ${
-            error ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-blue-500'
+            error ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-[var(--line-strong)]'
           } rounded-lg focus:outline-none focus:ring-1 ${
-            error ? 'focus:ring-red-500' : 'focus:ring-blue-500'
+            error ? 'focus:ring-red-500' : 'focus:ring-[var(--ink)]'
           } text-gray-900 placeholder-gray-400 transition-colors ${className || ''}`}
           {...props}
         />

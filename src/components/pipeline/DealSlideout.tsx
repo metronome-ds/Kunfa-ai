@@ -65,7 +65,7 @@ const ROUND_TYPES = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C+', 'G
 function getScoreBadgeColor(score: number | null) {
   if (!score) return 'bg-gray-100 text-gray-500'
   if (score >= 80) return 'bg-emerald-100 text-emerald-700'
-  if (score >= 60) return 'bg-blue-100 text-blue-700'
+  if (score >= 60) return 'bg-[var(--accent-soft)] text-[var(--ink)]'
   if (score >= 40) return 'bg-yellow-100 text-yellow-700'
   return 'bg-red-100 text-red-700'
 }
@@ -218,7 +218,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
   }
 
   const inputClass =
-    'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]'
+    'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]'
   const labelClass = 'block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1'
 
   return (
@@ -240,7 +240,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
 
             <div className="flex flex-wrap items-center gap-2 mt-2">
               {deal.industry && (
-                <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-medium">
+                <span className="px-2 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--ink)] text-[10px] font-medium">
                   {deal.industry}
                 </span>
               )}
@@ -260,7 +260,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
               {deal.slug && (
                 <Link
                   href={`/company/${deal.slug}`}
-                  className="inline-flex items-center gap-1 text-xs font-medium text-[#007CF8] hover:underline"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[var(--accent-ink)] hover:underline"
                 >
                   View Full Profile
                   <ExternalLink className="w-3 h-3" />
@@ -561,7 +561,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
             <button
               onClick={handleMoveToPipeline}
               disabled={movingToPipeline}
-              className="w-full py-2.5 rounded-lg font-semibold text-sm transition bg-[#007CF8] text-white hover:bg-[#0066D6] disabled:opacity-50"
+              className="w-full py-2.5 rounded-lg font-semibold text-sm transition bg-[var(--ink)] text-white hover:bg-[var(--ink-2)] disabled:opacity-50"
             >
               {movingToPipeline ? 'Adding to Pipeline...' : 'Move to Pipeline'}
             </button>
@@ -572,7 +572,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
               className={`w-full py-2.5 rounded-lg font-semibold text-sm transition ${
                 saved
                   ? 'bg-emerald-500 text-white'
-                  : 'bg-[#007CF8] text-white hover:bg-[#0066D6] disabled:opacity-50'
+                  : 'bg-[var(--ink)] text-white hover:bg-[var(--ink-2)] disabled:opacity-50'
               }`}
             >
               {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}

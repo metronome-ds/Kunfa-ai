@@ -22,14 +22,14 @@ interface RecentActivityProps {
 }
 
 const colorClasses = {
-  blue: 'bg-blue-100',
+  blue: 'bg-[var(--accent-soft)]',
   green: 'bg-green-100',
   purple: 'bg-purple-100',
   orange: 'bg-orange-100',
 };
 
 const iconColorClasses = {
-  blue: 'text-blue-600',
+  blue: 'text-[var(--ink)]',
   green: 'text-green-600',
   purple: 'text-purple-600',
   orange: 'text-orange-600',

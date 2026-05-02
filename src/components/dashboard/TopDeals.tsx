@@ -23,7 +23,7 @@ interface TopDealsProps {
 function getScoreBadgeColor(score: number | null) {
   if (score === null) return 'bg-gray-100 text-gray-700';
   if (score >= 80) return 'bg-green-100 text-green-700';
-  if (score >= 60) return 'bg-blue-100 text-blue-700';
+  if (score >= 60) return 'bg-[var(--accent-soft)] text-[var(--ink)]';
   if (score >= 40) return 'bg-yellow-100 text-yellow-700';
   if (score >= 20) return 'bg-orange-100 text-orange-700';
   return 'bg-red-100 text-red-700';
@@ -32,7 +32,7 @@ function getScoreBadgeColor(score: number | null) {
 function getStageColor(stage: string) {
   const stageMap: Record<string, string> = {
     'pre-seed': 'text-gray-600 bg-gray-100',
-    seed: 'text-blue-600 bg-blue-100',
+    seed: 'text-[var(--ink)] bg-[var(--accent-soft)]',
     'series-a': 'text-purple-600 bg-purple-100',
     'series-b': 'text-indigo-600 bg-indigo-100',
     'series-c': 'text-green-600 bg-green-100',
@@ -101,7 +101,7 @@ export function TopDeals({ deals, isLoading = false, emptyMessage = 'No deals ye
         <DealCard key={deal.id} {...deal} />
       ))}
       {deals.length > 0 && (
-        <Link href="/deals" className="flex items-center justify-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-700 py-3">
+        <Link href="/deals" className="flex items-center justify-center gap-2 text-sm font-medium text-[var(--ink)] hover:text-[var(--ink)] py-3">
           View All Deals
           <ArrowRight className="h-4 w-4" />
         </Link>

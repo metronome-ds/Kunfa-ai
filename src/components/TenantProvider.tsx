@@ -126,7 +126,7 @@ export function TenantProvider({ children }: { children: ReactNode }) {
 function injectTenantCSSVariables(tenant: TenantBranding) {
   const root = document.documentElement;
 
-  if (tenant.primary_color && tenant.primary_color !== '#007CF8') {
+  if (tenant.primary_color && tenant.primary_color !== '#1c1c28') {
     root.style.setProperty('--primary', tenant.primary_color);
     root.style.setProperty('--primary-hover', darkenColor(tenant.primary_color, 15));
     root.style.setProperty('--primary-light', lightenColor(tenant.primary_color, 90));

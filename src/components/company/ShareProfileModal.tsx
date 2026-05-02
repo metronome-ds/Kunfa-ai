@@ -108,7 +108,7 @@ export function ShareProfileModal({ companyId, companyName, isOpen, onClose }: S
 
   if (!isOpen) return null
 
-  const inputClass = 'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]'
+  const inputClass = 'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -166,7 +166,7 @@ export function ShareProfileModal({ companyId, companyName, isOpen, onClose }: S
             <button
               onClick={handleSend}
               disabled={sending || !email.trim()}
-              className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition disabled:opacity-50"
+              className="w-full inline-flex items-center justify-center gap-2 py-2.5 bg-[var(--ink)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition disabled:opacity-50"
             >
               {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
               {sending ? 'Sending…' : 'Send Invitation'}

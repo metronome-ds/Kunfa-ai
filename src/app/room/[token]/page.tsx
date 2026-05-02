@@ -28,7 +28,7 @@ interface CompanyInfo {
 
 function getCategoryColor(category: string) {
   const colors: Record<string, string> = {
-    pitch_deck: 'bg-blue-100 text-blue-700',
+    pitch_deck: 'bg-[var(--accent-soft)] text-[var(--ink)]',
     financials: 'bg-emerald-100 text-emerald-700',
     cap_table: 'bg-purple-100 text-purple-700',
     legal: 'bg-amber-100 text-amber-700',
@@ -161,7 +161,7 @@ export default function RoomPage() {
         {/* Loading */}
         {status === 'loading' && (
           <div className="flex items-center justify-center py-24">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
           </div>
         )}
 
@@ -207,12 +207,12 @@ export default function RoomPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter password"
                   autoFocus
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] mb-4"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] mb-4"
                 />
                 <button
                   type="submit"
                   disabled={!password || verifying}
-                  className="w-full py-3 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition disabled:opacity-50"
+                  className="w-full py-3 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition disabled:opacity-50"
                 >
                   {verifying ? 'Verifying...' : 'View Deal Room'}
                 </button>
@@ -233,7 +233,7 @@ export default function RoomPage() {
                 )}
                 <div className="flex items-center gap-2 mt-3">
                   {company.industry && (
-                    <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                    <span className="px-3 py-1 rounded-full bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-medium">
                       {company.industry}
                     </span>
                   )}
@@ -262,7 +262,7 @@ export default function RoomPage() {
                 {documents.map(doc => (
                   <div
                     key={doc.id}
-                    className="bg-white border border-gray-200 rounded-xl p-5 hover:border-[#007CF8]/30 hover:shadow-md transition"
+                    className="bg-white border border-gray-200 rounded-xl p-5 hover:border-[var(--line-strong)]/30 hover:shadow-md transition"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <span className="text-3xl">{getFileIcon(doc.file_type)}</span>
@@ -295,7 +295,7 @@ export default function RoomPage() {
                         <a
                           href={doc.file_url}
                           download={doc.file_name}
-                          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#007CF8] text-white rounded-lg text-xs font-medium hover:bg-[#0066D6] transition"
+                          className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[var(--ink)] text-white rounded-lg text-xs font-medium hover:bg-[var(--ink-2)] transition"
                         >
                           <Download className="w-3.5 h-3.5" />
                           Download
@@ -315,7 +315,7 @@ export default function RoomPage() {
         <div className="max-w-5xl mx-auto px-6 text-center">
           <p className="text-xs text-gray-400">
             Powered by{' '}
-            <Link href="/" className="text-[#007CF8] hover:underline font-medium">
+            <Link href="/" className="text-[var(--accent-ink)] hover:underline font-medium">
               Kunfa
             </Link>
             {' '}&mdash; Venture Intelligence

@@ -6,7 +6,7 @@ import { Save, CheckCircle, Palette, Mail, Shield, FileText } from 'lucide-react
 
 type Tab = 'branding' | 'email' | 'access' | 'legal'
 
-const INPUT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all'
+const INPUT_CLASS = 'w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all'
 
 export default function TenantSettingsPage() {
   const { isTenantContext } = useTenant()
@@ -69,7 +69,7 @@ export default function TenantSettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
       </div>
     )
   }
@@ -91,7 +91,7 @@ export default function TenantSettingsPage() {
         <button
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#007CF8] text-white rounded-lg font-medium text-sm hover:bg-[#0066D6] transition disabled:opacity-50"
+          className="flex items-center gap-2 px-4 py-2.5 bg-[var(--ink)] text-white rounded-lg font-medium text-sm hover:bg-[var(--ink-2)] transition disabled:opacity-50"
         >
           {saved ? <CheckCircle className="h-4 w-4" /> : <Save className="h-4 w-4" />}
           {saving ? 'Saving...' : saved ? 'Saved' : 'Save Changes'}
@@ -159,7 +159,7 @@ export default function TenantSettingsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
                 <div className="flex items-center gap-2">
-                  <input type="color" value={form.primary_color || '#007CF8'} onChange={(e) => updateField('primary_color', e.target.value)} className="h-9 w-9 rounded border border-gray-300 cursor-pointer" />
+                  <input type="color" value={form.primary_color || '#1c1c28'} onChange={(e) => updateField('primary_color', e.target.value)} className="h-9 w-9 rounded border border-gray-300 cursor-pointer" />
                   <input type="text" value={form.primary_color || ''} onChange={(e) => updateField('primary_color', e.target.value)} className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
                 </div>
               </div>
@@ -179,7 +179,7 @@ export default function TenantSettingsPage() {
               </div>
             </div>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.show_powered_by !== false} onChange={(e) => updateField('show_powered_by', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-[#007CF8]" />
+              <input type="checkbox" checked={form.show_powered_by !== false} onChange={(e) => updateField('show_powered_by', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-[var(--accent-ink)]" />
               <span className="text-sm text-gray-700">Show &quot;Powered by Kunfa&quot; badge</span>
             </label>
           </div>
@@ -211,22 +211,22 @@ export default function TenantSettingsPage() {
             <label className="block text-sm font-medium text-gray-700 mb-2">Signup Mode</label>
             <div className="flex gap-4">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" value="invitation_only" checked={form.signup_mode === 'invitation_only'} onChange={(e) => updateField('signup_mode', e.target.value)} className="text-[#007CF8]" />
+                <input type="radio" value="invitation_only" checked={form.signup_mode === 'invitation_only'} onChange={(e) => updateField('signup_mode', e.target.value)} className="text-[var(--accent-ink)]" />
                 <span className="text-sm text-gray-700">Invitation Only</span>
               </label>
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="radio" value="open" checked={form.signup_mode === 'open'} onChange={(e) => updateField('signup_mode', e.target.value)} className="text-[#007CF8]" />
+                <input type="radio" value="open" checked={form.signup_mode === 'open'} onChange={(e) => updateField('signup_mode', e.target.value)} className="text-[var(--accent-ink)]" />
                 <span className="text-sm text-gray-700">Open Registration</span>
               </label>
             </div>
           </div>
           <div className="space-y-3 pt-2">
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.require_accreditation === true} onChange={(e) => updateField('require_accreditation', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-[#007CF8]" />
+              <input type="checkbox" checked={form.require_accreditation === true} onChange={(e) => updateField('require_accreditation', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-[var(--accent-ink)]" />
               <span className="text-sm text-gray-700">Require accreditation verification</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.require_nda === true} onChange={(e) => updateField('require_nda', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-[#007CF8]" />
+              <input type="checkbox" checked={form.require_nda === true} onChange={(e) => updateField('require_nda', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-[var(--accent-ink)]" />
               <span className="text-sm text-gray-700">Require NDA before access</span>
             </label>
           </div>

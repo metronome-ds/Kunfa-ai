@@ -46,8 +46,8 @@ export default function InvestorSection() {
               ].map((deal) => (
                 <div key={deal.name} className="flex items-center justify-between px-4 py-3 bg-[#F8F9FB] rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <span className="text-xs font-bold text-[#007CF8]">{deal.score}</span>
+                    <div className="w-8 h-8 bg-[var(--accent-soft)] rounded-lg flex items-center justify-center">
+                      <span className="text-xs font-bold text-[var(--accent-ink)]">{deal.score}</span>
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{deal.name}</p>
@@ -62,7 +62,7 @@ export default function InvestorSection() {
 
           {/* Right — Content */}
           <div>
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#F0F7FF] text-[#007CF8] mb-4">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#F0F7FF] text-[var(--accent-ink)] mb-4">
               For Investors
             </span>
             <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
@@ -75,8 +75,8 @@ export default function InvestorSection() {
             <ul className="space-y-4 mb-8">
               {bulletPoints.map((point) => (
                 <li key={point} className="flex items-start gap-3">
-                  <span className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center mt-0.5 shrink-0">
-                    <svg className="w-3 h-3 text-[#007CF8]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span className="w-5 h-5 bg-[var(--accent-soft)] rounded-full flex items-center justify-center mt-0.5 shrink-0">
+                    <svg className="w-3 h-3 text-[var(--accent-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
                   </span>

@@ -154,7 +154,7 @@ export default function InvestorOnboardingPage() {
                 <div className="flex items-center gap-2">
                   <div
                     className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
-                      isActive ? 'bg-blue-600 text-white' : 'bg-gray-700 text-gray-400'
+                      isActive ? 'bg-[var(--ink)] text-white' : 'bg-gray-700 text-gray-400'
                     }`}
                   >
                     {isDone ? <CheckCircle className="w-5 h-5" /> : stepNum}
@@ -164,7 +164,7 @@ export default function InvestorOnboardingPage() {
                   </span>
                 </div>
                 {i < 2 && (
-                  <div className={`h-0.5 w-10 ${step > stepNum ? 'bg-blue-600' : 'bg-gray-700'}`} />
+                  <div className={`h-0.5 w-10 ${step > stepNum ? 'bg-[var(--ink)]' : 'bg-gray-700'}`} />
                 )}
               </div>
             );
@@ -193,7 +193,7 @@ export default function InvestorOnboardingPage() {
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
                   placeholder="John Smith"
                 />
               </div>
@@ -204,7 +204,7 @@ export default function InvestorOnboardingPage() {
                   type="text"
                   value={fundName}
                   onChange={(e) => setFundName(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
                   placeholder="Acme Ventures"
                 />
               </div>
@@ -215,7 +215,7 @@ export default function InvestorOnboardingPage() {
                   type="text"
                   value={jobTitle}
                   onChange={(e) => setJobTitle(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
                   placeholder="Partner, Analyst, etc."
                 />
               </div>
@@ -226,7 +226,7 @@ export default function InvestorOnboardingPage() {
                   type="url"
                   value={linkedinUrl}
                   onChange={(e) => setLinkedinUrl(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
                   placeholder="https://linkedin.com/in/yourprofile"
                 />
               </div>
@@ -248,7 +248,7 @@ export default function InvestorOnboardingPage() {
                     type="number"
                     value={aum}
                     onChange={(e) => setAum(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
                     placeholder="e.g. 50000000"
                   />
                 </div>
@@ -262,7 +262,7 @@ export default function InvestorOnboardingPage() {
                     type="number"
                     value={ticketMin}
                     onChange={(e) => setTicketMin(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
                     placeholder="e.g. 100000"
                   />
                 </div>
@@ -272,7 +272,7 @@ export default function InvestorOnboardingPage() {
                     type="number"
                     value={ticketMax}
                     onChange={(e) => setTicketMax(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2.5 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--ink)]"
                     placeholder="e.g. 2000000"
                   />
                 </div>
@@ -288,7 +288,7 @@ export default function InvestorOnboardingPage() {
                       onClick={() => toggleItem(stageFocus, stage, setStageFocus)}
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
                         stageFocus.includes(stage)
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-[var(--ink)] text-white'
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
@@ -308,7 +308,7 @@ export default function InvestorOnboardingPage() {
                       onClick={() => toggleItem(sectorInterests, sector, setSectorInterests)}
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
                         sectorInterests.includes(sector)
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-[var(--ink)] text-white'
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
@@ -328,7 +328,7 @@ export default function InvestorOnboardingPage() {
                       onClick={() => toggleItem(geoFocus, region, setGeoFocus)}
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
                         geoFocus.includes(region)
-                          ? 'bg-blue-600 text-white'
+                          ? 'bg-[var(--ink)] text-white'
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
@@ -353,7 +353,7 @@ export default function InvestorOnboardingPage() {
                   value={investmentThesis}
                   onChange={(e) => setInvestmentThesis(e.target.value)}
                   rows={6}
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  className="w-full px-4 py-3 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[var(--ink)] resize-none"
                   placeholder="We invest in early-stage B2B SaaS companies in emerging markets that leverage AI to solve industry-specific problems..."
                 />
                 <p className="text-xs text-gray-500 mt-1">This helps founders understand your focus areas</p>
@@ -377,7 +377,7 @@ export default function InvestorOnboardingPage() {
               <button
                 type="button"
                 onClick={handleNext}
-                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2"
+                className="px-6 py-2.5 bg-[var(--ink)] text-white rounded-lg font-medium hover:opacity-90 transition flex items-center gap-2"
               >
                 Next <ArrowRight className="w-4 h-4" />
               </button>
@@ -396,7 +396,7 @@ export default function InvestorOnboardingPage() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition flex items-center gap-2 disabled:opacity-50"
+                  className="px-6 py-2.5 bg-[var(--ink)] text-white rounded-lg font-medium hover:opacity-90 transition flex items-center gap-2 disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <>

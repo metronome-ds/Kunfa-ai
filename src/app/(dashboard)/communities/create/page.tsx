@@ -108,7 +108,7 @@ function CreateCommunityForm() {
           <div key={s} className="flex items-center gap-2">
             <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition ${
               s < step ? 'bg-emerald-100 text-emerald-700' :
-              s === step ? 'bg-[#007CF8] text-white' :
+              s === step ? 'bg-[var(--ink)] text-white' :
               'bg-gray-100 text-gray-400'
             }`}>
               {s < step ? <Check className="w-4 h-4" /> : s}
@@ -132,7 +132,7 @@ function CreateCommunityForm() {
                 type="text"
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 placeholder="e.g. GCC Angel Network"
               />
             </div>
@@ -142,7 +142,7 @@ function CreateCommunityForm() {
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
                 placeholder="What is this community about?"
               />
             </div>
@@ -152,7 +152,7 @@ function CreateCommunityForm() {
                 value={thesis}
                 onChange={e => setThesis(e.target.value)}
                 rows={2}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] resize-none"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
                 placeholder="e.g. Seed-stage SaaS in MENA"
               />
             </div>
@@ -171,10 +171,10 @@ function CreateCommunityForm() {
                 type="button"
                 onClick={() => setMode('network')}
                 className={`text-left p-5 rounded-xl border-2 transition ${
-                  mode === 'network' ? 'border-[#007CF8] bg-[#007CF8]/5' : 'border-gray-200 hover:border-gray-300'
+                  mode === 'network' ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <Globe className={`w-6 h-6 mb-3 ${mode === 'network' ? 'text-[#007CF8]' : 'text-gray-400'}`} />
+                <Globe className={`w-6 h-6 mb-3 ${mode === 'network' ? 'text-[var(--accent-ink)]' : 'text-gray-400'}`} />
                 <div className="font-semibold text-gray-900 mb-1">Network</div>
                 <p className="text-sm text-gray-500">Lightweight deal sharing and discussion. Great for angel networks and investor circles.</p>
               </button>
@@ -182,10 +182,10 @@ function CreateCommunityForm() {
                 type="button"
                 onClick={() => setMode('syndicate')}
                 className={`text-left p-5 rounded-xl border-2 transition ${
-                  mode === 'syndicate' ? 'border-[#007CF8] bg-[#007CF8]/5' : 'border-gray-200 hover:border-gray-300'
+                  mode === 'syndicate' ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <FileKey className={`w-6 h-6 mb-3 ${mode === 'syndicate' ? 'text-[#007CF8]' : 'text-gray-400'}`} />
+                <FileKey className={`w-6 h-6 mb-3 ${mode === 'syndicate' ? 'text-[var(--accent-ink)]' : 'text-gray-400'}`} />
                 <div className="font-semibold text-gray-900 mb-1">Syndicate</div>
                 <p className="text-sm text-gray-500">Structured IC process with capital commitments. For fund managers and formal groups.</p>
               </button>
@@ -211,10 +211,10 @@ function CreateCommunityForm() {
                   type="button"
                   onClick={() => setMembershipType(opt.value as typeof membershipType)}
                   className={`w-full text-left flex items-center gap-4 p-4 rounded-xl border-2 transition ${
-                    membershipType === opt.value ? 'border-[#007CF8] bg-[#007CF8]/5' : 'border-gray-200 hover:border-gray-300'
+                    membershipType === opt.value ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
-                  <opt.icon className={`w-5 h-5 ${membershipType === opt.value ? 'text-[#007CF8]' : 'text-gray-400'}`} />
+                  <opt.icon className={`w-5 h-5 ${membershipType === opt.value ? 'text-[var(--accent-ink)]' : 'text-gray-400'}`} />
                   <div>
                     <div className="font-medium text-gray-900">{opt.label}</div>
                     <div className="text-sm text-gray-500">{opt.desc}</div>
@@ -242,7 +242,7 @@ function CreateCommunityForm() {
                   type="button"
                   onClick={() => setDealSharing(opt.value as typeof dealSharing)}
                   className={`w-full text-left p-4 rounded-xl border-2 transition ${
-                    dealSharing === opt.value ? 'border-[#007CF8] bg-[#007CF8]/5' : 'border-gray-200 hover:border-gray-300'
+                    dealSharing === opt.value ? 'border-[var(--line-strong)] bg-[var(--ink)]/5' : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className="font-medium text-gray-900">{opt.label}</div>
@@ -264,7 +264,7 @@ function CreateCommunityForm() {
               value={emails}
               onChange={e => setEmails(e.target.value)}
               rows={5}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] resize-none font-mono text-sm"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none font-mono text-sm"
               placeholder={"ahmed@example.com\nsarah@example.com\nmichael@example.com"}
             />
             <p className="text-xs text-gray-400">One email per line, or comma-separated.</p>
@@ -298,7 +298,7 @@ function CreateCommunityForm() {
                 setError('')
                 setStep((step + 1) as Step)
               }}
-              className="flex items-center gap-1.5 px-5 py-2.5 bg-[#007CF8] text-white text-sm font-medium rounded-lg hover:bg-[#0066D6] transition"
+              className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--ink)] text-white text-sm font-medium rounded-lg hover:bg-[var(--ink-2)] transition"
             >
               Continue
               <ArrowRight className="w-4 h-4" />
@@ -308,7 +308,7 @@ function CreateCommunityForm() {
               type="button"
               onClick={handleCreate}
               disabled={loading}
-              className="flex items-center gap-2 px-5 py-2.5 bg-[#007CF8] text-white text-sm font-medium rounded-lg hover:bg-[#0066D6] transition disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 bg-[var(--ink)] text-white text-sm font-medium rounded-lg hover:bg-[var(--ink-2)] transition disabled:opacity-50"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
               {loading ? 'Creating...' : 'Create Community'}

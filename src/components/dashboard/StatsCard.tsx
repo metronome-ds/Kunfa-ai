@@ -16,7 +16,7 @@ interface StatsCardProps {
 }
 
 const colorClasses = {
-  blue: { bg: 'bg-[#F0F7FF]', text: 'text-[#007CF8]' },
+  blue: { bg: 'bg-[#F0F7FF]', text: 'text-[var(--accent-ink)]' },
   green: { bg: 'bg-emerald-100', text: 'text-emerald-600' },
   purple: { bg: 'bg-purple-100', text: 'text-purple-600' },
   orange: { bg: 'bg-amber-100', text: 'text-amber-600' },

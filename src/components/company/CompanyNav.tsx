@@ -46,28 +46,28 @@ export function CompanyNav() {
               {userRole === 'startup' ? (
                 <Link
                   href="/dashboard"
-                  className="bg-[#007CF8] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
+                  className="bg-[var(--ink)] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
                 >
                   See My Profile
                 </Link>
               ) : userRole === 'investor' ? (
                 <Link
                   href="/deals"
-                  className="bg-[#007CF8] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
+                  className="bg-[var(--ink)] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
                 >
                   Browse Companies
                 </Link>
               ) : isLoggedIn ? (
                 <Link
                   href="/dashboard"
-                  className="bg-[#007CF8] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
+                  className="bg-[var(--ink)] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
                 >
                   Go to Dashboard
                 </Link>
               ) : (
                 <Link
                   href="/"
-                  className="bg-[#007CF8] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
+                  className="bg-[var(--ink)] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
                 >
                   Get Your Score
                 </Link>

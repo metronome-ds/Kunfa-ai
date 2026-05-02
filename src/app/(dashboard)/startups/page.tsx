@@ -30,7 +30,7 @@ interface Startup {
 
 function ScoreRing({ score }: { score: number | null }) {
   const v = score ?? 0;
-  const color = v >= 80 ? '#10B981' : v >= 60 ? '#007CF8' : v >= 40 ? '#F59E0B' : '#9CA3AF';
+  const color = v >= 80 ? '#10B981' : v >= 60 ? 'var(--accent)' : v >= 40 ? '#F59E0B' : '#9CA3AF';
   const circumference = 2 * Math.PI * 18;
   const offset = circumference - (v / 100) * circumference;
   return (
@@ -88,7 +88,7 @@ export default function StartupsPage() {
   }, [isTenantContext, search, industry, stage, sort]);
 
   if (isLoading) {
-    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" /></div>;
   }
 
   if (!isTenantContext) {
@@ -146,7 +146,7 @@ export default function StartupsPage() {
       </div>
 
       {loading ? (
-        <div className="py-12 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8] mx-auto" /></div>
+        <div className="py-12 text-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)] mx-auto" /></div>
       ) : startups.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
           <Rocket className="w-10 h-10 text-gray-300 mx-auto mb-3" />
@@ -162,7 +162,7 @@ export default function StartupsPage() {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={s.logo_url} alt={s.company_name} className="w-12 h-12 rounded-lg object-cover border border-gray-200" />
                 ) : (
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center text-[#007CF8] font-bold">
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-[var(--accent-soft)] to-[var(--accent-soft)] flex items-center justify-center text-[var(--accent-ink)] font-bold">
                     {s.company_name.charAt(0)}
                   </div>
                 )}
@@ -173,7 +173,7 @@ export default function StartupsPage() {
                 <ScoreRing score={s.overall_score} />
               </div>
               <div className="flex flex-wrap items-center gap-1.5 mb-2">
-                {s.industry && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700">{s.industry}</span>}
+                {s.industry && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--ink)]">{s.industry}</span>}
                 {s.stage && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-purple-50 text-purple-700">{s.stage}</span>}
                 {s.is_raising && <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Raising</span>}
                 <SourceBadge source={s.source} />
@@ -184,7 +184,7 @@ export default function StartupsPage() {
                 )}
                 {s.claim_status && s.claim_status !== 'claimed' && (
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                    s.claim_status === 'invite_sent' ? 'bg-blue-50 text-blue-700'
+                    s.claim_status === 'invite_sent' ? 'bg-[var(--accent-soft)] text-[var(--ink)]'
                     : s.claim_status === 'pending' ? 'bg-yellow-50 text-yellow-700'
                     : 'bg-orange-50 text-orange-700'
                   }`}>

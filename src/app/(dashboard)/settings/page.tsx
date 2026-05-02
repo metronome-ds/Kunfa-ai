@@ -109,7 +109,7 @@ function ChangePasswordSection() {
           <button
             type="submit"
             disabled={saving || !newPassword || !confirmPassword}
-            className="inline-flex items-center gap-2 bg-[#007CF8] hover:bg-[#0066D6] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+            className="inline-flex items-center gap-2 bg-[var(--ink)] hover:bg-[var(--ink-2)] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
           >
             {saving ? 'Updating...' : 'Update Password'}
           </button>
@@ -186,7 +186,7 @@ function PlanBillingSection() {
   const tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1);
   const tierColor = tier === 'free'
     ? 'bg-gray-100 text-gray-700'
-    : 'bg-[#007CF8] text-white';
+    : 'bg-[var(--ink)] text-white';
 
   const formattedExpiry = expiresAt
     ? new Date(expiresAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
@@ -231,7 +231,7 @@ function PlanBillingSection() {
           <button
             onClick={handleRedeem}
             disabled={promoLoading || !promoCode.trim()}
-            className="px-5 py-2.5 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition disabled:opacity-50 flex-shrink-0"
+            className="px-5 py-2.5 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition disabled:opacity-50 flex-shrink-0"
           >
             {promoLoading ? 'Redeeming...' : 'Redeem'}
           </button>
@@ -246,7 +246,7 @@ function PlanBillingSection() {
       </div>
 
       <div className="border-t border-gray-100 mt-5 pt-4">
-        <a href="/#pricing" className="text-sm text-[#007CF8] font-medium hover:underline">
+        <a href="/#pricing" className="text-sm text-[var(--accent-ink)] font-medium hover:underline">
           View Plans &rarr;
         </a>
       </div>
@@ -461,7 +461,7 @@ export default function SettingsPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[#007CF8] mb-4" />
+          <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--line-strong)] mb-4" />
           <p className="text-gray-500 text-sm">Loading settings...</p>
         </div>
       </div>
@@ -510,7 +510,7 @@ export default function SettingsPage() {
             <label className={LABEL_CLASS}>Role</label>
             <div className="flex items-center gap-2 mt-1">
               <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                isStartup ? 'bg-purple-100 text-purple-700' : isInvestor ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                isStartup ? 'bg-purple-100 text-purple-700' : isInvestor ? 'bg-[var(--accent-soft)] text-[var(--ink)]' : 'bg-gray-100 text-gray-600'
               }`}>
                 {isStartup ? 'Startup' : isInvestor ? 'Investor' : role || '—'}
               </span>
@@ -525,7 +525,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSavePersonal}
             disabled={personalSaving}
-            className="inline-flex items-center gap-2 bg-[#007CF8] hover:bg-[#0066D6] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+            className="inline-flex items-center gap-2 bg-[var(--ink)] hover:bg-[var(--ink-2)] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
           >
             <Save className="w-4 h-4" />
             {personalSaving ? 'Saving...' : 'Save Personal Info'}
@@ -596,7 +596,7 @@ export default function SettingsPage() {
               <button
                 onClick={handleSaveCompany}
                 disabled={companySaving}
-                className="inline-flex items-center gap-2 bg-[#007CF8] hover:bg-[#0066D6] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+                className="inline-flex items-center gap-2 bg-[var(--ink)] hover:bg-[var(--ink-2)] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
               >
                 <Save className="w-4 h-4" />
                 {companySaving ? 'Saving...' : 'Save Company Info'}
@@ -651,7 +651,7 @@ export default function SettingsPage() {
             <button
               onClick={handleSaveFund}
               disabled={fundSaving}
-              className="inline-flex items-center gap-2 bg-[#007CF8] hover:bg-[#0066D6] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
+              className="inline-flex items-center gap-2 bg-[var(--ink)] hover:bg-[var(--ink-2)] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg font-medium text-sm transition"
             >
               <Save className="w-4 h-4" />
               {fundSaving ? 'Saving...' : 'Save Investment Profile'}

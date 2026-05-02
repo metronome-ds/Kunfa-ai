@@ -221,7 +221,7 @@ export default function PortfolioPage() {
     return (
       <div className="p-8 max-w-7xl mx-auto">
         <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4" />
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--ink)] mb-4" />
           <p className="text-gray-600">Loading portfolio...</p>
         </div>
       </div>
@@ -275,8 +275,8 @@ export default function PortfolioPage() {
                 {formatCurrency(summary.totalInvested)}
               </p>
             </div>
-            <div className="p-3 bg-blue-100 rounded-lg">
-              <DollarSign className="h-6 w-6 text-blue-600" />
+            <div className="p-3 bg-[var(--accent-soft)] rounded-lg">
+              <DollarSign className="h-6 w-6 text-[var(--ink)]" />
             </div>
           </div>
         </Card>
@@ -370,7 +370,7 @@ export default function PortfolioPage() {
 
                   const statusColors = {
                     active: 'bg-green-100 text-green-700',
-                    exited: 'bg-blue-100 text-blue-700',
+                    exited: 'bg-[var(--accent-soft)] text-[var(--ink)]',
                     written_off: 'bg-red-100 text-red-700',
                   };
 
@@ -484,7 +484,7 @@ export default function PortfolioPage() {
                       key={deal.id}
                       onClick={() => setSelectedDeal(deal.id)}
                       className={`w-full text-left p-4 hover:bg-[#F8F9FB] ${
-                        selectedDeal === deal.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                        selectedDeal === deal.id ? 'bg-[var(--accent-soft)] border-l-4 border-[var(--ink)]' : ''
                       }`}
                     >
                       <h4 className="font-semibold text-gray-900">{deal.company_name}</h4>

@@ -64,14 +64,14 @@ async function getSubmissionGrades(submissionId: string | null): Promise<ScoreGr
 function getScoreColor(score: number | null) {
   if (!score) return 'text-gray-500 bg-gray-100 border-gray-200'
   if (score >= 80) return 'text-emerald-700 bg-emerald-50 border-emerald-200'
-  if (score >= 60) return 'text-blue-700 bg-blue-50 border-blue-200'
+  if (score >= 60) return 'text-[var(--ink)] bg-[var(--accent-soft)] border-[var(--line)]'
   if (score >= 40) return 'text-yellow-700 bg-yellow-50 border-yellow-200'
   return 'text-red-700 bg-red-50 border-red-200'
 }
 
 function getGradeColor(grade: string) {
   if (grade.startsWith('A')) return 'bg-emerald-100 text-emerald-700'
-  if (grade.startsWith('B')) return 'bg-blue-100 text-blue-700'
+  if (grade.startsWith('B')) return 'bg-[var(--accent-soft)] text-[var(--ink)]'
   if (grade.startsWith('C')) return 'bg-yellow-100 text-yellow-700'
   return 'bg-red-100 text-red-700'
 }
@@ -222,7 +222,7 @@ export default async function CompanyPublicPage({
             {/* Tags row: industry, stage, HQ, website, linkedin */}
             <div className="flex flex-wrap items-center gap-2 mt-3">
               {company.industry && (
-                <span className="px-3 py-1 rounded-full bg-[#F0F7FF] text-[#007CF8] text-xs font-medium">
+                <span className="px-3 py-1 rounded-full bg-[#F0F7FF] text-[var(--accent-ink)] text-xs font-medium">
                   {company.industry}
                 </span>
               )}

@@ -32,10 +32,10 @@ export function MarketPulse({
 
   return (
     <div className="space-y-3">
-      <div className="flex items-center justify-between p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+      <div className="flex items-center justify-between p-4 bg-gradient-to-br from-[var(--accent-soft)] to-[var(--bg-sunk)] rounded-lg border border-[var(--line)]">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <TrendingUp className="h-5 w-5 text-blue-600" />
+          <div className="p-2 bg-[var(--accent-soft)] rounded-lg">
+            <TrendingUp className="h-5 w-5 text-[var(--ink)]" />
           </div>
           <div>
             <p className="text-sm text-gray-600">New Deals This Week</p>
@@ -55,7 +55,7 @@ export function MarketPulse({
       </div>
 
       {averageScore !== null && (
-        <div className="flex items-center justify-between p-4 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
+        <div className="flex items-center justify-between p-4 bg-gradient-to-br from-[var(--accent-soft)] to-[var(--bg-sunk)] rounded-lg border border-[var(--line)]">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-100 rounded-lg">
               <Zap className="h-5 w-5 text-green-600" />

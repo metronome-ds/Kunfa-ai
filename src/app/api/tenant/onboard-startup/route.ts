@@ -288,7 +288,7 @@ export async function POST(request: NextRequest) {
         <p>Hi ${founderFirstName},</p>
         <p>You've been invited to claim <strong>${trimmed}</strong> on ${tenantName}. Your company profile is live and investors in the network can see it.</p>
         <p style="margin: 24px 0;">
-          <a href="${signupLink}" style="background: #007CF8; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Claim your company</a>
+          <a href="${signupLink}" style="background: #1c1c28; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">Claim your company</a>
         </p>
         <p style="color: #6B7280; font-size: 14px;">Or use invitation code: <strong>${invitationCode}</strong></p>
       </div>

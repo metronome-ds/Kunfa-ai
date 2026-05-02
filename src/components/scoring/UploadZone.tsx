@@ -85,7 +85,7 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
   return (
     <div className="space-y-2">
       <div
-        className={`upload-zone ${isDragOver ? 'dragover' : ''} ${file ? 'border-kunfa bg-blue-50' : ''}`}
+        className={`upload-zone ${isDragOver ? 'dragover' : ''} ${file ? 'border-kunfa bg-[var(--accent-soft)]' : ''}`}
         onClick={() => inputRef.current?.click()}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -130,7 +130,7 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
         <div className="mt-2">
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
             required
-              ? 'bg-blue-100 text-[#007CF8]'
+              ? 'bg-[var(--accent-soft)] text-[var(--accent-ink)]'
               : 'bg-gray-100 text-gray-500'
           }`}>
             {required ? 'REQUIRED' : 'OPTIONAL'}

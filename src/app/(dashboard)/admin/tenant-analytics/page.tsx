@@ -26,7 +26,7 @@ interface Analytics {
   stage_breakdown: Pair[];
 }
 
-const COLORS = ['#007CF8', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#06B6D4', '#84CC16'];
+const COLORS = ['#1c1c28', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#EC4899', '#06B6D4', '#84CC16'];
 
 function formatCompact(n: number): string {
   if (!n) return '$0';
@@ -77,7 +77,7 @@ export default function TenantAnalyticsPage() {
   }, [isAdmin]);
 
   if (isLoading || isAdmin === null) {
-    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" /></div>;
   }
 
   if (!isTenantContext) {
@@ -89,12 +89,12 @@ export default function TenantAnalyticsPage() {
   }
 
   if (loading || !data) {
-    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" /></div>;
+    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" /></div>;
   }
 
   const cards = [
     { label: 'Total Members', value: data.overview.total_members.toString(), icon: <Users className="w-5 h-5 text-purple-600" />, bg: 'bg-purple-100' },
-    { label: 'Total Startups', value: data.overview.total_startups.toString(), icon: <Rocket className="w-5 h-5 text-blue-600" />, bg: 'bg-blue-100' },
+    { label: 'Total Startups', value: data.overview.total_startups.toString(), icon: <Rocket className="w-5 h-5 text-[var(--ink)]" />, bg: 'bg-[var(--accent-soft)]' },
     { label: 'Total Deals', value: data.overview.total_deals.toString(), icon: <Briefcase className="w-5 h-5 text-amber-600" />, bg: 'bg-amber-100' },
     { label: 'Total Capital', value: formatCompact(data.overview.total_capital), icon: <DollarSign className="w-5 h-5 text-emerald-600" />, bg: 'bg-emerald-100' },
   ];
@@ -136,7 +136,7 @@ export default function TenantAnalyticsPage() {
               <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="#9CA3AF" />
               <YAxis tick={{ fontSize: 11 }} stroke="#9CA3AF" />
               <Tooltip />
-              <Line type="monotone" dataKey="count" stroke="#007CF8" strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey="count" stroke="var(--ink)" strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -153,7 +153,7 @@ export default function TenantAnalyticsPage() {
               <XAxis type="number" tick={{ fontSize: 11 }} stroke="#9CA3AF" />
               <YAxis type="category" dataKey="stage" tick={{ fontSize: 11 }} stroke="#9CA3AF" width={90} />
               <Tooltip />
-              <Bar dataKey="count" fill="#007CF8" radius={[0, 4, 4, 0]} />
+              <Bar dataKey="count" fill="var(--ink)" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -217,7 +217,7 @@ export default function TenantAnalyticsPage() {
               {data.top_deals.map((d) => (
                 <tr key={d.id} className="hover:bg-gray-50/50">
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                    {d.slug ? <Link href={`/company/${d.slug}`} className="hover:text-[#007CF8]">{d.company_name}</Link> : d.company_name}
+                    {d.slug ? <Link href={`/company/${d.slug}`} className="hover:text-[var(--accent-ink)]">{d.company_name}</Link> : d.company_name}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-700">{d.score ?? '—'}</td>
                   <td className="px-4 py-3 text-sm text-gray-500">{d.raise_amount ? formatCompact(Number(d.raise_amount)) : '—'}</td>

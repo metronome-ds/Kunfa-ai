@@ -6,7 +6,7 @@ type ButtonSize = 'sm' | 'md' | 'lg';
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-[#007CF8] text-white hover:bg-blue-700 focus-visible:ring-blue-600',
+    'bg-[var(--ink)] text-white hover:opacity-90 focus-visible:ring-[var(--ink)]',
   secondary:
     'bg-gray-200 text-gray-900 hover:bg-gray-300 focus-visible:ring-gray-600',
   danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600',

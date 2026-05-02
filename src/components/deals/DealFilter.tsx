@@ -92,7 +92,7 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
         <div className="flex items-center justify-between">
           <h3 className="text-lg font-bold text-gray-900">Filters</h3>
           {activeFilterCount > 0 && (
-            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+            <span className="px-2 py-1 bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-semibold rounded-full">
               {activeFilterCount}
             </span>
           )}
@@ -116,7 +116,7 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
             onChange={(e) =>
               updateFilter({ sort: e.target.value as FilterState['sort'] })
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--ink)]"
           >
             <option value="newest">Newest First</option>
             <option value="score">Highest Score</option>
@@ -160,7 +160,7 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
                   type="checkbox"
                   checked={filters.industries.includes(industry)}
                   onChange={() => toggleIndustry(industry)}
-                  className="w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer"
+                  className="w-4 h-4 text-[var(--ink)] rounded border-gray-300 cursor-pointer"
                 />
                 <span className="text-sm text-gray-700">{industry}</span>
               </label>
@@ -193,7 +193,7 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
                   type="checkbox"
                   checked={filters.stages.includes(stage.value)}
                   onChange={() => toggleStage(stage.value)}
-                  className="w-4 h-4 text-blue-600 rounded border-gray-300 cursor-pointer"
+                  className="w-4 h-4 text-[var(--ink)] rounded border-gray-300 cursor-pointer"
                 />
                 <span className="text-sm text-gray-700">{stage.label}</span>
               </label>

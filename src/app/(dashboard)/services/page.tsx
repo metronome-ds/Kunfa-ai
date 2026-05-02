@@ -38,7 +38,7 @@ const SERVICES: Service[] = [
     id: 'corporate-structuring',
     title: 'Corporate Structuring & Investment Docs',
     category: 'Legal',
-    categoryColor: 'bg-[#F0F7FF] text-[#007CF8]',
+    categoryColor: 'bg-[#F0F7FF] text-[var(--accent-ink)]',
     price: '$7,500',
     description: 'DIFC/ADGM entity setup, investment agreements, SAFE/convertible notes, Shariah-compliant structures.',
     dimensions: ['Fundraise Readiness', 'Team'],
@@ -123,7 +123,7 @@ const SERVICES: Service[] = [
     id: 'branding-design',
     title: 'Branding & Design',
     category: 'Design',
-    categoryColor: 'bg-[#F0F7FF] text-[#007CF8]',
+    categoryColor: 'bg-[#F0F7FF] text-[var(--accent-ink)]',
     price: '$5,000',
     description: 'Professional brand identity, website design, and product UI that positions your startup as investor-ready.',
     dimensions: ['Product', 'Market'],
@@ -192,7 +192,7 @@ function ServiceCard({ service, onBook }: { service: Service; onBook: () => void
 
       {/* Title + Price */}
       <h3 className="text-lg font-bold text-gray-900 mb-1">{service.title}</h3>
-      <p className="text-2xl font-bold text-[#007CF8] mb-3">{service.price}</p>
+      <p className="text-2xl font-bold text-[var(--accent-ink)] mb-3">{service.price}</p>
 
       {/* Description */}
       <p className="text-sm text-gray-600 mb-4 leading-relaxed">{service.description}</p>
@@ -200,7 +200,7 @@ function ServiceCard({ service, onBook }: { service: Service; onBook: () => void
       {/* Dimension tags */}
       <div className="flex flex-wrap gap-1.5 mb-4">
         {service.dimensions.map(dim => (
-          <span key={dim} className="px-2 py-0.5 text-[11px] font-medium bg-[#F0F7FF] text-[#007CF8] rounded-full">
+          <span key={dim} className="px-2 py-0.5 text-[11px] font-medium bg-[#F0F7FF] text-[var(--accent-ink)] rounded-full">
             {dim}
           </span>
         ))}
@@ -230,7 +230,7 @@ function ServiceCard({ service, onBook }: { service: Service; onBook: () => void
       <div className="mt-auto">
         <button
           onClick={onBook}
-          className="w-full py-2.5 rounded-lg bg-[#007CF8] hover:bg-[#0066D6] text-white text-sm font-semibold transition"
+          className="w-full py-2.5 rounded-lg bg-[var(--ink)] hover:bg-[var(--ink-2)] text-white text-sm font-semibold transition"
         >
           Book a Discovery Call
         </button>
@@ -297,7 +297,7 @@ function DiscoveryCallForm() {
             required
             value={form.name}
             onChange={e => setForm({ ...form, name: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
           />
         </div>
         <div>
@@ -307,7 +307,7 @@ function DiscoveryCallForm() {
             required
             value={form.email}
             onChange={e => setForm({ ...form, email: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
           />
         </div>
       </div>
@@ -318,7 +318,7 @@ function DiscoveryCallForm() {
           required
           value={form.company}
           onChange={e => setForm({ ...form, company: e.target.value })}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
         />
       </div>
       <div>
@@ -327,7 +327,7 @@ function DiscoveryCallForm() {
           required
           value={form.service}
           onChange={e => setForm({ ...form, service: e.target.value })}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
         >
           {SERVICE_OPTIONS.map(opt => (
             <option key={opt.value} value={opt.value} disabled={opt.value === ''}>
@@ -343,13 +343,13 @@ function DiscoveryCallForm() {
           onChange={e => setForm({ ...form, message: e.target.value })}
           rows={3}
           placeholder="Tell us about your specific needs..."
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all resize-none"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all resize-none"
         />
       </div>
       <button
         type="submit"
         disabled={submitting || !form.name || !form.email || !form.company || !form.service}
-        className="px-6 py-2.5 rounded-lg bg-[#007CF8] hover:bg-[#0066D6] text-white text-sm font-semibold transition disabled:opacity-50"
+        className="px-6 py-2.5 rounded-lg bg-[var(--ink)] hover:bg-[var(--ink-2)] text-white text-sm font-semibold transition disabled:opacity-50"
       >
         {submitting ? 'Submitting...' : 'Request Discovery Call'}
       </button>
@@ -415,7 +415,7 @@ function ProviderApplicationForm() {
             required
             value={form.name}
             onChange={e => setForm({ ...form, name: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
           />
         </div>
         <div>
@@ -425,7 +425,7 @@ function ProviderApplicationForm() {
             required
             value={form.email}
             onChange={e => setForm({ ...form, email: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all"
+            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
           />
         </div>
       </div>
@@ -437,7 +437,7 @@ function ProviderApplicationForm() {
           onChange={e => setForm({ ...form, services: e.target.value })}
           rows={3}
           placeholder="Describe the services you provide..."
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all resize-none"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all resize-none"
         />
       </div>
       <div>
@@ -447,7 +447,7 @@ function ProviderApplicationForm() {
           value={form.portfolio}
           onChange={e => setForm({ ...form, portfolio: e.target.value })}
           placeholder="https://"
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all"
         />
       </div>
       <div>
@@ -456,7 +456,7 @@ function ProviderApplicationForm() {
           value={form.message}
           onChange={e => setForm({ ...form, message: e.target.value })}
           rows={2}
-          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none transition-all resize-none"
+          className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-900 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none transition-all resize-none"
         />
       </div>
       <button
@@ -484,7 +484,7 @@ export default function ServicesPage() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
-          <Briefcase className="w-6 h-6 text-[#007CF8]" />
+          <Briefcase className="w-6 h-6 text-[var(--accent-ink)]" />
           <h1 className="text-2xl font-bold text-gray-900">Services</h1>
         </div>
         <p className="text-gray-500 text-sm">

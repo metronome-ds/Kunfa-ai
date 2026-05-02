@@ -32,7 +32,7 @@ function getScoreColor(score: number): string {
 
 function getGradeColor(grade: string): string {
   if (grade.startsWith('A')) return 'bg-green-100 text-green-700'
-  if (grade.startsWith('B')) return 'bg-blue-100 text-blue-700'
+  if (grade.startsWith('B')) return 'bg-[var(--accent-soft)] text-[var(--ink)]'
   if (grade.startsWith('C')) return 'bg-yellow-100 text-yellow-700'
   return 'bg-red-100 text-red-700'
 }
@@ -40,7 +40,7 @@ function getGradeColor(grade: string): string {
 function getReadinessColor(readiness: string): string {
   switch (readiness) {
     case 'Ready': return 'bg-green-100 text-green-700'
-    case 'Almost Ready': return 'bg-blue-100 text-blue-700'
+    case 'Almost Ready': return 'bg-[var(--accent-soft)] text-[var(--ink)]'
     case 'Needs Work': return 'bg-yellow-100 text-yellow-700'
     default: return 'bg-gray-100 text-gray-600'
   }
@@ -85,7 +85,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
             <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" strokeWidth="8" />
             <circle
               cx="60" cy="60" r="54" fill="none"
-              stroke="#007CF8" strokeWidth="8"
+              stroke="var(--ink)" strokeWidth="8"
               strokeLinecap="round"
               strokeDasharray={`${(result.overall_score / 100) * 339.292} 339.292`}
             />

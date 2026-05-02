@@ -10,7 +10,7 @@ export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
       </div>
     }>
       <ResetPasswordContent />
@@ -109,7 +109,7 @@ function ResetPasswordContent() {
     return (
       <div className="min-h-screen bg-[#F8F9FB] flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8] mx-auto mb-4" />
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)] mx-auto mb-4" />
           <p className="text-sm text-gray-500">Verifying your reset link...</p>
         </div>
       </div>
@@ -129,7 +129,7 @@ function ResetPasswordContent() {
           <p className="text-sm text-gray-500 mb-6">Please request a new password reset link.</p>
           <Link
             href="/login"
-            className="inline-block px-6 py-3 bg-[#007CF8] text-white rounded-lg font-semibold hover:bg-[#0066D6] transition"
+            className="inline-block px-6 py-3 bg-[var(--ink)] text-white rounded-lg font-semibold hover:bg-[var(--ink-2)] transition"
           >
             Back to login
           </Link>
@@ -151,7 +151,7 @@ function ResetPasswordContent() {
           <p className="text-sm text-gray-500 mb-6">Your password has been reset successfully.</p>
           <Link
             href="/login"
-            className="inline-block px-6 py-3 bg-[#007CF8] text-white rounded-lg font-semibold hover:bg-[#0066D6] transition"
+            className="inline-block px-6 py-3 bg-[var(--ink)] text-white rounded-lg font-semibold hover:bg-[var(--ink-2)] transition"
           >
             Sign in
           </Link>
@@ -188,7 +188,7 @@ function ResetPasswordContent() {
                 placeholder="Min 6 characters"
                 required
                 minLength={6}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#007CF8] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 transition-all"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
               />
             </div>
 
@@ -201,14 +201,14 @@ function ResetPasswordContent() {
                 placeholder="Re-enter your password"
                 required
                 minLength={6}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[#007CF8] focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 transition-all"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-gray-900 placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading || !password || !confirmPassword}
-              className="w-full rounded-lg bg-[#007CF8] hover:bg-[#0066D6] disabled:opacity-50 px-4 py-3 text-white font-semibold transition-all"
+              className="w-full rounded-lg bg-[var(--ink)] hover:bg-[var(--ink-2)] disabled:opacity-50 px-4 py-3 text-white font-semibold transition-all"
             >
               {loading ? 'Updating...' : 'Update Password'}
             </button>

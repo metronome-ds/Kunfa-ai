@@ -311,8 +311,8 @@ export const SCORE_RANGES = [
     max: 80,
     label: 'Good',
     color: 'blue',
-    bgColor: 'bg-blue-100',
-    textColor: 'text-blue-600',
+    bgColor: 'bg-[var(--accent-soft)]',
+    textColor: 'text-[var(--ink)]',
     recommendation: 'Solid opportunity - worth deeper diligence',
   },
   {

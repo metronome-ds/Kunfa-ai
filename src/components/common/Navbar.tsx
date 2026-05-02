@@ -298,7 +298,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
 
   const getEntityTypeBadge = (type: string) => {
     switch (type) {
-      case 'fund': return { label: 'Fund', className: 'bg-blue-100 text-blue-700' };
+      case 'fund': return { label: 'Fund', className: 'bg-[var(--accent-soft)] text-[var(--ink)]' };
       case 'startup': return { label: 'Startup', className: 'bg-purple-100 text-purple-700' };
       case 'family_office': return { label: 'Family Office', className: 'bg-emerald-100 text-emerald-700' };
       case 'angel': return { label: 'Angel', className: 'bg-amber-100 text-amber-700' };
@@ -357,7 +357,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                   {notificationCount > 0 && (
                     <button
                       onClick={markAllAsRead}
-                      className="flex items-center gap-1 text-xs text-[#007CF8] hover:text-[#0066D6] transition-colors"
+                      className="flex items-center gap-1 text-xs text-[var(--accent-ink)] hover:text-[var(--ink)] transition-colors"
                     >
                       <CheckCheck className="h-3.5 w-3.5" />
                       Mark all read
@@ -369,7 +369,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                 <div className="overflow-y-auto flex-1">
                   {loadingNotifications ? (
                     <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--ink)]"></div>
                     </div>
                   ) : notifications.length === 0 ? (
                     <div className="py-8 text-center">
@@ -382,7 +382,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                         key={notification.id}
                         onClick={() => handleNotificationClick(notification)}
                         className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0 ${
-                          !notification.read ? 'bg-blue-50/50' : ''
+                          !notification.read ? 'bg-[var(--accent-soft)]/50' : ''
                         }`}
                       >
                         <div className="flex gap-3">
@@ -401,7 +401,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                                 {notification.title}
                               </p>
                               {!notification.read && (
-                                <span className="flex-shrink-0 h-2 w-2 bg-blue-500 rounded-full mt-1.5"></span>
+                                <span className="flex-shrink-0 h-2 w-2 bg-[var(--accent-soft)]0 rounded-full mt-1.5"></span>
                               )}
                             </div>
                             {notification.body && (
@@ -475,7 +475,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                           {badge.label}
                         </span>
                         {isActive && (
-                          <Check className="h-4 w-4 text-[#007CF8] flex-shrink-0" />
+                          <Check className="h-4 w-4 text-[var(--accent-ink)] flex-shrink-0" />
                         )}
                       </button>
                     );
@@ -527,7 +527,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                   className="h-8 w-8 rounded-full object-cover"
                 />
               ) : (
-                <div className="h-8 w-8 rounded-full bg-[#007CF8] flex items-center justify-center text-white text-xs font-semibold">
+                <div className="h-8 w-8 rounded-full bg-[var(--ink)] flex items-center justify-center text-white text-xs font-semibold">
                   {userName.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -603,7 +603,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                   value={createEntityName}
                   onChange={(e) => setCreateEntityName(e.target.value)}
                   placeholder={createEntityType === 'fund' ? 'e.g. Acme Ventures' : 'e.g. My Startup Inc.'}
-                  className="w-full px-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#007CF8] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#E5E7EB] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && createEntityName.trim()) {
@@ -622,7 +622,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                 <button
                   onClick={handleCreateEntity}
                   disabled={!createEntityName.trim() || isCreating}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#007CF8] hover:bg-[#0066D6] rounded-lg transition-colors disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-white bg-[var(--ink)] hover:bg-[var(--ink-2)] rounded-lg transition-colors disabled:opacity-50"
                 >
                   {isCreating ? 'Creating...' : 'Create'}
                 </button>

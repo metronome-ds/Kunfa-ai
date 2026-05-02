@@ -224,7 +224,7 @@ export function DocumentUpload({
         onDrop={handleDrop}
         className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
           isDragging
-            ? 'border-blue-500 bg-blue-50'
+            ? 'border-[var(--line-strong)] bg-[var(--accent-soft)]'
             : 'border-gray-300 bg-gray-50'
         }`}
       >
@@ -273,7 +273,7 @@ export function DocumentUpload({
               }`}
             >
               <FileText className={`h-5 w-5 flex-shrink-0 ${
-                uploadedFile.error ? 'text-red-400' : 'text-blue-400'
+                uploadedFile.error ? 'text-red-400' : 'text-[var(--accent-ink)]'
               }`} />
 
               <div className="flex-1 min-w-0">
@@ -293,7 +293,7 @@ export function DocumentUpload({
                   {!uploadedFile.error && dealId && uploadedFile.progress !== undefined && uploadedFile.progress < 100 && (
                     <div className="flex-1 mx-2 h-1 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-500 transition-all"
+                        className="h-full bg-[var(--accent-soft)]0 transition-all"
                         style={{ width: `${uploadedFile.progress}%` }}
                       />
                     </div>

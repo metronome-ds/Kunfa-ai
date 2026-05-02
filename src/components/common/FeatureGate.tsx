@@ -165,8 +165,8 @@ function UpgradePrompt({ feature }: { feature: string }) {
   return (
     <div className="max-w-lg mx-auto py-16 px-4">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-2xl bg-[#007CF8]/10 flex items-center justify-center mx-auto mb-6">
-          <Icon className="w-8 h-8 text-[#007CF8]" />
+        <div className="w-16 h-16 rounded-2xl bg-[var(--ink)]/10 flex items-center justify-center mx-auto mb-6">
+          <Icon className="w-8 h-8 text-[var(--accent-ink)]" />
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-3">{config.title}</h1>
         <p className="text-gray-500 max-w-md mx-auto">{config.description}</p>
@@ -183,7 +183,7 @@ function UpgradePrompt({ feature }: { feature: string }) {
         </ul>
         <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
           <div>
-            <span className="inline-block px-2.5 py-1 bg-[#007CF8] text-white text-xs font-medium rounded-full uppercase">
+            <span className="inline-block px-2.5 py-1 bg-[var(--ink)] text-white text-xs font-medium rounded-full uppercase">
               {config.requiredTier}
             </span>
           </div>
@@ -194,7 +194,7 @@ function UpgradePrompt({ feature }: { feature: string }) {
       <div className="space-y-3">
         <Link
           href="/#pricing"
-          className="block w-full py-3 bg-[#007CF8] text-white rounded-lg text-sm font-semibold text-center hover:bg-[#0066D6] transition"
+          className="block w-full py-3 bg-[var(--ink)] text-white rounded-lg text-sm font-semibold text-center hover:bg-[var(--ink-2)] transition"
         >
           Upgrade to {config.requiredTier.charAt(0).toUpperCase() + config.requiredTier.slice(1)}
         </Link>
@@ -202,7 +202,7 @@ function UpgradePrompt({ feature }: { feature: string }) {
         {!showPromo ? (
           <button
             onClick={() => setShowPromo(true)}
-            className="w-full flex items-center justify-center gap-1.5 text-sm text-[#007CF8] font-medium hover:underline"
+            className="w-full flex items-center justify-center gap-1.5 text-sm text-[var(--accent-ink)] font-medium hover:underline"
           >
             <Tag className="w-3.5 h-3.5" />
             Have a promo code?
@@ -215,13 +215,13 @@ function UpgradePrompt({ feature }: { feature: string }) {
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                 placeholder="Enter code"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:border-[#007CF8] focus:ring-2 focus:ring-[#007CF8]/20 outline-none"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none"
                 onKeyDown={(e) => e.key === 'Enter' && handleRedeem()}
               />
               <button
                 onClick={handleRedeem}
                 disabled={promoLoading || !promoCode.trim()}
-                className="px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition disabled:opacity-50"
+                className="px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition disabled:opacity-50"
               >
                 {promoLoading ? 'Redeeming...' : 'Redeem'}
               </button>
@@ -264,7 +264,7 @@ export default function FeatureGate({ feature, children }: FeatureGateProps) {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007CF8]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
       </div>
     )
   }

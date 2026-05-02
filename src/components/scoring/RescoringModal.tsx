@@ -70,7 +70,7 @@ interface ScoreResult {
 
 function getScoreColor(score: number) {
   if (score >= 80) return 'text-emerald-400'
-  if (score >= 60) return 'text-blue-400'
+  if (score >= 60) return 'text-[var(--accent-ink)]'
   if (score >= 40) return 'text-yellow-400'
   return 'text-red-400'
 }
@@ -97,7 +97,7 @@ function getCategoryLabel(category: string) {
 
 function getCategoryColor(category: string) {
   const colors: Record<string, string> = {
-    pitch_deck: 'bg-blue-100 text-blue-700',
+    pitch_deck: 'bg-[var(--accent-soft)] text-[var(--ink)]',
     financials: 'bg-emerald-100 text-emerald-700',
     cap_table: 'bg-purple-100 text-purple-700',
     legal: 'bg-amber-100 text-amber-700',
@@ -411,7 +411,7 @@ export default function RescoringModal({
 
             {loadingDocs ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#007CF8]" />
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--line-strong)]" />
               </div>
             ) : documents.length === 0 ? (
               <div className="text-center py-6 bg-gray-50 rounded-lg">
@@ -427,7 +427,7 @@ export default function RescoringModal({
                     {selectedIds.size} of {documents.length} selected
                   </span>
                   <div className="flex gap-2">
-                    <button onClick={selectAll} className="text-xs text-[#007CF8] hover:underline">
+                    <button onClick={selectAll} className="text-xs text-[var(--accent-ink)] hover:underline">
                       Select All
                     </button>
                     <span className="text-xs text-gray-300">|</span>
@@ -447,12 +447,12 @@ export default function RescoringModal({
                         onClick={() => toggleDoc(doc.id)}
                         className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition ${
                           checked
-                            ? 'border-[#007CF8] bg-blue-50/50'
+                            ? 'border-[var(--line-strong)] bg-[var(--accent-soft)]/50'
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                       >
                         {checked ? (
-                          <CheckSquare className="w-5 h-5 text-[#007CF8] flex-shrink-0" />
+                          <CheckSquare className="w-5 h-5 text-[var(--accent-ink)] flex-shrink-0" />
                         ) : (
                           <Square className="w-5 h-5 text-gray-300 flex-shrink-0" />
                         )}
@@ -473,7 +473,7 @@ export default function RescoringModal({
             {!showUpload ? (
               <button
                 onClick={() => setShowUpload(true)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-[#007CF8] hover:text-[#007CF8] transition"
+                className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-[var(--line-strong)] hover:text-[var(--accent-ink)] transition"
               >
                 <Plus className="w-4 h-4" />
                 Upload Additional Document
@@ -492,7 +492,7 @@ export default function RescoringModal({
                     input.click()
                   }}
                   className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition ${
-                    uploadFile ? 'border-emerald-300 bg-emerald-50' : 'border-gray-300 hover:border-[#007CF8]'
+                    uploadFile ? 'border-emerald-300 bg-emerald-50' : 'border-gray-300 hover:border-[var(--line-strong)]'
                   }`}
                 >
                   {uploadFile ? (
@@ -523,7 +523,7 @@ export default function RescoringModal({
                   <button
                     onClick={handleUploadDoc}
                     disabled={!uploadFile || uploading}
-                    className="flex-1 py-2 rounded-lg text-sm bg-[#007CF8] text-white hover:bg-[#0066D6] transition disabled:opacity-50"
+                    className="flex-1 py-2 rounded-lg text-sm bg-[var(--ink)] text-white hover:bg-[var(--ink-2)] transition disabled:opacity-50"
                   >
                     {uploading ? 'Uploading...' : 'Add'}
                   </button>

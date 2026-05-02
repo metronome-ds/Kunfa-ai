@@ -84,7 +84,7 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
           onClick={handleAnalyzeTermSheet}
           disabled={loading || !documentId}
           title={!documentId ? 'Upload a term sheet document first' : ''}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-[#007CF8] text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--ink)] text-white rounded-lg font-medium hover:opacity-90 disabled:bg-gray-400 transition-colors"
         >
           {loading ? (
             <>
@@ -237,9 +237,9 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
 
       {/* Key Insights */}
       {analysisData.key_insights && (
-        <section className="rounded-lg bg-blue-50 border border-blue-200 p-6">
-          <h3 className="font-semibold text-blue-900 mb-3">Key Insights</h3>
-          <p className="text-blue-800">{analysisData.key_insights}</p>
+        <section className="rounded-lg bg-[var(--accent-soft)] border border-[var(--line)] p-6">
+          <h3 className="font-semibold text-[var(--ink)] mb-3">Key Insights</h3>
+          <p className="text-[var(--ink)]">{analysisData.key_insights}</p>
         </section>
       )}
 
@@ -249,14 +249,14 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
           <h2 className="text-xl font-bold text-gray-900">Deal Quality Score</h2>
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0">
-              <div className="text-4xl font-bold text-blue-600">
+              <div className="text-4xl font-bold text-[var(--ink)]">
                 {Math.round(analysisData.deal_quality_score)}
               </div>
               <p className="text-sm text-gray-500">out of 100</p>
             </div>
             <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
               <div
-                className="h-full bg-blue-500 transition-all"
+                className="h-full bg-[var(--accent-soft)]0 transition-all"
                 style={{ width: `${analysisData.deal_quality_score}%` }}
               />
             </div>

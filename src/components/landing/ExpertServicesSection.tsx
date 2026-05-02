@@ -29,7 +29,7 @@ export default function ExpertServicesSection() {
   return (
     <section className="py-20 lg:py-28 bg-[#F8F9FB]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <p className="text-sm font-semibold text-[#007CF8] uppercase tracking-wider mb-3">
+        <p className="text-sm font-semibold text-[var(--accent-ink)] uppercase tracking-wider mb-3">
           Expert Services
         </p>
         <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
@@ -43,7 +43,7 @@ export default function ExpertServicesSection() {
           {highlights.map((item) => (
             <div
               key={item.title}
-              className="bg-white rounded-xl border border-gray-200 p-6 text-left hover:border-[#007CF8]/40 hover:shadow-md transition-all"
+              className="bg-white rounded-xl border border-gray-200 p-6 text-left hover:border-[var(--line-strong)]/40 hover:shadow-md transition-all"
             >
               <span className="text-2xl mb-3 block">{item.icon}</span>
               <h3 className="text-sm font-bold text-gray-900 mb-1">{item.title}</h3>

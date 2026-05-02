@@ -145,7 +145,7 @@ export default function InviteInvestorModal({
             </p>
             <button
               onClick={handleClose}
-              className="px-6 py-2.5 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition"
+              className="px-6 py-2.5 bg-[var(--ink)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition"
             >
               Done
             </button>
@@ -167,7 +167,7 @@ export default function InviteInvestorModal({
                 placeholder="Search investors by name, email, or fund..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] outline-none"
+                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] outline-none"
               />
             </div>
 
@@ -185,12 +185,12 @@ export default function InviteInvestorModal({
                     key={inv.email}
                     onClick={() => toggleInvestor(inv.email)}
                     className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition border-b border-gray-100 last:border-b-0 ${
-                      selected.has(inv.email) ? 'bg-blue-50' : ''
+                      selected.has(inv.email) ? 'bg-[var(--accent-soft)]' : ''
                     }`}
                   >
                     <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                       selected.has(inv.email)
-                        ? 'border-[#007CF8] bg-[#007CF8]'
+                        ? 'border-[var(--line-strong)] bg-[var(--ink)]'
                         : 'border-gray-300'
                     }`}>
                       {selected.has(inv.email) && (
@@ -227,7 +227,7 @@ export default function InviteInvestorModal({
                       addManualEmail()
                     }
                   }}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] outline-none"
+                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] outline-none"
                 />
                 <button
                   onClick={addManualEmail}
@@ -242,10 +242,10 @@ export default function InviteInvestorModal({
                   {manualEmails.map((email) => (
                     <span
                       key={email}
-                      className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-medium px-2.5 py-1 rounded-full"
+                      className="inline-flex items-center gap-1 bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-medium px-2.5 py-1 rounded-full"
                     >
                       {email}
-                      <button onClick={() => removeManualEmail(email)} className="hover:text-blue-900">
+                      <button onClick={() => removeManualEmail(email)} className="hover:text-[var(--ink)]">
                         <X className="w-3 h-3" />
                       </button>
                     </span>
@@ -265,7 +265,7 @@ export default function InviteInvestorModal({
                 onChange={(e) => setPersonalMessage(e.target.value)}
                 rows={2}
                 maxLength={500}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] outline-none resize-none"
+                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] outline-none resize-none"
               />
             </div>
 
@@ -280,7 +280,7 @@ export default function InviteInvestorModal({
             <button
               onClick={handleSend}
               disabled={totalSelected === 0 || sending}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-[#007CF8] text-white rounded-lg font-semibold text-sm hover:bg-[#0066D6] transition disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-3 bg-[var(--ink)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
               {sending

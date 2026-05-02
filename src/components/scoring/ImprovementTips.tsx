@@ -134,7 +134,7 @@ export default function ImprovementTips({ dimensions, onRescore }: ImprovementTi
               <ul className="space-y-1.5 mt-2">
                 {tip.tips.map((t, i) => (
                   <li key={i} className="flex items-start gap-2 text-xs text-gray-700 leading-relaxed">
-                    <span className="text-[#007CF8] mt-0.5">•</span>
+                    <span className="text-[var(--accent-ink)] mt-0.5">•</span>
                     <span>{t}</span>
                   </li>
                 ))}
@@ -142,7 +142,7 @@ export default function ImprovementTips({ dimensions, onRescore }: ImprovementTi
               {score < UPSELL_THRESHOLD && (
                 <Link
                   href="/services"
-                  className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-[#007CF8] hover:text-[#0066D6] transition-colors"
+                  className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-[var(--accent-ink)] hover:text-[var(--ink)] transition-colors"
                 >
                   Need help improving {DIMENSION_SERVICE_LABEL[key] || 'this'}?
                   <ArrowRight className="w-3 h-3" />
@@ -157,7 +157,7 @@ export default function ImprovementTips({ dimensions, onRescore }: ImprovementTi
         {onRescore && (
           <button
             onClick={onRescore}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white rounded-lg text-sm font-medium hover:bg-[#0066D6] transition"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
           >
             <RefreshCw className="w-4 h-4" />
             Re-score My Company

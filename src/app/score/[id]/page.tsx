@@ -34,7 +34,7 @@ function getScoreRingColor(score: number) {
 
 function getGradeColor(grade: string) {
   if (grade.startsWith('A')) return 'bg-emerald-100 text-emerald-700'
-  if (grade.startsWith('B')) return 'bg-blue-100 text-blue-700'
+  if (grade.startsWith('B')) return 'bg-[var(--accent-soft)] text-[var(--ink)]'
   if (grade.startsWith('C')) return 'bg-yellow-100 text-yellow-700'
   return 'bg-red-100 text-red-700'
 }
@@ -107,7 +107,7 @@ export default function ScoreResultsPage() {
       <main className="max-w-3xl mx-auto px-6 py-12">
         {loading && (
           <div className="text-center py-16">
-            <div className="w-12 h-12 border-4 border-[#007CF8] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-12 h-12 border-4 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-gray-500">Loading your score...</p>
           </div>
         )}
@@ -115,7 +115,7 @@ export default function ScoreResultsPage() {
         {error && (
           <div className="text-center py-16">
             <p className="text-red-500 mb-4">{error}</p>
-            <Link href="/" className="text-[#007CF8] font-semibold hover:underline">Return Home</Link>
+            <Link href="/" className="text-[var(--accent-ink)] font-semibold hover:underline">Return Home</Link>
           </div>
         )}
 
@@ -151,7 +151,7 @@ export default function ScoreResultsPage() {
                 <ScoreTooltip />
               </div>
               <p className="text-sm text-gray-500">
-                Top <span className="font-semibold text-[#007CF8]">{result.percentile}%</span> of submissions
+                Top <span className="font-semibold text-[var(--accent-ink)]">{result.percentile}%</span> of submissions
               </p>
             </div>
 
@@ -185,7 +185,7 @@ export default function ScoreResultsPage() {
               <button
                 onClick={handleUnlock}
                 disabled={unlocking}
-                className="w-full max-w-md bg-[#007CF8] text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-[#0066D6] transition disabled:opacity-50 shadow-lg"
+                className="w-full max-w-md bg-[var(--ink)] text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-[var(--ink-2)] transition disabled:opacity-50 shadow-lg"
               >
                 {unlocking ? 'Redirecting to checkout...' : 'Unlock Your Full Kunfa Readiness Report — $59'}
               </button>
@@ -193,7 +193,7 @@ export default function ScoreResultsPage() {
               {slug && (
                 <Link
                   href={`/company/${slug}`}
-                  className="w-full max-w-md text-center border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold text-base hover:border-[#007CF8] hover:text-[#007CF8] transition"
+                  className="w-full max-w-md text-center border-2 border-gray-300 text-gray-700 px-8 py-4 rounded-xl font-semibold text-base hover:border-[var(--line-strong)] hover:text-[var(--accent-ink)] transition"
                 >
                   View My Company Profile &rarr;
                 </Link>

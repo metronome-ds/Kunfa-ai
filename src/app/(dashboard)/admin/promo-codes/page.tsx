@@ -21,7 +21,7 @@ interface PromoCode {
 const TIERS = ['starter', 'growth', 'scale', 'pro', 'fund', 'enterprise']
 
 const TIER_COLORS: Record<string, string> = {
-  starter: 'bg-blue-100 text-blue-700',
+  starter: 'bg-[var(--accent-soft)] text-[var(--ink)]',
   growth: 'bg-emerald-100 text-emerald-700',
   scale: 'bg-violet-100 text-violet-700',
   pro: 'bg-orange-100 text-orange-700',
@@ -136,12 +136,12 @@ export default function AdminPromoCodesPage() {
     <div className="max-w-5xl mx-auto px-6 py-10">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <Tag className="w-6 h-6 text-[#007CF8]" />
+          <Tag className="w-6 h-6 text-[var(--accent-ink)]" />
           <h1 className="text-2xl font-bold text-gray-900">Promo Codes</h1>
         </div>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#007CF8] text-white text-sm font-medium rounded-lg hover:bg-[#0066D6] transition"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white text-sm font-medium rounded-lg hover:bg-[var(--ink-2)] transition"
         >
           <Plus className="w-4 h-4" />
           Create Code
@@ -162,7 +162,7 @@ export default function AdminPromoCodesPage() {
                   onChange={(e) => setNewCode(e.target.value.toUpperCase().replace(/\s/g, ''))}
                   required
                   maxLength={20}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8] uppercase tracking-wider"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] uppercase tracking-wider"
                   placeholder="LAUNCH2024"
                 />
               </div>
@@ -171,7 +171,7 @@ export default function AdminPromoCodesPage() {
                 <select
                   value={newTier}
                   onChange={(e) => setNewTier(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 >
                   {TIERS.map(t => (
                     <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
@@ -186,7 +186,7 @@ export default function AdminPromoCodesPage() {
                   onChange={(e) => setNewDuration(e.target.value)}
                   required
                   min={1}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="30"
                 />
               </div>
@@ -197,7 +197,7 @@ export default function AdminPromoCodesPage() {
                   value={newMaxUses}
                   onChange={(e) => setNewMaxUses(e.target.value)}
                   min={1}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="Unlimited"
                 />
               </div>
@@ -207,7 +207,7 @@ export default function AdminPromoCodesPage() {
                   type="date"
                   value={newExpiresAt}
                   onChange={(e) => setNewExpiresAt(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 />
               </div>
               <div>
@@ -216,7 +216,7 @@ export default function AdminPromoCodesPage() {
                   type="text"
                   value={newNotes}
                   onChange={(e) => setNewNotes(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#007CF8]/20 focus:border-[#007CF8]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   placeholder="For batch 1 investors"
                 />
               </div>
@@ -237,7 +237,7 @@ export default function AdminPromoCodesPage() {
               <button
                 type="submit"
                 disabled={createLoading}
-                className="px-4 py-2 text-sm font-medium text-white bg-[#007CF8] rounded-lg hover:bg-[#0066D6] transition disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-white bg-[var(--ink)] rounded-lg hover:bg-[var(--ink-2)] transition disabled:opacity-50"
               >
                 {createLoading ? 'Creating...' : 'Create Promo Code'}
               </button>
@@ -249,7 +249,7 @@ export default function AdminPromoCodesPage() {
       {/* Table */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#007CF8]" />
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--line-strong)]" />
         </div>
       ) : codes.length === 0 ? (
         <div className="text-center py-12 text-gray-500">

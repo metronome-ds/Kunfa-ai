@@ -73,7 +73,7 @@ export default async function ScorePage({ params }: ScorePageProps) {
           <div className="flex items-center gap-4 mb-4">
             <Link
               href={`/deals/${dealId}`}
-              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+              className="inline-flex items-center gap-2 text-[var(--ink)] hover:text-[var(--ink)] transition-colors"
             >
               <ChevronLeft className="h-5 w-5" />
               Back to Deal

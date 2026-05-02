@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       slug,
       subdomain: subdomain || null,
       custom_domain: custom_domain || null,
-      primary_color: primary_color || '#007CF8',
+      primary_color: primary_color || '#1c1c28',
       secondary_color: secondary_color || '#1F2937',
       accent_color: accent_color || '#10B981',
       logo_url: logo_url || null,

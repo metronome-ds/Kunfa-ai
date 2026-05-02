@@ -269,7 +269,7 @@ export default function BrowseCompaniesPage() {
             /* Empty state */
             <div className="text-center py-16">
               <div className="inline-flex items-center justify-center h-20 w-20 bg-[#F0F7FF] rounded-full mb-6">
-                <Rocket className="h-10 w-10 text-[#007CF8]" />
+                <Rocket className="h-10 w-10 text-[var(--accent-ink)]" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
                 No companies found
@@ -328,7 +328,7 @@ export default function BrowseCompaniesPage() {
                           onClick={() => fetchCompanies(pageNum)}
                           className={`px-4 py-2 rounded-lg font-medium transition-colors ${
                             pagination.page === pageNum
-                              ? 'bg-[#007CF8] text-white'
+                              ? 'bg-[var(--ink)] text-white'
                               : 'bg-white text-gray-700 border border-gray-200 hover:bg-[#F8F9FB]'
                           }`}
                         >
