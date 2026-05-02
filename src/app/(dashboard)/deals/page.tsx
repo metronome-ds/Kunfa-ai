@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { CompanyCard } from '@/components/companies/CompanyCard';
 import { CompanyFilter, CompanyFilterState, InvestorPrefs } from '@/components/companies/CompanyFilter';
 import { Button } from '@/components/common/Button';
+import { PageHead } from '@/components/ui/design-system';
 import { AlertCircle, Rocket } from 'lucide-react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
@@ -224,15 +225,11 @@ export default function BrowseCompaniesPage() {
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 p-6 z-10">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-3xl font-bold text-gray-900">Browse Companies</h1>
-          </div>
-          <p className="text-gray-600">
-            {isLoading
-              ? 'Loading...'
-              : `Showing ${companies.length} of ${pagination.total} companies`}
-          </p>
+        <div className="p-6 pb-0">
+          <PageHead
+            title="Deals"
+            subtitle={isLoading ? 'Loading...' : `Live primary rounds matched to your thesis. ${pagination.total} companies.`}
+          />
         </div>
 
         {/* Content */}
