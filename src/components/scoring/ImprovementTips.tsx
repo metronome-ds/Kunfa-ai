@@ -108,10 +108,10 @@ export default function ImprovementTips({ dimensions, onRescore }: ImprovementTi
   const weakest = [...scored].sort((a, b) => a.score - b.score).slice(0, 3)
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
+    <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
       <div className="mb-4">
-        <h3 className="text-sm font-semibold text-gray-900">How to improve your score</h3>
-        <p className="text-xs text-gray-500 mt-1">
+        <h3 className="text-sm font-semibold text-[var(--ink)]">How to improve your score</h3>
+        <p className="text-xs text-[var(--ink-mute)] mt-1">
           Focus on these dimensions to unlock investor discovery (Kunfa Score 75+).
         </p>
       </div>
@@ -121,19 +121,19 @@ export default function ImprovementTips({ dimensions, onRescore }: ImprovementTi
           const tip = TIPS[key]
           if (!tip) return null
           return (
-            <div key={key} className="rounded-lg border border-gray-100 bg-gray-50 p-4">
+            <div key={key} className="rounded-lg border border-[var(--line)] bg-[var(--bg-sunk)] p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-base">{tip.icon}</span>
-                  <h4 className="text-sm font-semibold text-gray-900">{tip.label}</h4>
+                  <h4 className="text-sm font-semibold text-[var(--ink)]">{tip.label}</h4>
                 </div>
-                <span className="text-xs text-gray-500 tabular-nums">
-                  {score}<span className="text-gray-400">/25</span>
+                <span className="text-xs text-[var(--ink-mute)] tabular-nums">
+                  {score}<span className="text-[var(--ink-faint)]">/25</span>
                 </span>
               </div>
               <ul className="space-y-1.5 mt-2">
                 {tip.tips.map((t, i) => (
-                  <li key={i} className="flex items-start gap-2 text-xs text-gray-700 leading-relaxed">
+                  <li key={i} className="flex items-start gap-2 text-xs text-[var(--ink-soft)] leading-relaxed">
                     <span className="text-[var(--accent-ink)] mt-0.5">•</span>
                     <span>{t}</span>
                   </li>
@@ -165,7 +165,7 @@ export default function ImprovementTips({ dimensions, onRescore }: ImprovementTi
         )}
         <Link
           href="/how-it-works"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--bg-elev)] border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
         >
           How scoring works
         </Link>

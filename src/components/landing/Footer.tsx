@@ -12,7 +12,7 @@ export default function Footer() {
           </div>
 
           {/* Company info */}
-          <p className="text-gray-400 text-sm mb-6">
+          <p className="text-[var(--ink-faint)] text-sm mb-6">
             Alif Fund LLC &middot; Dubai, UAE
           </p>
 
@@ -20,37 +20,37 @@ export default function Footer() {
           <div className="flex items-center justify-center gap-6 mb-8">
             <Link
               href="/terms"
-              className="text-gray-400 hover:text-white text-sm transition-colors"
+              className="text-[var(--ink-faint)] hover:text-white text-sm transition-colors"
             >
               Terms
             </Link>
-            <span className="text-gray-700">|</span>
+            <span className="text-[var(--ink-soft)]">|</span>
             <Link
               href="/privacy"
-              className="text-gray-400 hover:text-white text-sm transition-colors"
+              className="text-[var(--ink-faint)] hover:text-white text-sm transition-colors"
             >
               Privacy
             </Link>
-            <span className="text-gray-700">|</span>
+            <span className="text-[var(--ink-soft)]">|</span>
             <a
               href="https://www.linkedin.com/company/alif-fund/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-white text-sm transition-colors"
+              className="text-[var(--ink-faint)] hover:text-white text-sm transition-colors"
             >
               LinkedIn
             </a>
-            <span className="text-gray-700">|</span>
+            <span className="text-[var(--ink-soft)]">|</span>
             <a
               href="mailto:invest@kunfa.ai"
-              className="text-gray-400 hover:text-white text-sm transition-colors"
+              className="text-[var(--ink-faint)] hover:text-white text-sm transition-colors"
             >
               Contact
             </a>
           </div>
 
           {/* Copyright */}
-          <p className="text-gray-600 text-xs">
+          <p className="text-[var(--ink-soft)] text-xs">
             &copy; {new Date().getFullYear()} Kunfa. All rights reserved.
           </p>
         </div>

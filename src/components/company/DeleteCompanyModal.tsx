@@ -49,19 +49,19 @@ export function DeleteCompanyModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <div className="relative bg-[var(--bg-elev)] rounded-xl w-full max-w-md">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--line)]">
           <div className="flex items-center gap-2 text-red-700">
             <AlertTriangle className="w-5 h-5" />
             <h2 className="text-lg font-bold">Delete Company</h2>
           </div>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="p-1 text-[var(--ink-faint)] hover:text-[var(--ink-soft)]">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <div className="p-6 space-y-4">
-          <p className="text-sm text-gray-700">
+          <p className="text-sm text-[var(--ink-soft)]">
             Are you sure you want to delete <strong>{companyName}</strong>? This will remove it
             from the deal flow and cannot be easily undone.
           </p>
@@ -74,7 +74,7 @@ export function DeleteCompanyModal({
           </div>
 
           <label className="block">
-            <span className="block text-xs font-medium text-gray-700 mb-1">
+            <span className="block text-xs font-medium text-[var(--ink-soft)] mb-1">
               Type <strong>{companyName}</strong> to confirm
             </span>
             <input
@@ -82,7 +82,7 @@ export function DeleteCompanyModal({
               value={confirmation}
               onChange={(e) => setConfirmation(e.target.value)}
               placeholder={companyName}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400"
+              className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-200 focus:border-red-400"
               autoFocus
             />
           </label>
@@ -106,7 +106,7 @@ export function DeleteCompanyModal({
               type="button"
               onClick={onClose}
               disabled={deleting}
-              className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-200 transition disabled:opacity-50"
+              className="flex-1 py-2.5 bg-[var(--bg-sunk)] text-[var(--ink-soft)] rounded-lg font-semibold text-sm hover:bg-[var(--bg-sunk)] transition disabled:opacity-50"
             >
               Cancel
             </button>

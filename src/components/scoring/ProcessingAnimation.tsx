@@ -64,7 +64,7 @@ export default function ProcessingAnimation({ onComplete }: ProcessingAnimationP
     <div className="p-8 text-center">
       {/* Spinning loader */}
       <div className="relative w-24 h-24 mx-auto mb-8">
-        <div className="absolute inset-0 rounded-full border-4 border-gray-200" />
+        <div className="absolute inset-0 rounded-full border-4 border-[var(--line)]" />
         <div
           className="absolute inset-0 rounded-full border-4 border-kunfa border-t-transparent animate-spin"
         />
@@ -95,7 +95,7 @@ export default function ProcessingAnimation({ onComplete }: ProcessingAnimationP
                 <div className="w-3 h-3 bg-gray-300 rounded-full" />
               </div>
             )}
-            <span className={`text-sm text-left ${i <= currentStep ? 'text-kunfa-navy font-medium' : 'text-gray-400'}`}>
+            <span className={`text-sm text-left ${i <= currentStep ? 'text-kunfa-navy font-medium' : 'text-[var(--ink-faint)]'}`}>
               {step}
             </span>
           </div>
@@ -103,7 +103,7 @@ export default function ProcessingAnimation({ onComplete }: ProcessingAnimationP
       </div>
 
       {showLargeDocHint && (
-        <p className="mt-6 text-xs text-gray-400 animate-fade-in">
+        <p className="mt-6 text-xs text-[var(--ink-faint)] animate-fade-in">
           Scoring in progress&hellip; This may take up to a minute for large documents.
         </p>
       )}

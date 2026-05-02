@@ -21,7 +21,7 @@ interface TopDealsProps {
 }
 
 function getScoreBadgeColor(score: number | null) {
-  if (score === null) return 'bg-gray-100 text-gray-700';
+  if (score === null) return 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]';
   if (score >= 80) return 'bg-green-100 text-green-700';
   if (score >= 60) return 'bg-[var(--accent-soft)] text-[var(--ink)]';
   if (score >= 40) return 'bg-yellow-100 text-yellow-700';
@@ -31,7 +31,7 @@ function getScoreBadgeColor(score: number | null) {
 
 function getStageColor(stage: string) {
   const stageMap: Record<string, string> = {
-    'pre-seed': 'text-gray-600 bg-gray-100',
+    'pre-seed': 'text-[var(--ink-soft)] bg-[var(--bg-sunk)]',
     seed: 'text-[var(--ink)] bg-[var(--accent-soft)]',
     'series-a': 'text-purple-600 bg-purple-100',
     'series-b': 'text-indigo-600 bg-indigo-100',
@@ -39,17 +39,17 @@ function getStageColor(stage: string) {
     'series-d': 'text-orange-600 bg-orange-100',
     'series-d+': 'text-red-600 bg-red-100',
   };
-  return stageMap[stage] || 'text-gray-600 bg-gray-100';
+  return stageMap[stage] || 'text-[var(--ink-soft)] bg-[var(--bg-sunk)]';
 }
 
 function DealCard({ id, company_name, industry, stage, overall_score, funding_amount_requested }: DealCardProps) {
   return (
     <Link href={`/deals/${id}`}>
-      <div className="bg-white rounded-lg border border-gray-100 p-4 hover:shadow-md hover:border-gray-200 transition-all cursor-pointer">
+      <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-4 hover:shadow-md hover:border-[var(--line)] transition-all cursor-pointer">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900 text-sm">{company_name}</h3>
-            <p className="text-xs text-gray-500 mt-1">{industry}</p>
+            <h3 className="font-semibold text-[var(--ink)] text-sm">{company_name}</h3>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">{industry}</p>
           </div>
           <div className={`text-xs font-semibold px-2 py-1 rounded ${getScoreBadgeColor(overall_score)}`}>
             {overall_score ? `${Math.round(overall_score)}` : 'Not Scored'}
@@ -60,7 +60,7 @@ function DealCard({ id, company_name, industry, stage, overall_score, funding_am
             {stage}
           </span>
           {funding_amount_requested && (
-            <span className="text-xs text-gray-600 font-medium">{formatCompactNumber(funding_amount_requested)}</span>
+            <span className="text-xs text-[var(--ink-soft)] font-medium">{formatCompactNumber(funding_amount_requested)}</span>
           )}
         </div>
       </div>
@@ -73,12 +73,12 @@ export function TopDeals({ deals, isLoading = false, emptyMessage = 'No deals ye
     return (
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-gray-100 rounded-lg p-4 animate-pulse">
-            <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
-            <div className="h-3 w-48 bg-gray-200 rounded mb-3" />
+          <div key={i} className="bg-[var(--bg-sunk)] rounded-lg p-4 animate-pulse">
+            <div className="h-4 w-32 bg-[var(--bg-sunk)] rounded mb-2" />
+            <div className="h-3 w-48 bg-[var(--bg-sunk)] rounded mb-3" />
             <div className="flex gap-2">
-              <div className="h-6 w-16 bg-gray-200 rounded" />
-              <div className="h-6 w-20 bg-gray-200 rounded" />
+              <div className="h-6 w-16 bg-[var(--bg-sunk)] rounded" />
+              <div className="h-6 w-20 bg-[var(--bg-sunk)] rounded" />
             </div>
           </div>
         ))}
@@ -89,8 +89,8 @@ export function TopDeals({ deals, isLoading = false, emptyMessage = 'No deals ye
   if (deals.length === 0) {
     return (
       <div className="text-center py-8">
-        <TrendingUp className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-        <p className="text-gray-500 text-sm">{emptyMessage}</p>
+        <TrendingUp className="h-8 w-8 text-[var(--ink-faint)] mx-auto mb-2" />
+        <p className="text-[var(--ink-mute)] text-sm">{emptyMessage}</p>
       </div>
     );
   }

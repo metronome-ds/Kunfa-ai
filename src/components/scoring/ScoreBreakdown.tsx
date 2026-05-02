@@ -56,7 +56,7 @@ function getBarColor(score: number): string {
 }
 
 function getGradeColor(grade: string | null | undefined): string {
-  if (!grade) return 'bg-gray-100 text-gray-500'
+  if (!grade) return 'bg-[var(--bg-sunk)] text-[var(--ink-mute)]'
   if (grade.startsWith('A')) return 'bg-green-50 text-green-700'
   if (grade.startsWith('B')) return 'bg-[var(--accent-soft)] text-[var(--ink)]'
   if (grade.startsWith('C')) return 'bg-amber-50 text-amber-700'
@@ -95,13 +95,13 @@ export default function ScoreBreakdown({
   if (rows.length === 0) return null
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5">
+    <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-sm font-semibold text-[var(--ink)]">{title}</h3>
         {typeof overallScore === 'number' && (
           <div className="flex items-baseline gap-1">
             <span className="text-2xl font-bold text-[var(--accent-ink)]">{overallScore}</span>
-            <span className="text-xs text-gray-400">/100</span>
+            <span className="text-xs text-[var(--ink-faint)]">/100</span>
           </div>
         )}
       </div>
@@ -115,7 +115,7 @@ export default function ScoreBreakdown({
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm">{meta.icon}</span>
-                  <span className="text-xs font-medium text-gray-700">{meta.label}</span>
+                  <span className="text-xs font-medium text-[var(--ink-soft)]">{meta.label}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {dim.grade && (
@@ -123,19 +123,19 @@ export default function ScoreBreakdown({
                       {dim.grade}
                     </span>
                   )}
-                  <span className="text-xs font-semibold text-gray-900 tabular-nums">
-                    {dim.score}<span className="text-gray-400 font-normal">/25</span>
+                  <span className="text-xs font-semibold text-[var(--ink)] tabular-nums">
+                    {dim.score}<span className="text-[var(--ink-faint)] font-normal">/25</span>
                   </span>
                 </div>
               </div>
-              <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+              <div className="h-2 bg-[var(--bg-sunk)] rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${getBarColor(dim.score)}`}
                   style={{ width: `${pct}%` }}
                 />
               </div>
               {showSummaries && dim.summary && (
-                <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">{dim.summary}</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-1.5 leading-relaxed">{dim.summary}</p>
               )}
             </div>
           )

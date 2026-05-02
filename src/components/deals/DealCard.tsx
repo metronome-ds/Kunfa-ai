@@ -61,7 +61,7 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
 
   return (
     <Link href={`/deals/${deal.id}`}>
-      <div className="h-full bg-white rounded-xl border border-gray-200 hover:border-[var(--line-strong)] hover:shadow-lg transition-all duration-200 overflow-hidden cursor-pointer">
+      <div className="h-full bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] hover:border-[var(--line-strong)] hover:shadow-lg transition-all duration-200 overflow-hidden cursor-pointer">
         {/* Card Content */}
         <div className="p-6">
           {/* Header with Save Button */}
@@ -72,13 +72,13 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
                 <span className="px-2.5 py-1 bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-semibold rounded-full">
                   {industry}
                 </span>
-                <span className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
+                <span className="px-2.5 py-1 bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-xs font-semibold rounded-full">
                   {stageLabel}
                 </span>
               </div>
 
               {/* Company Name */}
-              <h3 className="text-lg font-bold text-gray-900 line-clamp-2">
+              <h3 className="text-lg font-bold text-[var(--ink)] line-clamp-2">
                 {companyName}
               </h3>
             </div>
@@ -87,29 +87,29 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
             <button
               onClick={handleSaveClick}
               disabled={isLoading}
-              className="ml-2 p-2 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
+              className="ml-2 p-2 hover:bg-[var(--bg-sunk)] rounded-lg transition-colors disabled:opacity-50"
               title={saved ? 'Remove from watchlist' : 'Add to watchlist'}
             >
               {saved ? (
                 <BookmarkCheck className="h-5 w-5 text-[var(--ink)] fill-[var(--accent)]" />
               ) : (
-                <Bookmark className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                <Bookmark className="h-5 w-5 text-[var(--ink-faint)] hover:text-[var(--ink-soft)]" />
               )}
             </button>
           </div>
 
           {/* Description */}
           {description && (
-            <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+            <p className="text-sm text-[var(--ink-soft)] line-clamp-2 mb-4">
               {description}
             </p>
           )}
 
           {/* Footer */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-4 border-t border-[var(--line)]">
             <div className="flex-1">
-              <p className="text-xs text-gray-500 mb-1">Funding</p>
-              <p className="text-base font-semibold text-gray-900">{formattedFunding}</p>
+              <p className="text-xs text-[var(--ink-mute)] mb-1">Funding</p>
+              <p className="text-base font-semibold text-[var(--ink)]">{formattedFunding}</p>
             </div>
 
             {/* AI Score Circle */}
@@ -117,11 +117,11 @@ export function DealCard({ deal, isSaved = false, onSaveToggle }: DealCardProps)
               <div className="flex items-center justify-center">
                 <div
                   className={`w-16 h-16 rounded-full flex items-center justify-center font-bold text-lg transition-colors ${
-                    scoreRange.bgColor || 'bg-gray-100'
+                    scoreRange.bgColor || 'bg-[var(--bg-sunk)]'
                   }`}
                   title={`AI Score: ${score} - ${scoreRange.label}`}
                 >
-                  <span className={scoreRange.textColor || 'text-gray-600'}>
+                  <span className={scoreRange.textColor || 'text-[var(--ink-soft)]'}>
                     {score}
                   </span>
                 </div>

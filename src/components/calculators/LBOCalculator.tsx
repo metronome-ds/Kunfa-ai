@@ -79,18 +79,18 @@ IRR: ${formatPercentage(result.irr)}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Capital Structure */}
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Purchase Price</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)]">Purchase Price</label>
             <Input
               type="number"
               value={inputs.purchasePrice}
               onChange={(e) => handleInputChange('purchasePrice', parseFloat(e.target.value))}
               className="w-full"
             />
-            <p className="text-xs text-gray-500 mt-1">{formatCurrency(inputs.purchasePrice)}</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">{formatCurrency(inputs.purchasePrice)}</p>
           </div>
 
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Equity %</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)]">Equity %</label>
             <Input
               type="number"
               value={inputs.equityPercentage}
@@ -100,11 +100,11 @@ IRR: ${formatPercentage(result.irr)}
               max="100"
               step="5"
             />
-            <p className="text-xs text-gray-500 mt-1">{formatCurrency(inputs.purchasePrice * (inputs.equityPercentage / 100))}</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">{formatCurrency(inputs.purchasePrice * (inputs.equityPercentage / 100))}</p>
           </div>
 
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Debt %</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)]">Debt %</label>
             <Input
               type="number"
               value={inputs.debtPercentage}
@@ -114,12 +114,12 @@ IRR: ${formatPercentage(result.irr)}
               max="100"
               step="5"
             />
-            <p className="text-xs text-gray-500 mt-1">{formatCurrency(inputs.purchasePrice * (inputs.debtPercentage / 100))}</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">{formatCurrency(inputs.purchasePrice * (inputs.debtPercentage / 100))}</p>
           </div>
 
           {/* Debt Terms */}
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Interest Rate (%)</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)]">Interest Rate (%)</label>
             <Input
               type="number"
               value={inputs.interestRate}
@@ -130,7 +130,7 @@ IRR: ${formatPercentage(result.irr)}
           </div>
 
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Hold Period (Years)</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)]">Hold Period (Years)</label>
             <Input
               type="number"
               value={inputs.holdPeriodYears}
@@ -143,7 +143,7 @@ IRR: ${formatPercentage(result.irr)}
           </div>
 
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Exit Multiple (EV/EBITDA)</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)]">Exit Multiple (EV/EBITDA)</label>
             <Input
               type="number"
               value={inputs.exitMultiple}
@@ -155,18 +155,18 @@ IRR: ${formatPercentage(result.irr)}
 
           {/* Revenue Assumptions */}
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Revenue ($)</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)]">Revenue ($)</label>
             <Input
               type="number"
               value={inputs.revenue}
               onChange={(e) => handleInputChange('revenue', parseFloat(e.target.value))}
               className="w-full"
             />
-            <p className="text-xs text-gray-500 mt-1">{formatCurrency(inputs.revenue)}</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">{formatCurrency(inputs.revenue)}</p>
           </div>
 
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">EBITDA Margin (%)</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)]">EBITDA Margin (%)</label>
             <Input
               type="number"
               value={inputs.ebitdaMargin}
@@ -176,11 +176,11 @@ IRR: ${formatPercentage(result.irr)}
               max="100"
               step="1"
             />
-            <p className="text-xs text-gray-500 mt-1">{formatCurrency(inputs.revenue * (inputs.ebitdaMargin / 100))}</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">{formatCurrency(inputs.revenue * (inputs.ebitdaMargin / 100))}</p>
           </div>
 
           <div className="space-y-1">
-            <label className="block text-sm font-medium text-gray-700">Revenue Growth Rate (%)</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)]">Revenue Growth Rate (%)</label>
             <Input
               type="number"
               value={inputs.revenueGrowthRate}
@@ -196,33 +196,33 @@ IRR: ${formatPercentage(result.irr)}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <div>
-            <p className="text-sm font-medium text-gray-600">Equity Invested</p>
-            <p className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(result.equityInvested)}</p>
-            <p className="text-xs text-gray-500 mt-1">{formatPercentage(inputs.equityPercentage)}</p>
+            <p className="text-sm font-medium text-[var(--ink-soft)]">Equity Invested</p>
+            <p className="text-2xl font-bold text-[var(--ink)] mt-2">{formatCurrency(result.equityInvested)}</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">{formatPercentage(inputs.equityPercentage)}</p>
           </div>
         </Card>
 
         <Card>
           <div>
-            <p className="text-sm font-medium text-gray-600">Total Debt</p>
-            <p className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(result.totalDebt)}</p>
-            <p className="text-xs text-gray-500 mt-1">{formatPercentage(inputs.debtPercentage)}</p>
+            <p className="text-sm font-medium text-[var(--ink-soft)]">Total Debt</p>
+            <p className="text-2xl font-bold text-[var(--ink)] mt-2">{formatCurrency(result.totalDebt)}</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">{formatPercentage(inputs.debtPercentage)}</p>
           </div>
         </Card>
 
         <Card>
           <div>
-            <p className="text-sm font-medium text-gray-600">Exit Equity Value</p>
-            <p className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(result.exitEquityValue)}</p>
-            <p className="text-xs text-gray-500 mt-1">Year {inputs.holdPeriodYears}</p>
+            <p className="text-sm font-medium text-[var(--ink-soft)]">Exit Equity Value</p>
+            <p className="text-2xl font-bold text-[var(--ink)] mt-2">{formatCurrency(result.exitEquityValue)}</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">Year {inputs.holdPeriodYears}</p>
           </div>
         </Card>
 
         <Card>
           <div>
-            <p className="text-sm font-medium text-gray-600">Annual EBITDA</p>
-            <p className="text-2xl font-bold text-gray-900 mt-2">{formatCurrency(result.annualEBITDA)}</p>
-            <p className="text-xs text-gray-500 mt-1">{formatPercentage(inputs.ebitdaMargin)} margin</p>
+            <p className="text-sm font-medium text-[var(--ink-soft)]">Annual EBITDA</p>
+            <p className="text-2xl font-bold text-[var(--ink)] mt-2">{formatCurrency(result.annualEBITDA)}</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">{formatPercentage(inputs.ebitdaMargin)} margin</p>
           </div>
         </Card>
       </div>
@@ -231,21 +231,21 @@ IRR: ${formatPercentage(result.irr)}
       <Card title="Key Returns" action={<Button variant="ghost" size="sm" onClick={handleCopyResults}><Copy className="h-4 w-4 mr-2" />{copied ? 'Copied!' : 'Copy'}</Button>}>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <p className="text-sm font-medium text-gray-600">MOIC</p>
+            <p className="text-sm font-medium text-[var(--ink-soft)]">MOIC</p>
             <p className={cn('text-3xl font-bold mt-2', getColorForMOIC(result.moic))}>{result.moic.toFixed(2)}x</p>
-            <p className="text-xs text-gray-500 mt-1">Money-on-Money Multiple</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">Money-on-Money Multiple</p>
           </div>
 
           <div>
-            <p className="text-sm font-medium text-gray-600">IRR</p>
+            <p className="text-sm font-medium text-[var(--ink-soft)]">IRR</p>
             <p className={cn('text-3xl font-bold mt-2', getColorForIRR(result.irr))}>{formatPercentage(result.irr)}</p>
-            <p className="text-xs text-gray-500 mt-1">Internal Rate of Return</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">Internal Rate of Return</p>
           </div>
 
           <div>
-            <p className="text-sm font-medium text-gray-600">Ending Debt</p>
-            <p className="text-3xl font-bold text-gray-900 mt-2">{formatCurrency(result.debtSchedule[result.debtSchedule.length - 1].endingDebt)}</p>
-            <p className="text-xs text-gray-500 mt-1">At exit (Year {inputs.holdPeriodYears})</p>
+            <p className="text-sm font-medium text-[var(--ink-soft)]">Ending Debt</p>
+            <p className="text-3xl font-bold text-[var(--ink)] mt-2">{formatCurrency(result.debtSchedule[result.debtSchedule.length - 1].endingDebt)}</p>
+            <p className="text-xs text-[var(--ink-mute)] mt-1">At exit (Year {inputs.holdPeriodYears})</p>
           </div>
         </div>
       </Card>
@@ -255,24 +255,24 @@ IRR: ${formatPercentage(result.irr)}
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-2 px-4 font-semibold text-gray-700">Year</th>
-                <th className="text-right py-2 px-4 font-semibold text-gray-700">Beginning Debt</th>
-                <th className="text-right py-2 px-4 font-semibold text-gray-700">EBITDA</th>
-                <th className="text-right py-2 px-4 font-semibold text-gray-700">Interest</th>
-                <th className="text-right py-2 px-4 font-semibold text-gray-700">Debt Paydown</th>
-                <th className="text-right py-2 px-4 font-semibold text-gray-700">Ending Debt</th>
+              <tr className="border-b border-[var(--line)]">
+                <th className="text-left py-2 px-4 font-semibold text-[var(--ink-soft)]">Year</th>
+                <th className="text-right py-2 px-4 font-semibold text-[var(--ink-soft)]">Beginning Debt</th>
+                <th className="text-right py-2 px-4 font-semibold text-[var(--ink-soft)]">EBITDA</th>
+                <th className="text-right py-2 px-4 font-semibold text-[var(--ink-soft)]">Interest</th>
+                <th className="text-right py-2 px-4 font-semibold text-[var(--ink-soft)]">Debt Paydown</th>
+                <th className="text-right py-2 px-4 font-semibold text-[var(--ink-soft)]">Ending Debt</th>
               </tr>
             </thead>
             <tbody>
               {result.debtSchedule.map((item, idx) => (
-                <tr key={idx} className={idx % 2 === 0 ? 'bg-gray-50' : ''}>
-                  <td className="py-2 px-4 text-gray-900">{item.year}</td>
-                  <td className="text-right py-2 px-4 text-gray-900">{formatCurrency(item.beginningDebt)}</td>
-                  <td className="text-right py-2 px-4 text-gray-900">{formatCurrency(item.ebitda)}</td>
-                  <td className="text-right py-2 px-4 text-gray-900">{formatCurrency(item.interestExpense)}</td>
+                <tr key={idx} className={idx % 2 === 0 ? 'bg-[var(--bg-sunk)]' : ''}>
+                  <td className="py-2 px-4 text-[var(--ink)]">{item.year}</td>
+                  <td className="text-right py-2 px-4 text-[var(--ink)]">{formatCurrency(item.beginningDebt)}</td>
+                  <td className="text-right py-2 px-4 text-[var(--ink)]">{formatCurrency(item.ebitda)}</td>
+                  <td className="text-right py-2 px-4 text-[var(--ink)]">{formatCurrency(item.interestExpense)}</td>
                   <td className="text-right py-2 px-4 text-green-600 font-medium">{formatCurrency(item.debtPaydown)}</td>
-                  <td className="text-right py-2 px-4 text-gray-900 font-medium">{formatCurrency(item.endingDebt)}</td>
+                  <td className="text-right py-2 px-4 text-[var(--ink)] font-medium">{formatCurrency(item.endingDebt)}</td>
                 </tr>
               ))}
             </tbody>
@@ -286,19 +286,19 @@ IRR: ${formatPercentage(result.irr)}
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200 bg-gray-50">
-                  <th className="text-left py-2 px-4 font-semibold text-gray-700">Growth / Exit</th>
-                  <th className="text-center py-2 px-4 font-semibold text-gray-700">4.0x</th>
-                  <th className="text-center py-2 px-4 font-semibold text-gray-700">5.0x</th>
-                  <th className="text-center py-2 px-4 font-semibold text-gray-700">6.0x</th>
-                  <th className="text-center py-2 px-4 font-semibold text-gray-700">7.0x</th>
-                  <th className="text-center py-2 px-4 font-semibold text-gray-700">8.0x</th>
+                <tr className="border-b border-[var(--line)] bg-[var(--bg-sunk)]">
+                  <th className="text-left py-2 px-4 font-semibold text-[var(--ink-soft)]">Growth / Exit</th>
+                  <th className="text-center py-2 px-4 font-semibold text-[var(--ink-soft)]">4.0x</th>
+                  <th className="text-center py-2 px-4 font-semibold text-[var(--ink-soft)]">5.0x</th>
+                  <th className="text-center py-2 px-4 font-semibold text-[var(--ink-soft)]">6.0x</th>
+                  <th className="text-center py-2 px-4 font-semibold text-[var(--ink-soft)]">7.0x</th>
+                  <th className="text-center py-2 px-4 font-semibold text-[var(--ink-soft)]">8.0x</th>
                 </tr>
               </thead>
               <tbody>
                 {[5, 10, 15, 20, 25].map((growthRate) => (
-                  <tr key={growthRate} className="border-b border-gray-200">
-                    <td className="py-2 px-4 font-medium text-gray-900">{growthRate}%</td>
+                  <tr key={growthRate} className="border-b border-[var(--line)]">
+                    <td className="py-2 px-4 font-medium text-[var(--ink)]">{growthRate}%</td>
                     {[4, 5, 6, 7, 8].map((exitMult) => {
                       const data = sensitivityData.find((d) => d.growthRate === growthRate && d.exitMultiple === exitMult);
                       const moic = data?.moic || 0;
@@ -318,7 +318,7 @@ IRR: ${formatPercentage(result.irr)}
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-gray-500">Color coding: Green (3.0x+), Blue (2.0x+), Yellow (1.5x+), Red (below 1.5x)</p>
+          <p className="text-xs text-[var(--ink-mute)]">Color coding: Green (3.0x+), Blue (2.0x+), Yellow (1.5x+), Red (below 1.5x)</p>
         </div>
       </Card>
     </div>

@@ -35,14 +35,14 @@ export function StatsCard({
   const colors = colorClasses[color];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-6 border border-[#E5E7EB]">
+    <div className="bg-[var(--bg-elev)] rounded-xl p-6 border border-[#E5E7EB]">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-500">{label}</p>
+          <p className="text-sm font-medium text-[var(--ink-mute)]">{label}</p>
           {isLoading ? (
-            <div className="mt-3 h-8 w-24 bg-gray-200 rounded animate-pulse" />
+            <div className="mt-3 h-8 w-24 bg-[var(--bg-sunk)] rounded animate-pulse" />
           ) : (
-            <p className="text-3xl font-bold text-gray-900 mt-2">{value}</p>
+            <p className="text-3xl font-bold text-[var(--ink)] mt-2">{value}</p>
           )}
           {trend && !isLoading && (
             <p

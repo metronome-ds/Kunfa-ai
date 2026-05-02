@@ -8,12 +8,12 @@ const variantStyles: Record<ButtonVariant, string> = {
   primary:
     'bg-[var(--ink)] text-white hover:opacity-90 focus-visible:ring-[var(--ink)]',
   secondary:
-    'bg-gray-200 text-gray-900 hover:bg-gray-300 focus-visible:ring-gray-600',
+    'bg-[var(--bg-sunk)] text-[var(--ink)] hover:bg-gray-300 focus-visible:ring-gray-600',
   danger: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-600',
   ghost:
-    'bg-transparent text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-600',
+    'bg-transparent text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)] focus-visible:ring-gray-600',
   outline:
-    'border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus-visible:ring-gray-600',
+    'border-2 border-[var(--line-strong)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)] focus-visible:ring-gray-600',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {

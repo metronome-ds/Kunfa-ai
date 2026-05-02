@@ -44,11 +44,11 @@ export function RecentActivity({
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg animate-pulse">
-            <div className="h-10 w-10 bg-gray-200 rounded-full" />
+          <div key={i} className="flex items-center gap-4 p-4 bg-[var(--bg-sunk)] rounded-lg animate-pulse">
+            <div className="h-10 w-10 bg-[var(--bg-sunk)] rounded-full" />
             <div className="flex-1">
-              <div className="h-4 w-32 bg-gray-200 rounded mb-2" />
-              <div className="h-3 w-48 bg-gray-100 rounded" />
+              <div className="h-4 w-32 bg-[var(--bg-sunk)] rounded mb-2" />
+              <div className="h-3 w-48 bg-[var(--bg-sunk)] rounded" />
             </div>
           </div>
         ))}
@@ -59,7 +59,7 @@ export function RecentActivity({
   if (items.length === 0) {
     return (
       <div className="text-center py-12">
-        <p className="text-gray-500">{emptyMessage}</p>
+        <p className="text-[var(--ink-mute)]">{emptyMessage}</p>
       </div>
     );
   }
@@ -69,16 +69,16 @@ export function RecentActivity({
       {items.map((item) => {
         const color = item.color || 'blue';
         const Content = (
-          <div className="flex items-start gap-4 p-4 bg-white rounded-lg border border-gray-100 hover:shadow-sm transition-shadow">
+          <div className="flex items-start gap-4 p-4 bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] hover:shadow-sm transition-shadow">
             <div className={`p-2 rounded-lg flex-shrink-0 ${colorClasses[color]}`}>
               <item.icon className={`h-5 w-5 ${iconColorClasses[color]}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-medium text-gray-900">{item.title}</h4>
-              <p className="text-sm text-gray-600 mt-0.5">{item.description}</p>
-              <p className="text-xs text-gray-500 mt-1">{formatRelativeTime(item.timestamp)}</p>
+              <h4 className="text-sm font-medium text-[var(--ink)]">{item.title}</h4>
+              <p className="text-sm text-[var(--ink-soft)] mt-0.5">{item.description}</p>
+              <p className="text-xs text-[var(--ink-mute)] mt-1">{formatRelativeTime(item.timestamp)}</p>
             </div>
-            {item.href && <ChevronRight className="h-4 w-4 text-gray-400 flex-shrink-0 mt-1" />}
+            {item.href && <ChevronRight className="h-4 w-4 text-[var(--ink-faint)] flex-shrink-0 mt-1" />}
           </div>
         );
 

@@ -148,31 +148,31 @@ export function LogoUpload({
 
   return (
     <div className={className}>
-      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">{label}</label>
 
       {value ? (
         <div
           data-testid={testId ? `${testId}-uploaded` : undefined}
-          className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200"
+          className="flex items-center gap-3 p-3 bg-[var(--bg-elev)] rounded-lg border border-[var(--line)]"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={value}
             alt="Logo preview"
-            className="w-14 h-14 rounded-lg object-contain bg-gray-50 border border-gray-100"
+            className="w-14 h-14 rounded-lg object-contain bg-[var(--bg-sunk)] border border-[var(--line)]"
             onError={(e) => {
               ;(e.currentTarget as HTMLImageElement).style.display = 'none'
             }}
           />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">Logo uploaded</p>
-            <p className="text-xs text-gray-500 truncate">{value}</p>
+            <p className="text-sm font-medium text-[var(--ink)] truncate">Logo uploaded</p>
+            <p className="text-xs text-[var(--ink-mute)] truncate">{value}</p>
           </div>
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={disabled || state.status === 'uploading'}
-            className="px-2.5 py-1.5 text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            className="px-2.5 py-1.5 text-xs font-medium text-[var(--ink-soft)] border border-[var(--line)] rounded-lg hover:bg-[var(--bg-sunk)] disabled:opacity-50"
           >
             Replace
           </button>
@@ -180,7 +180,7 @@ export function LogoUpload({
             type="button"
             onClick={remove}
             disabled={disabled || state.status === 'uploading'}
-            className="p-1.5 text-gray-400 hover:text-red-600 disabled:opacity-50"
+            className="p-1.5 text-[var(--ink-faint)] hover:text-red-600 disabled:opacity-50"
             aria-label="Remove logo"
           >
             <X className="w-4 h-4" />
@@ -208,23 +208,23 @@ export function LogoUpload({
               ? 'opacity-60 cursor-not-allowed'
               : dragOver
                 ? 'border-[var(--line-strong)] bg-[var(--accent-soft)]'
-                : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'
+                : 'border-[var(--line-strong)] bg-[var(--bg-elev)] hover:border-gray-400 hover:bg-[var(--bg-sunk)]'
           }`}
         >
           {state.status === 'uploading' ? (
             <>
               <Loader2 className="w-6 h-6 text-[var(--accent-ink)] animate-spin" />
-              <p className="text-xs text-gray-600">Uploading…</p>
+              <p className="text-xs text-[var(--ink-soft)]">Uploading…</p>
             </>
           ) : (
             <>
               <div className="w-10 h-10 rounded-full bg-[var(--accent-soft)] flex items-center justify-center">
                 <Upload className="w-5 h-5 text-[var(--accent-ink)]" />
               </div>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-[var(--ink)]">
                 Drop an image here, or click to browse
               </p>
-              <p className="text-[11px] text-gray-500">PNG, JPEG, WebP, SVG, or GIF · Max 5 MB</p>
+              <p className="text-[11px] text-[var(--ink-mute)]">PNG, JPEG, WebP, SVG, or GIF · Max 5 MB</p>
             </>
           )}
         </div>
@@ -258,7 +258,7 @@ export function LogoUpload({
 
       {allowUrlFallback && !value && state.status !== 'uploading' && (
         <div className="mt-3">
-          <div className="flex items-center gap-2 text-[11px] text-gray-500 mb-1">
+          <div className="flex items-center gap-2 text-[11px] text-[var(--ink-mute)] mb-1">
             <ImageIcon className="w-3 h-3" />
             <span>or paste an existing image URL</span>
           </div>
@@ -268,13 +268,13 @@ export function LogoUpload({
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
               placeholder="https://…"
-              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+              className="flex-1 px-3 py-2 border border-[var(--line)] rounded-lg text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
             />
             <button
               type="button"
               onClick={applyUrl}
               disabled={!urlInput.trim()}
-              className="px-3 py-2 text-sm font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+              className="px-3 py-2 text-sm font-medium text-[var(--ink-soft)] border border-[var(--line)] rounded-lg hover:bg-[var(--bg-sunk)] disabled:opacity-50"
             >
               Use URL
             </button>

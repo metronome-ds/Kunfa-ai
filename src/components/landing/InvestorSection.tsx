@@ -22,8 +22,8 @@ export default function InvestorSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left — Pipeline Visual */}
-          <div className="bg-white rounded-2xl p-6 lg:p-8 border border-gray-200 shadow-sm">
-            <p className="text-xs font-semibold text-gray-500 tracking-wider uppercase mb-4">Deal Pipeline</p>
+          <div className="bg-[var(--bg-elev)] rounded-2xl p-6 lg:p-8 border border-[var(--line)]">
+            <p className="text-xs font-semibold text-[var(--ink-mute)] tracking-wider uppercase mb-4">Deal Pipeline</p>
 
             {/* Pipeline stages */}
             <div className="grid grid-cols-4 gap-3 mb-6">
@@ -32,7 +32,7 @@ export default function InvestorSection() {
                   <div className={`${stage.color} text-white text-xl font-bold rounded-lg py-4 mb-2`}>
                     {stage.count}
                   </div>
-                  <span className="text-xs text-gray-600 font-medium">{stage.label}</span>
+                  <span className="text-xs text-[var(--ink-soft)] font-medium">{stage.label}</span>
                 </div>
               ))}
             </div>
@@ -50,11 +50,11 @@ export default function InvestorSection() {
                       <span className="text-xs font-bold text-[var(--accent-ink)]">{deal.score}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-gray-900">{deal.name}</p>
-                      <p className="text-xs text-gray-500">{deal.stage}</p>
+                      <p className="text-sm font-semibold text-[var(--ink)]">{deal.name}</p>
+                      <p className="text-xs text-[var(--ink-mute)]">{deal.stage}</p>
                     </div>
                   </div>
-                  <span className="text-xs font-medium text-gray-400">View</span>
+                  <span className="text-xs font-medium text-[var(--ink-faint)]">View</span>
                 </div>
               ))}
             </div>
@@ -68,7 +68,7 @@ export default function InvestorSection() {
             <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
               AI-curated deal flow across the GCC
             </h2>
-            <p className="text-gray-600 text-base mb-8 leading-relaxed">
+            <p className="text-[var(--ink-soft)] text-base mb-8 leading-relaxed">
               Discover pre-scored startups, manage your pipeline, and access secure
               data rooms — all from one platform built for GCC venture capital.
             </p>
@@ -80,13 +80,13 @@ export default function InvestorSection() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                     </svg>
                   </span>
-                  <span className="text-gray-600">{point}</span>
+                  <span className="text-[var(--ink-soft)]">{point}</span>
                 </li>
               ))}
             </ul>
             <Link
               href="/signup"
-              className="border border-gray-300 text-gray-700 hover:bg-[#F8F9FB] font-semibold px-6 py-3 rounded-lg transition-colors inline-flex items-center gap-2"
+              className="border border-[var(--line-strong)] text-[var(--ink-soft)] hover:bg-[#F8F9FB] font-semibold px-6 py-3 rounded-lg transition-colors inline-flex items-center gap-2"
             >
               Create Investor Account
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

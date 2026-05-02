@@ -139,7 +139,7 @@ export function CompanyCard({
 
   return (
     <Link href={`/company/${company.slug}`}>
-      <div className="h-full bg-white rounded-xl border border-gray-200 hover:border-[var(--line-strong)]/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden cursor-pointer">
+      <div className="h-full bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] hover:border-[var(--line-strong)]/60 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 overflow-hidden cursor-pointer">
         <div className="p-6">
           {/* Header: badges + watchlist */}
           <div className="flex items-start justify-between mb-3">
@@ -168,7 +168,7 @@ export function CompanyCard({
                 </span>
               )}
               {stageLabel && (
-                <span className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
+                <span className="px-2.5 py-1 bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-xs font-semibold rounded-full">
                   {stageLabel}
                 </span>
               )}
@@ -180,14 +180,14 @@ export function CompanyCard({
                 onClick={handleWatchlistClick}
                 disabled={isWatchlistLoading}
                 className={`ml-2 p-2 rounded-lg transition-colors disabled:opacity-50 ${
-                  watchlisted ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-gray-100'
+                  watchlisted ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-[var(--bg-sunk)]'
                 }`}
                 title={watchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
               >
                 {watchlisted ? (
                   <Bookmark className="h-5 w-5 text-red-500 fill-red-500" />
                 ) : (
-                  <Bookmark className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  <Bookmark className="h-5 w-5 text-[var(--ink-faint)] hover:text-[var(--ink-soft)]" />
                 )}
               </button>
             )}
@@ -196,30 +196,30 @@ export function CompanyCard({
           {/* Company Name + Logo */}
           <div className="flex items-center gap-2.5 mb-1">
             <CompanyLogo name={company.company_name} logoUrl={company.logo_url} size="md" />
-            <h3 className="text-lg font-bold text-gray-900 line-clamp-1">
+            <h3 className="text-lg font-bold text-[var(--ink)] line-clamp-1">
               {company.company_name}
             </h3>
           </div>
 
           {/* Location */}
           {location && (
-            <p className="text-xs text-gray-500 mb-2">{location}</p>
+            <p className="text-xs text-[var(--ink-mute)] mb-2">{location}</p>
           )}
 
           {/* One-liner / Description */}
           {truncatedBlurb && (
-            <p className="text-sm text-gray-600 line-clamp-2 mb-4">
+            <p className="text-sm text-[var(--ink-soft)] line-clamp-2 mb-4">
               {truncatedBlurb}
             </p>
           )}
 
           {/* Footer: funding + score */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between pt-4 border-t border-[var(--line)]">
             <div>
               {formattedRaise && (
                 <>
-                  <p className="text-xs text-gray-500 mb-0.5">Raising</p>
-                  <p className="text-base font-semibold text-gray-900">{formattedRaise}</p>
+                  <p className="text-xs text-[var(--ink-mute)] mb-0.5">Raising</p>
+                  <p className="text-base font-semibold text-[var(--ink)]">{formattedRaise}</p>
                 </>
               )}
             </div>

@@ -106,18 +106,18 @@ export function DDChecklist() {
         <div className="space-y-4">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">Overall Completion</span>
-              <span className="text-sm font-bold text-gray-900">
+              <span className="text-sm font-medium text-[var(--ink-soft)]">Overall Completion</span>
+              <span className="text-sm font-bold text-[var(--ink)]">
                 {completedCount} of {totalItems}
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div className="w-full bg-[var(--bg-sunk)] rounded-full h-3 overflow-hidden">
               <div
                 className="bg-[var(--ink)] h-full transition-all duration-300"
                 style={{ width: `${overallProgress}%` }}
               />
             </div>
-            <p className="text-sm text-gray-600 mt-2">{overallProgress.toFixed(0)}% complete</p>
+            <p className="text-sm text-[var(--ink-soft)] mt-2">{overallProgress.toFixed(0)}% complete</p>
           </div>
 
           {/* Category Breakdown */}
@@ -125,9 +125,9 @@ export function DDChecklist() {
             {categories.map((category) => {
               const progress = getCategoryProgress(category);
               return (
-                <div key={category} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <p className="text-sm font-medium text-gray-700 mb-2">{getCategoryIcon(category)} {category}</p>
-                  <p className="text-lg font-bold text-gray-900">
+                <div key={category} className="p-3 bg-[var(--bg-sunk)] rounded-lg border border-[var(--line)]">
+                  <p className="text-sm font-medium text-[var(--ink-soft)] mb-2">{getCategoryIcon(category)} {category}</p>
+                  <p className="text-lg font-bold text-[var(--ink)]">
                     {progress.completed}/{progress.total}
                   </p>
                   <div className="w-full bg-gray-300 rounded-full h-2 mt-2 overflow-hidden">
@@ -145,13 +145,13 @@ export function DDChecklist() {
 
       {/* Filter */}
       <div className="flex gap-2">
-        <span className="text-sm font-medium text-gray-700 py-2">Filter by Priority:</span>
+        <span className="text-sm font-medium text-[var(--ink-soft)] py-2">Filter by Priority:</span>
         <button
           onClick={() => setFilterPriority('all')}
           className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             filterPriority === 'all'
               ? 'bg-[var(--ink)] text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
           }`}
         >
           All
@@ -161,7 +161,7 @@ export function DDChecklist() {
           className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             filterPriority === 'high'
               ? 'bg-red-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
           }`}
         >
           High Priority
@@ -171,7 +171,7 @@ export function DDChecklist() {
           className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             filterPriority === 'medium'
               ? 'bg-amber-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
           }`}
         >
           Medium Priority
@@ -181,7 +181,7 @@ export function DDChecklist() {
           className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
             filterPriority === 'low'
               ? 'bg-[var(--ink)] text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
           }`}
         >
           Low Priority
@@ -207,7 +207,7 @@ export function DDChecklist() {
                       className={`border rounded-lg transition-all ${
                         isCompleted
                           ? 'border-green-200 bg-green-50'
-                          : 'border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50'
+                          : 'border-[var(--line)] hover:border-[var(--line-strong)] bg-[var(--bg-elev)] hover:bg-[var(--bg-sunk)]'
                       }`}
                     >
                       <div className="p-4">
@@ -218,7 +218,7 @@ export function DDChecklist() {
                             className={`mt-1 flex-shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
                               isCompleted
                                 ? 'bg-green-600 border-green-600'
-                                : 'border-gray-300 hover:border-gray-400'
+                                : 'border-[var(--line-strong)] hover:border-gray-400'
                             }`}
                           >
                             {isCompleted && <Check className="h-3 w-3 text-white" />}
@@ -230,7 +230,7 @@ export function DDChecklist() {
                               <div className="flex-1">
                                 <h4
                                   className={`font-medium text-sm transition-all ${
-                                    isCompleted ? 'text-gray-500 line-through' : 'text-gray-900'
+                                    isCompleted ? 'text-[var(--ink-mute)] line-through' : 'text-[var(--ink)]'
                                   }`}
                                 >
                                   {item.itemName}
@@ -243,7 +243,7 @@ export function DDChecklist() {
                               {/* Expand Button */}
                               <button
                                 onClick={() => toggleExpanded(item.id)}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-[var(--ink-faint)] hover:text-[var(--ink-soft)] transition-colors"
                               >
                                 {isExpanded ? (
                                   <ChevronUp className="h-5 w-5" />
@@ -255,8 +255,8 @@ export function DDChecklist() {
 
                             {/* Description - Expandable */}
                             {isExpanded && (
-                              <div className="mt-3 pt-3 border-t border-gray-200">
-                                <p className="text-sm text-gray-600">{item.description}</p>
+                              <div className="mt-3 pt-3 border-t border-[var(--line)]">
+                                <p className="text-sm text-[var(--ink-soft)]">{item.description}</p>
                               </div>
                             )}
                           </div>
@@ -275,7 +275,7 @@ export function DDChecklist() {
       {Object.values(itemsByCategory).every((items) => items.length === 0) && (
         <Card>
           <div className="text-center py-12">
-            <p className="text-gray-600">No items match the selected filter</p>
+            <p className="text-[var(--ink-soft)]">No items match the selected filter</p>
           </div>
         </Card>
       )}

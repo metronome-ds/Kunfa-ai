@@ -128,7 +128,7 @@ function UpgradePrompt({ feature }: { feature: string }) {
   if (!config) {
     return (
       <div className="max-w-lg mx-auto py-16 px-4 text-center">
-        <p className="text-gray-500">This feature requires an upgraded plan.</p>
+        <p className="text-[var(--ink-mute)]">This feature requires an upgraded plan.</p>
       </div>
     )
   }
@@ -165,29 +165,29 @@ function UpgradePrompt({ feature }: { feature: string }) {
   return (
     <div className="max-w-lg mx-auto py-16 px-4">
       <div className="text-center mb-8">
-        <div className="w-16 h-16 rounded-2xl bg-[var(--ink)]/10 flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 rounded-2xl bg-[var(--accent-soft)] flex items-center justify-center mx-auto mb-6">
           <Icon className="w-8 h-8 text-[var(--accent-ink)]" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-3">{config.title}</h1>
-        <p className="text-gray-500 max-w-md mx-auto">{config.description}</p>
+        <h1 className="text-2xl font-bold text-[var(--ink)] mb-3">{config.title}</h1>
+        <p className="text-[var(--ink-mute)] max-w-md mx-auto">{config.description}</p>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6">
+      <div className="bg-[var(--bg-elev)] border border-[var(--line)] rounded-xl p-6 mb-6">
         <ul className="space-y-3">
           {config.bullets.map((bullet, i) => (
             <li key={i} className="flex items-start gap-3">
               <Check className="w-5 h-5 text-emerald-500 flex-shrink-0 mt-0.5" />
-              <span className="text-sm text-gray-700">{bullet}</span>
+              <span className="text-sm text-[var(--ink-soft)]">{bullet}</span>
             </li>
           ))}
         </ul>
-        <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+        <div className="mt-6 pt-4 border-t border-[var(--line)] flex items-center justify-between">
           <div>
             <span className="inline-block px-2.5 py-1 bg-[var(--ink)] text-white text-xs font-medium rounded-full uppercase">
               {config.requiredTier}
             </span>
           </div>
-          <span className="text-lg font-bold text-gray-900">{config.price}</span>
+          <span className="text-lg font-bold text-[var(--ink)]">{config.price}</span>
         </div>
       </div>
 
@@ -215,7 +215,7 @@ function UpgradePrompt({ feature }: { feature: string }) {
                 value={promoCode}
                 onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                 placeholder="Enter code"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none"
+                className="flex-1 px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] placeholder-gray-400 focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] outline-none"
                 onKeyDown={(e) => e.key === 'Enter' && handleRedeem()}
               />
               <button

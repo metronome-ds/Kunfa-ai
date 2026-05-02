@@ -82,7 +82,7 @@ function CircularGauge({ score }: { score: number }) {
           <div className={`text-4xl font-bold ${getScoreColor(score)}`}>
             {Math.round(score)}
           </div>
-          <div className="text-xs text-gray-500">Score</div>
+          <div className="text-xs text-[var(--ink-mute)]">Score</div>
         </div>
       </div>
     </div>
@@ -142,7 +142,7 @@ export function DealScorer({ dealId, scores }: DealScorerProps) {
     return (
       <div className="space-y-6">
         <div className="text-center py-8">
-          <p className="text-gray-600 mb-6">
+          <p className="text-[var(--ink-soft)] mb-6">
             No scoring data available. Score this deal to get AI-powered analysis.
           </p>
           <button
@@ -168,17 +168,17 @@ export function DealScorer({ dealId, scores }: DealScorerProps) {
     <div className="space-y-8">
       {/* Overall Score Section */}
       <div className={`rounded-lg border p-8 ${getScoreBgColor(scoringData.overall_score)}`}>
-        <h2 className="text-2xl font-bold mb-6 text-gray-900">Investment Score</h2>
+        <h2 className="text-2xl font-bold mb-6 text-[var(--ink)]">Investment Score</h2>
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <CircularGauge score={scoringData.overall_score} />
           <div className="flex-1 space-y-4">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Investment Summary</h3>
-              <p className="text-gray-700">{scoringData.summary}</p>
+              <h3 className="font-semibold text-[var(--ink)] mb-2">Investment Summary</h3>
+              <p className="text-[var(--ink-soft)]">{scoringData.summary}</p>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Confidence Level</h3>
-              <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-white bg-opacity-50">
+              <h3 className="font-semibold text-[var(--ink)] mb-2">Confidence Level</h3>
+              <div className="inline-block px-3 py-1 rounded-full text-sm font-medium bg-[var(--bg-elev)] bg-opacity-50">
                 {scoringData.confidence_level.charAt(0).toUpperCase() + scoringData.confidence_level.slice(1)}
               </div>
             </div>
@@ -188,7 +188,7 @@ export function DealScorer({ dealId, scores }: DealScorerProps) {
 
       {/* Scoring Dimensions */}
       <div className="space-y-4">
-        <h3 className="text-xl font-bold text-gray-900">Scoring Breakdown</h3>
+        <h3 className="text-xl font-bold text-[var(--ink)]">Scoring Breakdown</h3>
         <div className="grid gap-4">
           {DIMENSIONS.map((dimension) => {
             const score = scoringData.dimensions[dimension.key];
@@ -197,22 +197,22 @@ export function DealScorer({ dealId, scores }: DealScorerProps) {
             return (
               <div
                 key={dimension.key}
-                className="rounded-lg border border-gray-200 bg-white"
+                className="rounded-lg border border-[var(--line)] bg-[var(--bg-elev)]"
               >
                 <button
                   onClick={() => setExpandedDimension(isExpanded ? null : dimension.key)}
-                  className="w-full text-left p-4 hover:bg-gray-50 transition-colors flex items-center justify-between"
+                  className="w-full text-left p-4 hover:bg-[var(--bg-sunk)] transition-colors flex items-center justify-between"
                 >
                   <div className="flex-1">
                     <div className="flex items-baseline gap-4 mb-2">
-                      <span className="font-semibold text-gray-900">{dimension.label}</span>
-                      <span className="text-sm text-gray-500">({dimension.weight}%)</span>
+                      <span className="font-semibold text-[var(--ink)]">{dimension.label}</span>
+                      <span className="text-sm text-[var(--ink-mute)]">({dimension.weight}%)</span>
                       <span className={`text-2xl font-bold ${getScoreColor(score)}`}>
                         {Math.round(score)}
                       </span>
                     </div>
                     {/* Progress Bar */}
-                    <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-[var(--bg-sunk)] rounded-full h-2 overflow-hidden">
                       <div
                         className={`h-full ${getProgressBarColor(score)} transition-all duration-300`}
                         style={{ width: `${score}%` }}
@@ -220,14 +220,14 @@ export function DealScorer({ dealId, scores }: DealScorerProps) {
                     </div>
                   </div>
                   <ChevronDown
-                    className={`h-5 w-5 text-gray-400 ml-4 flex-shrink-0 transition-transform ${
+                    className={`h-5 w-5 text-[var(--ink-faint)] ml-4 flex-shrink-0 transition-transform ${
                       isExpanded ? 'rotate-180' : ''
                     }`}
                   />
                 </button>
 
                 {isExpanded && (
-                  <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 text-sm text-gray-700">
+                  <div className="px-4 py-3 border-t border-[var(--line)] bg-[var(--bg-sunk)] text-sm text-[var(--ink-soft)]">
                     <p>
                       This dimension evaluates the company&apos;s{' '}
                       {dimension.key === 'team'
@@ -292,7 +292,7 @@ export function DealScorer({ dealId, scores }: DealScorerProps) {
         <button
           onClick={handleScoreDeal}
           disabled={loading}
-          className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 disabled:bg-gray-100 transition-colors"
+          className="w-full px-4 py-3 border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg font-medium hover:bg-[var(--bg-sunk)] disabled:bg-[var(--bg-sunk)] transition-colors"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">

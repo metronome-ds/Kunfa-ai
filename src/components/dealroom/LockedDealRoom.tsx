@@ -42,7 +42,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   investment_memo: 'bg-teal-100 text-teal-700',
   internal_memo: 'bg-slate-100 text-slate-700',
   product: 'bg-indigo-100 text-indigo-700',
-  other: 'bg-gray-100 text-gray-700',
+  other: 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]',
 }
 
 function getFileIcon(fileType: string) {
@@ -122,16 +122,16 @@ export default function LockedDealRoom({ companyId, companyName, onUnlock }: Loc
   }
 
   return (
-    <div id="deal-room" className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div id="deal-room" className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-100">
+      <div className="px-6 py-5 border-b border-[var(--line)]">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[var(--ink)]/10 flex items-center justify-center">
             <FolderOpen className="w-5 h-5 text-[var(--accent-ink)]" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Deal Room</h2>
-            <p className="text-xs text-gray-500">
+            <h2 className="text-lg font-semibold text-[var(--ink)]">Deal Room</h2>
+            <p className="text-xs text-[var(--ink-mute)]">
               {loading ? 'Loading...' : `${docs.length} document${docs.length !== 1 ? 's' : ''}`}
             </p>
           </div>
@@ -147,27 +147,27 @@ export default function LockedDealRoom({ companyId, companyName, onUnlock }: Loc
             </div>
           ) : docs.length === 0 ? (
             <div className="text-center py-12">
-              <FolderOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-              <p className="text-sm text-gray-500">No documents in the deal room yet.</p>
+              <FolderOpen className="w-12 h-12 text-[var(--ink-faint)] mx-auto mb-3" />
+              <p className="text-sm text-[var(--ink-mute)]">No documents in the deal room yet.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pointer-events-none select-none filter blur-[2px] opacity-70">
               {docs.map(doc => (
                 <div
                   key={doc.id}
-                  className="border border-gray-200 rounded-lg p-4 bg-white"
+                  className="border border-[var(--line)] rounded-lg p-4 bg-[var(--bg-elev)]"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <span className="text-2xl">{getFileIcon(doc.file_type)}</span>
-                    <Lock className="w-4 h-4 text-gray-400" />
+                    <Lock className="w-4 h-4 text-[var(--ink-faint)]" />
                   </div>
-                  <p className="text-sm font-medium text-gray-900 truncate">{doc.file_name}</p>
+                  <p className="text-sm font-medium text-[var(--ink)] truncate">{doc.file_name}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <span className={`px-2 py-0.5 rounded text-[10px] font-medium ${CATEGORY_COLORS[doc.category] || CATEGORY_COLORS.other}`}>
                       {CATEGORY_LABELS[doc.category] || doc.category}
                     </span>
                     {doc.file_size > 0 && (
-                      <span className="text-[10px] text-gray-400">{formatFileSize(doc.file_size)}</span>
+                      <span className="text-[10px] text-[var(--ink-faint)]">{formatFileSize(doc.file_size)}</span>
                     )}
                   </div>
                 </div>
@@ -178,27 +178,27 @@ export default function LockedDealRoom({ companyId, companyName, onUnlock }: Loc
 
         {/* Email gate overlay */}
         {!loading && docs.length > 0 && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/60 backdrop-blur-sm">
-            <div className="bg-white rounded-xl border border-gray-200 shadow-lg p-6 max-w-md w-full mx-4">
+          <div className="absolute inset-0 flex items-center justify-center bg-[var(--bg-elev)]/60 backdrop-blur-sm">
+            <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 max-w-md w-full mx-4">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-lg bg-[var(--ink)]/10 flex items-center justify-center flex-shrink-0">
                   <Lock className="w-5 h-5 text-[var(--accent-ink)]" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-gray-900">Enter your email to access the deal room</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">View {companyName}&apos;s documents</p>
+                  <h3 className="text-base font-semibold text-[var(--ink)]">Enter your email to access the deal room</h3>
+                  <p className="text-xs text-[var(--ink-mute)] mt-0.5">View {companyName}&apos;s documents</p>
                 </div>
               </div>
 
               <form onSubmit={handleSubmit} className="mt-4 space-y-3">
                 <div className="relative">
-                  <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <Mail className="w-4 h-4 text-[var(--ink-faint)] absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@fund.com"
-                    className="w-full pl-9 pr-3 py-2.5 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                    className="w-full pl-9 pr-3 py-2.5 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                     required
                   />
                 </div>
@@ -212,7 +212,7 @@ export default function LockedDealRoom({ companyId, companyName, onUnlock }: Loc
                 >
                   {submitting ? 'Unlocking...' : 'View Documents'}
                 </button>
-                <p className="text-[11px] text-gray-400 text-center">
+                <p className="text-[11px] text-[var(--ink-faint)] text-center">
                   By unlocking, you agree to share your email with the startup.
                 </p>
               </form>

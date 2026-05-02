@@ -39,7 +39,7 @@ export default function HowItWorks() {
           <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
             How It Works
           </h2>
-          <p className="text-gray-600 text-base max-w-xl mx-auto">
+          <p className="text-[var(--ink-soft)] text-base max-w-xl mx-auto">
             Three steps from pitch deck to investor pipeline
           </p>
         </div>
@@ -49,10 +49,10 @@ export default function HowItWorks() {
             <div key={step.number} className="relative">
               {/* Connector line (desktop only) */}
               {i < steps.length - 1 && (
-                <div className="hidden md:block absolute top-12 left-[calc(50%+40px)] w-[calc(100%-80px)] h-px bg-gray-200" />
+                <div className="hidden md:block absolute top-12 left-[calc(50%+40px)] w-[calc(100%-80px)] h-px bg-[var(--bg-sunk)]" />
               )}
 
-              <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center relative">
+              <div className="bg-[var(--bg-elev)] rounded-2xl p-8 border border-[var(--line)] text-center relative">
                 <div className="w-14 h-14 bg-[#F0F7FF] rounded-xl flex items-center justify-center mx-auto mb-5">
                   {step.icon}
                 </div>
@@ -60,7 +60,7 @@ export default function HowItWorks() {
                   Step {step.number}
                 </span>
                 <h3 className="text-lg font-bold text-kunfa-navy mb-3">{step.title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{step.description}</p>
+                <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{step.description}</p>
               </div>
             </div>
           ))}

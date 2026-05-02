@@ -50,7 +50,7 @@ export default function CompanyLogo({ name, logoUrl, size = 'md', className = ''
 
   if (logoUrl && !imgError) {
     return (
-      <div className={`${s.container} ${s.rounded} overflow-hidden flex-shrink-0 bg-gray-100 ${className}`}>
+      <div className={`${s.container} ${s.rounded} overflow-hidden flex-shrink-0 bg-[var(--bg-sunk)] ${className}`}>
         <Image
           src={logoUrl}
           alt={`${name} logo`}

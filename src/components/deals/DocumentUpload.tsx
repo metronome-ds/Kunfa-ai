@@ -225,7 +225,7 @@ export function DocumentUpload({
         className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
           isDragging
             ? 'border-[var(--line-strong)] bg-[var(--accent-soft)]'
-            : 'border-gray-300 bg-gray-50'
+            : 'border-[var(--line-strong)] bg-[var(--bg-sunk)]'
         }`}
       >
         <input
@@ -237,16 +237,16 @@ export function DocumentUpload({
         />
 
         <div className="space-y-2">
-          <Upload className="h-8 w-8 mx-auto text-gray-400" />
+          <Upload className="h-8 w-8 mx-auto text-[var(--ink-faint)]" />
           <div>
-            <p className="font-medium text-gray-900">
+            <p className="font-medium text-[var(--ink)]">
               Drag and drop your files here
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-[var(--ink-mute)]">
               or click to browse
             </p>
           </div>
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-[var(--ink-faint)]">
             Max file size: {(maxSize / 1024 / 1024).toFixed(0)}MB. Supported formats: PDF, PowerPoint, Word. Up to {maxFiles} files.
           </p>
         </div>
@@ -269,7 +269,7 @@ export function DocumentUpload({
               className={`flex items-center gap-3 p-3 rounded-lg border ${
                 uploadedFile.error
                   ? 'bg-red-50 border-red-200'
-                  : 'bg-gray-50 border-gray-200'
+                  : 'bg-[var(--bg-sunk)] border-[var(--line)]'
               }`}
             >
               <FileText className={`h-5 w-5 flex-shrink-0 ${
@@ -277,11 +277,11 @@ export function DocumentUpload({
               }`} />
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-[var(--ink)] truncate">
                   {uploadedFile.file.name}
                 </p>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-[var(--ink-mute)]">
                     {formatFileSize(uploadedFile.file.size)}
                   </p>
                   {uploadedFile.error && (
@@ -291,7 +291,7 @@ export function DocumentUpload({
                     <p className="text-xs text-green-600">Ready</p>
                   )}
                   {!uploadedFile.error && dealId && uploadedFile.progress !== undefined && uploadedFile.progress < 100 && (
-                    <div className="flex-1 mx-2 h-1 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="flex-1 mx-2 h-1 bg-[var(--bg-sunk)] rounded-full overflow-hidden">
                       <div
                         className="h-full bg-[var(--accent-soft)]0 transition-all"
                         style={{ width: `${uploadedFile.progress}%` }}
@@ -306,10 +306,10 @@ export function DocumentUpload({
 
               <button
                 onClick={() => removeFile(uploadedFile.id)}
-                className="p-1 hover:bg-gray-200 rounded transition-colors flex-shrink-0"
+                className="p-1 hover:bg-[var(--bg-sunk)] rounded transition-colors flex-shrink-0"
                 title="Remove file"
               >
-                <X className="h-4 w-4 text-gray-500" />
+                <X className="h-4 w-4 text-[var(--ink-mute)]" />
               </button>
             </div>
           ))}
@@ -318,7 +318,7 @@ export function DocumentUpload({
 
       {/* File Count */}
       {uploadedFiles.length > 0 && (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-[var(--ink-mute)]">
           {uploadedFiles.filter((f) => !f.error).length} of {maxFiles} files
         </p>
       )}

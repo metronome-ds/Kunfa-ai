@@ -86,11 +86,11 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
   };
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 p-6 space-y-6 overflow-y-auto">
+    <div className="w-64 bg-[var(--bg-elev)] border-r border-[var(--line)] p-6 space-y-6 overflow-y-auto">
       {/* Header */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900">Filters</h3>
+          <h3 className="text-lg font-bold text-[var(--ink)]">Filters</h3>
           {activeFilterCount > 0 && (
             <span className="px-2 py-1 bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-semibold rounded-full">
               {activeFilterCount}
@@ -108,7 +108,7 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
 
         {/* Sort */}
         <div>
-          <label className="text-sm font-medium text-gray-700 mb-2 block">
+          <label className="text-sm font-medium text-[var(--ink-soft)] mb-2 block">
             Sort By
           </label>
           <select
@@ -116,7 +116,7 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
             onChange={(e) =>
               updateFilter({ sort: e.target.value as FilterState['sort'] })
             }
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--ink)]"
+            className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--ink)]"
           >
             <option value="newest">Newest First</option>
             <option value="score">Highest Score</option>
@@ -129,7 +129,7 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
       {activeFilterCount > 0 && (
         <button
           onClick={clearAllFilters}
-          className="w-full px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+          className="w-full px-4 py-2 bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-sm font-medium rounded-lg hover:bg-[var(--bg-sunk)] transition-colors flex items-center justify-center gap-2"
         >
           <X className="h-4 w-4" />
           Clear All Filters
@@ -142,9 +142,9 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
           onClick={() => toggleSection('industry')}
           className="flex items-center justify-between w-full"
         >
-          <h4 className="font-semibold text-gray-900">Industry</h4>
+          <h4 className="font-semibold text-[var(--ink)]">Industry</h4>
           <span
-            className={`text-gray-400 transition-transform ${
+            className={`text-[var(--ink-faint)] transition-transform ${
               expandedSections.industry ? 'rotate-180' : ''
             }`}
           >
@@ -160,9 +160,9 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
                   type="checkbox"
                   checked={filters.industries.includes(industry)}
                   onChange={() => toggleIndustry(industry)}
-                  className="w-4 h-4 text-[var(--ink)] rounded border-gray-300 cursor-pointer"
+                  className="w-4 h-4 text-[var(--ink)] rounded border-[var(--line-strong)] cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">{industry}</span>
+                <span className="text-sm text-[var(--ink-soft)]">{industry}</span>
               </label>
             ))}
           </div>
@@ -175,9 +175,9 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
           onClick={() => toggleSection('stage')}
           className="flex items-center justify-between w-full"
         >
-          <h4 className="font-semibold text-gray-900">Stage</h4>
+          <h4 className="font-semibold text-[var(--ink)]">Stage</h4>
           <span
-            className={`text-gray-400 transition-transform ${
+            className={`text-[var(--ink-faint)] transition-transform ${
               expandedSections.stage ? 'rotate-180' : ''
             }`}
           >
@@ -193,9 +193,9 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
                   type="checkbox"
                   checked={filters.stages.includes(stage.value)}
                   onChange={() => toggleStage(stage.value)}
-                  className="w-4 h-4 text-[var(--ink)] rounded border-gray-300 cursor-pointer"
+                  className="w-4 h-4 text-[var(--ink)] rounded border-[var(--line-strong)] cursor-pointer"
                 />
-                <span className="text-sm text-gray-700">{stage.label}</span>
+                <span className="text-sm text-[var(--ink-soft)]">{stage.label}</span>
               </label>
             ))}
           </div>
@@ -208,9 +208,9 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
           onClick={() => toggleSection('funding')}
           className="flex items-center justify-between w-full"
         >
-          <h4 className="font-semibold text-gray-900">Funding Range</h4>
+          <h4 className="font-semibold text-[var(--ink)]">Funding Range</h4>
           <span
-            className={`text-gray-400 transition-transform ${
+            className={`text-[var(--ink-faint)] transition-transform ${
               expandedSections.funding ? 'rotate-180' : ''
             }`}
           >
@@ -252,9 +252,9 @@ export function DealFilter({ onFilterChange, activeFilterCount = 0 }: DealFilter
           onClick={() => toggleSection('score')}
           className="flex items-center justify-between w-full"
         >
-          <h4 className="font-semibold text-gray-900">AI Score</h4>
+          <h4 className="font-semibold text-[var(--ink)]">AI Score</h4>
           <span
-            className={`text-gray-400 transition-transform ${
+            className={`text-[var(--ink-faint)] transition-transform ${
               expandedSections.score ? 'rotate-180' : ''
             }`}
           >

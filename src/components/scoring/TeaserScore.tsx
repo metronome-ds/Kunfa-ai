@@ -42,7 +42,7 @@ function getReadinessColor(readiness: string): string {
     case 'Ready': return 'bg-green-100 text-green-700'
     case 'Almost Ready': return 'bg-[var(--accent-soft)] text-[var(--ink)]'
     case 'Needs Work': return 'bg-yellow-100 text-yellow-700'
-    default: return 'bg-gray-100 text-gray-600'
+    default: return 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'
   }
 }
 
@@ -94,7 +94,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
             <span className={`text-3xl font-bold ${getScoreColor(result.overall_score)}`}>
               {result.overall_score}
             </span>
-            <span className="text-xs text-gray-400">/100</span>
+            <span className="text-xs text-[var(--ink-faint)]">/100</span>
           </div>
         </div>
         <h3 className="text-xl font-bold text-kunfa-navy mb-1">Your Kunfa Score</h3>
@@ -107,14 +107,14 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
       </div>
 
       {/* Executive Summary */}
-      <div className="bg-gray-50 rounded-xl p-4 mb-6">
+      <div className="bg-[var(--bg-sunk)] rounded-xl p-4 mb-6">
         <p className="text-sm text-kunfa-text-secondary leading-relaxed">{result.summary}</p>
       </div>
 
       {/* Unlock CTA — prominent section, BEFORE dimension cards */}
       <div className="rounded-2xl overflow-hidden border-2 border-kunfa-indigo mb-6">
         <div className="bg-gradient-to-br from-indigo-600 to-purple-700 px-6 py-8 text-center text-white">
-          <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 bg-[var(--bg-elev)]/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -128,7 +128,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
           <button
             onClick={handleUnlockClick}
             disabled={unlocking}
-            className="bg-white text-indigo-700 font-bold px-10 py-3.5 rounded-xl hover:bg-indigo-50 transition-colors text-base shadow-lg disabled:opacity-50"
+            className="bg-[var(--bg-elev)] text-indigo-700 font-bold px-10 py-3.5 rounded-xl hover:bg-indigo-50 transition-colors text-base disabled:opacity-50"
           >
             {unlocking ? 'Redirecting to checkout...' : 'Get Full Report — $59'}
           </button>
@@ -158,7 +158,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
           const label = dimensionLabels[key]
           if (!label) return null
           return (
-            <div key={key} className="border border-gray-200 rounded-xl p-4 relative overflow-hidden">
+            <div key={key} className="border border-[var(--line)] rounded-xl p-4 relative overflow-hidden">
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{label.icon}</span>
@@ -175,17 +175,17 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
                 className="relative w-full text-left cursor-pointer group"
               >
                 <div className="blur-sm select-none pointer-events-none">
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-[var(--ink-faint)]">
                     Detailed analysis of strengths, risks, and specific recommendations
                     for improvement based on sector benchmarks and comparable startups...
                   </p>
                 </div>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="bg-white/80 backdrop-blur-sm rounded-lg px-3 py-1.5 flex items-center gap-1.5 shadow-sm group-hover:bg-indigo-50 group-hover:shadow-md transition-all">
-                    <svg className="w-3.5 h-3.5 text-gray-400 group-hover:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="bg-[var(--bg-elev)]/80 backdrop-blur-sm rounded-lg px-3 py-1.5 flex items-center gap-1.5 group-hover:bg-indigo-50 group-hover:shadow-md transition-all">
+                    <svg className="w-3.5 h-3.5 text-[var(--ink-faint)] group-hover:text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    <span className="text-xs font-medium text-gray-500 group-hover:text-indigo-600">Locked — Click to unlock</span>
+                    <span className="text-xs font-medium text-[var(--ink-mute)] group-hover:text-indigo-600">Locked — Click to unlock</span>
                   </div>
                 </div>
               </button>
@@ -196,7 +196,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
 
       {/* Powered by badge */}
       <div className="text-center">
-        <span className="text-xs text-gray-400 flex items-center justify-center gap-1">
+        <span className="text-xs text-[var(--ink-faint)] flex items-center justify-center gap-1">
           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>

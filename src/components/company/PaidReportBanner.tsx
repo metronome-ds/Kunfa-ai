@@ -41,14 +41,14 @@ export default function PaidReportBanner({ submissionId }: PaidReportBannerProps
   if (!isPaid || !effectiveId) return null
 
   return (
-    <div className="rounded-xl p-5 border bg-emerald-50 border-emerald-200 shadow-sm">
+    <div className="rounded-xl p-5 border bg-emerald-50 border-emerald-200">
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
           <Check className="w-5 h-5 text-emerald-600" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-semibold text-gray-900">Payment Successful!</p>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <p className="text-sm font-semibold text-[var(--ink)]">Payment Successful!</p>
+          <p className="text-xs text-[var(--ink-mute)] mt-0.5">
             Your Readiness Report is being generated. We&apos;ll notify you when it&apos;s ready.
             Redirecting to dashboard in {countdown}s...
           </p>

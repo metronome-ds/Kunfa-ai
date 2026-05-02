@@ -78,18 +78,18 @@ export default function WwipDashboard() {
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">{displayName} Dashboard</h1>
-        <p className="text-gray-500 mt-1">{tenant?.tagline || 'Overview of your network activity'}</p>
+        <h1 className="text-3xl font-bold text-[var(--ink)]">{displayName} Dashboard</h1>
+        <p className="text-[var(--ink-mute)] mt-1">{tenant?.tagline || 'Overview of your network activity'}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {cards.map((c) => (
-          <div key={c.label} className="bg-white rounded-xl border border-gray-200 p-5">
+          <div key={c.label} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-500">{c.label}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">
-                  {loading ? <span className="text-gray-300">—</span> : c.value}
+                <p className="text-sm font-medium text-[var(--ink-mute)]">{c.label}</p>
+                <p className="text-3xl font-bold text-[var(--ink)] mt-1">
+                  {loading ? <span className="text-[var(--ink-faint)]">—</span> : c.value}
                 </p>
               </div>
               <div className={`p-2.5 rounded-lg ${c.bg}`}>{c.icon}</div>
@@ -98,28 +98,28 @@ export default function WwipDashboard() {
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Recent Activity</h2>
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+        <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-4">Recent Activity</h2>
         {loading ? (
           <div className="py-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)] mx-auto" />
           </div>
         ) : activity.length === 0 ? (
           <div className="text-center py-12">
-            <Clock className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-400">No recent activity yet</p>
+            <Clock className="w-8 h-8 text-[var(--ink-faint)] mx-auto mb-2" />
+            <p className="text-sm text-[var(--ink-faint)]">No recent activity yet</p>
           </div>
         ) : (
           <div className="space-y-1">
             {activity.map((item) => {
               const content = (
-                <div className="flex items-start gap-3 py-3 border-b border-gray-50 last:border-0">
-                  <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center flex-shrink-0">
+                <div className="flex items-start gap-3 py-3 border-b border-[var(--line)] last:border-0">
+                  <div className="w-8 h-8 rounded-full bg-[var(--bg-sunk)] flex items-center justify-center flex-shrink-0">
                     {activityIcon(item.type)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-700">{item.text}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{timeAgo(item.time)}</p>
+                    <p className="text-sm text-[var(--ink-soft)]">{item.text}</p>
+                    <p className="text-xs text-[var(--ink-faint)] mt-0.5">{timeAgo(item.time)}</p>
                   </div>
                 </div>
               );

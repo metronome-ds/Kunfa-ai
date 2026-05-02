@@ -139,7 +139,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+        className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
       >
         <Share2 className="w-4 h-4" />
         Share
@@ -147,8 +147,8 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
 
       <Modal isOpen={isOpen} onClose={() => { setIsOpen(false); setNewLink(null); setError('') }}>
         <div className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">Share Deal Room</h3>
-          <p className="text-sm text-gray-500 mb-6">{companyName}</p>
+          <h3 className="text-lg font-semibold text-[var(--ink)] mb-1">Share Deal Room</h3>
+          <p className="text-sm text-[var(--ink-mute)] mb-6">{companyName}</p>
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
@@ -165,7 +165,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                   type="text"
                   readOnly
                   value={roomUrl}
-                  className="flex-1 px-3 py-2 bg-white border border-emerald-200 rounded-lg text-sm text-gray-700 font-mono"
+                  className="flex-1 px-3 py-2 bg-[var(--bg-elev)] border border-emerald-200 rounded-lg text-sm text-[var(--ink-soft)] font-mono"
                 />
                 <button
                   onClick={() => {
@@ -189,43 +189,43 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
           )}
 
           {/* Create new link */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-6 border border-gray-200">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Create New Link</h4>
+          <div className="bg-[var(--bg-sunk)] rounded-lg p-4 mb-6 border border-[var(--line)]">
+            <h4 className="text-sm font-medium text-[var(--ink)] mb-3">Create New Link</h4>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Password (optional)</label>
+                <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Password (optional)</label>
                 <input
                   type="text"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Leave blank for no password"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Expires in (days)</label>
+                  <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Expires in (days)</label>
                   <input
                     type="number"
                     value={expiryDays}
                     onChange={(e) => setExpiryDays(e.target.value)}
                     placeholder="Never"
                     min="1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                    className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Allow downloads</label>
+                  <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Allow downloads</label>
                   <button
                     onClick={() => setAllowDownload(!allowDownload)}
-                    className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-lg text-sm w-full"
+                    className="flex items-center gap-2 px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm w-full"
                   >
                     {allowDownload ? (
                       <ToggleRight className="w-5 h-5 text-[var(--accent-ink)]" />
                     ) : (
-                      <ToggleLeft className="w-5 h-5 text-gray-400" />
+                      <ToggleLeft className="w-5 h-5 text-[var(--ink-faint)]" />
                     )}
-                    <span className={allowDownload ? 'text-gray-900' : 'text-gray-500'}>
+                    <span className={allowDownload ? 'text-[var(--ink)]' : 'text-[var(--ink-mute)]'}>
                       {allowDownload ? 'Yes' : 'No'}
                     </span>
                   </button>
@@ -243,13 +243,13 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
 
           {/* Existing links */}
           <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Shared Links</h4>
+            <h4 className="text-sm font-medium text-[var(--ink)] mb-3">Shared Links</h4>
             {loading ? (
               <div className="flex items-center justify-center py-6">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-[var(--line-strong)]" />
               </div>
             ) : links.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-4">No shared links yet</p>
+              <p className="text-sm text-[var(--ink-faint)] text-center py-4">No shared links yet</p>
             ) : (
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {links.map(link => {
@@ -259,16 +259,16 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                       key={link.id}
                       className={`flex items-center gap-3 p-3 rounded-lg border ${
                         !link.is_active || isExpired
-                          ? 'border-gray-200 bg-gray-50 opacity-60'
-                          : 'border-gray-200 bg-white'
+                          ? 'border-[var(--line)] bg-[var(--bg-sunk)] opacity-60'
+                          : 'border-[var(--line)] bg-[var(--bg-elev)]'
                       }`}
                     >
-                      <Link2 className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <Link2 className="w-4 h-4 text-[var(--ink-faint)] flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-mono text-gray-600 truncate">
+                        <p className="text-xs font-mono text-[var(--ink-soft)] truncate">
                           /room/{link.token.slice(0, 12)}...
                         </p>
-                        <div className="flex items-center gap-3 mt-1 text-[10px] text-gray-400">
+                        <div className="flex items-center gap-3 mt-1 text-[10px] text-[var(--ink-faint)]">
                           <span className="flex items-center gap-1">
                             <Eye className="w-3 h-3" />
                             {link.view_count} view{link.view_count !== 1 ? 's' : ''}
@@ -285,7 +285,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => copyLink(link.token, link.id)}
-                          className="p-1.5 text-gray-400 hover:text-[var(--accent-ink)] transition"
+                          className="p-1.5 text-[var(--ink-faint)] hover:text-[var(--accent-ink)] transition"
                           title="Copy link"
                         >
                           {copiedId === link.id ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
@@ -294,14 +294,14 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                           href={`/room/${link.token}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 text-gray-400 hover:text-[var(--accent-ink)] transition"
+                          className="p-1.5 text-[var(--ink-faint)] hover:text-[var(--accent-ink)] transition"
                           title="Preview"
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
                         <button
                           onClick={() => toggleActive(link.id, link.is_active)}
-                          className="p-1.5 text-gray-400 hover:text-amber-500 transition"
+                          className="p-1.5 text-[var(--ink-faint)] hover:text-amber-500 transition"
                           title={link.is_active ? 'Deactivate' : 'Activate'}
                         >
                           {link.is_active ? (
@@ -312,7 +312,7 @@ export default function ShareDealRoom({ companyId, companyName }: ShareDealRoomP
                         </button>
                         <button
                           onClick={() => deleteLink(link.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 transition"
+                          className="p-1.5 text-[var(--ink-faint)] hover:text-red-500 transition"
                           title="Delete link"
                         >
                           <Trash2 className="w-4 h-4" />

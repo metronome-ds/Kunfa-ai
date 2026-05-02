@@ -55,7 +55,7 @@ function CityClockDisplay({ city }: { city: CityTime }) {
   return (
     <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
       <span>{city.flag}</span>
-      <span className="text-gray-300">{city.city}</span>
+      <span className="text-[var(--ink-faint)]">{city.city}</span>
       <span className="text-white font-medium">{time}</span>
       <span className={`w-1.5 h-1.5 rounded-full ${city.open ? 'bg-kunfa' : 'bg-kunfa-red'}`} />
     </span>
@@ -71,10 +71,10 @@ export default function TickerBar() {
             {cities.map((city) => (
               <CityClockDisplay key={`${dupeIdx}-${city.city}`} city={city} />
             ))}
-            <span className="text-gray-600">|</span>
+            <span className="text-[var(--ink-soft)]">|</span>
             {marketData.map((item) => (
               <span key={`${dupeIdx}-${item.name}`} className="inline-flex items-center gap-1.5 whitespace-nowrap">
-                <span className="text-gray-400">{item.name}</span>
+                <span className="text-[var(--ink-faint)]">{item.name}</span>
                 <span className="text-white font-medium">{item.value}</span>
                 <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
                   item.positive ? 'bg-emerald-900/50 text-emerald-400' : 'bg-red-900/50 text-red-400'

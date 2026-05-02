@@ -114,7 +114,7 @@ function getCategoryColor(category: string) {
     legal_draft: 'bg-amber-100 text-amber-700',
     cap_table_draft: 'bg-purple-100 text-purple-700',
     notes: 'bg-slate-100 text-slate-700',
-    other: 'bg-gray-100 text-gray-700',
+    other: 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]',
   }
   return colors[category] || colors.other
 }
@@ -271,7 +271,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
   const privateCount = documents.filter(d => d.is_private).length
 
   return (
-    <div id="deal-room" className="bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div id="deal-room" className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)]">
       {/* Toast */}
       {toast && (
         <div className="mx-6 mt-4 flex items-center gap-3 bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-3">
@@ -292,17 +292,17 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
       )}
 
       {/* Header */}
-      <div className="px-6 py-5 border-b border-gray-100">
+      <div className="px-6 py-5 border-b border-[var(--line)]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-[var(--ink)]/10 flex items-center justify-center">
               <FolderOpen className="w-5 h-5 text-[var(--accent-ink)]" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">
+              <h2 className="text-lg font-semibold text-[var(--ink)]">
                 {isOwnerView ? (isPrivateTab ? 'Private Documents' : 'Investor Room') : 'Deal Room'}
               </h2>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-[var(--ink-mute)]">
                 {isOwnerView
                   ? (isPrivateTab
                     ? 'Internal documents only visible to you and your team. Never shared with investors or used in AI scoring.'
@@ -335,12 +335,12 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
               className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                 activeTab === 'investor'
                   ? 'bg-[var(--ink)] text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
               }`}
             >
               Investor Room
               {investorCount > 0 && (
-                <span className={`ml-1.5 ${activeTab === 'investor' ? 'text-[var(--ink-faint)]' : 'text-gray-400'}`}>
+                <span className={`ml-1.5 ${activeTab === 'investor' ? 'text-[var(--ink-faint)]' : 'text-[var(--ink-faint)]'}`}>
                   {investorCount}
                 </span>
               )}
@@ -350,12 +350,12 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
               className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                 activeTab === 'private'
                   ? 'bg-[var(--ink)] text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
               }`}
             >
               Private Docs
               {privateCount > 0 && (
-                <span className={`ml-1.5 ${activeTab === 'private' ? 'text-[var(--ink-faint)]' : 'text-gray-400'}`}>
+                <span className={`ml-1.5 ${activeTab === 'private' ? 'text-[var(--ink-faint)]' : 'text-[var(--ink-faint)]'}`}>
                   {privateCount}
                 </span>
               )}
@@ -365,8 +365,8 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
       </div>
 
       {/* Category Filters */}
-      <div className="px-6 py-3 border-b border-gray-100 flex items-center gap-2 overflow-x-auto">
-        <Filter className="w-4 h-4 text-gray-400 flex-shrink-0" />
+      <div className="px-6 py-3 border-b border-[var(--line)] flex items-center gap-2 overflow-x-auto">
+        <Filter className="w-4 h-4 text-[var(--ink-faint)] flex-shrink-0" />
         {currentCategories.map(c => (
           <button
             key={c.value}
@@ -374,12 +374,12 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
             className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition ${
               filter === c.value
                 ? 'bg-[var(--ink)] text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
             }`}
           >
             {c.label}
             {activeCounts[c.value] > 0 && (
-              <span className={`ml-1.5 ${filter === c.value ? 'text-[var(--ink-faint)]' : 'text-gray-400'}`}>
+              <span className={`ml-1.5 ${filter === c.value ? 'text-[var(--ink-faint)]' : 'text-[var(--ink-faint)]'}`}>
                 {activeCounts[c.value]}
               </span>
             )}
@@ -395,8 +395,8 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
           </div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-12">
-            <FolderOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <p className="text-sm text-gray-500">
+            <FolderOpen className="w-12 h-12 text-[var(--ink-faint)] mx-auto mb-3" />
+            <p className="text-sm text-[var(--ink-mute)]">
               {tabDocs.length === 0
                 ? (isPrivateTab ? 'No private documents yet' : 'No documents yet')
                 : 'No documents in this category'}
@@ -417,7 +417,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
               return (
                 <div
                   key={doc.id}
-                  className="group border border-gray-200 rounded-lg p-4 hover:border-[var(--line-strong)]/30 hover:shadow-sm transition relative"
+                  className="group border border-[var(--line)] rounded-lg p-4 hover:border-[var(--line-strong)]/30 hover:shadow-sm transition relative"
                 >
                   <div className="flex items-start justify-between mb-3">
                     <span className="text-2xl">{getFileIcon(doc.file_type)}</span>
@@ -452,19 +452,19 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
                               e.stopPropagation()
                               setMenuOpenId(menuOpenId === doc.id ? null : doc.id)
                             }}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-gray-600 transition"
+                            className="opacity-0 group-hover:opacity-100 p-1 text-[var(--ink-faint)] hover:text-[var(--ink-soft)] transition"
                           >
                             <MoreVertical className="w-4 h-4" />
                           </button>
                           {menuOpenId === doc.id && (
-                            <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-10 py-1">
+                            <div className="absolute right-0 top-full mt-1 w-36 bg-[var(--bg-elev)] border border-[var(--line)] rounded-lg z-10 py-1">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   setMenuOpenId(null)
                                   setEditingDoc(doc)
                                 }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]"
                               >
                                 <Pencil className="w-3.5 h-3.5" /> Edit
                               </button>
@@ -474,7 +474,7 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
                                   setMenuOpenId(null)
                                   setReplacingDoc(doc)
                                 }}
-                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                                className="w-full flex items-center gap-2 px-3 py-2 text-sm text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]"
                               >
                                 <RefreshCw className="w-3.5 h-3.5" /> Replace
                               </button>
@@ -503,14 +503,14 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
                       onClick={() => trackDocumentView(doc.id)}
                       className="block"
                     >
-                      <p className="text-sm font-medium text-gray-900 truncate hover:text-[var(--accent-ink)] transition">
+                      <p className="text-sm font-medium text-[var(--ink)] truncate hover:text-[var(--accent-ink)] transition">
                         {doc.file_name}
                       </p>
                     </a>
                   ) : (
                     <div className="flex items-center gap-1.5">
                       <Lock className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
-                      <p className="text-sm font-medium text-gray-500 truncate">
+                      <p className="text-sm font-medium text-[var(--ink-mute)] truncate">
                         {doc.file_name}
                       </p>
                     </div>
@@ -520,13 +520,13 @@ export default function DealRoom({ companyId, companyName, canUpload, canShare, 
                       {getCategoryLabel(doc.category)}
                     </span>
                     {doc.file_size > 0 && (
-                      <span className="text-[10px] text-gray-400">{formatFileSize(doc.file_size)}</span>
+                      <span className="text-[10px] text-[var(--ink-faint)]">{formatFileSize(doc.file_size)}</span>
                     )}
                   </div>
                   {doc.description && (
-                    <p className="text-xs text-gray-500 mt-2 line-clamp-2">{doc.description}</p>
+                    <p className="text-xs text-[var(--ink-mute)] mt-2 line-clamp-2">{doc.description}</p>
                   )}
-                  <div className="flex items-center justify-between mt-3 text-[10px] text-gray-400">
+                  <div className="flex items-center justify-between mt-3 text-[10px] text-[var(--ink-faint)]">
                     <span>{doc.uploaded_by_name}</span>
                     <span>{timeAgo(doc.created_at)}</span>
                   </div>
@@ -772,8 +772,8 @@ function UploadModal({
             <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle2 className="w-7 h-7 text-green-600" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">Upload Complete</h3>
-            <p className="text-sm text-gray-500 mb-1">
+            <h3 className="text-lg font-bold text-[var(--ink)] mb-1">Upload Complete</h3>
+            <p className="text-sm text-[var(--ink-mute)] mb-1">
               {doneStats.success} of {doneStats.total} file{doneStats.total !== 1 ? 's' : ''} uploaded successfully.
             </p>
             {doneStats.failed > 0 && (
@@ -790,7 +790,7 @@ function UploadModal({
           </div>
         ) : (
           <>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            <h3 className="text-lg font-semibold text-[var(--ink)] mb-4">
               Upload Document{queue.length > 1 ? 's' : ''}
             </h3>
 
@@ -807,12 +807,12 @@ function UploadModal({
               className={`border-2 border-dashed rounded-xl p-6 text-center transition cursor-pointer ${
                 dragOver
                   ? 'border-[var(--line-strong)] bg-[var(--accent-soft)]'
-                  : 'border-gray-300 hover:border-[var(--line-strong)]'
+                  : 'border-[var(--line-strong)] hover:border-[var(--line-strong)]'
               }`}
             >
-              <Upload className="w-7 h-7 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600">Drop files here or click to browse</p>
-              <p className="text-xs text-gray-400 mt-1">
+              <Upload className="w-7 h-7 text-[var(--ink-faint)] mx-auto mb-2" />
+              <p className="text-sm text-[var(--ink-soft)]">Drop files here or click to browse</p>
+              <p className="text-xs text-[var(--ink-faint)] mt-1">
                 Max 25MB per file &middot; Up to {MAX_BATCH_FILES} files &middot; PDF, PPT, PPTX, DOC, DOCX, XLS, XLSX, CSV
               </p>
             </div>
@@ -838,7 +838,7 @@ function UploadModal({
                             ? 'border-red-200 bg-red-50'
                             : item.status === 'uploading'
                               ? 'border-[var(--line)] bg-[var(--accent-soft)]'
-                              : 'border-gray-200'
+                              : 'border-[var(--line)]'
                     }`}
                   >
                     {/* Row 1: file info + status + remove */}
@@ -850,16 +850,16 @@ function UploadModal({
                       ) : item.status === 'uploading' ? (
                         <div className="w-4 h-4 border-2 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin flex-shrink-0" />
                       ) : (
-                        <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                        <FileText className="w-4 h-4 text-[var(--ink-faint)] flex-shrink-0" />
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{item.file.name}</p>
-                        <p className="text-xs text-gray-400">{formatFileSize(item.file.size)}</p>
+                        <p className="text-sm font-medium text-[var(--ink)] truncate">{item.file.name}</p>
+                        <p className="text-xs text-[var(--ink-faint)]">{formatFileSize(item.file.size)}</p>
                       </div>
                       {item.status !== 'uploading' && item.status !== 'done' && (
                         <button
                           onClick={() => removeFile(item.id)}
-                          className="p-1 text-gray-400 hover:text-red-500 flex-shrink-0"
+                          className="p-1 text-[var(--ink-faint)] hover:text-red-500 flex-shrink-0"
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -882,7 +882,7 @@ function UploadModal({
                         <select
                           value={item.category}
                           onChange={(e) => updateFile(item.id, { category: e.target.value })}
-                          className="px-2 py-1 border border-gray-200 rounded text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-[var(--ink)] bg-white"
+                          className="px-2 py-1 border border-[var(--line)] rounded text-xs text-[var(--ink-soft)] focus:outline-none focus:ring-1 focus:ring-[var(--ink)] bg-[var(--bg-elev)]"
                         >
                           {(isPrivateTab ? PRIVATE_UPLOAD_CATEGORIES : UPLOAD_CATEGORIES).map((c) => (
                             <option key={c.value} value={c.value}>{c.label}</option>
@@ -893,7 +893,7 @@ function UploadModal({
                           value={item.description}
                           onChange={(e) => updateFile(item.id, { description: e.target.value })}
                           placeholder="Description (optional)"
-                          className="flex-1 px-2 py-1 border border-gray-200 rounded text-xs text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[var(--ink)]"
+                          className="flex-1 px-2 py-1 border border-[var(--line)] rounded text-xs text-[var(--ink-soft)] placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[var(--ink)]"
                         />
                         {!isPrivateTab && (
                           <button
@@ -932,7 +932,7 @@ function UploadModal({
               <button
                 onClick={handleClose}
                 disabled={uploading}
-                className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)] transition disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -952,7 +952,7 @@ function UploadModal({
             </div>
 
             {hasValidationErrors && !uploading && (
-              <p className="text-xs text-gray-400 text-center mt-2">
+              <p className="text-xs text-[var(--ink-faint)] text-center mt-2">
                 Files with errors will be skipped during upload.
               </p>
             )}
@@ -1004,8 +1004,8 @@ function EditDocModal({
   return (
     <Modal isOpen={true} onClose={onClose}>
       <div className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Document</h3>
-        <p className="text-sm text-gray-600 mb-4 truncate">{doc.file_name}</p>
+        <h3 className="text-lg font-semibold text-[var(--ink)] mb-4">Edit Document</h3>
+        <p className="text-sm text-[var(--ink-soft)] mb-4 truncate">{doc.file_name}</p>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
@@ -1015,11 +1015,11 @@ function EditDocModal({
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Category</label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+              className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)]"
             >
               {(isPrivateTab ? PRIVATE_UPLOAD_CATEGORIES : UPLOAD_CATEGORIES).map(c => (
                 <option key={c.value} value={c.value}>{c.label}</option>
@@ -1027,18 +1027,18 @@ function EditDocModal({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Description</label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Brief description"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 placeholder-gray-400"
+              className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] placeholder-gray-400"
             />
           </div>
           {!isPrivateTab && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Access Level</label>
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">Access Level</label>
             <div className="flex gap-2">
               <button
                 type="button"
@@ -1046,7 +1046,7 @@ function EditDocModal({
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition ${
                   isPublic
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-300 ring-1 ring-emerald-300'
-                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                    : 'bg-[var(--bg-elev)] text-[var(--ink-soft)] border-[var(--line)] hover:bg-[var(--bg-sunk)]'
                 }`}
               >
                 <Eye className="w-4 h-4" />
@@ -1058,14 +1058,14 @@ function EditDocModal({
                 className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition ${
                   !isPublic
                     ? 'bg-amber-50 text-amber-700 border-amber-300 ring-1 ring-amber-300'
-                    : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                    : 'bg-[var(--bg-elev)] text-[var(--ink-soft)] border-[var(--line)] hover:bg-[var(--bg-sunk)]'
                 }`}
               >
                 <EyeOff className="w-4 h-4" />
                 Restricted
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[var(--ink-mute)] mt-1">
               {isPublic ? 'Visible to all visitors' : 'Only authorized investors can download'}
             </p>
           </div>
@@ -1073,7 +1073,7 @@ function EditDocModal({
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)] transition">
             Cancel
           </button>
           <button
@@ -1147,9 +1147,9 @@ function ReplaceDocModal({
   return (
     <Modal isOpen={true} onClose={onClose}>
       <div className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Replace Document</h3>
-        <p className="text-sm text-gray-500 mb-4">
-          Replacing: <span className="font-medium text-gray-700">{doc.file_name}</span>
+        <h3 className="text-lg font-semibold text-[var(--ink)] mb-2">Replace Document</h3>
+        <p className="text-sm text-[var(--ink-mute)] mb-4">
+          Replacing: <span className="font-medium text-[var(--ink-soft)]">{doc.file_name}</span>
         </p>
 
         {error && (
@@ -1170,21 +1170,21 @@ function ReplaceDocModal({
             input.click()
           }}
           className={`border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition ${
-            file ? 'border-emerald-300 bg-emerald-50' : 'border-gray-300 hover:border-[var(--line-strong)]'
+            file ? 'border-emerald-300 bg-emerald-50' : 'border-[var(--line-strong)] hover:border-[var(--line-strong)]'
           }`}
         >
           {file ? (
-            <p className="text-sm font-medium text-gray-900">{file.name}</p>
+            <p className="text-sm font-medium text-[var(--ink)]">{file.name}</p>
           ) : (
             <>
-              <Upload className="w-6 h-6 text-gray-400 mx-auto mb-1" />
-              <p className="text-sm text-gray-500">Click to select new file</p>
+              <Upload className="w-6 h-6 text-[var(--ink-faint)] mx-auto mb-1" />
+              <p className="text-sm text-[var(--ink-mute)]">Click to select new file</p>
             </>
           )}
         </div>
 
         <div className="flex gap-3 mt-6">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg text-sm font-medium bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)] transition">
             Cancel
           </button>
           <button

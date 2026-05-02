@@ -35,7 +35,7 @@ export default function ExpertServicesSection() {
         <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
           Get hands-on help from vetted experts
         </h2>
-        <p className="text-gray-600 text-base max-w-2xl mx-auto mb-12">
+        <p className="text-[var(--ink-soft)] text-base max-w-2xl mx-auto mb-12">
           From Shariah compliance to financial modeling, our managed services connect you with pre-vetted professionals who understand GCC founders.
         </p>
 
@@ -43,11 +43,11 @@ export default function ExpertServicesSection() {
           {highlights.map((item) => (
             <div
               key={item.title}
-              className="bg-white rounded-xl border border-gray-200 p-6 text-left hover:border-[var(--line-strong)]/40 hover:shadow-md transition-all"
+              className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 text-left hover:border-[var(--line-strong)]/40 hover:shadow-md transition-all"
             >
               <span className="text-2xl mb-3 block">{item.icon}</span>
-              <h3 className="text-sm font-bold text-gray-900 mb-1">{item.title}</h3>
-              <p className="text-xs text-gray-600 leading-relaxed">{item.description}</p>
+              <h3 className="text-sm font-bold text-[var(--ink)] mb-1">{item.title}</h3>
+              <p className="text-xs text-[var(--ink-soft)] leading-relaxed">{item.description}</p>
             </div>
           ))}
         </div>

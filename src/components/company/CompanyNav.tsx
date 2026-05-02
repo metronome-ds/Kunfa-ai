@@ -34,7 +34,7 @@ export function CompanyNav() {
   }, [])
 
   return (
-    <nav className="bg-white border-b border-gray-200 px-6 py-4">
+    <nav className="bg-[var(--bg-elev)] border-b border-[var(--line)] px-6 py-4">
       <div className="max-w-4xl mx-auto flex items-center justify-between">
         <Link href="/">
           <KunfaLogo height={28} />

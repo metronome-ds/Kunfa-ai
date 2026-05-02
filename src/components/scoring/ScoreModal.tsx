@@ -40,8 +40,8 @@ interface ScoreResult {
 
 // STAGES and INDUSTRIES imported from @/lib/constants
 
-const INPUT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa focus:border-transparent'
-const SELECT_CLASS = 'w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-kunfa focus:border-transparent'
+const INPUT_CLASS = 'w-full border border-[var(--line-strong)] rounded-lg px-4 py-2.5 text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa focus:border-transparent'
+const SELECT_CLASS = 'w-full border border-[var(--line-strong)] rounded-lg px-4 py-2.5 text-sm text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-kunfa focus:border-transparent'
 
 // KUN-55: Additional document categories for enhanced onboarding upload
 interface AdditionalDoc {
@@ -72,7 +72,7 @@ function getStrengthLabel(strength: number): { label: string; color: string } {
   if (strength >= 80) return { label: 'Excellent', color: 'text-emerald-600' }
   if (strength >= 60) return { label: 'Good', color: 'text-[var(--ink)]' }
   if (strength >= 40) return { label: 'Fair', color: 'text-yellow-600' }
-  return { label: 'Minimal', color: 'text-gray-500' }
+  return { label: 'Minimal', color: 'text-[var(--ink-mute)]' }
 }
 
 function generateSlug(name: string): string {
@@ -622,15 +622,15 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               return (
                 <div key={s.key} className="flex items-center gap-2">
                   {i > 0 && (
-                    <div className={`w-8 h-0.5 ${isActive ? 'bg-kunfa' : 'bg-gray-200'}`} />
+                    <div className={`w-8 h-0.5 ${isActive ? 'bg-kunfa' : 'bg-[var(--bg-sunk)]'}`} />
                   )}
                   <div className="flex items-center gap-1.5">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold ${
-                      isActive ? 'bg-kunfa text-white' : 'bg-gray-200 text-gray-500'
+                      isActive ? 'bg-kunfa text-white' : 'bg-[var(--bg-sunk)] text-[var(--ink-mute)]'
                     }`}>
                       {i + 1}
                     </div>
-                    <span className={`text-xs font-medium hidden sm:inline ${isActive ? 'text-kunfa-navy' : 'text-gray-400'}`}>
+                    <span className={`text-xs font-medium hidden sm:inline ${isActive ? 'text-kunfa-navy' : 'text-[var(--ink-faint)]'}`}>
                       {s.label}
                     </span>
                   </div>
@@ -690,12 +690,12 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
             <button onClick={handleAuth} disabled={authLoading || !isAccountValid}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
-                isAccountValid ? 'bg-kunfa hover:bg-kunfa-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                isAccountValid ? 'bg-kunfa hover:bg-kunfa-dark text-white' : 'bg-[var(--bg-sunk)] text-[var(--ink-faint)] cursor-not-allowed'
               }`}>
               {authLoading ? 'Please wait...' : isLogin ? 'Sign In' : 'Create Account'}
             </button>
 
-            <p className="text-center text-xs text-gray-500">
+            <p className="text-center text-xs text-[var(--ink-mute)]">
               {isLogin ? "Don't have an account? " : 'Already have an account? '}
               <button onClick={() => { setIsLogin(!isLogin); setAuthError('') }} className="text-kunfa font-medium hover:underline">
                 {isLogin ? 'Sign up' : 'Sign in'}
@@ -719,7 +719,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             <div>
               <label className="block text-sm font-medium text-kunfa-navy mb-1.5">Choose Your URL *</label>
               <div className="flex items-center">
-                <span className="text-sm text-gray-500 bg-gray-50 px-3 py-2.5 rounded-l-lg border border-r-0 border-gray-300 whitespace-nowrap">
+                <span className="text-sm text-[var(--ink-mute)] bg-[var(--bg-sunk)] px-3 py-2.5 rounded-l-lg border border-r-0 border-[var(--line-strong)] whitespace-nowrap">
                   kunfa.ai/company/
                 </span>
                 <div className="relative flex-1">
@@ -728,11 +728,11 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                     value={chosenSlug}
                     onChange={(e) => handleSlugChange(e.target.value)}
                     placeholder="your-company"
-                    className="w-full border border-gray-300 rounded-r-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa focus:border-transparent pr-10"
+                    className="w-full border border-[var(--line-strong)] rounded-r-lg px-3 py-2.5 text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-kunfa focus:border-transparent pr-10"
                   />
                   {/* Status indicator */}
                   <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    {slugStatus === 'checking' && <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />}
+                    {slugStatus === 'checking' && <Loader2 className="h-4 w-4 text-[var(--ink-faint)] animate-spin" />}
                     {slugStatus === 'available' && <Check className="h-4 w-4 text-[var(--accent-ink)]" />}
                     {slugStatus === 'taken' && <X className="h-4 w-4 text-red-500" />}
                     {slugStatus === 'invalid' && <X className="h-4 w-4 text-red-500" />}
@@ -754,7 +754,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             <div>
               <label className="block text-sm font-medium text-kunfa-navy mb-1.5">
                 Elevator Pitch *
-                <span className="ml-2 text-xs font-normal text-gray-400">{oneLiner.length}/160</span>
+                <span className="ml-2 text-xs font-normal text-[var(--ink-faint)]">{oneLiner.length}/160</span>
               </label>
               <input type="text" value={oneLiner}
                 onChange={(e) => setOneLiner(e.target.value.slice(0, 160))}
@@ -819,7 +819,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
             <button onClick={handleSaveCompany} disabled={!isCompanyValid || authLoading}
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
-                isCompanyValid ? 'bg-kunfa hover:bg-kunfa-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                isCompanyValid ? 'bg-kunfa hover:bg-kunfa-dark text-white' : 'bg-[var(--bg-sunk)] text-[var(--ink-faint)] cursor-not-allowed'
               }`}>
               {authLoading ? 'Saving...' : 'Continue'}
             </button>
@@ -853,7 +853,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             </div>
 
             {/* Co-Founders */}
-            <div className="border-t border-gray-200 pt-4">
+            <div className="border-t border-[var(--line)] pt-4">
               <div className="flex items-center justify-between mb-3">
                 <label className="text-sm font-medium text-kunfa-navy">Co-Founders</label>
                 {coFounders.length < 4 && (
@@ -868,23 +868,23 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               </div>
 
               {coFounders.length === 0 && (
-                <p className="text-xs text-gray-400 mb-2">No co-founders added yet. Click above to add up to 4.</p>
+                <p className="text-xs text-[var(--ink-faint)] mb-2">No co-founders added yet. Click above to add up to 4.</p>
               )}
 
               <div className="space-y-3">
                 {coFounders.map((cf, i) => (
-                  <div key={i} className="bg-gray-50 rounded-lg p-3 relative">
+                  <div key={i} className="bg-[var(--bg-sunk)] rounded-lg p-3 relative">
                     <button
                       type="button"
                       onClick={() => removeCoFounder(i)}
-                      className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition"
+                      className="absolute top-2 right-2 text-[var(--ink-faint)] hover:text-red-500 transition"
                       aria-label="Remove co-founder"
                     >
                       <X className="w-4 h-4" />
                     </button>
                     <div className="grid grid-cols-2 gap-3 pr-6">
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Name *</label>
+                        <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Name *</label>
                         <input
                           type="text"
                           value={cf.name}
@@ -894,7 +894,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Title *</label>
+                        <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Title *</label>
                         <input
                           type="text"
                           value={cf.title}
@@ -904,7 +904,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">Email *</label>
+                        <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">Email *</label>
                         <input
                           type="email"
                           value={cf.email}
@@ -914,7 +914,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-gray-600 mb-1">LinkedIn</label>
+                        <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">LinkedIn</label>
                         <input
                           type="url"
                           value={cf.linkedin}
@@ -931,12 +931,12 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
             <div className="flex gap-3">
               <button onClick={() => setStep('company')}
-                className="flex-1 py-3 rounded-lg font-semibold text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition">
+                className="flex-1 py-3 rounded-lg font-semibold text-sm bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)] transition">
                 Back
               </button>
               <button onClick={handleSaveFounder} disabled={!isFounderValid || authLoading}
                 className={`flex-1 py-3 rounded-lg font-semibold text-sm transition-all ${
-                  isFounderValid ? 'bg-kunfa hover:bg-kunfa-dark text-white' : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  isFounderValid ? 'bg-kunfa hover:bg-kunfa-dark text-white' : 'bg-[var(--bg-sunk)] text-[var(--ink-faint)] cursor-not-allowed'
                 }`}>
                 {authLoading ? 'Saving...' : 'Continue'}
               </button>
@@ -948,12 +948,12 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
         {!initialLoading && step === 'upload' && (
           <div className="space-y-4">
             {/* Score Strength Indicator */}
-            <div className="bg-gray-50 rounded-lg p-3">
+            <div className="bg-[var(--bg-sunk)] rounded-lg p-3">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs font-semibold text-kunfa-navy">Score Strength</span>
                 <span className={`text-xs font-bold ${strengthInfo.color}`}>{strengthInfo.label}</span>
               </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-[var(--bg-sunk)] rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500 ease-out"
                   style={{
@@ -962,7 +962,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                   }}
                 />
               </div>
-              <p className="text-[10px] text-gray-400 mt-1">
+              <p className="text-[10px] text-[var(--ink-faint)] mt-1">
                 More documents = more accurate scoring. Add financials and supporting docs for best results.
               </p>
             </div>
@@ -999,13 +999,13 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
             {/* Additional Documents */}
             {additionalDocs.length > 0 && (
               <div className="space-y-2">
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Additional Documents</label>
+                <label className="block text-xs font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Additional Documents</label>
                 {additionalDocs.map((doc) => (
-                  <div key={doc.id} className="flex items-center gap-2 bg-gray-50 rounded-lg p-2.5">
-                    <FileText className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <div key={doc.id} className="flex items-center gap-2 bg-[var(--bg-sunk)] rounded-lg p-2.5">
+                    <FileText className="w-4 h-4 text-[var(--ink-faint)] flex-shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-900 truncate">{doc.file.name}</p>
-                      <p className="text-[10px] text-gray-400">
+                      <p className="text-xs font-medium text-[var(--ink)] truncate">{doc.file.name}</p>
+                      <p className="text-[10px] text-[var(--ink-faint)]">
                         {ADDITIONAL_CATEGORIES.find(c => c.value === doc.category)?.label || doc.category}
                         {' · '}
                         {(doc.file.size / (1024 * 1024)).toFixed(1)} MB
@@ -1013,7 +1013,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                     </div>
                     <button
                       onClick={() => setAdditionalDocs(prev => prev.filter(d => d.id !== doc.id))}
-                      className="p-1 text-gray-400 hover:text-red-500 transition"
+                      className="p-1 text-[var(--ink-faint)] hover:text-red-500 transition"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -1024,9 +1024,9 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
 
             {/* Add More Documents Button */}
             {additionalDocs.length < 5 && (
-              <div className="border border-dashed border-gray-300 rounded-lg p-3">
+              <div className="border border-dashed border-[var(--line-strong)] rounded-lg p-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-[var(--ink-mute)]">
                     Add supporting documents (cap table, term sheet, product docs, etc.)
                   </p>
                   <label className="flex items-center gap-1 text-xs font-semibold text-kunfa hover:text-kunfa-dark transition cursor-pointer">
@@ -1057,7 +1057,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 {/* Category selector for the most recent doc if it's still 'other' */}
                 {additionalDocs.length > 0 && additionalDocs[additionalDocs.length - 1].category === 'other' && (
                   <div className="mt-2 flex items-center gap-2">
-                    <span className="text-[10px] text-gray-400">Category:</span>
+                    <span className="text-[10px] text-[var(--ink-faint)]">Category:</span>
                     <div className="flex flex-wrap gap-1">
                       {ADDITIONAL_CATEGORIES.map(cat => (
                         <button
@@ -1071,7 +1071,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                           className={`text-[10px] px-2 py-0.5 rounded-full transition ${
                             additionalDocs[additionalDocs.length - 1].category === cat.value
                               ? 'bg-kunfa text-white'
-                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              : 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)]'
                           }`}
                         >
                           {cat.label}
@@ -1092,7 +1092,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-1.5">
                   <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                    item.done ? 'bg-kunfa' : 'bg-gray-200'
+                    item.done ? 'bg-kunfa' : 'bg-[var(--bg-sunk)]'
                   }`}>
                     {item.done && (
                       <svg className="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1100,7 +1100,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                       </svg>
                     )}
                   </div>
-                  <span className={`text-xs ${item.done ? 'text-kunfa-navy font-medium' : 'text-gray-400'}`}>
+                  <span className={`text-xs ${item.done ? 'text-kunfa-navy font-medium' : 'text-[var(--ink-faint)]'}`}>
                     {item.label}{item.optional ? ' (optional)' : ''}
                   </span>
                 </div>
@@ -1112,9 +1112,9 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
                 type="checkbox"
                 checked={disclaimerChecked}
                 onChange={(e) => setDisclaimerChecked(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-kunfa focus:ring-kunfa"
+                className="mt-0.5 h-4 w-4 rounded border-[var(--line-strong)] text-kunfa focus:ring-kunfa"
               />
-              <span className="text-xs text-gray-500 leading-relaxed">
+              <span className="text-xs text-[var(--ink-mute)] leading-relaxed">
                 I confirm that all information provided is accurate and self-reported. I agree to the{' '}
                 <a href="/terms" target="_blank" className="text-kunfa hover:underline">Terms of Service</a>
                 {' '}and{' '}
@@ -1148,7 +1148,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
                 isUploadValid
                   ? 'bg-kunfa hover:bg-kunfa-dark text-white cursor-pointer'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-[var(--bg-sunk)] text-[var(--ink-faint)] cursor-not-allowed'
               }`}>
               {additionalDocs.length > 0 || financials
                 ? `GENERATE SCORE (${1 + (financials ? 1 : 0) + additionalDocs.length} documents)`

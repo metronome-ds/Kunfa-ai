@@ -26,7 +26,7 @@ export function ScoreTooltip({ className = '' }: { className?: string }) {
         onClick={() => setOpen(!open)}
         onMouseEnter={() => setOpen(true)}
         onMouseLeave={() => setOpen(false)}
-        className="text-gray-400 hover:text-gray-600 transition cursor-help"
+        className="text-[var(--ink-faint)] hover:text-[var(--ink-soft)] transition cursor-help"
         aria-label="Scoring methodology"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,7 +36,7 @@ export function ScoreTooltip({ className = '' }: { className?: string }) {
       </button>
 
       {open && (
-        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 sm:w-80 p-3 bg-gray-900 text-gray-200 text-xs leading-relaxed rounded-lg shadow-xl border border-gray-700">
+        <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-72 sm:w-80 p-3 bg-gray-900 text-gray-200 text-xs leading-relaxed rounded-lg border border-gray-700">
           {METHODOLOGY_TEXT}
           <div className="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-x-[6px] border-x-transparent border-t-[6px] border-t-gray-900" />
         </div>

@@ -57,7 +57,7 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
   if (!briefData) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600 mb-6">
+        <p className="text-[var(--ink-soft)] mb-6">
           Generate a comprehensive company brief from deal documents.
         </p>
         <button
@@ -84,16 +84,16 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
       <div className="flex items-start justify-between gap-4">
         <div>
           {briefData.company_name && (
-            <h1 className="text-3xl font-bold text-gray-900">{briefData.company_name}</h1>
+            <h1 className="text-3xl font-bold text-[var(--ink)]">{briefData.company_name}</h1>
           )}
           {briefData.tagline && (
-            <p className="text-lg text-gray-600 mt-2">{briefData.tagline}</p>
+            <p className="text-lg text-[var(--ink-soft)] mt-2">{briefData.tagline}</p>
           )}
         </div>
         <button
           disabled
           title="PDF export coming soon"
-          className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium opacity-50 cursor-not-allowed"
+          className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg font-medium opacity-50 cursor-not-allowed"
         >
           <Download className="h-5 w-5" />
           Export PDF
@@ -103,9 +103,9 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
       {/* Executive Summary */}
       {briefData.executive_summary && (
         <section className="space-y-3">
-          <h2 className="text-2xl font-bold text-gray-900">Executive Summary</h2>
+          <h2 className="text-2xl font-bold text-[var(--ink)]">Executive Summary</h2>
           <div className="prose prose-sm max-w-none">
-            <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+            <p className="text-[var(--ink-soft)] leading-relaxed whitespace-pre-wrap">
               {briefData.executive_summary}
             </p>
           </div>
@@ -115,8 +115,8 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
       {/* Mission */}
       {briefData.mission && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">Mission</h2>
-          <p className="text-gray-700">{briefData.mission}</p>
+          <h2 className="text-xl font-bold text-[var(--ink)]">Mission</h2>
+          <p className="text-[var(--ink-soft)]">{briefData.mission}</p>
         </section>
       )}
 
@@ -124,14 +124,14 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
       <section className="grid md:grid-cols-2 gap-8">
         {briefData.target_market && (
           <div className="space-y-3">
-            <h3 className="text-lg font-bold text-gray-900">Target Market</h3>
-            <p className="text-gray-700">{briefData.target_market}</p>
+            <h3 className="text-lg font-bold text-[var(--ink)]">Target Market</h3>
+            <p className="text-[var(--ink-soft)]">{briefData.target_market}</p>
           </div>
         )}
         {briefData.product_description && (
           <div className="space-y-3">
-            <h3 className="text-lg font-bold text-gray-900">Product/Solution</h3>
-            <p className="text-gray-700">{briefData.product_description}</p>
+            <h3 className="text-lg font-bold text-[var(--ink)]">Product/Solution</h3>
+            <p className="text-[var(--ink-soft)]">{briefData.product_description}</p>
           </div>
         )}
       </section>
@@ -140,14 +140,14 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
       <section className="grid md:grid-cols-2 gap-8">
         {briefData.business_model && (
           <div className="space-y-3">
-            <h3 className="text-lg font-bold text-gray-900">Business Model</h3>
-            <p className="text-gray-700">{briefData.business_model}</p>
+            <h3 className="text-lg font-bold text-[var(--ink)]">Business Model</h3>
+            <p className="text-[var(--ink-soft)]">{briefData.business_model}</p>
           </div>
         )}
         {briefData.go_to_market_strategy && (
           <div className="space-y-3">
-            <h3 className="text-lg font-bold text-gray-900">Go-to-Market</h3>
-            <p className="text-gray-700">{briefData.go_to_market_strategy}</p>
+            <h3 className="text-lg font-bold text-[var(--ink)]">Go-to-Market</h3>
+            <p className="text-[var(--ink-soft)]">{briefData.go_to_market_strategy}</p>
           </div>
         )}
       </section>
@@ -155,17 +155,17 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
       {/* Team */}
       {(briefData.founding_team || briefData.key_experience) && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">Team</h2>
+          <h2 className="text-xl font-bold text-[var(--ink)]">Team</h2>
           {briefData.founding_team && (
             <div>
-              <h4 className="font-semibold text-gray-800 mb-2">Founding Team</h4>
-              <p className="text-gray-700">{briefData.founding_team}</p>
+              <h4 className="font-semibold text-[var(--ink-2)] mb-2">Founding Team</h4>
+              <p className="text-[var(--ink-soft)]">{briefData.founding_team}</p>
             </div>
           )}
           {briefData.key_experience && (
             <div>
-              <h4 className="font-semibold text-gray-800 mb-2">Key Experience</h4>
-              <p className="text-gray-700">{briefData.key_experience}</p>
+              <h4 className="font-semibold text-[var(--ink-2)] mb-2">Key Experience</h4>
+              <p className="text-[var(--ink-soft)]">{briefData.key_experience}</p>
             </div>
           )}
         </section>
@@ -174,25 +174,25 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
       {/* Product */}
       {briefData.product_description && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">Product</h2>
-          <p className="text-gray-700">{briefData.product_description}</p>
+          <h2 className="text-xl font-bold text-[var(--ink)]">Product</h2>
+          <p className="text-[var(--ink-soft)]">{briefData.product_description}</p>
         </section>
       )}
 
       {/* Traction */}
       {(briefData.key_metrics || briefData.recent_milestones) && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">Traction</h2>
+          <h2 className="text-xl font-bold text-[var(--ink)]">Traction</h2>
           {briefData.key_metrics && (
             <div>
-              <h4 className="font-semibold text-gray-800 mb-2">Key Metrics</h4>
-              <p className="text-gray-700">{briefData.key_metrics}</p>
+              <h4 className="font-semibold text-[var(--ink-2)] mb-2">Key Metrics</h4>
+              <p className="text-[var(--ink-soft)]">{briefData.key_metrics}</p>
             </div>
           )}
           {briefData.recent_milestones && (
             <div>
-              <h4 className="font-semibold text-gray-800 mb-2">Recent Milestones</h4>
-              <p className="text-gray-700">{briefData.recent_milestones}</p>
+              <h4 className="font-semibold text-[var(--ink-2)] mb-2">Recent Milestones</h4>
+              <p className="text-[var(--ink-soft)]">{briefData.recent_milestones}</p>
             </div>
           )}
         </section>
@@ -201,23 +201,23 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
       {/* Financials */}
       {(briefData.revenue_model || briefData.unit_economics || briefData.financial_highlights) && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">Financials</h2>
+          <h2 className="text-xl font-bold text-[var(--ink)]">Financials</h2>
           {briefData.revenue_model && (
             <div>
-              <h4 className="font-semibold text-gray-800 mb-2">Revenue Model</h4>
-              <p className="text-gray-700">{briefData.revenue_model}</p>
+              <h4 className="font-semibold text-[var(--ink-2)] mb-2">Revenue Model</h4>
+              <p className="text-[var(--ink-soft)]">{briefData.revenue_model}</p>
             </div>
           )}
           {briefData.unit_economics && (
             <div>
-              <h4 className="font-semibold text-gray-800 mb-2">Unit Economics</h4>
-              <p className="text-gray-700">{briefData.unit_economics}</p>
+              <h4 className="font-semibold text-[var(--ink-2)] mb-2">Unit Economics</h4>
+              <p className="text-[var(--ink-soft)]">{briefData.unit_economics}</p>
             </div>
           )}
           {briefData.financial_highlights && (
             <div>
-              <h4 className="font-semibold text-gray-800 mb-2">Highlights</h4>
-              <p className="text-gray-700">{briefData.financial_highlights}</p>
+              <h4 className="font-semibold text-[var(--ink-2)] mb-2">Highlights</h4>
+              <p className="text-[var(--ink-soft)]">{briefData.financial_highlights}</p>
             </div>
           )}
         </section>
@@ -227,7 +227,7 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
       <button
         onClick={handleGenerateBrief}
         disabled={loading}
-        className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 disabled:bg-gray-100 transition-colors"
+        className="w-full px-4 py-3 border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg font-medium hover:bg-[var(--bg-sunk)] disabled:bg-[var(--bg-sunk)] transition-colors"
       >
         {loading ? (
           <span className="flex items-center justify-center gap-2">

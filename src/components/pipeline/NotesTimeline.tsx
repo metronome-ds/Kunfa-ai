@@ -131,7 +131,7 @@ export default function NotesTimeline({ dealId, currentUserId }: NotesTimelinePr
           value={newContent}
           onChange={(e) => setNewContent(e.target.value)}
           rows={2}
-          className="flex-1 px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
+          className="flex-1 px-3 py-2 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] text-sm placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
           placeholder="Add a note..."
           onKeyDown={(e) => {
             if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
@@ -159,18 +159,18 @@ export default function NotesTimeline({ dealId, currentUserId }: NotesTimelinePr
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400" />
         </div>
       ) : notes.length === 0 ? (
-        <p className="text-xs text-gray-400 text-center py-3">No notes yet</p>
+        <p className="text-xs text-[var(--ink-faint)] text-center py-3">No notes yet</p>
       ) : (
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {notes.map((note) => (
-            <div key={note.id} className="bg-gray-50 rounded-lg p-3 group">
+            <div key={note.id} className="bg-[var(--bg-sunk)] rounded-lg p-3 group">
               {editingId === note.id ? (
                 <div className="space-y-2">
                   <textarea
                     value={editContent}
                     onChange={(e) => setEditContent(e.target.value)}
                     rows={2}
-                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
+                    className="w-full px-3 py-2 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] text-sm focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] resize-none"
                     autoFocus
                   />
                   <div className="flex gap-2">
@@ -182,7 +182,7 @@ export default function NotesTimeline({ dealId, currentUserId }: NotesTimelinePr
                     </button>
                     <button
                       onClick={() => { setEditingId(null); setEditContent('') }}
-                      className="px-3 py-1 bg-gray-200 text-gray-700 rounded text-xs font-medium hover:bg-gray-300 transition"
+                      className="px-3 py-1 bg-[var(--bg-sunk)] text-[var(--ink-soft)] rounded text-xs font-medium hover:bg-gray-300 transition"
                     >
                       Cancel
                     </button>
@@ -193,26 +193,26 @@ export default function NotesTimeline({ dealId, currentUserId }: NotesTimelinePr
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-semibold text-gray-700">{note.author_name}</span>
-                        <span className="text-[10px] text-gray-400">{timeAgo(note.created_at)}</span>
+                        <span className="text-xs font-semibold text-[var(--ink-soft)]">{note.author_name}</span>
+                        <span className="text-[10px] text-[var(--ink-faint)]">{timeAgo(note.created_at)}</span>
                         {note.updated_at && note.updated_at !== note.created_at && (
-                          <span className="text-[10px] text-gray-400 italic">(edited)</span>
+                          <span className="text-[10px] text-[var(--ink-faint)] italic">(edited)</span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 whitespace-pre-wrap">{note.content}</p>
+                      <p className="text-sm text-[var(--ink-soft)] whitespace-pre-wrap">{note.content}</p>
                     </div>
                     {note.author_id === currentUserId && (
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                         <button
                           onClick={() => startEdit(note)}
-                          className="p-1 text-gray-400 hover:text-gray-600 transition"
+                          className="p-1 text-[var(--ink-faint)] hover:text-[var(--ink-soft)] transition"
                           title="Edit"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleDelete(note.id)}
-                          className="p-1 text-gray-400 hover:text-red-500 transition"
+                          className="p-1 text-[var(--ink-faint)] hover:text-red-500 transition"
                           title="Delete"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

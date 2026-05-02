@@ -139,17 +139,17 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
         <div className="flex items-center gap-3 mb-4">
           <div className="w-8 h-8 border-3 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin flex-shrink-0" />
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Generating your Kunfa Readiness Report...</h3>
-            <p className="text-sm text-gray-500 mt-0.5">Building your AI-powered investment readiness report</p>
+            <h3 className="text-lg font-bold text-[var(--ink)]">Generating your Kunfa Readiness Report...</h3>
+            <p className="text-sm text-[var(--ink-mute)] mt-0.5">Building your AI-powered investment readiness report</p>
           </div>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+        <div className="w-full bg-[var(--bg-sunk)] rounded-full h-2.5 overflow-hidden">
           <div
             className="bg-[var(--ink)] h-2.5 rounded-full transition-all duration-1000 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
-        <p className="text-xs text-gray-400 mt-2">This usually takes 30–60 seconds</p>
+        <p className="text-xs text-[var(--ink-faint)] mt-2">This usually takes 30–60 seconds</p>
       </div>
     )
   }
@@ -158,11 +158,11 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
   if (state === 'timeout') {
     return (
       <div className="bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-6 border border-amber-200">
-        <h3 className="text-lg font-bold text-gray-900">Report is still generating</h3>
-        <p className="text-sm text-gray-600 mt-1">
+        <h3 className="text-lg font-bold text-[var(--ink)]">Report is still generating</h3>
+        <p className="text-sm text-[var(--ink-soft)] mt-1">
           Your report is taking longer than expected. We&apos;ll notify you when it&apos;s ready.
         </p>
-        <p className="text-xs text-gray-400 mt-2">You can safely leave this page — check back shortly or look for a notification.</p>
+        <p className="text-xs text-[var(--ink-faint)] mt-2">You can safely leave this page — check back shortly or look for a notification.</p>
       </div>
     )
   }
@@ -178,8 +178,8 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
             </svg>
           </div>
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Your report is ready!</h3>
-            <p className="text-sm text-gray-600 mt-0.5">Your full AI-powered investment analysis has been generated.</p>
+            <h3 className="text-lg font-bold text-[var(--ink)]">Your report is ready!</h3>
+            <p className="text-sm text-[var(--ink-soft)] mt-0.5">Your full AI-powered investment analysis has been generated.</p>
           </div>
         </div>
         <a
@@ -197,8 +197,8 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
     return (
       <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-6 border border-[var(--line)] flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-bold text-gray-900">Your Kunfa Readiness Report</h3>
-          <p className="text-sm text-gray-600 mt-1">Your full AI-powered investment analysis is ready.</p>
+          <h3 className="text-lg font-bold text-[var(--ink)]">Your Kunfa Readiness Report</h3>
+          <p className="text-sm text-[var(--ink-soft)] mt-1">Your full AI-powered investment analysis is ready.</p>
         </div>
         <a
           href={`/report/${submissionId}`}
@@ -214,13 +214,13 @@ export function ReportBanner({ submissionId }: ReportBannerProps) {
   return (
     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-[var(--line)] flex flex-col sm:flex-row items-center justify-between gap-4">
       <div>
-        <h3 className="text-lg font-bold text-gray-900">Unlock Your Full Kunfa Readiness Report</h3>
-        <p className="text-sm text-gray-600 mt-1">Detailed analysis, sector benchmarks, and actionable recommendations — $59</p>
+        <h3 className="text-lg font-bold text-[var(--ink)]">Unlock Your Full Kunfa Readiness Report</h3>
+        <p className="text-sm text-[var(--ink-soft)] mt-1">Detailed analysis, sector benchmarks, and actionable recommendations — $59</p>
       </div>
       <button
         onClick={handleCheckout}
         disabled={unlocking}
-        className="bg-[var(--ink)] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition flex-shrink-0 disabled:opacity-50 shadow-md"
+        className="bg-[var(--ink)] text-white px-6 py-3 rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition flex-shrink-0 disabled:opacity-50"
       >
         {unlocking ? 'Redirecting...' : 'Unlock Report — $59'}
       </button>

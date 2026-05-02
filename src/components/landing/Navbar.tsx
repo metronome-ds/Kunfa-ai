@@ -12,7 +12,7 @@ export default function Navbar({ onApplyNow }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <nav className="sticky top-0 z-40 bg-white border-b border-gray-200">
+    <nav className="sticky top-0 z-40 bg-[var(--bg-elev)] border-b border-[var(--line)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -22,9 +22,9 @@ export default function Navbar({ onApplyNow }: NavbarProps) {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-8">
-            <a href="#how-it-works" className="text-gray-600 hover:text-kunfa-navy text-sm font-medium transition-colors">How It Works</a>
-            <a href="#pricing" className="text-gray-600 hover:text-kunfa-navy text-sm font-medium transition-colors">Pricing</a>
-            <Link href="/login" className="text-gray-600 hover:text-kunfa-navy text-sm font-medium transition-colors">Sign In</Link>
+            <a href="#how-it-works" className="text-[var(--ink-soft)] hover:text-kunfa-navy text-sm font-medium transition-colors">How It Works</a>
+            <a href="#pricing" className="text-[var(--ink-soft)] hover:text-kunfa-navy text-sm font-medium transition-colors">Pricing</a>
+            <Link href="/login" className="text-[var(--ink-soft)] hover:text-kunfa-navy text-sm font-medium transition-colors">Sign In</Link>
             <button
               onClick={onApplyNow}
               className="bg-kunfa hover:bg-kunfa-dark text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
@@ -35,7 +35,7 @@ export default function Navbar({ onApplyNow }: NavbarProps) {
 
           {/* Mobile Hamburger */}
           <button
-            className="md:hidden text-gray-600 p-2"
+            className="md:hidden text-[var(--ink-soft)] p-2"
             onClick={() => setMobileOpen(!mobileOpen)}
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,12 +50,12 @@ export default function Navbar({ onApplyNow }: NavbarProps) {
 
         {/* Mobile Menu */}
         {mobileOpen && (
-          <div className="md:hidden pb-4 border-t border-gray-100 mt-2 pt-4">
+          <div className="md:hidden pb-4 border-t border-[var(--line)] mt-2 pt-4">
             <div className="flex flex-col gap-3">
-              <a href="#how-it-works" className="text-gray-600 hover:text-kunfa-navy text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>How It Works</a>
-              <a href="#pricing" className="text-gray-600 hover:text-kunfa-navy text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>Pricing</a>
-              <Link href="/login" className="text-gray-600 hover:text-kunfa-navy text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>Sign In</Link>
-              <Link href="/signup" className="text-gray-600 hover:text-kunfa-navy text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>Sign Up</Link>
+              <a href="#how-it-works" className="text-[var(--ink-soft)] hover:text-kunfa-navy text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>How It Works</a>
+              <a href="#pricing" className="text-[var(--ink-soft)] hover:text-kunfa-navy text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>Pricing</a>
+              <Link href="/login" className="text-[var(--ink-soft)] hover:text-kunfa-navy text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>Sign In</Link>
+              <Link href="/signup" className="text-[var(--ink-soft)] hover:text-kunfa-navy text-sm font-medium px-2 py-1" onClick={() => setMobileOpen(false)}>Sign Up</Link>
               <button
                 onClick={() => { onApplyNow(); setMobileOpen(false) }}
                 className="bg-kunfa hover:bg-kunfa-dark text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors w-fit"

@@ -78,7 +78,7 @@ function getScoreColor(score: number) {
 function getScoreDiffColor(diff: number) {
   if (diff > 0) return 'text-emerald-400'
   if (diff < 0) return 'text-red-400'
-  return 'text-gray-400'
+  return 'text-[var(--ink-faint)]'
 }
 
 function getCategoryLabel(category: string) {
@@ -104,7 +104,7 @@ function getCategoryColor(category: string) {
     term_sheet: 'bg-rose-100 text-rose-700',
     due_diligence: 'bg-cyan-100 text-cyan-700',
     product: 'bg-indigo-100 text-indigo-700',
-    other: 'bg-gray-100 text-gray-700',
+    other: 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]',
   }
   return colors[category] || colors.other
 }
@@ -376,7 +376,7 @@ export default function RescoringModal({
       <div className="p-6 sm:p-8 max-h-[80vh] overflow-y-auto">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-bold text-kunfa-navy">Update Your Score</h2>
-          <p className="text-sm text-gray-500 mt-1">{companyName}</p>
+          <p className="text-sm text-[var(--ink-mute)] mt-1">{companyName}</p>
         </div>
 
         {rescoreError && (
@@ -405,7 +405,7 @@ export default function RescoringModal({
         {/* Document Selection Step */}
         {step === 'select' && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[var(--ink-soft)]">
               Select the documents to include in your new score. A pitch deck is required for scoring.
             </p>
 
@@ -414,24 +414,24 @@ export default function RescoringModal({
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--line-strong)]" />
               </div>
             ) : documents.length === 0 ? (
-              <div className="text-center py-6 bg-gray-50 rounded-lg">
-                <FileText className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                <p className="text-sm text-gray-500">No documents in your deal room yet.</p>
-                <p className="text-xs text-gray-400 mt-1">Upload documents below to get started.</p>
+              <div className="text-center py-6 bg-[var(--bg-sunk)] rounded-lg">
+                <FileText className="w-8 h-8 text-[var(--ink-faint)] mx-auto mb-2" />
+                <p className="text-sm text-[var(--ink-mute)]">No documents in your deal room yet.</p>
+                <p className="text-xs text-[var(--ink-faint)] mt-1">Upload documents below to get started.</p>
               </div>
             ) : (
               <>
                 {/* Select All / Deselect All */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-[var(--ink-mute)]">
                     {selectedIds.size} of {documents.length} selected
                   </span>
                   <div className="flex gap-2">
                     <button onClick={selectAll} className="text-xs text-[var(--accent-ink)] hover:underline">
                       Select All
                     </button>
-                    <span className="text-xs text-gray-300">|</span>
-                    <button onClick={deselectAll} className="text-xs text-gray-500 hover:underline">
+                    <span className="text-xs text-[var(--ink-faint)]">|</span>
+                    <button onClick={deselectAll} className="text-xs text-[var(--ink-mute)] hover:underline">
                       Deselect All
                     </button>
                   </div>
@@ -448,16 +448,16 @@ export default function RescoringModal({
                         className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition ${
                           checked
                             ? 'border-[var(--line-strong)] bg-[var(--accent-soft)]/50'
-                            : 'border-gray-200 hover:border-gray-300'
+                            : 'border-[var(--line)] hover:border-[var(--line-strong)]'
                         }`}
                       >
                         {checked ? (
                           <CheckSquare className="w-5 h-5 text-[var(--accent-ink)] flex-shrink-0" />
                         ) : (
-                          <Square className="w-5 h-5 text-gray-300 flex-shrink-0" />
+                          <Square className="w-5 h-5 text-[var(--ink-faint)] flex-shrink-0" />
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{doc.file_name}</p>
+                          <p className="text-sm font-medium text-[var(--ink)] truncate">{doc.file_name}</p>
                           <span className={`inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-medium ${getCategoryColor(doc.category)}`}>
                             {getCategoryLabel(doc.category)}
                           </span>
@@ -473,13 +473,13 @@ export default function RescoringModal({
             {!showUpload ? (
               <button
                 onClick={() => setShowUpload(true)}
-                className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-sm text-gray-500 hover:border-[var(--line-strong)] hover:text-[var(--accent-ink)] transition"
+                className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink-mute)] hover:border-[var(--line-strong)] hover:text-[var(--accent-ink)] transition"
               >
                 <Plus className="w-4 h-4" />
                 Upload Additional Document
               </button>
             ) : (
-              <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+              <div className="border border-[var(--line)] rounded-lg p-4 space-y-3">
                 <div
                   onClick={() => {
                     const input = document.createElement('input')
@@ -492,22 +492,22 @@ export default function RescoringModal({
                     input.click()
                   }}
                   className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition ${
-                    uploadFile ? 'border-emerald-300 bg-emerald-50' : 'border-gray-300 hover:border-[var(--line-strong)]'
+                    uploadFile ? 'border-emerald-300 bg-emerald-50' : 'border-[var(--line-strong)] hover:border-[var(--line-strong)]'
                   }`}
                 >
                   {uploadFile ? (
-                    <p className="text-sm text-gray-900">{uploadFile.name}</p>
+                    <p className="text-sm text-[var(--ink)]">{uploadFile.name}</p>
                   ) : (
                     <>
-                      <Upload className="w-5 h-5 text-gray-400 mx-auto mb-1" />
-                      <p className="text-xs text-gray-500">Click to select file · Max 25MB</p>
+                      <Upload className="w-5 h-5 text-[var(--ink-faint)] mx-auto mb-1" />
+                      <p className="text-xs text-[var(--ink-mute)]">Click to select file · Max 25MB</p>
                     </>
                   )}
                 </div>
                 <select
                   value={uploadCategory}
                   onChange={(e) => setUploadCategory(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900"
+                  className="w-full px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)]"
                 >
                   {UPLOAD_CATEGORIES.map(c => (
                     <option key={c.value} value={c.value}>{c.label}</option>
@@ -516,7 +516,7 @@ export default function RescoringModal({
                 <div className="flex gap-2">
                   <button
                     onClick={() => { setShowUpload(false); setUploadFile(null) }}
-                    className="flex-1 py-2 rounded-lg text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition"
+                    className="flex-1 py-2 rounded-lg text-sm bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)] transition"
                   >
                     Cancel
                   </button>
@@ -547,7 +547,7 @@ export default function RescoringModal({
               className={`w-full py-3 rounded-lg font-semibold text-sm transition-all ${
                 selectedIds.size > 0 && hasPitchDeck
                   ? 'bg-kunfa hover:bg-kunfa-dark text-white cursor-pointer'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-[var(--bg-sunk)] text-[var(--ink-faint)] cursor-not-allowed'
               }`}
             >
               {selectedIds.size === 0
@@ -574,18 +574,18 @@ export default function RescoringModal({
               {currentScore != null && (
                 <>
                   <div className="text-center">
-                    <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">Previous</p>
-                    <p className="text-4xl font-bold text-gray-400">{currentScore}</p>
+                    <p className="text-xs text-[var(--ink-mute)] uppercase tracking-wider mb-1">Previous</p>
+                    <p className="text-4xl font-bold text-[var(--ink-faint)]">{currentScore}</p>
                   </div>
                   <div className="text-center">
-                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 text-[var(--ink-faint)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                   </div>
                 </>
               )}
               <div className="text-center">
-                <p className="text-xs text-gray-500 uppercase tracking-wider mb-1">New Score</p>
+                <p className="text-xs text-[var(--ink-mute)] uppercase tracking-wider mb-1">New Score</p>
                 <p className={`text-5xl font-bold ${getScoreColor(scoreResult.overall_score)}`}>
                   {scoreResult.overall_score}
                 </p>
@@ -607,13 +607,13 @@ export default function RescoringModal({
                   financial: 'Financial Health',
                 }
                 return (
-                  <div key={key} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                  <div key={key} className="bg-[var(--bg-sunk)] rounded-lg p-3 border border-[var(--line)]">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-gray-700">{labels[key]}</span>
-                      <span className="text-xs font-bold text-gray-900">{dim.letter_grade}</span>
+                      <span className="text-xs font-medium text-[var(--ink-soft)]">{labels[key]}</span>
+                      <span className="text-xs font-bold text-[var(--ink)]">{dim.letter_grade}</span>
                     </div>
                     {dim.headline && (
-                      <p className="text-[10px] text-gray-500">{dim.headline}</p>
+                      <p className="text-[10px] text-[var(--ink-mute)]">{dim.headline}</p>
                     )}
                   </div>
                 )
@@ -621,8 +621,8 @@ export default function RescoringModal({
             </div>
 
             {scoreResult.summary && (
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <p className="text-sm text-gray-700 leading-relaxed">{scoreResult.summary}</p>
+              <div className="bg-[var(--bg-sunk)] rounded-lg p-4 border border-[var(--line)]">
+                <p className="text-sm text-[var(--ink-soft)] leading-relaxed">{scoreResult.summary}</p>
               </div>
             )}
 
@@ -635,7 +635,7 @@ export default function RescoringModal({
               </button>
               <button
                 onClick={handleClose}
-                className="w-full py-3 rounded-lg font-semibold text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 transition"
+                className="w-full py-3 rounded-lg font-semibold text-sm bg-[var(--bg-sunk)] text-[var(--ink-soft)] hover:bg-[var(--bg-sunk)] transition"
               >
                 Close
               </button>

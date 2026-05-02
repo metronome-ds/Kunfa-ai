@@ -303,7 +303,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
       case 'family_office': return { label: 'Family Office', className: 'bg-emerald-100 text-emerald-700' };
       case 'angel': return { label: 'Angel', className: 'bg-amber-100 text-amber-700' };
       case 'lender': return { label: 'Lender', className: 'bg-teal-100 text-teal-700' };
-      default: return { label: type, className: 'bg-gray-100 text-gray-700' };
+      default: return { label: type, className: 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]' };
     }
   };
 
@@ -315,7 +315,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
   const contextLabel = activeEntity?.name || (userProfile?.role === 'investor' ? 'Investor' : userProfile?.role === 'startup' || userProfile?.role === 'founder' ? 'Startup' : userProfile?.role || '');
 
   return (
-    <div className="fixed top-0 left-64 right-0 h-16 bg-white border-b border-[#E5E7EB] z-40">
+    <div className="fixed top-0 left-64 right-0 h-16 bg-[var(--bg-elev)] border-b border-[#E5E7EB] z-40">
       <div className="h-full px-8 flex items-center justify-between">
         {/* Left: Title/Breadcrumb */}
         <h2 className="text-xl font-bold text-[#111827]">
@@ -325,7 +325,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
         {/* Right: Actions */}
         <div className="flex items-center gap-4">
           {/* Search Bar */}
-          <div className="hidden lg:flex items-center gap-2 bg-[#F8F9FB] border border-[#E5E7EB] rounded-lg px-3 py-2 w-64 hover:bg-gray-100 transition-colors">
+          <div className="hidden lg:flex items-center gap-2 bg-[#F8F9FB] border border-[#E5E7EB] rounded-lg px-3 py-2 w-64 hover:bg-[var(--bg-sunk)] transition-colors">
             <Search className="h-4 w-4 text-[#9CA3AF]" />
             <input
               type="text"
@@ -350,10 +350,10 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
 
             {/* Notifications Dropdown */}
             {isNotificationsOpen && (
-              <div className="absolute right-0 mt-2 w-96 bg-white border border-[#E5E7EB] rounded-lg shadow-lg z-50 max-h-[480px] flex flex-col">
+              <div className="absolute right-0 mt-2 w-96 bg-[var(--bg-elev)] border border-[#E5E7EB] rounded-lg z-50 max-h-[480px] flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                  <h3 className="text-sm font-semibold text-gray-900">Notifications</h3>
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--line)]">
+                  <h3 className="text-sm font-semibold text-[var(--ink)]">Notifications</h3>
                   {notificationCount > 0 && (
                     <button
                       onClick={markAllAsRead}
@@ -373,15 +373,15 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                     </div>
                   ) : notifications.length === 0 ? (
                     <div className="py-8 text-center">
-                      <Bell className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-                      <p className="text-sm text-gray-500">No notifications yet</p>
+                      <Bell className="h-8 w-8 text-[var(--ink-faint)] mx-auto mb-2" />
+                      <p className="text-sm text-[var(--ink-mute)]">No notifications yet</p>
                     </div>
                   ) : (
                     notifications.map((notification) => (
                       <button
                         key={notification.id}
                         onClick={() => handleNotificationClick(notification)}
-                        className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-b-0 ${
+                        className={`w-full text-left px-4 py-3 hover:bg-[var(--bg-sunk)] transition-colors border-b border-[var(--line)] last:border-b-0 ${
                           !notification.read ? 'bg-[var(--accent-soft)]/50' : ''
                         }`}
                       >
@@ -394,8 +394,8 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                               <p
                                 className={`text-sm leading-snug ${
                                   !notification.read
-                                    ? 'font-semibold text-gray-900'
-                                    : 'font-medium text-gray-700'
+                                    ? 'font-semibold text-[var(--ink)]'
+                                    : 'font-medium text-[var(--ink-soft)]'
                                 }`}
                               >
                                 {notification.title}
@@ -405,11 +405,11 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
                               )}
                             </div>
                             {notification.body && (
-                              <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                              <p className="text-xs text-[var(--ink-mute)] mt-0.5 line-clamp-2">
                                 {notification.body}
                               </p>
                             )}
-                            <p className="text-xs text-gray-400 mt-1">
+                            <p className="text-xs text-[var(--ink-faint)] mt-1">
                               {formatTimeAgo(notification.created_at)}
                             </p>
                           </div>
@@ -442,7 +442,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
               </button>
 
               {isEntityDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white border border-[#E5E7EB] rounded-lg shadow-lg py-1 z-50 max-h-96 overflow-y-auto">
+                <div className="absolute right-0 mt-2 w-72 bg-[var(--bg-elev)] border border-[#E5E7EB] rounded-lg py-1 z-50 max-h-96 overflow-y-auto">
                   <div className="px-3 py-2 border-b border-[#E5E7EB]">
                     <p className="text-[11px] font-semibold text-[#9CA3AF] uppercase tracking-wider">Your Entities</p>
                   </div>
@@ -544,7 +544,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
 
             {/* Dropdown Menu */}
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-white border border-[#E5E7EB] rounded-lg shadow-lg py-1 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-[var(--bg-elev)] border border-[#E5E7EB] rounded-lg py-1 z-50">
                 <Link
                   href="/profile"
                   className="flex items-center gap-3 px-4 py-2 text-sm text-[#111827] hover:bg-[#F8F9FB] transition-colors"
@@ -581,14 +581,14 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
       {/* Create Entity Modal */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+          <div className="bg-[var(--bg-elev)] rounded-xl w-full max-w-md mx-4 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-[#111827]">
                 Create New {createEntityType === 'fund' ? 'Fund' : 'Company'}
               </h3>
               <button
                 onClick={() => setIsCreateModalOpen(false)}
-                className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-1 hover:bg-[var(--bg-sunk)] rounded-lg transition-colors"
               >
                 <X className="h-5 w-5 text-[#4B5563]" />
               </button>
@@ -615,7 +615,7 @@ export function Navbar({ title = 'Dashboard' }: NavbarProps) {
               <div className="flex gap-3 justify-end">
                 <button
                   onClick={() => setIsCreateModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-[#4B5563] hover:bg-gray-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-[#4B5563] hover:bg-[var(--bg-sunk)] rounded-lg transition-colors"
                 >
                   Cancel
                 </button>

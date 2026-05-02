@@ -21,22 +21,22 @@ export function Input({
   return (
     <div className={containerClassName}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
           {label}
         </label>
       )}
       <div className="relative">
         {icon && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--ink-faint)]">
             {icon}
           </div>
         )}
         <input
           className={`w-full px-4 py-2 ${icon ? 'pl-10' : ''} border ${
-            error ? 'border-red-300 focus:border-red-500' : 'border-gray-300 focus:border-[var(--line-strong)]'
+            error ? 'border-red-300 focus:border-red-500' : 'border-[var(--line-strong)] focus:border-[var(--line-strong)]'
           } rounded-lg focus:outline-none focus:ring-1 ${
             error ? 'focus:ring-red-500' : 'focus:ring-[var(--ink)]'
-          } text-gray-900 placeholder-gray-400 transition-colors ${className || ''}`}
+          } text-[var(--ink)] placeholder-gray-400 transition-colors ${className || ''}`}
           {...props}
         />
       </div>
@@ -44,7 +44,7 @@ export function Input({
         <p className="mt-1 text-sm text-red-600">{error}</p>
       )}
       {helperText && !error && (
-        <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+        <p className="mt-1 text-sm text-[var(--ink-mute)]">{helperText}</p>
       )}
     </div>
   );

@@ -76,10 +76,10 @@ export default function DealRoomActivityCard({ companyId, companyName }: DealRoo
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-6">
         <div className="animate-pulse space-y-3">
-          <div className="h-4 bg-gray-200 rounded w-1/3" />
-          <div className="h-16 bg-gray-100 rounded" />
+          <div className="h-4 bg-[var(--bg-sunk)] rounded w-1/3" />
+          <div className="h-16 bg-[var(--bg-sunk)] rounded" />
         </div>
       </div>
     )
@@ -93,15 +93,15 @@ export default function DealRoomActivityCard({ companyId, companyName }: DealRoo
   const maxViews = Math.max(...chart.map((c) => c.views), 1)
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+    <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-6">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-lg bg-[var(--ink)]/10 flex items-center justify-center">
             <BarChart3 className="w-5 h-5 text-[var(--accent-ink)]" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Deal Room Activity</h2>
-            <p className="text-xs text-gray-500">See who&apos;s viewing your deal room</p>
+            <h2 className="text-lg font-semibold text-[var(--ink)]">Deal Room Activity</h2>
+            <p className="text-xs text-[var(--ink-mute)]">See who&apos;s viewing your deal room</p>
           </div>
         </div>
         <button
@@ -115,46 +115,46 @@ export default function DealRoomActivityCard({ companyId, companyName }: DealRoo
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-        <div className="border border-gray-100 rounded-lg p-3">
+        <div className="border border-[var(--line)] rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-1">
-            <Users className="w-3.5 h-3.5 text-gray-400" />
-            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Viewers / wk</p>
+            <Users className="w-3.5 h-3.5 text-[var(--ink-faint)]" />
+            <p className="text-[11px] text-[var(--ink-mute)] font-medium uppercase tracking-wider">Viewers / wk</p>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{stats.uniqueViewersThisWeek}</p>
+          <p className="text-2xl font-bold text-[var(--ink)]">{stats.uniqueViewersThisWeek}</p>
         </div>
-        <div className="border border-gray-100 rounded-lg p-3">
+        <div className="border border-[var(--line)] rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-1">
-            <Users className="w-3.5 h-3.5 text-gray-400" />
-            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Viewers (all)</p>
+            <Users className="w-3.5 h-3.5 text-[var(--ink-faint)]" />
+            <p className="text-[11px] text-[var(--ink-mute)] font-medium uppercase tracking-wider">Viewers (all)</p>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{stats.uniqueViewersAllTime}</p>
+          <p className="text-2xl font-bold text-[var(--ink)]">{stats.uniqueViewersAllTime}</p>
         </div>
-        <div className="border border-gray-100 rounded-lg p-3">
+        <div className="border border-[var(--line)] rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-1">
-            <Eye className="w-3.5 h-3.5 text-gray-400" />
-            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Doc views / wk</p>
+            <Eye className="w-3.5 h-3.5 text-[var(--ink-faint)]" />
+            <p className="text-[11px] text-[var(--ink-mute)] font-medium uppercase tracking-wider">Doc views / wk</p>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{stats.documentViewsThisWeek}</p>
+          <p className="text-2xl font-bold text-[var(--ink)]">{stats.documentViewsThisWeek}</p>
         </div>
-        <div className="border border-gray-100 rounded-lg p-3">
+        <div className="border border-[var(--line)] rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-1">
-            <Eye className="w-3.5 h-3.5 text-gray-400" />
-            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Doc views (all)</p>
+            <Eye className="w-3.5 h-3.5 text-[var(--ink-faint)]" />
+            <p className="text-[11px] text-[var(--ink-mute)] font-medium uppercase tracking-wider">Doc views (all)</p>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{stats.documentViewsAllTime}</p>
+          <p className="text-2xl font-bold text-[var(--ink)]">{stats.documentViewsAllTime}</p>
         </div>
-        <div className="border border-gray-100 rounded-lg p-3">
+        <div className="border border-[var(--line)] rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-1">
-            <Send className="w-3.5 h-3.5 text-gray-400" />
-            <p className="text-[11px] text-gray-500 font-medium uppercase tracking-wider">Invites sent</p>
+            <Send className="w-3.5 h-3.5 text-[var(--ink-faint)]" />
+            <p className="text-[11px] text-[var(--ink-mute)] font-medium uppercase tracking-wider">Invites sent</p>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{stats.invitesSentAllTime}</p>
+          <p className="text-2xl font-bold text-[var(--ink)]">{stats.invitesSentAllTime}</p>
         </div>
       </div>
 
       {/* 14-day bar chart */}
       <div className="mb-6">
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Views &mdash; Last 14 Days</p>
+        <p className="text-xs font-medium text-[var(--ink-mute)] uppercase tracking-wider mb-3">Views &mdash; Last 14 Days</p>
         <div className="flex items-end gap-1 h-28">
           {chart.map((day) => {
             const heightPct = (day.views / maxViews) * 100
@@ -166,7 +166,7 @@ export default function DealRoomActivityCard({ companyId, companyName }: DealRoo
                     style={{ height: `${Math.max(heightPct, day.views > 0 ? 8 : 2)}%` }}
                   />
                 </div>
-                <span className="text-[9px] text-gray-400">{formatShortDate(day.date).split(' ')[1]}</span>
+                <span className="text-[9px] text-[var(--ink-faint)]">{formatShortDate(day.date).split(' ')[1]}</span>
                 {/* Tooltip */}
                 <div className="absolute bottom-full mb-1 hidden group-hover:block bg-gray-900 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-10">
                   {formatShortDate(day.date)}: {day.views} view{day.views !== 1 ? 's' : ''}
@@ -179,59 +179,59 @@ export default function DealRoomActivityCard({ companyId, companyName }: DealRoo
 
       {/* Recent viewers */}
       <div>
-        <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Recent Viewers</p>
+        <p className="text-xs font-medium text-[var(--ink-mute)] uppercase tracking-wider mb-3">Recent Viewers</p>
         {recentViewers.length === 0 ? (
-          <div className="text-center py-8 border border-dashed border-gray-200 rounded-lg">
-            <FileText className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">No viewers yet. Share your company profile to start collecting interest.</p>
+          <div className="text-center py-8 border border-dashed border-[var(--line)] rounded-lg">
+            <FileText className="w-8 h-8 text-[var(--ink-faint)] mx-auto mb-2" />
+            <p className="text-sm text-[var(--ink-mute)]">No viewers yet. Share your company profile to start collecting interest.</p>
           </div>
         ) : (
-          <div className="border border-gray-100 rounded-lg overflow-hidden">
+          <div className="border border-[var(--line)] rounded-lg overflow-hidden">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left px-4 py-2.5 text-[11px] font-medium text-gray-500 uppercase tracking-wider">Viewer</th>
-                  <th className="text-left px-4 py-2.5 text-[11px] font-medium text-gray-500 uppercase tracking-wider">Documents Viewed</th>
-                  <th className="text-right px-4 py-2.5 text-[11px] font-medium text-gray-500 uppercase tracking-wider">Last Seen</th>
+                <tr className="bg-[var(--bg-sunk)] border-b border-[var(--line)]">
+                  <th className="text-left px-4 py-2.5 text-[11px] font-medium text-[var(--ink-mute)] uppercase tracking-wider">Viewer</th>
+                  <th className="text-left px-4 py-2.5 text-[11px] font-medium text-[var(--ink-mute)] uppercase tracking-wider">Documents Viewed</th>
+                  <th className="text-right px-4 py-2.5 text-[11px] font-medium text-[var(--ink-mute)] uppercase tracking-wider">Last Seen</th>
                 </tr>
               </thead>
               <tbody>
                 {recentViewers.slice(0, 10).map((v) => (
-                  <tr key={v.email} className="border-b border-gray-50 last:border-b-0 hover:bg-gray-50">
+                  <tr key={v.email} className="border-b border-[var(--line)] last:border-b-0 hover:bg-[var(--bg-sunk)]">
                     <td className="px-4 py-3">
                       {v.name ? (
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{v.name}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-sm font-medium text-[var(--ink)]">{v.name}</p>
+                          <p className="text-xs text-[var(--ink-mute)]">
                             {v.fundName ? `${v.fundName} · ` : ''}
                             {v.email}
                           </p>
                         </div>
                       ) : (
-                        <p className="text-sm text-gray-900">{v.email}</p>
+                        <p className="text-sm text-[var(--ink)]">{v.email}</p>
                       )}
                     </td>
                     <td className="px-4 py-3">
                       {v.documentsViewed.length === 0 ? (
-                        <span className="text-xs text-gray-400">Unlocked only</span>
+                        <span className="text-xs text-[var(--ink-faint)]">Unlocked only</span>
                       ) : (
                         <div className="flex flex-wrap gap-1">
                           {v.documentsViewed.slice(0, 3).map((d) => (
                             <span
                               key={d.id}
-                              className="inline-block text-[10px] bg-gray-100 text-gray-700 px-2 py-0.5 rounded truncate max-w-[140px]"
+                              className="inline-block text-[10px] bg-[var(--bg-sunk)] text-[var(--ink-soft)] px-2 py-0.5 rounded truncate max-w-[140px]"
                               title={d.name}
                             >
                               {d.name}
                             </span>
                           ))}
                           {v.documentsViewed.length > 3 && (
-                            <span className="text-[10px] text-gray-500">+{v.documentsViewed.length - 3}</span>
+                            <span className="text-[10px] text-[var(--ink-mute)]">+{v.documentsViewed.length - 3}</span>
                           )}
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-right text-xs text-gray-500">{formatDate(v.lastSeen)}</td>
+                    <td className="px-4 py-3 text-right text-xs text-[var(--ink-mute)]">{formatDate(v.lastSeen)}</td>
                   </tr>
                 ))}
               </tbody>

@@ -78,7 +78,7 @@ function fileTypeIcon(type: string) {
   if (type.includes('spreadsheet') || type.includes('excel') || type === 'text/csv') {
     return <FileSpreadsheet className="w-5 h-5 text-emerald-500" />
   }
-  return <FileIcon className="w-5 h-5 text-gray-400" />
+  return <FileIcon className="w-5 h-5 text-[var(--ink-faint)]" />
 }
 
 export function SingleDocumentUpload({
@@ -188,7 +188,7 @@ export function SingleDocumentUpload({
 
   return (
     <div className={className}>
-      <label className="block text-xs font-medium text-gray-700 mb-1">
+      <label className="block text-xs font-medium text-[var(--ink-soft)] mb-1">
         {label}
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
@@ -196,21 +196,21 @@ export function SingleDocumentUpload({
       {value ? (
         <div
           data-testid={testId ? `${testId}-uploaded` : undefined}
-          className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200"
+          className="flex items-center gap-3 p-3 bg-[var(--bg-elev)] rounded-lg border border-[var(--line)]"
         >
-          <div className="w-10 h-10 rounded-lg bg-gray-50 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-[var(--bg-sunk)] flex items-center justify-center flex-shrink-0">
             {fileTypeIcon(value.type)}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">{value.name}</p>
-            <p className="text-xs text-gray-500">{formatBytes(value.size)} · Uploaded</p>
+            <p className="text-sm font-medium text-[var(--ink)] truncate">{value.name}</p>
+            <p className="text-xs text-[var(--ink-mute)]">{formatBytes(value.size)} · Uploaded</p>
           </div>
           <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
             disabled={disabled || state.status === 'uploading'}
-            className="px-2.5 py-1.5 text-xs font-medium text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50"
+            className="px-2.5 py-1.5 text-xs font-medium text-[var(--ink-soft)] border border-[var(--line)] rounded-lg hover:bg-[var(--bg-sunk)] disabled:opacity-50"
           >
             Replace
           </button>
@@ -218,7 +218,7 @@ export function SingleDocumentUpload({
             type="button"
             onClick={remove}
             disabled={disabled || state.status === 'uploading'}
-            className="p-1.5 text-gray-400 hover:text-red-600 disabled:opacity-50"
+            className="p-1.5 text-[var(--ink-faint)] hover:text-red-600 disabled:opacity-50"
             aria-label={`Remove ${label}`}
           >
             <X className="w-4 h-4" />
@@ -246,13 +246,13 @@ export function SingleDocumentUpload({
               ? 'opacity-60 cursor-not-allowed'
               : dragOver
                 ? 'border-[var(--line-strong)] bg-[var(--accent-soft)]'
-                : 'border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50'
+                : 'border-[var(--line-strong)] bg-[var(--bg-elev)] hover:border-gray-400 hover:bg-[var(--bg-sunk)]'
           }`}
         >
           {state.status === 'uploading' ? (
             <>
               <Loader2 className="w-6 h-6 text-[var(--accent-ink)] animate-spin" />
-              <p className="text-xs text-gray-600 truncate max-w-full">
+              <p className="text-xs text-[var(--ink-soft)] truncate max-w-full">
                 Uploading {state.fileName}…
               </p>
             </>
@@ -261,10 +261,10 @@ export function SingleDocumentUpload({
               <div className="w-10 h-10 rounded-full bg-[var(--accent-soft)] flex items-center justify-center">
                 <Upload className="w-5 h-5 text-[var(--accent-ink)]" />
               </div>
-              <p className="text-sm font-medium text-gray-900">
+              <p className="text-sm font-medium text-[var(--ink)]">
                 Drop a file here, or click to browse
               </p>
-              <p className="text-[11px] text-gray-500">
+              <p className="text-[11px] text-[var(--ink-mute)]">
                 PDF, PPT, DOC, XLS, or CSV · Max 50 MB
               </p>
             </>
@@ -282,7 +282,7 @@ export function SingleDocumentUpload({
       />
 
       {helpText && state.status !== 'error' && (
-        <p className="text-[11px] text-gray-500 mt-1">{helpText}</p>
+        <p className="text-[11px] text-[var(--ink-mute)] mt-1">{helpText}</p>
       )}
 
       {state.status === 'error' && (

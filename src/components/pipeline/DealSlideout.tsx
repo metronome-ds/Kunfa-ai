@@ -63,7 +63,7 @@ const SOURCE_OPTIONS = ['Kunfa Platform', 'Referral', 'Conference', 'Cold Outrea
 const ROUND_TYPES = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C+', 'Growth', 'Bridge', 'Convertible Note']
 
 function getScoreBadgeColor(score: number | null) {
-  if (!score) return 'bg-gray-100 text-gray-500'
+  if (!score) return 'bg-[var(--bg-sunk)] text-[var(--ink-mute)]'
   if (score >= 80) return 'bg-emerald-100 text-emerald-700'
   if (score >= 60) return 'bg-[var(--accent-soft)] text-[var(--ink)]'
   if (score >= 40) return 'bg-yellow-100 text-yellow-700'
@@ -218,8 +218,8 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
   }
 
   const inputClass =
-    'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]'
-  const labelClass = 'block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1'
+    'w-full px-3 py-2 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] text-sm placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]'
+  const labelClass = 'block text-xs font-medium text-[var(--ink-mute)] uppercase tracking-wider mb-1'
 
   return (
     <>
@@ -227,12 +227,12 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
       <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
 
       {/* Slideout Panel */}
-      <div className="fixed top-0 right-0 h-full w-[450px] max-w-full bg-white shadow-2xl z-50 flex flex-col border-l border-gray-200">
+      <div className="fixed top-0 right-0 h-full w-[450px] max-w-full bg-[var(--bg-elev)] z-50 flex flex-col border-l border-[var(--line)]">
         {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-gray-200">
+        <div className="flex items-start justify-between p-5 border-b border-[var(--line)]">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2.5">
-              <h2 className="text-lg font-bold text-gray-900 truncate">{deal.company_name}</h2>
+              <h2 className="text-lg font-bold text-[var(--ink)] truncate">{deal.company_name}</h2>
               <span className={`text-xs font-semibold px-2 py-0.5 rounded ${getScoreBadgeColor(deal.ai_score)}`}>
                 {deal.ai_score ?? '—'}
               </span>
@@ -252,7 +252,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
             </div>
 
             {deal.one_liner && (
-              <p className="text-xs text-gray-500 mt-2 line-clamp-2">{deal.one_liner}</p>
+              <p className="text-xs text-[var(--ink-mute)] mt-2 line-clamp-2">{deal.one_liner}</p>
             )}
 
             {/* Links */}
@@ -271,7 +271,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
                   href={deal.pdf_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-gray-600 hover:text-gray-900"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[var(--ink-soft)] hover:text-[var(--ink)]"
                 >
                   <FileText className="w-3 h-3" />
                   View Pitch Deck
@@ -282,7 +282,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
 
           <button
             onClick={onClose}
-            className="p-1.5 text-gray-400 hover:text-gray-600 transition rounded-lg hover:bg-gray-100 -mr-1 -mt-1"
+            className="p-1.5 text-[var(--ink-faint)] hover:text-[var(--ink-soft)] transition rounded-lg hover:bg-[var(--bg-sunk)] -mr-1 -mt-1"
           >
             <X className="w-5 h-5" />
           </button>
@@ -309,7 +309,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
               {deal.one_liner && (
                 <div>
                   <label className={labelClass}>About</label>
-                  <p className="text-sm text-gray-700">{deal.one_liner}</p>
+                  <p className="text-sm text-[var(--ink-soft)]">{deal.one_liner}</p>
                 </div>
               )}
 
@@ -318,13 +318,13 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
                   {deal.industry && (
                     <div>
                       <label className={labelClass}>Industry</label>
-                      <p className="text-sm text-gray-700">{deal.industry}</p>
+                      <p className="text-sm text-[var(--ink-soft)]">{deal.industry}</p>
                     </div>
                   )}
                   {deal.company_stage && (
                     <div>
                       <label className={labelClass}>Stage</label>
-                      <p className="text-sm text-gray-700">{deal.company_stage}</p>
+                      <p className="text-sm text-[var(--ink-soft)]">{deal.company_stage}</p>
                     </div>
                   )}
                 </div>
@@ -353,7 +353,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-sm font-medium transition ${
                     form.priority_flag
                       ? 'border-amber-300 bg-amber-50 text-amber-700'
-                      : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50'
+                      : 'border-[var(--line-strong)] bg-[var(--bg-elev)] text-[var(--ink-mute)] hover:bg-[var(--bg-sunk)]'
                   }`}
                   title="Toggle priority"
                 >
@@ -438,8 +438,8 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
               </div>
 
               {/* ── Round Info ── */}
-              <div className="border-t border-gray-200 pt-5">
-                <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Round Info</h3>
+              <div className="border-t border-[var(--line)] pt-5">
+                <h3 className="text-xs font-semibold text-[var(--ink-faint)] uppercase tracking-wider mb-3">Round Info</h3>
 
                 <div className="space-y-3">
                   {/* Round Type */}
@@ -556,7 +556,7 @@ export default function DealSlideout({ deal, isOpen, onClose, onUpdated, teamMem
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 px-5 py-4">
+        <div className="border-t border-[var(--line)] px-5 py-4">
           {isWatchlistItem ? (
             <button
               onClick={handleMoveToPipeline}

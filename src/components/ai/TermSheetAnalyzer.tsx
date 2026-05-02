@@ -12,7 +12,7 @@ interface TermSheetAnalyzerProps {
 
 function TermBadge({ status }: { status: 'standard' | 'favorable' | 'unfavorable' }) {
   const colors = {
-    standard: 'bg-gray-100 text-gray-800 border-gray-300',
+    standard: 'bg-[var(--bg-sunk)] text-[var(--ink-2)] border-[var(--line-strong)]',
     favorable: 'bg-green-100 text-green-800 border-green-300',
     unfavorable: 'bg-red-100 text-red-800 border-red-300',
   };
@@ -77,7 +77,7 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
   if (!analysisData) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600 mb-6">
+        <p className="text-[var(--ink-soft)] mb-6">
           Analyze a term sheet to get detailed insights on deal terms and conditions.
         </p>
         <button
@@ -115,21 +115,21 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
       {/* Key Metrics */}
       {terms.length > 0 && (
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-gray-900">Deal Terms</h2>
+          <h2 className="text-xl font-bold text-[var(--ink)]">Deal Terms</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Term</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Value</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-900">Assessment</th>
+                <tr className="border-b border-[var(--line)]">
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--ink)]">Term</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--ink)]">Value</th>
+                  <th className="text-left py-3 px-4 font-semibold text-[var(--ink)]">Assessment</th>
                 </tr>
               </thead>
               <tbody>
                 {terms.map((term, index) => (
-                  <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-3 px-4 text-gray-700">{term.name}</td>
-                    <td className="py-3 px-4 font-medium text-gray-900">{term.value}</td>
+                  <tr key={index} className="border-b border-[var(--line)] hover:bg-[var(--bg-sunk)]">
+                    <td className="py-3 px-4 text-[var(--ink-soft)]">{term.name}</td>
+                    <td className="py-3 px-4 font-medium text-[var(--ink)]">{term.value}</td>
                     <td className="py-3 px-4">
                       <TermBadge status={term.status} />
                     </td>
@@ -144,16 +144,16 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
       {/* Dilution Analysis */}
       {analysisData.dilution_analysis && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">Dilution Analysis</h2>
-          <p className="text-gray-700">{analysisData.dilution_analysis}</p>
+          <h2 className="text-xl font-bold text-[var(--ink)]">Dilution Analysis</h2>
+          <p className="text-[var(--ink-soft)]">{analysisData.dilution_analysis}</p>
         </section>
       )}
 
       {/* Anti-Dilution Provisions */}
       {analysisData.anti_dilution_provisions && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">Anti-Dilution Provisions</h2>
-          <p className="text-gray-700">{analysisData.anti_dilution_provisions}</p>
+          <h2 className="text-xl font-bold text-[var(--ink)]">Anti-Dilution Provisions</h2>
+          <p className="text-[var(--ink-soft)]">{analysisData.anti_dilution_provisions}</p>
         </section>
       )}
 
@@ -161,14 +161,14 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
       <section className="grid md:grid-cols-2 gap-8">
         {analysisData.board_composition && (
           <div className="space-y-3">
-            <h3 className="text-lg font-bold text-gray-900">Board Composition</h3>
-            <p className="text-gray-700">{analysisData.board_composition}</p>
+            <h3 className="text-lg font-bold text-[var(--ink)]">Board Composition</h3>
+            <p className="text-[var(--ink-soft)]">{analysisData.board_composition}</p>
           </div>
         )}
         {analysisData.voting_rights && (
           <div className="space-y-3">
-            <h3 className="text-lg font-bold text-gray-900">Voting Rights</h3>
-            <p className="text-gray-700">{analysisData.voting_rights}</p>
+            <h3 className="text-lg font-bold text-[var(--ink)]">Voting Rights</h3>
+            <p className="text-[var(--ink-soft)]">{analysisData.voting_rights}</p>
           </div>
         )}
       </section>
@@ -212,7 +212,7 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
       {/* Red Flags */}
       {analysisData.red_flags && analysisData.red_flags.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">Red Flags with Explanations</h2>
+          <h2 className="text-xl font-bold text-[var(--ink)]">Red Flags with Explanations</h2>
           <div className="space-y-3">
             {analysisData.red_flags.map((flag, index) => (
               <div key={index} className="border-l-4 border-red-400 bg-red-50 p-4">
@@ -226,10 +226,10 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
       {/* Negotiation Priorities */}
       {analysisData.negotiation_priorities && analysisData.negotiation_priorities.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">Negotiation Priorities</h2>
+          <h2 className="text-xl font-bold text-[var(--ink)]">Negotiation Priorities</h2>
           <ol className="space-y-2 list-decimal list-inside">
             {analysisData.negotiation_priorities.map((item, index) => (
-              <li key={index} className="text-gray-700">{item}</li>
+              <li key={index} className="text-[var(--ink-soft)]">{item}</li>
             ))}
           </ol>
         </section>
@@ -246,15 +246,15 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
       {/* Quality Score */}
       {analysisData.deal_quality_score !== undefined && (
         <section className="space-y-3">
-          <h2 className="text-xl font-bold text-gray-900">Deal Quality Score</h2>
+          <h2 className="text-xl font-bold text-[var(--ink)]">Deal Quality Score</h2>
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0">
               <div className="text-4xl font-bold text-[var(--ink)]">
                 {Math.round(analysisData.deal_quality_score)}
               </div>
-              <p className="text-sm text-gray-500">out of 100</p>
+              <p className="text-sm text-[var(--ink-mute)]">out of 100</p>
             </div>
-            <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+            <div className="flex-1 bg-[var(--bg-sunk)] rounded-full h-3 overflow-hidden">
               <div
                 className="h-full bg-[var(--accent-soft)]0 transition-all"
                 style={{ width: `${analysisData.deal_quality_score}%` }}
@@ -269,7 +269,7 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
         <button
           onClick={handleAnalyzeTermSheet}
           disabled={loading}
-          className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 disabled:bg-gray-100 transition-colors"
+          className="w-full px-4 py-3 border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg font-medium hover:bg-[var(--bg-sunk)] disabled:bg-[var(--bg-sunk)] transition-colors"
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">

@@ -81,7 +81,7 @@ export default function VoiceRecorder({ onRecordingComplete, recording }: VoiceR
           <span className="text-sm font-medium text-kunfa-navy">Voice note recorded ({formatTime(seconds)})</span>
           <button
             onClick={clearRecording}
-            className="text-gray-400 hover:text-red-500 ml-2"
+            className="text-[var(--ink-faint)] hover:text-red-500 ml-2"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -96,7 +96,7 @@ export default function VoiceRecorder({ onRecordingComplete, recording }: VoiceR
         </div>
       ) : (
         <div className="cursor-pointer" onClick={startRecording}>
-          <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-8 h-8 text-[var(--ink-faint)] mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 016 0v6a3 3 0 01-3 3z" />
           </svg>
           <p className="text-sm font-medium text-kunfa-navy">Tap to record a 60-second pitch</p>
@@ -104,7 +104,7 @@ export default function VoiceRecorder({ onRecordingComplete, recording }: VoiceR
         </div>
       )}
       <div className="mt-2">
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500">
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--bg-sunk)] text-[var(--ink-mute)]">
           OPTIONAL
         </span>
       </div>

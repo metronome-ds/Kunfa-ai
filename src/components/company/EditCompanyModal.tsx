@@ -166,8 +166,8 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
   }
 
   const inputClass =
-    'w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]'
-  const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
+    'w-full px-3 py-2 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] text-sm placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]'
+  const labelClass = 'block text-sm font-medium text-[var(--ink-soft)] mb-1'
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -175,11 +175,11 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-[var(--bg-elev)] rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl z-10">
-          <h2 className="text-lg font-bold text-gray-900">Edit Company</h2>
-          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 transition">
+        <div className="sticky top-0 bg-[var(--bg-elev)] border-b border-[var(--line)] px-6 py-4 flex items-center justify-between rounded-t-xl z-10">
+          <h2 className="text-lg font-bold text-[var(--ink)]">Edit Company</h2>
+          <button onClick={onClose} className="p-1 text-[var(--ink-faint)] hover:text-[var(--ink-soft)] transition">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -213,11 +213,11 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
                     </div>
                   </div>
                 ) : (
-                  <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-gray-300 flex items-center justify-center hover:border-[var(--line-strong)] transition bg-gray-50">
+                  <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-[var(--line-strong)] flex items-center justify-center hover:border-[var(--line-strong)] transition bg-[var(--bg-sunk)]">
                     {logoUploading ? (
                       <div className="w-5 h-5 border-2 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <Upload className="w-5 h-5 text-gray-400" />
+                      <Upload className="w-5 h-5 text-[var(--ink-faint)]" />
                     )}
                   </div>
                 )}
@@ -397,11 +397,11 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
           </div>
 
           {/* Currently Raising */}
-          <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
+          <div className="rounded-lg border border-[var(--line)] bg-[var(--bg-sunk)] p-4 space-y-4">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold text-gray-900">Currently Raising</p>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-sm font-semibold text-[var(--ink)]">Currently Raising</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">
                   Show investors that you&apos;re actively raising a round.
                 </p>
               </div>
@@ -415,7 +415,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
                 }`}
               >
                 <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                  className={`inline-block h-4 w-4 transform rounded-full bg-[var(--bg-elev)] shadow transition-transform ${
                     form.is_raising ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
@@ -423,7 +423,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
             </div>
 
             {form.is_raising && (
-              <div className="space-y-4 pt-2 border-t border-gray-200">
+              <div className="space-y-4 pt-2 border-t border-[var(--line)]">
                 <div>
                   <label className={labelClass}>Round Size</label>
                   <input
@@ -463,26 +463,26 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
           </div>
 
           {/* Profile Visibility */}
-          <div className="border-t border-gray-100 pt-4">
+          <div className="border-t border-[var(--line)] pt-4">
             <label className="flex items-center justify-between cursor-pointer">
               <div>
-                <p className="text-sm font-medium text-gray-900">Profile Visibility</p>
-                <p className="text-xs text-gray-500 mt-0.5">
+                <p className="text-sm font-medium text-[var(--ink)]">Profile Visibility</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">
                   {form.is_public
                     ? 'Public — appears in Browse Companies and can be viewed by all investors.'
                     : 'Private — only visible to your organization\'s team.'}
                 </p>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-                <span className={`text-xs font-medium ${form.is_public ? 'text-gray-400' : 'text-gray-700'}`}>Private</span>
+                <span className={`text-xs font-medium ${form.is_public ? 'text-[var(--ink-faint)]' : 'text-[var(--ink-soft)]'}`}>Private</span>
                 <button
                   type="button"
                   onClick={() => updateField('is_public', !form.is_public)}
                   className={`relative w-10 h-5 rounded-full transition ${form.is_public ? 'bg-[var(--ink)]' : 'bg-gray-300'}`}
                 >
-                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${form.is_public ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-[var(--bg-elev)] shadow transition-transform ${form.is_public ? 'translate-x-5' : 'translate-x-0.5'}`} />
                 </button>
-                <span className={`text-xs font-medium ${form.is_public ? 'text-gray-700' : 'text-gray-400'}`}>Public</span>
+                <span className={`text-xs font-medium ${form.is_public ? 'text-[var(--ink-soft)]' : 'text-[var(--ink-faint)]'}`}>Public</span>
               </div>
             </label>
           </div>
@@ -499,7 +499,7 @@ export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: 
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold text-sm hover:bg-gray-200 transition"
+              className="flex-1 py-2.5 bg-[var(--bg-sunk)] text-[var(--ink-soft)] rounded-lg font-semibold text-sm hover:bg-[var(--bg-sunk)] transition"
             >
               Cancel
             </button>

@@ -272,7 +272,7 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
     if (currentClaimStatus === 'claimed') return { label: 'Claimed', color: 'bg-emerald-50 text-emerald-700 border-emerald-200', icon: <CheckCircle2 className="w-3.5 h-3.5" /> };
     if (hasPendingRequest) return { label: 'Pending Review', color: 'bg-orange-50 text-orange-700 border-orange-200', icon: <Clock className="w-3.5 h-3.5" /> };
     if (currentClaimStatus === 'invite_sent') return { label: 'Invite Sent', color: 'bg-yellow-50 text-yellow-700 border-yellow-200', icon: <Send className="w-3.5 h-3.5" /> };
-    return { label: 'Unclaimed', color: 'bg-gray-50 text-gray-600 border-gray-200', icon: <Circle className="w-3.5 h-3.5" /> };
+    return { label: 'Unclaimed', color: 'bg-[var(--bg-sunk)] text-[var(--ink-soft)] border-[var(--line)]', icon: <Circle className="w-3.5 h-3.5" /> };
   })();
 
   return (
@@ -290,7 +290,7 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
         {canEdit && company && (
           <button
             onClick={() => setEditOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[var(--line-strong)] text-[var(--accent-ink)] bg-white hover:bg-[var(--accent-soft)] transition"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[var(--line-strong)] text-[var(--accent-ink)] bg-[var(--bg-elev)] hover:bg-[var(--accent-soft)] transition"
           >
             <Pencil className="w-4 h-4" />
             Edit Company
@@ -301,7 +301,7 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
         {(isOwner || isTenantAdmin || canEdit) && company && (
           <button
             onClick={() => setShareOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[var(--line-strong)] text-[var(--ink-soft)] bg-[var(--bg-elev)] hover:bg-[var(--bg-sunk)] transition"
           >
             <Share2 className="w-4 h-4" />
             Share Profile
@@ -312,7 +312,7 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
         {isTenantAdmin && company && (
           <button
             onClick={() => setDeleteOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-red-200 text-red-700 bg-white hover:bg-red-50 transition"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-red-200 text-red-700 bg-[var(--bg-elev)] hover:bg-red-50 transition"
           >
             <Trash2 className="w-4 h-4" />
             Delete
@@ -324,17 +324,17 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
           <>
             <button
               onClick={() => setShowInviteForm(!showInviteForm)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[var(--line-strong)] text-[var(--ink-soft)] bg-[var(--bg-elev)] hover:bg-[var(--bg-sunk)] transition"
             >
-              <Send className="w-4 h-4 text-gray-500" />
+              <Send className="w-4 h-4 text-[var(--ink-mute)]" />
               {currentClaimStatus === 'invite_sent' ? 'Resend Invite' : 'Send Claim Invite'}
             </button>
             {claimToken && (
               <button
                 onClick={handleCopyLink}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 transition"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[var(--line-strong)] text-[var(--ink-soft)] bg-[var(--bg-elev)] hover:bg-[var(--bg-sunk)] transition"
               >
-                <Copy className="w-4 h-4 text-gray-500" />
+                <Copy className="w-4 h-4 text-[var(--ink-mute)]" />
                 {copied ? 'Copied!' : 'Copy Invite Link'}
               </button>
             )}
@@ -350,7 +350,7 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
               className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${
                 isWatchlisted
                   ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100'
-                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  : 'bg-[var(--bg-elev)] text-[var(--ink-soft)] border border-[var(--line-strong)] hover:bg-[var(--bg-sunk)]'
               }`}
             >
               {isWatchlisted ? (
@@ -399,7 +399,7 @@ export function CompanyActions({ companyId, company, claimStatus: initialClaimSt
             value={inviteEmail}
             onChange={(e) => setInviteEmail(e.target.value)}
             placeholder="founder@company.com"
-            className="px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] w-64"
+            className="px-3 py-2 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] w-64"
           />
           <button
             onClick={handleSendInvite}

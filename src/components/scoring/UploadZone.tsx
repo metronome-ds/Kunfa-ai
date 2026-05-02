@@ -110,7 +110,7 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
                 e.stopPropagation()
                 onFileSelect(null)
               }}
-              className="text-gray-400 hover:text-red-500 ml-2"
+              className="text-[var(--ink-faint)] hover:text-red-500 ml-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -119,7 +119,7 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
           </div>
         ) : (
           <>
-            <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-8 h-8 text-[var(--ink-faint)] mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
             <p className="text-sm font-medium text-kunfa-navy">{label}</p>
@@ -131,7 +131,7 @@ export default function UploadZone({ label, subtitle, required, accept, file, on
           <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
             required
               ? 'bg-[var(--accent-soft)] text-[var(--accent-ink)]'
-              : 'bg-gray-100 text-gray-500'
+              : 'bg-[var(--bg-sunk)] text-[var(--ink-mute)]'
           }`}>
             {required ? 'REQUIRED' : 'OPTIONAL'}
           </span>

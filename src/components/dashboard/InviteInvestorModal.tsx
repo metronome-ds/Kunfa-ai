@@ -139,8 +139,8 @@ export default function InviteInvestorModal({
             <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Check className="w-7 h-7 text-green-600" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-1">Invites Sent!</h3>
-            <p className="text-sm text-gray-500 mb-6">
+            <h3 className="text-lg font-bold text-[var(--ink)] mb-1">Invites Sent!</h3>
+            <p className="text-sm text-[var(--ink-mute)] mb-6">
               {sentCount} invite{sentCount !== 1 ? 's' : ''} sent for {companyName}.
             </p>
             <button
@@ -153,30 +153,30 @@ export default function InviteInvestorModal({
         ) : (
           <>
             <div className="mb-5">
-              <h3 className="text-lg font-bold text-gray-900">Invite Investors to Review</h3>
-              <p className="text-sm text-gray-500 mt-1">
+              <h3 className="text-lg font-bold text-[var(--ink)]">Invite Investors to Review</h3>
+              <p className="text-sm text-[var(--ink-mute)] mt-1">
                 Select investors on Kunfa or add emails manually.
               </p>
             </div>
 
             {/* Search */}
             <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--ink-faint)]" />
               <input
                 type="text"
                 placeholder="Search investors by name, email, or fund..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] outline-none"
+                className="w-full pl-10 pr-4 py-2.5 border border-[var(--line)] rounded-lg text-sm focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] outline-none"
               />
             </div>
 
             {/* Investor List */}
-            <div className="border border-gray-200 rounded-lg max-h-48 overflow-y-auto mb-4">
+            <div className="border border-[var(--line)] rounded-lg max-h-48 overflow-y-auto mb-4">
               {loading ? (
-                <div className="p-4 text-center text-sm text-gray-400">Searching...</div>
+                <div className="p-4 text-center text-sm text-[var(--ink-faint)]">Searching...</div>
               ) : investors.length === 0 ? (
-                <div className="p-4 text-center text-sm text-gray-400">
+                <div className="p-4 text-center text-sm text-[var(--ink-faint)]">
                   {query ? 'No investors found' : 'No investors on Kunfa yet'}
                 </div>
               ) : (
@@ -184,24 +184,24 @@ export default function InviteInvestorModal({
                   <button
                     key={inv.email}
                     onClick={() => toggleInvestor(inv.email)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition border-b border-gray-100 last:border-b-0 ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-[var(--bg-sunk)] transition border-b border-[var(--line)] last:border-b-0 ${
                       selected.has(inv.email) ? 'bg-[var(--accent-soft)]' : ''
                     }`}
                   >
                     <div className={`w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 ${
                       selected.has(inv.email)
                         ? 'border-[var(--line-strong)] bg-[var(--ink)]'
-                        : 'border-gray-300'
+                        : 'border-[var(--line-strong)]'
                     }`}>
                       {selected.has(inv.email) && (
                         <Check className="w-3 h-3 text-white" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className="text-sm font-medium text-[var(--ink)] truncate">
                         {inv.name || inv.email}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">
+                      <p className="text-xs text-[var(--ink-mute)] truncate">
                         {inv.fundName ? `${inv.fundName} · ` : ''}{inv.email}
                       </p>
                     </div>
@@ -212,7 +212,7 @@ export default function InviteInvestorModal({
 
             {/* Manual Email */}
             <div className="mb-4">
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 block">
+              <label className="text-xs font-medium text-[var(--ink-mute)] uppercase tracking-wider mb-2 block">
                 Or add email manually
               </label>
               <div className="flex gap-2">
@@ -227,12 +227,12 @@ export default function InviteInvestorModal({
                       addManualEmail()
                     }
                   }}
-                  className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] outline-none"
+                  className="flex-1 px-3 py-2 border border-[var(--line)] rounded-lg text-sm focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] outline-none"
                 />
                 <button
                   onClick={addManualEmail}
                   disabled={!manualEmail.includes('@')}
-                  className="px-3 py-2 bg-gray-100 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-200 transition disabled:opacity-40"
+                  className="px-3 py-2 bg-[var(--bg-sunk)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition disabled:opacity-40"
                 >
                   <UserPlus className="w-4 h-4" />
                 </button>
@@ -256,7 +256,7 @@ export default function InviteInvestorModal({
 
             {/* Personal Message */}
             <div className="mb-5">
-              <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2 block">
+              <label className="text-xs font-medium text-[var(--ink-mute)] uppercase tracking-wider mb-2 block">
                 Personal message (optional)
               </label>
               <textarea
@@ -265,13 +265,13 @@ export default function InviteInvestorModal({
                 onChange={(e) => setPersonalMessage(e.target.value)}
                 rows={2}
                 maxLength={500}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] outline-none resize-none"
+                className="w-full px-3 py-2 border border-[var(--line)] rounded-lg text-sm focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] outline-none resize-none"
               />
             </div>
 
             {/* Selected summary */}
             {totalSelected > 0 && (
-              <p className="text-xs text-gray-500 mb-3">
+              <p className="text-xs text-[var(--ink-mute)] mb-3">
                 {totalSelected} investor{totalSelected !== 1 ? 's' : ''} selected
               </p>
             )}

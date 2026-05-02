@@ -17,7 +17,7 @@ const plans = [
     ],
     buttonText: 'Get Your Score',
     buttonStyle: 'bg-kunfa hover:bg-kunfa-dark text-white',
-    cardStyle: 'bg-white border-2 border-kunfa',
+    cardStyle: 'bg-[var(--bg-elev)] border-2 border-kunfa',
     popular: false,
     action: 'score',
   },
@@ -34,7 +34,7 @@ const plans = [
     ],
     buttonText: 'Get Full Report',
     buttonStyle: 'bg-kunfa-navy hover:bg-gray-800 text-white',
-    cardStyle: 'bg-white border-2 border-kunfa-navy',
+    cardStyle: 'bg-[var(--bg-elev)] border-2 border-kunfa-navy',
     popular: true,
     action: 'score',
   },
@@ -50,8 +50,8 @@ const plans = [
       'API access',
     ],
     buttonText: 'Contact Us',
-    buttonStyle: 'border border-gray-300 text-gray-700 hover:bg-[#F8F9FB]',
-    cardStyle: 'bg-white border border-gray-200',
+    buttonStyle: 'border border-[var(--line-strong)] text-[var(--ink-soft)] hover:bg-[#F8F9FB]',
+    cardStyle: 'bg-[var(--bg-elev)] border border-[var(--line)]',
     popular: false,
     action: 'contact',
   },
@@ -59,12 +59,12 @@ const plans = [
 
 export default function PricingSection({ onApplyNow }: PricingSectionProps) {
   return (
-    <section id="pricing" className="py-20 lg:py-28 bg-white">
+    <section id="pricing" className="py-20 lg:py-28 bg-[var(--bg-elev)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
           Simple, transparent pricing
         </h2>
-        <p className="text-gray-600 text-base max-w-xl mx-auto mb-12">
+        <p className="text-[var(--ink-soft)] text-base max-w-xl mx-auto mb-12">
           Start free. Upgrade when you need deeper insights.
         </p>
 
@@ -85,7 +85,7 @@ export default function PricingSection({ onApplyNow }: PricingSectionProps) {
 
               <h3 className="text-lg font-bold text-kunfa-navy mb-2">{plan.name}</h3>
               <p className="text-3xl font-bold text-kunfa-navy mb-1">{plan.price}</p>
-              <p className="text-sm text-gray-500 mb-8">{plan.subtitle}</p>
+              <p className="text-sm text-[var(--ink-mute)] mb-8">{plan.subtitle}</p>
 
               <ul className="space-y-3 mb-8 flex-1 text-left">
                 {plan.features.map((feature) => (
@@ -93,7 +93,7 @@ export default function PricingSection({ onApplyNow }: PricingSectionProps) {
                     <svg className="w-5 h-5 text-kunfa shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span className="text-sm text-gray-600">{feature}</span>
+                    <span className="text-sm text-[var(--ink-soft)]">{feature}</span>
                   </li>
                 ))}
               </ul>
