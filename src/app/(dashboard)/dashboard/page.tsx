@@ -432,12 +432,12 @@ function DashboardContent() {
     const completeness = totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
 
     return (
-      <div className="p-8 max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-[var(--ink)]">
+      <div className="px-4 md:px-8 py-6 md:py-8 max-w-4xl mx-auto">
+        <div className="mb-6 md:mb-8">
+          <h1 style={{ fontFamily: 'var(--serif)', fontSize: undefined }} className="text-2xl md:text-3xl font-normal text-[var(--ink)]">
             Welcome back{userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}!
           </h1>
-          <p className="text-[var(--ink-mute)] mt-1">Manage your startup profile and track your investment readiness.</p>
+          <p className="text-[var(--ink-mute)] mt-1 text-sm">Manage your startup profile and track your investment readiness.</p>
         </div>
 
         {/* Payment Success Banner */}
@@ -458,7 +458,7 @@ function DashboardContent() {
         {/* Claim Success Banner */}
         {claimedParam && (
           <div className="rounded-xl p-4 mb-6 border bg-emerald-50 border-emerald-200">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
@@ -471,7 +471,7 @@ function DashboardContent() {
               {canEdit && company && !company.overall_score && (
                 <button
                   onClick={() => setShowScoreModal(true)}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition flex-shrink-0"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition flex-shrink-0 w-full md:w-auto justify-center"
                 >
                   <Star className="w-4 h-4" /> Get Your Score
                 </button>
@@ -498,16 +498,16 @@ function DashboardContent() {
         {company ? (
           <>
             {/* Score + Company Card */}
-            <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-6">
-              <div className="flex items-start gap-6">
-                <div className={`w-24 h-24 rounded-2xl border-2 flex flex-col items-center justify-center flex-shrink-0 ${getScoreBg(company.overall_score)}`}>
-                  <span className={`text-4xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
+            <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4 md:p-6 mb-6">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
+                <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl border-2 flex flex-col items-center justify-center flex-shrink-0 ${getScoreBg(company.overall_score)}`}>
+                  <span className={`text-3xl md:text-4xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
                   <span className="text-[10px] text-[var(--ink-faint)] mt-0.5">/ 100</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-xl font-bold text-[var(--ink)]">{company.company_name}</h2>
-                  {company.one_liner && <p className="text-[var(--ink-mute)] text-sm mt-1">{company.one_liner}</p>}
-                  <div className="flex flex-wrap items-center gap-2 mt-3">
+                <div className="flex-1 min-w-0 text-center md:text-left">
+                  <h2 className="text-lg md:text-xl font-bold text-[var(--ink)]">{company.company_name}</h2>
+                  {company.one_liner && <p className="text-[var(--ink-mute)] text-sm mt-1 line-clamp-3">{company.one_liner}</p>}
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-3">
                     {company.industry && <span className="px-2.5 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-medium">{company.industry}</span>}
                     {company.stage && <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">{company.stage}</span>}
                     {company.is_raising && (
@@ -519,11 +519,11 @@ function DashboardContent() {
                     {scored !== null && <span className="px-2.5 py-0.5 rounded-full bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-xs font-medium">Scored {scored}d ago</span>}
                   </div>
                 </div>
-                <div className="flex flex-col gap-2 flex-shrink-0">
-                  <Link href={`/company/${company.slug}`} target="_blank" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition">
+                <div className="flex flex-col gap-2 w-full md:w-auto flex-shrink-0">
+                  <Link href={`/company/${company.slug}`} target="_blank" className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition w-full md:w-auto">
                     View Public Profile <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
-                  <Link href="/company-profile" className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition">
+                  <Link href="/company-profile" className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition w-full md:w-auto">
                     <RefreshCw className="w-3.5 h-3.5" /> Manage Profile
                   </Link>
                 </div>
@@ -531,7 +531,7 @@ function DashboardContent() {
             </div>
 
             {/* Quick Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
               <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-lg flex items-center justify-center"><Star className="w-5 h-5 text-[var(--accent-ink)]" /></div>
@@ -573,11 +573,11 @@ function DashboardContent() {
                         ? 'Upload your pitch deck and financials to get scored. Companies with a Kunfa Score of 75+ become eligible for investor matching on the platform.'
                         : 'Improve your score to 75+ to unlock investor discovery. Update your pitch deck and financials, then re-score to see your new result.'}
                     </p>
-                    <div className="flex items-center gap-2 mt-3">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-3">
                       {canEdit && (
                         <button
                           onClick={() => setShowScoreModal(true)}
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
                         >
                           <RefreshCw className="w-4 h-4" />
                           {company.overall_score == null ? 'Get Your Score' : 'Re-score My Company'}
@@ -585,7 +585,7 @@ function DashboardContent() {
                       )}
                       <Link
                         href="/how-it-works"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--bg-elev)] border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--bg-elev)] border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
                       >
                         How scoring works
                       </Link>
@@ -627,15 +627,15 @@ function DashboardContent() {
                   : 'bg-amber-50 border-amber-200'
               }`}>
                 {paid && hasReport ? (
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div>
                       <h3 className="text-sm font-semibold text-[var(--ink)]">Kunfa Readiness Report</h3>
                       <p className="text-xs text-[var(--ink-soft)] mt-0.5">Your full AI-powered investment analysis is ready.</p>
                     </div>
-                    <Link href={`/report/${company.submission_id}`} className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition">View Report</Link>
+                    <Link href={`/report/${company.submission_id}`} className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition w-full sm:w-auto">View Report</Link>
                   </div>
                 ) : paid ? (
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <Loader2 className="w-5 h-5 text-[var(--accent-ink)] animate-spin flex-shrink-0" />
                       <div>
@@ -645,13 +645,13 @@ function DashboardContent() {
                     </div>
                     <button
                       onClick={() => loadStartupData()}
-                      className="inline-flex items-center gap-2 px-4 py-2 border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition w-full sm:w-auto"
                     >
                       <RefreshCw className="w-4 h-4" /> Check Status
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                     <div>
                       <h3 className="text-sm font-semibold text-[var(--ink)]">Unlock Your Full Readiness Report</h3>
                       <p className="text-xs text-[var(--ink-soft)] mt-0.5">Detailed analysis, sector benchmarks, and actionable recommendations.</p>
@@ -666,7 +666,7 @@ function DashboardContent() {
                         } catch { /* ignore */ } finally { setCheckoutLoading(false); }
                       }}
                       disabled={checkoutLoading}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition disabled:opacity-50"
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition disabled:opacity-50 w-full sm:w-auto"
                     >
                       {checkoutLoading ? 'Redirecting...' : 'Unlock Report — $59'}
                     </button>
