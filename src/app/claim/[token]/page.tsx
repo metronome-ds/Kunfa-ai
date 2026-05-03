@@ -106,7 +106,7 @@ export default function ClaimPage() {
           <div className="mb-6">
             <KunfaLogo height={32} />
           </div>
-          <h1 className="text-2xl font-bold text-[var(--ink)] mb-2">Invalid Claim Link</h1>
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">Invalid Claim Link</h1>
           <p className="text-[var(--ink-soft)] mb-6">
             This claim link is invalid or the company has already been claimed.
           </p>
@@ -129,7 +129,7 @@ export default function ClaimPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">Company Claimed!</h2>
+            <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">Company Claimed!</h2>
             <p className="text-[var(--ink-soft)] mb-4">
               You now own the <strong>{companyInfo.company_name}</strong> profile. Redirecting to your dashboard...
             </p>
@@ -147,7 +147,7 @@ export default function ClaimPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">Claim Submitted for Review</h2>
+            <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">Claim Submitted for Review</h2>
             <p className="text-[var(--ink-soft)] mb-6">
               Your email domain doesn&apos;t match the company website, so your claim has been submitted for admin review. You&apos;ll receive an email once it&apos;s been reviewed.
             </p>
@@ -178,7 +178,7 @@ export default function ClaimPage() {
               <KunfaLogo height={32} />
             )}
           </Link>
-          <h1 className="text-2xl font-bold text-[var(--ink)]">
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">
             Claim {companyInfo.company_name}{tenantSlug ? ` on ${networkName}` : ' on Kunfa'}
           </h1>
           <p className="text-[var(--ink-mute)] mt-2">

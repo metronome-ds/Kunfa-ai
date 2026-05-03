@@ -84,7 +84,7 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
       <div className="flex items-start justify-between gap-4">
         <div>
           {briefData.company_name && (
-            <h1 className="text-3xl font-bold text-[var(--ink)]">{briefData.company_name}</h1>
+            <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{briefData.company_name}</h1>
           )}
           {briefData.tagline && (
             <p className="text-lg text-[var(--ink-soft)] mt-2">{briefData.tagline}</p>
@@ -103,7 +103,7 @@ export function CompanyBrief({ dealId, brief }: CompanyBriefProps) {
       {/* Executive Summary */}
       {briefData.executive_summary && (
         <section className="space-y-3">
-          <h2 className="text-2xl font-bold text-[var(--ink)]">Executive Summary</h2>
+          <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Executive Summary</h2>
           <div className="prose prose-sm max-w-none">
             <p className="text-[var(--ink-soft)] leading-relaxed whitespace-pre-wrap">
               {briefData.executive_summary}

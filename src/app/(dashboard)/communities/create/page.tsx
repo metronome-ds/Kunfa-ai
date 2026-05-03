@@ -99,7 +99,7 @@ function CreateCommunityForm() {
         Back to Communities
       </button>
 
-      <h1 className="text-2xl font-bold text-[var(--ink)] mb-1">Create a Community</h1>
+      <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-1">Create a Community</h1>
       <p className="text-[var(--ink-mute)] mb-8">Set up a private deal-sharing space for your investor network.</p>
 
       {/* Progress */}

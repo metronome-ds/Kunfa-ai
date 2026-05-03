@@ -375,7 +375,7 @@ export default function RescoringModal({
     <Modal isOpen={isOpen} onClose={handleClose}>
       <div className="p-6 sm:p-8 max-h-[80vh] overflow-y-auto">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-kunfa-navy">Update Your Score</h2>
+          <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-kunfa-navy">Update Your Score</h2>
           <p className="text-sm text-[var(--ink-mute)] mt-1">{companyName}</p>
         </div>
 
@@ -575,7 +575,7 @@ export default function RescoringModal({
                 <>
                   <div className="text-center">
                     <p className="text-xs text-[var(--ink-mute)] uppercase tracking-wider mb-1">Previous</p>
-                    <p className="text-4xl font-bold text-[var(--ink-faint)]">{currentScore}</p>
+                    <p className="text-4xl font-[family-name:var(--serif)] tracking-tight text-[var(--ink-faint)]">{currentScore}</p>
                   </div>
                   <div className="text-center">
                     <svg className="w-6 h-6 text-[var(--ink-faint)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -586,7 +586,7 @@ export default function RescoringModal({
               )}
               <div className="text-center">
                 <p className="text-xs text-[var(--ink-mute)] uppercase tracking-wider mb-1">New Score</p>
-                <p className={`text-5xl font-bold ${getScoreColor(scoreResult.overall_score)}`}>
+                <p className={`text-5xl font-[family-name:var(--serif)] tabular-nums tracking-tight ${getScoreColor(scoreResult.overall_score)}`}>
                   {scoreResult.overall_score}
                 </p>
                 {scoreDiff !== null && scoreDiff !== 0 && (

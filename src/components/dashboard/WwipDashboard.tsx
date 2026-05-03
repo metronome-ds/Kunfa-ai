@@ -78,7 +78,7 @@ export default function WwipDashboard() {
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--ink)]">{displayName} Dashboard</h1>
+        <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{displayName} Dashboard</h1>
         <p className="text-[var(--ink-mute)] mt-1">{tenant?.tagline || 'Overview of your network activity'}</p>
       </div>
 
@@ -88,7 +88,7 @@ export default function WwipDashboard() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-[var(--ink-mute)]">{c.label}</p>
-                <p className="text-3xl font-bold text-[var(--ink)] mt-1">
+                <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-1">
                   {loading ? <span className="text-[var(--ink-faint)]">—</span> : c.value}
                 </p>
               </div>

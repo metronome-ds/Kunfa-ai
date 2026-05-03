@@ -32,7 +32,7 @@ export default function ExpertServicesSection() {
         <p className="text-sm font-semibold text-[var(--accent-ink)] uppercase tracking-wider mb-3">
           Expert Services
         </p>
-        <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
+        <h2 className="text-2xl lg:text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-kunfa-navy mb-4">
           Get hands-on help from vetted experts
         </h2>
         <p className="text-[var(--ink-soft)] text-base max-w-2xl mx-auto mb-12">

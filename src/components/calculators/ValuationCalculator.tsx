@@ -167,7 +167,7 @@ export function ValuationCalculator() {
               <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <p className="text-sm font-medium text-[var(--ink-soft)]">PV of Cash Flows</p>
-                  <p className="text-2xl font-bold text-[var(--ink)] mt-2">
+                  <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                     {formatCurrency(dcfResult.sumPVCashFlows)}
                   </p>
                   <p className="text-xs text-[var(--ink-mute)] mt-1">Years 1-5</p>
@@ -175,7 +175,7 @@ export function ValuationCalculator() {
 
                 <div>
                   <p className="text-sm font-medium text-[var(--ink-soft)]">Terminal Value</p>
-                  <p className="text-2xl font-bold text-[var(--ink)] mt-2">
+                  <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                     {formatCurrency(dcfResult.terminalValue)}
                   </p>
                   <p className="text-xs text-[var(--ink-mute)] mt-1">Undiscounted</p>
@@ -183,7 +183,7 @@ export function ValuationCalculator() {
 
                 <div>
                   <p className="text-sm font-medium text-[var(--ink-soft)]">PV of Terminal Value</p>
-                  <p className="text-2xl font-bold text-[var(--ink)] mt-2">
+                  <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                     {formatCurrency(dcfResult.pvTerminalValue)}
                   </p>
                   <p className="text-xs text-[var(--ink-mute)] mt-1">Discounted to today</p>
@@ -193,7 +193,7 @@ export function ValuationCalculator() {
               {/* Enterprise Value */}
               <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-4">
                 <p className="text-sm font-medium text-[var(--ink)]">Enterprise Value</p>
-                <p className="text-3xl font-bold text-[var(--ink)] mt-2">
+                <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                   {formatCurrency(dcfResult.enterpriseValue)}
                 </p>
               </div>
@@ -289,7 +289,7 @@ export function ValuationCalculator() {
                       {formatCurrency(compsInputs.revenue)} × {compsInputs.evRevenueMultiple}x
                     </p>
                   </div>
-                  <p className="text-3xl font-bold text-purple-600">
+                  <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-purple-600">
                     {formatCurrency(compsResult.valuationByRevenue)}
                   </p>
                 </div>
@@ -303,7 +303,7 @@ export function ValuationCalculator() {
                       {formatCurrency(compsInputs.ebitda)} × {compsInputs.evEbitdaMultiple}x
                     </p>
                   </div>
-                  <p className="text-3xl font-bold text-[var(--ink)]">
+                  <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">
                     {formatCurrency(compsResult.valuationByEBITDA)}
                   </p>
                 </div>
@@ -311,7 +311,7 @@ export function ValuationCalculator() {
 
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-sm font-medium text-green-900">Average Valuation</p>
-                <p className="text-3xl font-bold text-green-600 mt-2">
+                <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-green-600 mt-2">
                   {formatCurrency(compsResult.averageValuation)}
                 </p>
                 <p className="text-xs text-green-700 mt-2">Simple average of both methods</p>
@@ -395,7 +395,7 @@ export function ValuationCalculator() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-4">
                   <p className="text-sm font-medium text-[var(--ink)]">Pre-Money Valuation</p>
-                  <p className="text-3xl font-bold text-[var(--ink)] mt-2">
+                  <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                     {formatCurrency(vcResult.preMoneyValuation)}
                   </p>
                   <p className="text-xs text-[var(--ink)] mt-2">Company value before investment</p>
@@ -403,7 +403,7 @@ export function ValuationCalculator() {
 
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <p className="text-sm font-medium text-green-900">Post-Money Valuation</p>
-                  <p className="text-3xl font-bold text-green-600 mt-2">
+                  <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-green-600 mt-2">
                     {formatCurrency(vcResult.postMoneyValuation)}
                   </p>
                   <p className="text-xs text-green-700 mt-2">Company value after investment</p>
@@ -458,21 +458,21 @@ export function ValuationCalculator() {
         <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
             <p className="text-xs font-medium text-purple-700 uppercase">DCF Valuation</p>
-            <p className="text-2xl font-bold text-purple-600 mt-2">
+            <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-purple-600 mt-2">
               {formatCurrency(dcfResult.enterpriseValue)}
             </p>
           </div>
 
           <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
             <p className="text-xs font-medium text-green-700 uppercase">Comps Valuation</p>
-            <p className="text-2xl font-bold text-green-600 mt-2">
+            <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-green-600 mt-2">
               {formatCurrency(compsResult.averageValuation)}
             </p>
           </div>
 
           <div className="text-center p-4 bg-[var(--accent-soft)] rounded-lg border border-[var(--line)]">
             <p className="text-xs font-medium text-[var(--ink)] uppercase">Post-Money (VC)</p>
-            <p className="text-2xl font-bold text-[var(--ink)] mt-2">
+            <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
               {formatCurrency(vcResult.postMoneyValuation)}
             </p>
           </div>

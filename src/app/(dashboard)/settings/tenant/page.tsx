@@ -85,7 +85,7 @@ export default function TenantSettingsPage() {
     <div className="p-8 max-w-3xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--ink)]">Tenant Settings</h1>
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Tenant Settings</h1>
           <p className="text-[var(--ink-mute)] text-sm mt-1">Manage your organization&apos;s configuration</p>
         </div>
         <button

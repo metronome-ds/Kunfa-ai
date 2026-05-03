@@ -103,7 +103,7 @@ export default function TenantAnalyticsPage() {
     <div className="p-8 max-w-6xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--ink)]">Analytics</h1>
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Analytics</h1>
           <p className="text-[var(--ink-mute)] text-sm mt-1">Insights into your network activity</p>
         </div>
         <BarChart3 className="w-8 h-8 text-[var(--ink-faint)]" />
@@ -115,7 +115,7 @@ export default function TenantAnalyticsPage() {
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-sm font-medium text-[var(--ink-mute)]">{c.label}</p>
-                <p className="text-3xl font-bold text-[var(--ink)] mt-1">{c.value}</p>
+                <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-1">{c.value}</p>
               </div>
               <div className={`p-2.5 rounded-lg ${c.bg}`}>{c.icon}</div>
             </div>

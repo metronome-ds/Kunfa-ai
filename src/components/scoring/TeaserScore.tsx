@@ -91,7 +91,7 @@ export default function TeaserScore({ result, submissionId, onUnlock }: TeaserSc
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className={`text-3xl font-bold ${getScoreColor(result.overall_score)}`}>
+            <span className={`text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight ${getScoreColor(result.overall_score)}`}>
               {result.overall_score}
             </span>
             <span className="text-xs text-[var(--ink-faint)]">/100</span>

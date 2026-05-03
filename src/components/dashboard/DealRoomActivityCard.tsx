@@ -120,35 +120,35 @@ export default function DealRoomActivityCard({ companyId, companyName }: DealRoo
             <Users className="w-3.5 h-3.5 text-[var(--ink-faint)]" />
             <p className="text-[11px] text-[var(--ink-mute)] font-medium uppercase tracking-wider">Viewers / wk</p>
           </div>
-          <p className="text-2xl font-bold text-[var(--ink)]">{stats.uniqueViewersThisWeek}</p>
+          <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{stats.uniqueViewersThisWeek}</p>
         </div>
         <div className="border border-[var(--line)] rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-1">
             <Users className="w-3.5 h-3.5 text-[var(--ink-faint)]" />
             <p className="text-[11px] text-[var(--ink-mute)] font-medium uppercase tracking-wider">Viewers (all)</p>
           </div>
-          <p className="text-2xl font-bold text-[var(--ink)]">{stats.uniqueViewersAllTime}</p>
+          <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{stats.uniqueViewersAllTime}</p>
         </div>
         <div className="border border-[var(--line)] rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-1">
             <Eye className="w-3.5 h-3.5 text-[var(--ink-faint)]" />
             <p className="text-[11px] text-[var(--ink-mute)] font-medium uppercase tracking-wider">Doc views / wk</p>
           </div>
-          <p className="text-2xl font-bold text-[var(--ink)]">{stats.documentViewsThisWeek}</p>
+          <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{stats.documentViewsThisWeek}</p>
         </div>
         <div className="border border-[var(--line)] rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-1">
             <Eye className="w-3.5 h-3.5 text-[var(--ink-faint)]" />
             <p className="text-[11px] text-[var(--ink-mute)] font-medium uppercase tracking-wider">Doc views (all)</p>
           </div>
-          <p className="text-2xl font-bold text-[var(--ink)]">{stats.documentViewsAllTime}</p>
+          <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{stats.documentViewsAllTime}</p>
         </div>
         <div className="border border-[var(--line)] rounded-lg p-3">
           <div className="flex items-center gap-1.5 mb-1">
             <Send className="w-3.5 h-3.5 text-[var(--ink-faint)]" />
             <p className="text-[11px] text-[var(--ink-mute)] font-medium uppercase tracking-wider">Invites sent</p>
           </div>
-          <p className="text-2xl font-bold text-[var(--ink)]">{stats.invitesSentAllTime}</p>
+          <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{stats.invitesSentAllTime}</p>
         </div>
       </div>
 

@@ -79,7 +79,7 @@ function CircularGauge({ score }: { score: number }) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className={`text-4xl font-bold ${getScoreColor(score)}`}>
+          <div className={`text-4xl font-[family-name:var(--serif)] tracking-tight ${getScoreColor(score)}`}>
             {Math.round(score)}
           </div>
           <div className="text-xs text-[var(--ink-mute)]">Score</div>
@@ -168,7 +168,7 @@ export function DealScorer({ dealId, scores }: DealScorerProps) {
     <div className="space-y-8">
       {/* Overall Score Section */}
       <div className={`rounded-lg border p-8 ${getScoreBgColor(scoringData.overall_score)}`}>
-        <h2 className="text-2xl font-bold mb-6 text-[var(--ink)]">Investment Score</h2>
+        <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight mb-6 text-[var(--ink)]">Investment Score</h2>
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <CircularGauge score={scoringData.overall_score} />
           <div className="flex-1 space-y-4">
@@ -207,7 +207,7 @@ export function DealScorer({ dealId, scores }: DealScorerProps) {
                     <div className="flex items-baseline gap-4 mb-2">
                       <span className="font-semibold text-[var(--ink)]">{dimension.label}</span>
                       <span className="text-sm text-[var(--ink-mute)]">({dimension.weight}%)</span>
-                      <span className={`text-2xl font-bold ${getScoreColor(score)}`}>
+                      <span className={`text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight ${getScoreColor(score)}`}>
                         {Math.round(score)}
                       </span>
                     </div>

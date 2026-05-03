@@ -105,7 +105,7 @@ export default function MyDealsPage() {
       <div className="bg-[var(--bg-elev)] border-b border-[var(--line)] p-8">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-[var(--ink)] mb-2">My Deals</h1>
+            <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">My Deals</h1>
             <p className="text-[var(--ink-soft)]">
               Manage the deals you've listed on Kunfa AI
             </p>

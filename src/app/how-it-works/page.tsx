@@ -107,7 +107,7 @@ export default function HowItWorksPage() {
           <p className="text-xs font-semibold text-[var(--accent-ink)] uppercase tracking-wider mb-3">
             How it works
           </p>
-          <h1 className="text-4xl font-bold text-[var(--ink)] mb-4">
+          <h1 className="text-4xl font-[family-name:var(--serif)] tracking-tight text-[var(--ink)] mb-4">
             How the Kunfa Score is calculated
           </h1>
           <p className="text-lg text-[var(--ink-soft)] leading-relaxed">
@@ -132,7 +132,7 @@ export default function HowItWorksPage() {
 
         {/* 6 dimensions */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold text-[var(--ink)] mb-6">The six dimensions</h2>
+          <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-6">The six dimensions</h2>
           <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
             {DIMENSIONS.map((d) => (
               <div
@@ -151,7 +151,7 @@ export default function HowItWorksPage() {
 
         {/* Stage weights */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold text-[var(--ink)] mb-3">
+          <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-3">
             Stage-adjusted weights
           </h2>
           <p className="text-sm text-[var(--ink-soft)] mb-6 leading-relaxed">
@@ -185,7 +185,7 @@ export default function HowItWorksPage() {
 
         {/* How to improve */}
         <section className="mb-16">
-          <h2 className="text-2xl font-bold text-[var(--ink)] mb-3">
+          <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-3">
             How to improve your score
           </h2>
           <ul className="space-y-3 text-sm text-[var(--ink-soft)] leading-relaxed">
@@ -222,7 +222,7 @@ export default function HowItWorksPage() {
 
         {/* CTA */}
         <section className="rounded-2xl bg-gradient-to-br from-[var(--ink)] to-indigo-700 p-8 text-center text-white">
-          <h2 className="text-2xl font-bold mb-2">Ready to get scored?</h2>
+          <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight mb-2">Ready to get scored?</h2>
           <p className="text-sm text-white/80 mb-6 w-full md:max-w-md mx-auto">
             Upload your pitch deck and get a full Kunfa Score across all six dimensions
             in minutes.

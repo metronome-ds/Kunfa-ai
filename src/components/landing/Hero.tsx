@@ -11,7 +11,7 @@ export default function Hero({ onApplyNow }: HeroProps) {
     <section className="bg-[var(--bg-elev)] pt-20 pb-24 lg:pt-28 lg:pb-32">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Heading */}
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight max-w-4xl mx-auto mb-6">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-[family-name:var(--serif)] tabular-nums tracking-tight leading-tight max-w-4xl mx-auto mb-6">
           <span className="text-kunfa-navy">The AI-native platform</span>
           <br />
           <span className="text-gradient-green">for venture intelligence</span>

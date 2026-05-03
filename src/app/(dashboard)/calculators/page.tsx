@@ -9,7 +9,7 @@ export default function CalculatorsPage() {
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--ink)]">Financial Calculators</h1>
+        <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Financial Calculators</h1>
         <p className="text-[var(--ink-soft)] mt-2">
           Powerful tools for analyzing investments, valuations, and due diligence
         </p>

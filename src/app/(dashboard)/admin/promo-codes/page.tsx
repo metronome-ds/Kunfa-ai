@@ -137,7 +137,7 @@ export default function AdminPromoCodesPage() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <Tag className="w-6 h-6 text-[var(--accent-ink)]" />
-          <h1 className="text-2xl font-bold text-[var(--ink)]">Promo Codes</h1>
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Promo Codes</h1>
         </div>
         <button
           onClick={() => setShowCreateForm(!showCreateForm)}

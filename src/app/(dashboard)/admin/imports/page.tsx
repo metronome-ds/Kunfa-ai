@@ -161,7 +161,7 @@ export default function AdminImportsPage() {
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <ShieldCheck className="w-6 h-6 text-[var(--accent-ink)]" />
-          <h1 className="text-2xl font-bold text-[var(--ink)]">Company Imports</h1>
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Company Imports</h1>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -195,7 +195,7 @@ export default function AdminImportsPage() {
       <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
         {tabs.map(tab => (
           <div key={tab.key} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4 text-center">
-            <p className="text-2xl font-bold text-[var(--ink)]">{tab.count}</p>
+            <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{tab.count}</p>
             <p className="text-xs text-[var(--ink-mute)] mt-1">{tab.label}</p>
           </div>
         ))}

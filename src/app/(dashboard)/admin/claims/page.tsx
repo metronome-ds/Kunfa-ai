@@ -111,7 +111,7 @@ export default function AdminClaimsPage() {
     <div className="max-w-5xl mx-auto px-6 py-10">
       <div className="flex items-center gap-3 mb-8">
         <ShieldCheck className="w-6 h-6 text-[var(--accent-ink)]" />
-        <h1 className="text-2xl font-bold text-[var(--ink)]">Claim Requests</h1>
+        <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Claim Requests</h1>
       </div>
 
       {/* Tabs */}

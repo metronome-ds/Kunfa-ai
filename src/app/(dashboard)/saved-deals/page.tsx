@@ -128,7 +128,7 @@ export default function SavedDealsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-[var(--ink)]">Watchlist</h1>
+            <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Watchlist</h1>
             <p className="text-[var(--ink-soft)] mt-2">Companies you&apos;re tracking</p>
           </div>
           <Link href="/deals">
@@ -283,13 +283,13 @@ export default function SavedDealsPage() {
             <Card>
               <div>
                 <p className="text-sm text-[var(--ink-soft)]">Total Saved</p>
-                <p className="text-2xl font-bold text-[var(--ink)] mt-2">{savedDeals.length}</p>
+                <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">{savedDeals.length}</p>
               </div>
             </Card>
             <Card>
               <div>
                 <p className="text-sm text-[var(--ink-soft)]">Avg Score</p>
-                <p className="text-2xl font-bold text-[var(--ink)] mt-2">
+                <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                   {savedDeals.length > 0
                     ? Math.round(
                         savedDeals.reduce((sum, d) => sum + (d.company_pages?.overall_score || 0), 0) /
@@ -302,7 +302,7 @@ export default function SavedDealsPage() {
             <Card>
               <div>
                 <p className="text-sm text-[var(--ink-soft)]">Industries</p>
-                <p className="text-2xl font-bold text-green-600 mt-2">
+                <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-green-600 mt-2">
                   {new Set(savedDeals.map((d) => d.company_pages?.industry).filter(Boolean)).size}
                 </p>
               </div>

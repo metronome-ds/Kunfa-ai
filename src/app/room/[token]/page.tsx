@@ -227,7 +227,7 @@ export default function RoomPage() {
             {/* Company header */}
             {company && (
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-[var(--ink)]">{company.company_name}</h1>
+                <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{company.company_name}</h1>
                 {company.one_liner && (
                   <p className="text-[var(--ink-soft)] mt-1">{company.one_liner}</p>
                 )}

@@ -21,7 +21,7 @@ export default function StartupSection({ onApplyNow }: StartupSectionProps) {
             <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#F0F7FF] text-[var(--accent-ink)] mb-4">
               For Startups
             </span>
-            <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
+            <h2 className="text-2xl lg:text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-kunfa-navy mb-4">
               Get instant AI feedback on your fundraising readiness
             </h2>
             <p className="text-[var(--ink-soft)] text-base mb-8 leading-relaxed">
@@ -56,7 +56,7 @@ export default function StartupSection({ onApplyNow }: StartupSectionProps) {
             {/* Score display */}
             <div className="text-center mb-8">
               <div className="inline-flex items-center justify-center w-28 h-28 rounded-full bg-[var(--bg-elev)] border-4 border-[var(--line-strong)]/30 mb-4">
-                <span className="text-4xl font-bold text-[var(--accent-ink)]">78</span>
+                <span className="text-4xl font-[family-name:var(--serif)] tracking-tight text-[var(--accent-ink)]">78</span>
               </div>
               <p className="text-sm font-semibold text-kunfa-navy">Kunfa Score</p>
               <p className="text-xs text-[var(--ink-mute)] mt-1">Investment Readiness</p>

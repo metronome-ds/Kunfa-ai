@@ -191,7 +191,7 @@ export default async function CompanyPublicPage({
             ) : (
               <>
                 <div className={`w-20 h-20 rounded-2xl border-2 flex items-center justify-center ${scoreColor}`}>
-                  <span className="text-3xl font-bold">{company.overall_score ?? '—'}</span>
+                  <span className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight">{company.overall_score ?? '—'}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span className="text-[10px] text-[var(--ink-faint)] uppercase tracking-wider font-medium">Kunfa Score</span>
@@ -202,7 +202,7 @@ export default async function CompanyPublicPage({
           </div>
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-3xl font-bold text-[var(--ink)]">{company.company_name}</h1>
+            <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{company.company_name}</h1>
 
             {/* Subtitle / one-liner */}
             {subtitle && (

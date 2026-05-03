@@ -141,7 +141,7 @@ export function EngagementScore() {
             </svg>
             {/* Score text in center */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className={`text-3xl font-bold ${scoreColor}`}>
+              <div className={`text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight ${scoreColor}`}>
                 {Math.round(metrics.score)}
               </div>
               <div className="text-xs text-[var(--ink-mute)]">out of 1000</div>

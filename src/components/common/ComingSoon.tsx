@@ -13,7 +13,7 @@ export function ComingSoon({ title, description }: ComingSoonProps) {
       <div className="bg-[var(--bg-sunk)] rounded-full p-6 mb-6">
         <Construction className="h-12 w-12 text-[var(--ink-faint)]" />
       </div>
-      <h1 className="text-2xl font-bold text-[var(--ink)] mb-2">{title}</h1>
+      <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">{title}</h1>
       <p className="text-[var(--ink-mute)] text-center w-full md:max-w-md">
         {description || 'This feature is currently under development and will be available soon.'}
       </p>

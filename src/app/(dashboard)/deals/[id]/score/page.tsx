@@ -79,7 +79,7 @@ export default async function ScorePage({ params }: ScorePageProps) {
               Back to Deal
             </Link>
           </div>
-          <h1 className="text-3xl font-bold text-[var(--ink)]">{company?.company_name || 'Unknown Company'}</h1>
+          <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{company?.company_name || 'Unknown Company'}</h1>
           <p className="text-[var(--ink-soft)] mt-1">AI-Powered Investment Analysis</p>
         </div>
       </div>
@@ -89,7 +89,7 @@ export default async function ScorePage({ params }: ScorePageProps) {
         <div className="space-y-12">
           {/* Deal Score Section */}
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-[var(--ink)]">Investment Score</h2>
+            <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Investment Score</h2>
             <div className="bg-[var(--bg-elev)] rounded-lg p-6">
               <DealScorer dealId={dealId} scores={scoringData} />
             </div>
@@ -99,7 +99,7 @@ export default async function ScorePage({ params }: ScorePageProps) {
           <div className="space-y-6">
             {/* Company Brief Tab */}
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-[var(--ink)]">Company Brief</h2>
+              <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Company Brief</h2>
               <div className="bg-[var(--bg-elev)] rounded-lg p-6">
                 <CompanyBrief dealId={dealId} />
               </div>
@@ -107,7 +107,7 @@ export default async function ScorePage({ params }: ScorePageProps) {
 
             {/* Term Sheet Analysis Tab */}
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-[var(--ink)]">Term Sheet Analysis</h2>
+              <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Term Sheet Analysis</h2>
               <div className="bg-[var(--bg-elev)] rounded-lg p-6">
                 <TermSheetAnalyzer
                   dealId={dealId}

@@ -394,7 +394,7 @@ export default function PipelinePage() {
     return (
       <div className="p-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-[var(--ink)]">Deal Pipeline</h1>
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Deal Pipeline</h1>
         </div>
         <div className="grid grid-cols-6 gap-3 overflow-x-auto">
           {[...Array(6)].map((_, i) => (

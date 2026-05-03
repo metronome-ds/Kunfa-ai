@@ -36,7 +36,7 @@ export default function HowItWorks() {
     <section id="how-it-works" className="py-20 lg:py-28 bg-[#F8F9FB]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
+          <h2 className="text-2xl lg:text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-kunfa-navy mb-4">
             How It Works
           </h2>
           <p className="text-[var(--ink-soft)] text-base max-w-xl mx-auto">

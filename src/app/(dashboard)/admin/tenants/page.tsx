@@ -48,7 +48,7 @@ export default function AdminTenantsPage() {
     <div className="p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--ink)]">Tenant Management</h1>
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Tenant Management</h1>
           <p className="text-[var(--ink-mute)] text-sm mt-1">Manage white-label tenant configurations</p>
         </div>
         <Link

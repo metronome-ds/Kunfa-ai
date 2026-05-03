@@ -610,7 +610,7 @@ export default function ScoreModal({ isOpen, onClose }: ScoreModalProps) {
       <div className="p-6 sm:p-8">
         {/* Header */}
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-kunfa-navy">Get Your Kunfa Score</h2>
+          <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-kunfa-navy">Get Your Kunfa Score</h2>
         </div>
 
         {/* Progress Steps */}

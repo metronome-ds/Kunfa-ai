@@ -259,7 +259,7 @@ export default function CompanyProfilePage() {
   if (loading) {
     return (
       <div className="p-8">
-        <h1 className="text-2xl font-bold text-[var(--ink)] mb-6">Company Profile</h1>
+        <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-6">Company Profile</h1>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 animate-pulse">
@@ -276,7 +276,7 @@ export default function CompanyProfilePage() {
   if (!company) {
     return (
       <div className="p-8">
-        <h1 className="text-2xl font-bold text-[var(--ink)] mb-6">Company Profile</h1>
+        <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-6">Company Profile</h1>
         <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-12 text-center">
           <div className="w-16 h-16 bg-[var(--bg-sunk)] rounded-2xl flex items-center justify-center mx-auto mb-4">
             <FileText className="w-8 h-8 text-[var(--ink-faint)]" />
@@ -335,7 +335,7 @@ export default function CompanyProfilePage() {
               </>
             ) : (
               <div className={`w-20 h-20 rounded-2xl border-2 flex flex-col items-center justify-center ${getScoreBg(company.overall_score)}`}>
-                <span className={`text-3xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
+                <span className={`text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
                 {scored !== null && (
                   <span className="text-[10px] text-[var(--ink-faint)]">{scored}d ago</span>
                 )}
@@ -344,7 +344,7 @@ export default function CompanyProfilePage() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-[var(--ink)]">{company.company_name}</h1>
+            <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{company.company_name}</h1>
             {company.one_liner && (
               <p className="text-[var(--ink-mute)] text-sm mt-1">{company.one_liner}</p>
             )}

@@ -183,7 +183,7 @@ export default function ViewProfilePage() {
                   className="w-24 h-24 rounded-full object-cover mb-4"
                 />
               ) : (
-                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-[var(--ink-2)] flex items-center justify-center text-white text-2xl font-bold mb-4">
+                <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-[var(--ink-2)] flex items-center justify-center text-white text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight mb-4">
                   {profile.full_name
                     .split(' ')
                     .map((n) => n[0])
@@ -196,7 +196,7 @@ export default function ViewProfilePage() {
             {/* Profile Details */}
             <div className="flex-1">
               <div className="mb-4">
-                <h1 className="text-3xl font-bold text-[var(--ink)]">
+                <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">
                   {profile.full_name}
                 </h1>
                 {profile.headline && (
@@ -305,15 +305,15 @@ export default function ViewProfilePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="p-6">
               <p className="text-[var(--ink-soft)] text-sm font-medium">Deals Viewed</p>
-              <p className="text-3xl font-bold text-[var(--ink)] mt-2">0</p>
+              <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">0</p>
             </Card>
             <Card className="p-6">
               <p className="text-[var(--ink-soft)] text-sm font-medium">Engagement Score</p>
-              <p className="text-3xl font-bold text-[var(--ink)] mt-2">--</p>
+              <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">--</p>
             </Card>
             <Card className="p-6">
               <p className="text-[var(--ink-soft)] text-sm font-medium">Portfolio Companies</p>
-              <p className="text-3xl font-bold text-[var(--ink)] mt-2">0</p>
+              <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">0</p>
             </Card>
           </div>
         </div>

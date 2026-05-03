@@ -42,7 +42,7 @@ export function StatsCard({
           {isLoading ? (
             <div className="mt-3 h-8 w-24 bg-[var(--bg-sunk)] rounded animate-pulse" />
           ) : (
-            <p className="text-3xl font-bold text-[var(--ink)] mt-2">{value}</p>
+            <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">{value}</p>
           )}
           {trend && !isLoading && (
             <p

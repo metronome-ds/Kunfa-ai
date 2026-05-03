@@ -87,7 +87,7 @@ export default function InvestorsDirectoryPage() {
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[var(--ink)]">Investors</h1>
+        <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Investors</h1>
         <p className="text-[var(--ink-mute)] text-sm mt-1">Investors in your network</p>
       </div>
 

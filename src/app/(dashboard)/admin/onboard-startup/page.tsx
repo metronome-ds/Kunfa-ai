@@ -409,7 +409,7 @@ export default function OnboardStartupPage() {
   return (
     <div className="p-8 max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[var(--ink)]">Onboard Startup</h1>
+        <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Onboard Startup</h1>
         <p className="text-[var(--ink-mute)] text-sm mt-1">Add a new startup to your network</p>
       </div>
 

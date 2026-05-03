@@ -234,7 +234,7 @@ export default function PortfolioPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-[var(--ink)]">Portfolio</h1>
+            <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Portfolio</h1>
             <p className="text-[var(--ink-soft)] mt-2">Monitor your investments and track performance</p>
           </div>
           <Button
@@ -271,7 +271,7 @@ export default function PortfolioPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-[var(--ink-soft)]">Total Invested</p>
-              <p className="text-2xl font-bold text-[var(--ink)] mt-2">
+              <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                 {formatCurrency(summary.totalInvested)}
               </p>
             </div>
@@ -285,7 +285,7 @@ export default function PortfolioPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-[var(--ink-soft)]">Current Value</p>
-              <p className="text-2xl font-bold text-[var(--ink)] mt-2">
+              <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                 {formatCurrency(summary.currentValue)}
               </p>
             </div>
@@ -299,7 +299,7 @@ export default function PortfolioPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-[var(--ink-soft)]">Total Multiple</p>
-              <p className="text-2xl font-bold text-[var(--ink)] mt-2">
+              <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                 {summary.totalMultiple.toFixed(2)}x
               </p>
             </div>
@@ -313,7 +313,7 @@ export default function PortfolioPage() {
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-[var(--ink-soft)]">Holdings</p>
-              <p className="text-2xl font-bold text-[var(--ink)] mt-2">
+              <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                 {summary.holdingsCount}
               </p>
             </div>

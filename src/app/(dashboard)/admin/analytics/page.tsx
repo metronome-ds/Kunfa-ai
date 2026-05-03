@@ -251,7 +251,7 @@ export default function AdminAnalyticsPage() {
         <div className="flex items-center gap-3">
           <ShieldCheck className="w-6 h-6 text-[var(--accent-ink)]" />
           <div>
-            <h1 className="text-2xl font-bold text-[var(--ink)]">Platform Analytics</h1>
+            <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Platform Analytics</h1>
             <p className="text-xs text-[var(--ink-mute)] mt-0.5">
               Last updated {formatRelative(data.generatedAt)} · auto-refreshes every 60s
             </p>
@@ -537,7 +537,7 @@ function MetricCard({ icon, label, value, breakdown, accent }: MetricCardProps) 
         </div>
         <BarChart3 className="w-4 h-4 text-[var(--ink-faint)]" />
       </div>
-      <div className="text-2xl font-bold text-[var(--ink)]">{value.toLocaleString()}</div>
+      <div className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{value.toLocaleString()}</div>
       <div className="text-xs text-[var(--ink-mute)] mt-0.5">{label}</div>
       <div className="text-[11px] text-[var(--ink-faint)] mt-2">{breakdown}</div>
     </div>

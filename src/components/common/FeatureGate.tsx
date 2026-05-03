@@ -168,7 +168,7 @@ function UpgradePrompt({ feature }: { feature: string }) {
         <div className="w-16 h-16 rounded-2xl bg-[var(--accent-soft)] flex items-center justify-center mx-auto mb-6">
           <Icon className="w-8 h-8 text-[var(--accent-ink)]" />
         </div>
-        <h1 className="text-2xl font-bold text-[var(--ink)] mb-3">{config.title}</h1>
+        <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-3">{config.title}</h1>
         <p className="text-[var(--ink-mute)] w-full md:max-w-md mx-auto">{config.description}</p>
       </div>
 

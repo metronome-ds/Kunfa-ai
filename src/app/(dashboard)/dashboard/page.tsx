@@ -504,7 +504,7 @@ function DashboardContent() {
             <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4 md:p-6 mb-6">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
                 <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl border-2 flex flex-col items-center justify-center flex-shrink-0 ${getScoreBg(company.overall_score)}`}>
-                  <span className={`text-3xl md:text-4xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
+                  <span className={`text-3xl md:text-4xl font-[family-name:var(--serif)] tracking-tight ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
                   <span className="text-[10px] text-[var(--ink-faint)] mt-0.5">/ 100</span>
                 </div>
                 <div className="flex-1 min-w-0 text-center md:text-left">
@@ -538,19 +538,19 @@ function DashboardContent() {
               <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-lg flex items-center justify-center"><Star className="w-5 h-5 text-[var(--accent-ink)]" /></div>
-                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Kunfa Score</p><p className={`text-2xl font-bold ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</p></div>
+                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Kunfa Score</p><p className={`text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</p></div>
                 </div>
               </div>
               <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-lg flex items-center justify-center"><Clock className="w-5 h-5 text-[var(--ink)]" /></div>
-                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Days Since Scored</p><p className="text-2xl font-bold text-[var(--ink)]">{scored ?? '—'}</p></div>
+                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Days Since Scored</p><p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{scored ?? '—'}</p></div>
                 </div>
               </div>
               <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center"><CheckCircle className="w-5 h-5 text-purple-600" /></div>
-                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Profile Completeness</p><p className="text-2xl font-bold text-[var(--ink)]">{completeness}%</p></div>
+                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Profile Completeness</p><p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{completeness}%</p></div>
                 </div>
                 <div className="mt-3 w-full bg-[var(--bg-sunk)] rounded-full h-1.5">
                   <div className="bg-purple-500 h-1.5 rounded-full transition-all" style={{ width: `${completeness}%` }} />

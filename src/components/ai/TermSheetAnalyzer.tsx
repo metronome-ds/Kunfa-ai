@@ -249,7 +249,7 @@ export function TermSheetAnalyzer({ dealId, documentId, analysis }: TermSheetAna
           <h2 className="text-xl font-bold text-[var(--ink)]">Deal Quality Score</h2>
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0">
-              <div className="text-4xl font-bold text-[var(--ink)]">
+              <div className="text-4xl font-[family-name:var(--serif)] tracking-tight text-[var(--ink)]">
                 {Math.round(analysisData.deal_quality_score)}
               </div>
               <p className="text-sm text-[var(--ink-mute)]">out of 100</p>

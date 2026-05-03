@@ -112,7 +112,7 @@ export default function PeoplePage() {
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[var(--ink)] flex items-center gap-2">
+        <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] flex items-center gap-2">
           <Users className="h-8 w-8 text-[var(--ink)]" />
           People Directory
         </h1>

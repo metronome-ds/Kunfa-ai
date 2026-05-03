@@ -124,7 +124,7 @@ export default function ScoreResultsPage() {
             {/* Score Header */}
             <div className="text-center">
               {companyName && (
-                <h1 className="text-2xl font-bold text-[var(--ink)] mb-6">{companyName}</h1>
+                <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-6">{companyName}</h1>
               )}
 
               {/* Large Score Circle */}
@@ -139,7 +139,7 @@ export default function ScoreResultsPage() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className={`text-5xl font-bold ${getScoreColor(result.overall_score)}`}>
+                  <span className={`text-5xl font-[family-name:var(--serif)] tabular-nums tracking-tight ${getScoreColor(result.overall_score)}`}>
                     {result.overall_score}
                   </span>
                   <span className="text-sm text-[var(--ink-faint)]">/100</span>

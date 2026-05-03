@@ -171,7 +171,7 @@ export default function DealDetailPage() {
               </div>
 
               {/* Title */}
-              <h1 className="text-4xl font-bold text-[var(--ink)] mb-2">
+              <h1 className="text-4xl font-[family-name:var(--serif)] tracking-tight text-[var(--ink)] mb-2">
                 {companyName}
               </h1>
               {company.description && (
@@ -277,17 +277,17 @@ export default function DealDetailPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
                 <p className="text-sm text-[var(--ink-soft)] mb-2">Funding Requested</p>
-                <p className="text-2xl font-bold text-[var(--ink)]">{formattedFunding}</p>
+                <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{formattedFunding}</p>
               </div>
               <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
                 <p className="text-sm text-[var(--ink-soft)] mb-2">Team Size</p>
-                <p className="text-2xl font-bold text-[var(--ink)]">
+                <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">
                   {company.team_size || 'N/A'}
                 </p>
               </div>
               <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-6">
                 <p className="text-sm text-[var(--ink-soft)] mb-2">Founded</p>
-                <p className="text-2xl font-bold text-[var(--ink)]">
+                <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">
                   {company.founded_year || 'N/A'}
                 </p>
               </div>

@@ -139,7 +139,7 @@ export default function CreateServicePage() {
           <ArrowLeft className="h-5 w-5" />
           Back to Services
         </button>
-        <h1 className="text-3xl font-bold text-[var(--ink)]">List Your Service</h1>
+        <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">List Your Service</h1>
         <p className="text-[var(--ink-soft)] mt-2">
           Create a new service listing to showcase your expertise
         </p>

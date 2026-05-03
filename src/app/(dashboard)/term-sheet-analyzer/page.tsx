@@ -223,7 +223,7 @@ export default function TermSheetAnalyzerPage() {
         <div className="w-16 h-16 rounded-2xl bg-[var(--ink)]/10 flex items-center justify-center mx-auto mb-6">
           <div className="w-8 h-8 border-3 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin" />
         </div>
-        <h1 className="text-2xl font-bold text-[var(--ink)] mb-3">Analyzing Your Term Sheet</h1>
+        <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-3">Analyzing Your Term Sheet</h1>
         <p className="text-[var(--ink-mute)] animate-pulse">{PROCESSING_MESSAGES[processingMsg]}</p>
       </div>
     )
@@ -346,7 +346,7 @@ export default function TermSheetAnalyzerPage() {
         <div className="w-16 h-16 rounded-2xl bg-[var(--ink)]/10 flex items-center justify-center mx-auto mb-6">
           <FileSearch className="w-8 h-8 text-[var(--accent-ink)]" />
         </div>
-        <h1 className="text-2xl font-bold text-[var(--ink)] mb-3">Term Sheet Analyzer</h1>
+        <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-3">Term Sheet Analyzer</h1>
         <p className="text-[var(--ink-mute)] w-full md:max-w-md mx-auto">
           Upload a term sheet and get an instant AI-powered clause-by-clause analysis with founder-friendliness ratings and market comparisons.
         </p>

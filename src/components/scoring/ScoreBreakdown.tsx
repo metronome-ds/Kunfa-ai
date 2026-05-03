@@ -100,7 +100,7 @@ export default function ScoreBreakdown({
         <h3 className="text-sm font-semibold text-[var(--ink)]">{title}</h3>
         {typeof overallScore === 'number' && (
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl font-bold text-[var(--accent-ink)]">{overallScore}</span>
+            <span className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--accent-ink)]">{overallScore}</span>
             <span className="text-xs text-[var(--ink-faint)]">/100</span>
           </div>
         )}

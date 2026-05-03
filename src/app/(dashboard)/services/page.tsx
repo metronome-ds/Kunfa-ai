@@ -192,7 +192,7 @@ function ServiceCard({ service, onBook }: { service: Service; onBook: () => void
 
       {/* Title + Price */}
       <h3 className="text-lg font-bold text-[var(--ink)] mb-1">{service.title}</h3>
-      <p className="text-2xl font-bold text-[var(--accent-ink)] mb-3">{service.price}</p>
+      <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--accent-ink)] mb-3">{service.price}</p>
 
       {/* Description */}
       <p className="text-sm text-[var(--ink-soft)] mb-4 leading-relaxed">{service.description}</p>
@@ -485,7 +485,7 @@ export default function ServicesPage() {
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
           <Briefcase className="w-6 h-6 text-[var(--accent-ink)]" />
-          <h1 className="text-2xl font-bold text-[var(--ink)]">Services</h1>
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Services</h1>
         </div>
         <p className="text-[var(--ink-mute)] text-sm">
           Expert-led services to accelerate your fundraise and improve your Kunfa Score

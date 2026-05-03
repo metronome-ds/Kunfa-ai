@@ -61,7 +61,7 @@ export default function PricingSection({ onApplyNow }: PricingSectionProps) {
   return (
     <section id="pricing" className="py-20 lg:py-28 bg-[var(--bg-elev)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-2xl lg:text-3xl font-bold text-kunfa-navy mb-4">
+        <h2 className="text-2xl lg:text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-kunfa-navy mb-4">
           Simple, transparent pricing
         </h2>
         <p className="text-[var(--ink-soft)] text-base max-w-xl mx-auto mb-12">
@@ -84,7 +84,7 @@ export default function PricingSection({ onApplyNow }: PricingSectionProps) {
               )}
 
               <h3 className="text-lg font-bold text-kunfa-navy mb-2">{plan.name}</h3>
-              <p className="text-3xl font-bold text-kunfa-navy mb-1">{plan.price}</p>
+              <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-kunfa-navy mb-1">{plan.price}</p>
               <p className="text-sm text-[var(--ink-mute)] mb-8">{plan.subtitle}</p>
 
               <ul className="space-y-3 mb-8 flex-1 text-left">

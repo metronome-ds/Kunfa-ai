@@ -202,7 +202,7 @@ function LoginContent() {
               <KunfaLogo height={32} />
             )}
           </Link>
-          <h1 className="text-2xl font-bold text-[var(--ink)]">
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">
             {isTenantContext ? `Welcome to ${tenant?.display_name || tenant?.name}` : 'Welcome back'}
           </h1>
           <p className="text-[var(--ink-mute)] mt-2">

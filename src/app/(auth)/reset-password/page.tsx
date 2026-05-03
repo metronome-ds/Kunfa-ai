@@ -167,7 +167,7 @@ function ResetPasswordContent() {
           <Link href="/" className="inline-block mb-6">
             <KunfaLogo height={32} />
           </Link>
-          <h1 className="text-2xl font-bold text-[var(--ink)]">Set a new password</h1>
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Set a new password</h1>
           <p className="text-[var(--ink-mute)] mt-2">Enter your new password below</p>
         </div>
 

@@ -450,7 +450,7 @@ function SignupContent() {
           </div>
 
           <div className="bg-[var(--bg-elev)] rounded-xl p-8 border border-[var(--line)] text-center">
-            <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">Check your email</h2>
+            <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">Check your email</h2>
             <p className="text-sm text-[var(--ink-soft)] mb-1">
               Enter the 6-digit code we sent to
             </p>
@@ -548,14 +548,14 @@ function SignupContent() {
               <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--ink)]/10 mb-3">
                 <Users className="w-6 h-6 text-[var(--accent-ink)]" />
               </div>
-              <h1 className="text-2xl font-bold text-[var(--ink)]">{inviteHeading}</h1>
+              <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{inviteHeading}</h1>
               {inviteSubheading && (
                 <p className="text-[var(--ink-mute)] mt-2">{inviteSubheading}</p>
               )}
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-[var(--ink)]">
+              <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">
                 {isTenantContext ? `Join ${tenant?.display_name || tenant?.name}` : 'Create your account'}
               </h1>
               <p className="text-[var(--ink-mute)] mt-2">

@@ -197,7 +197,7 @@ IRR: ${formatPercentage(result.irr)}
         <Card>
           <div>
             <p className="text-sm font-medium text-[var(--ink-soft)]">Equity Invested</p>
-            <p className="text-2xl font-bold text-[var(--ink)] mt-2">{formatCurrency(result.equityInvested)}</p>
+            <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">{formatCurrency(result.equityInvested)}</p>
             <p className="text-xs text-[var(--ink-mute)] mt-1">{formatPercentage(inputs.equityPercentage)}</p>
           </div>
         </Card>
@@ -205,7 +205,7 @@ IRR: ${formatPercentage(result.irr)}
         <Card>
           <div>
             <p className="text-sm font-medium text-[var(--ink-soft)]">Total Debt</p>
-            <p className="text-2xl font-bold text-[var(--ink)] mt-2">{formatCurrency(result.totalDebt)}</p>
+            <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">{formatCurrency(result.totalDebt)}</p>
             <p className="text-xs text-[var(--ink-mute)] mt-1">{formatPercentage(inputs.debtPercentage)}</p>
           </div>
         </Card>
@@ -213,7 +213,7 @@ IRR: ${formatPercentage(result.irr)}
         <Card>
           <div>
             <p className="text-sm font-medium text-[var(--ink-soft)]">Exit Equity Value</p>
-            <p className="text-2xl font-bold text-[var(--ink)] mt-2">{formatCurrency(result.exitEquityValue)}</p>
+            <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">{formatCurrency(result.exitEquityValue)}</p>
             <p className="text-xs text-[var(--ink-mute)] mt-1">Year {inputs.holdPeriodYears}</p>
           </div>
         </Card>
@@ -221,7 +221,7 @@ IRR: ${formatPercentage(result.irr)}
         <Card>
           <div>
             <p className="text-sm font-medium text-[var(--ink-soft)]">Annual EBITDA</p>
-            <p className="text-2xl font-bold text-[var(--ink)] mt-2">{formatCurrency(result.annualEBITDA)}</p>
+            <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">{formatCurrency(result.annualEBITDA)}</p>
             <p className="text-xs text-[var(--ink-mute)] mt-1">{formatPercentage(inputs.ebitdaMargin)} margin</p>
           </div>
         </Card>
@@ -232,19 +232,19 @@ IRR: ${formatPercentage(result.irr)}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <p className="text-sm font-medium text-[var(--ink-soft)]">MOIC</p>
-            <p className={cn('text-3xl font-bold mt-2', getColorForMOIC(result.moic))}>{result.moic.toFixed(2)}x</p>
+            <p className={cn('text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight mt-2', getColorForMOIC(result.moic))}>{result.moic.toFixed(2)}x</p>
             <p className="text-xs text-[var(--ink-mute)] mt-1">Money-on-Money Multiple</p>
           </div>
 
           <div>
             <p className="text-sm font-medium text-[var(--ink-soft)]">IRR</p>
-            <p className={cn('text-3xl font-bold mt-2', getColorForIRR(result.irr))}>{formatPercentage(result.irr)}</p>
+            <p className={cn('text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight mt-2', getColorForIRR(result.irr))}>{formatPercentage(result.irr)}</p>
             <p className="text-xs text-[var(--ink-mute)] mt-1">Internal Rate of Return</p>
           </div>
 
           <div>
             <p className="text-sm font-medium text-[var(--ink-soft)]">Ending Debt</p>
-            <p className="text-3xl font-bold text-[var(--ink)] mt-2">{formatCurrency(result.debtSchedule[result.debtSchedule.length - 1].endingDebt)}</p>
+            <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">{formatCurrency(result.debtSchedule[result.debtSchedule.length - 1].endingDebt)}</p>
             <p className="text-xs text-[var(--ink-mute)] mt-1">At exit (Year {inputs.holdPeriodYears})</p>
           </div>
         </div>

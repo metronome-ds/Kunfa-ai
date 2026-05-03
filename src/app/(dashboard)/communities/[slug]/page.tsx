@@ -150,7 +150,7 @@ export default function CommunityHubPage() {
       <div className="mb-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-[var(--ink)]">{community.name}</h1>
+            <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{community.name}</h1>
             {community.description && <p className="text-[var(--ink-mute)] mt-1">{community.description}</p>}
             {community.thesis && <p className="text-sm text-[var(--accent-ink)] mt-1 italic">{community.thesis}</p>}
             <div className="flex items-center gap-3 mt-2 text-sm text-[var(--ink-faint)]">

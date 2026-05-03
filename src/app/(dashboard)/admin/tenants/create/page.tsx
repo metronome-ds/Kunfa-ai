@@ -103,7 +103,7 @@ export default function CreateTenantPage() {
         Back to Tenants
       </Link>
 
-      <h1 className="text-2xl font-bold text-[var(--ink)] mb-2">Create New Tenant</h1>
+      <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">Create New Tenant</h1>
       <p className="text-[var(--ink-mute)] text-sm mb-8">Set up a new white-label tenant configuration.</p>
 
       <form onSubmit={handleSubmit} className="space-y-8">

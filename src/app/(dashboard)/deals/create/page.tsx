@@ -256,7 +256,7 @@ export default function CreateDealPage() {
             <ChevronLeft className="h-5 w-5" />
             Back
           </button>
-          <h1 className="text-3xl font-bold text-[var(--ink)] mb-2">List a New Deal</h1>
+          <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">List a New Deal</h1>
           <p className="text-[var(--ink-soft)]">
             Share your investment opportunity with our network of investors
           </p>
@@ -313,7 +313,7 @@ export default function CreateDealPage() {
           {currentStep === 'basic' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">
+                <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">
                   Basic Information
                 </h2>
                 <p className="text-[var(--ink-soft)]">
@@ -374,7 +374,7 @@ export default function CreateDealPage() {
           {currentStep === 'details' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">
+                <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">
                   Deal Details
                 </h2>
                 <p className="text-[var(--ink-soft)]">
@@ -451,7 +451,7 @@ export default function CreateDealPage() {
           {currentStep === 'narrative' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">
+                <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">
                   Company Narrative
                 </h2>
                 <p className="text-[var(--ink-soft)]">
@@ -499,7 +499,7 @@ export default function CreateDealPage() {
           {currentStep === 'documents' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">
+                <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">
                   Documents
                 </h2>
                 <p className="text-[var(--ink-soft)]">
@@ -517,7 +517,7 @@ export default function CreateDealPage() {
           {currentStep === 'review' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-[var(--ink)] mb-2">
+                <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">
                   Review Your Deal
                 </h2>
                 <p className="text-[var(--ink-soft)]">

@@ -5,7 +5,8 @@ import { CompanyCard } from '@/components/companies/CompanyCard';
 import { CompanyFilter, CompanyFilterState, InvestorPrefs } from '@/components/companies/CompanyFilter';
 import { Button } from '@/components/common/Button';
 import { PageHead } from '@/components/ui/design-system';
-import { AlertCircle, Rocket } from 'lucide-react';
+import { AlertCircle, Rocket, Search as SearchIcon } from 'lucide-react';
+import { useIsMobile } from '@/hooks/useMediaQuery';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
@@ -16,7 +17,12 @@ interface PaginationData {
   totalPages: number;
 }
 
+function getInitials(name: string) {
+  return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+}
+
 export default function BrowseCompaniesPage() {
+  const isMobile = useIsMobile();
   const [companies, setCompanies] = useState<any[]>([]);
   const [filters, setFilters] = useState<CompanyFilterState>({
     search: '',
@@ -213,6 +219,90 @@ export default function BrowseCompaniesPage() {
     filters.raisingOnly ? 'raising' : null,
   ].filter(Boolean).length;
 
+  if (isMobile) {
+    return (
+      <div style={{ padding: '0 20px' }}>
+        {/* Mobile search bar */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          background: 'var(--bg-sunk)', borderRadius: 10, padding: '10px 12px',
+          margin: '0 0 16px', color: 'var(--ink-mute)', fontSize: 13,
+        }}>
+          <SearchIcon size={14} />
+          <span>Search deals, sectors…</span>
+        </div>
+
+        {/* Mobile pill tabs */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 18, overflowX: 'auto', scrollbarWidth: 'none' }}>
+          {['All', 'For you', 'Closing soon', 'Score 80+', 'Saved'].map((t, i) => (
+            <button key={t} style={{
+              padding: '7px 14px', borderRadius: 99, fontSize: 12.5, fontWeight: 500,
+              whiteSpace: 'nowrap', border: '1px solid transparent', cursor: 'pointer',
+              background: i === 0 ? 'var(--ink)' : 'var(--bg-sunk)',
+              color: i === 0 ? '#f4f3ee' : 'var(--ink-soft)',
+            }}>
+              {t}
+            </button>
+          ))}
+        </div>
+
+        {isLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px 0' }}>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 mx-auto" style={{ borderColor: 'var(--ink-mute)' }} />
+          </div>
+        ) : companies.length === 0 ? (
+          <div style={{
+            background: 'var(--bg-elev)', border: '1px dashed var(--line-strong)',
+            borderRadius: 14, padding: '36px 20px', textAlign: 'center',
+          }}>
+            <div style={{ fontFamily: 'var(--sans)', fontSize: 13, fontWeight: 600, marginBottom: 4 }}>No deals found</div>
+            <div style={{ fontSize: 12, color: 'var(--ink-mute)' }}>Try adjusting your filters.</div>
+          </div>
+        ) : (
+          <div>
+            {companies.map((company) => (
+              <Link
+                key={company.id}
+                href={`/company/${company.slug}`}
+                style={{
+                  background: 'var(--bg-elev)', border: '1px solid var(--line)',
+                  borderRadius: 14, padding: '14px 16px', marginBottom: 10,
+                  display: 'grid', gridTemplateColumns: '38px 1fr auto', gap: 12,
+                  alignItems: 'center', textDecoration: 'none', color: 'var(--ink)',
+                }}
+              >
+                <div style={{
+                  width: 38, height: 38, background: 'var(--bg-sunk)', borderRadius: 8,
+                  display: 'grid', placeItems: 'center', fontFamily: 'var(--serif)', fontSize: 15,
+                }}>
+                  {company.logo_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={company.logo_url} alt="" style={{ width: 38, height: 38, objectFit: 'cover', borderRadius: 8 }} />
+                  ) : getInitials(company.company_name || 'C')}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.company_name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--ink-mute)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {[company.industry, company.stage, company.country].filter(Boolean).join(' · ')}
+                  </div>
+                </div>
+                {company.overall_score != null && (
+                  <div style={{
+                    background: 'var(--accent-soft)', color: 'var(--accent-ink)',
+                    padding: '3px 9px', borderRadius: 99, fontSize: 11, fontWeight: 600,
+                    fontFamily: 'var(--serif)', fontVariantNumeric: 'tabular-nums',
+                  }}>
+                    {company.overall_score}
+                  </div>
+                )}
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen bg-[var(--bg-sunk)]">
       {/* Sidebar Filter */}
@@ -287,9 +377,55 @@ export default function BrowseCompaniesPage() {
                 </Link>
               )}
             </div>
+          ) : isMobile ? (
+            <>
+              {/* Mobile: compact deal rows */}
+              <div style={{ marginBottom: 16 }}>
+                {companies.map((company) => (
+                  <Link
+                    key={company.id}
+                    href={`/company/${company.slug}`}
+                    style={{
+                      background: 'var(--bg-elev)', border: '1px solid var(--line)',
+                      borderRadius: 14, padding: '14px 16px', marginBottom: 10,
+                      display: 'grid', gridTemplateColumns: '38px 1fr auto', gap: 12,
+                      alignItems: 'center', textDecoration: 'none', color: 'var(--ink)',
+                    }}
+                  >
+                    <div style={{
+                      width: 38, height: 38, background: 'var(--bg-sunk)', borderRadius: 8,
+                      display: 'grid', placeItems: 'center', fontFamily: 'var(--serif)',
+                      fontSize: 15, color: 'var(--ink)',
+                    }}>
+                      {company.logo_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={company.logo_url} alt="" style={{ width: 38, height: 38, objectFit: 'cover', borderRadius: 8 }} />
+                      ) : (
+                        getInitials(company.company_name || 'C')
+                      )}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 500, marginBottom: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{company.company_name}</div>
+                      <div style={{ fontSize: 11, color: 'var(--ink-mute)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {[company.industry, company.stage, company.country].filter(Boolean).join(' · ')}
+                      </div>
+                    </div>
+                    {company.overall_score != null && (
+                      <div style={{
+                        background: 'var(--accent-soft)', color: 'var(--accent-ink)',
+                        padding: '3px 9px', borderRadius: 99, fontSize: 11, fontWeight: 600,
+                        fontFamily: 'var(--serif)', fontVariantNumeric: 'tabular-nums',
+                      }}>
+                        {company.overall_score}
+                      </div>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </>
           ) : (
             <>
-              {/* Grid */}
+              {/* Desktop: Card grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                 {companies.map((company) => (
                   <CompanyCard
