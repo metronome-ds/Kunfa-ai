@@ -18,10 +18,6 @@ import {
   Settings,
   LogOut,
   BarChart3,
-  Building2,
-  Upload,
-  ShieldCheck,
-  Tag,
   PlusCircle,
   UserPlus,
   Ticket,
@@ -379,66 +375,22 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               </>
             )}
 
-            {/* Super admin links */}
+            {/* Admin Console link — subtle, for super admins only */}
             {isSuperAdminUser && !isTenantContext && (
-              <>
-                <div style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.14em', color: 'rgba(232,231,224,0.4)', padding: '18px 10px 8px' }}>
-                  Admin
-                </div>
-                {[
-                  { label: 'Analytics', icon: <BarChart3 size={15} />, href: '/admin/analytics' },
-                  { label: 'Tenants', icon: <Building2 size={15} />, href: '/admin/tenants' },
-                ].map((item) => {
-                  const active = isActive(item.href);
-                  return (
-                    <Link
-                      key={item.label}
-                      href={item.href}
-                      className="flex items-center gap-[10px] w-full text-left transition-[background,color]"
-                      style={{
-                        padding: '8px 10px', borderRadius: 5, fontSize: 13,
-                        color: active ? '#f4f3ee' : 'rgba(232,231,224,0.72)',
-                        background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
-                        transitionDuration: '120ms',
-                      }}
-                      onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#f4f3ee'; }}
-                      onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; if (!active) e.currentTarget.style.color = 'rgba(232,231,224,0.72)'; }}
-                    >
-                      <span className="shrink-0" style={{ opacity: 0.85 }}>{item.icon}</span>
-                      {!collapsed && <span className="flex-1">{item.label}</span>}
-                    </Link>
-                  );
-                })}
-                {isAdmin && (
-                  <>
-                    {[
-                      { label: 'Claims', icon: <ShieldCheck size={15} />, href: '/admin/claims' },
-                      { label: 'Imports', icon: <Upload size={15} />, href: '/admin/imports' },
-                      { label: 'Promo Codes', icon: <Tag size={15} />, href: '/admin/promo-codes' },
-                    ].map((item) => {
-                      const active = isActive(item.href);
-                      return (
-                        <Link
-                          key={item.label}
-                          href={item.href}
-                          className="flex items-center gap-[10px] w-full text-left transition-[background,color]"
-                          style={{
-                            padding: '8px 10px', borderRadius: 5, fontSize: 13,
-                            color: active ? '#f4f3ee' : 'rgba(232,231,224,0.72)',
-                            background: active ? 'rgba(255,255,255,0.07)' : 'transparent',
-                            transitionDuration: '120ms',
-                          }}
-                          onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = '#f4f3ee'; }}
-                          onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent'; if (!active) e.currentTarget.style.color = 'rgba(232,231,224,0.72)'; }}
-                        >
-                          <span className="shrink-0" style={{ opacity: 0.85 }}>{item.icon}</span>
-                          {!collapsed && <span className="flex-1">{item.label}</span>}
-                        </Link>
-                      );
-                    })}
-                  </>
-                )}
-              </>
+              <Link
+                href="/admin"
+                className="flex items-center gap-[10px] w-full text-left"
+                style={{
+                  padding: '8px 10px', borderRadius: 5, fontSize: 12,
+                  color: 'rgba(232,231,224,0.45)', marginTop: 14,
+                  textDecoration: 'none', transition: 'color 120ms',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = '#f4f3ee'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(232,231,224,0.45)'; }}
+              >
+                <Shield size={13} style={{ opacity: 0.6 }} />
+                {!collapsed && <span>Admin Console</span>}
+              </Link>
             )}
           </>
         )}
