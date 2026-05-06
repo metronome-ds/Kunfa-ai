@@ -1,0 +1,167 @@
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { getSupabase } from '@/lib/db'
+import { getTeamContext } from '@/lib/team-context'
+import { getEntityContextByAuthId } from '@/lib/entity-context'
+import { requirePermission } from '@/lib/permissions'
+import { extractDomain, fetchLogoUrl } from '@/lib/utils'
+import { NextRequest, NextResponse } from 'next/server'
+
+/**
+ * GET /api/my-company
+ * Returns the company_pages record for the user's effective team/entity context.
+ * Supports both entity-scoped (new) and user-scoped (legacy) queries.
+ */
+export async function GET() {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ company: null }, { status: 200 })
+    }
+
+    const adminDb = getSupabase()
+
+    // Try entity context first (new path)
+    const entityCtx = await getEntityContextByAuthId(user.id)
+    let company = null
+
+    if (entityCtx.effectiveEntityId) {
+      const { data } = await adminDb
+        .from('company_pages')
+        .select('*')
+        .eq('entity_id', entityCtx.effectiveEntityId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      company = data
+    }
+
+    // Fallback: legacy team context path
+    if (!company) {
+      const context = await getTeamContext(user.id)
+      const { data } = await adminDb
+        .from('company_pages')
+        .select('*')
+        .eq('user_id', context.effectiveUserId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+      company = data
+    }
+
+    if (!company) {
+      return NextResponse.json({ company: null })
+    }
+
+    // Check submission payment status if submission exists
+    // Use service role client to bypass RLS on submissions table
+    let paid = false
+    let hasReport = false
+    if (company.submission_id) {
+      const { data: submission, error: subError } = await adminDb
+        .from('submissions')
+        .select('paid, report_url, created_at')
+        .eq('id', company.submission_id)
+        .single()
+
+      if (subError) {
+        console.error('my-company: failed to fetch submission', company.submission_id, subError.message)
+      }
+      if (submission) {
+        paid = !!submission.paid
+        hasReport = !!submission.report_url
+      }
+    }
+
+    // Strip raw blob URLs from client response — use /api/documents/[id] proxy instead
+    const { pdf_url, financials_url, ...safeCompany } = company
+    const hasPitchDeck = !!(pdf_url || company.submission_id)
+    const hasFinancials = !!financials_url
+
+    console.log(`[my-company] user=${user.id} submission=${company.submission_id || 'none'} paid=${paid} hasReport=${hasReport}`)
+
+    return NextResponse.json({ company: safeCompany, paid, hasReport, hasPitchDeck, hasFinancials })
+  } catch (error) {
+    console.error('Error in GET /api/my-company:', error)
+    return NextResponse.json({ company: null }, { status: 200 })
+  }
+}
+
+/**
+ * PATCH /api/my-company
+ * Updates editable fields on the user's company page.
+ * Uses team context so admin team members can also edit the team owner's company.
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = await createServerSupabaseClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Permission check: only owner/admin can edit
+    let teamCtx
+    try {
+      teamCtx = await requirePermission(user.id, 'edit')
+    } catch {
+      return NextResponse.json({ error: 'You do not have permission to perform this action' }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const allowedFields = [
+      'company_name', 'one_liner', 'industry', 'stage', 'country',
+      'headquarters', 'website_url', 'raise_amount', 'team_size',
+      'founded_year', 'use_of_funds', 'traction', 'linkedin_url',
+      'company_linkedin_url', 'logo_url', 'founding_team',
+    ]
+
+    const updates: Record<string, unknown> = {}
+    for (const field of allowedFields) {
+      if (field in body) {
+        updates[field] = body[field]
+      }
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+    }
+
+    // Use effectiveUserId from team context (allows admin team members to edit)
+    const adminDb = getSupabase()
+    const { data: company, error } = await adminDb
+      .from('company_pages')
+      .update(updates)
+      .eq('user_id', teamCtx.effectiveUserId)
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    if (error) {
+      return NextResponse.json({ error: 'Failed to update company' }, { status: 500 })
+    }
+
+    // Auto-fetch logo when website_url is updated and logo_url is still null
+    if (updates.website_url && !company.logo_url) {
+      const domain = extractDomain(updates.website_url as string)
+      if (domain) {
+        fetchLogoUrl(domain).then(async (logoUrl) => {
+          if (logoUrl) {
+            await adminDb
+              .from('company_pages')
+              .update({ logo_url: logoUrl })
+              .eq('user_id', teamCtx.effectiveUserId)
+          }
+        }).catch((err) => console.error('[FETCH-LOGO] Auto-fetch error:', err))
+      }
+    }
+
+    return NextResponse.json({ company })
+  } catch (error) {
+    console.error('Error in PATCH /api/my-company:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}

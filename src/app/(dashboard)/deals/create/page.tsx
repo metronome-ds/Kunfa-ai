@@ -245,19 +245,19 @@ export default function CreateDealPage() {
   const progressPercent = ((currentStepIndex + 1) / STEPS.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+    <div className="min-h-screen bg-[var(--bg-sunk)] py-8 px-4">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4"
+            className="flex items-center gap-2 text-[var(--ink)] hover:text-[var(--ink)] mb-4"
           >
             <ChevronLeft className="h-5 w-5" />
             Back
           </button>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">List a New Deal</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">List a New Deal</h1>
+          <p className="text-[var(--ink-soft)]">
             Share your investment opportunity with our network of investors
           </p>
         </div>
@@ -265,16 +265,16 @@ export default function CreateDealPage() {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-sm font-medium text-gray-700">
+            <p className="text-sm font-medium text-[var(--ink-soft)]">
               Step {currentStepIndex + 1} of {STEPS.length}
             </p>
-            <p className="text-sm font-medium text-gray-700">
+            <p className="text-sm font-medium text-[var(--ink-soft)]">
               {Math.round(progressPercent)}%
             </p>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-[var(--bg-sunk)] rounded-full h-2 overflow-hidden">
             <div
-              className="bg-blue-600 h-full transition-all"
+              className="bg-[var(--ink)] h-full transition-all"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -288,10 +288,10 @@ export default function CreateDealPage() {
                 disabled={i > currentStepIndex}
                 className={`text-xs font-medium capitalize transition-colors ${
                   i === currentStepIndex
-                    ? 'text-blue-600'
+                    ? 'text-[var(--ink)]'
                     : i < currentStepIndex
                       ? 'text-green-600 cursor-pointer'
-                      : 'text-gray-400 cursor-not-allowed'
+                      : 'text-[var(--ink-faint)] cursor-not-allowed'
                 }`}
               >
                 {step}
@@ -301,7 +301,7 @@ export default function CreateDealPage() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-lg border border-gray-200 p-8 mb-8">
+        <div className="bg-[var(--bg-elev)] rounded-lg border border-[var(--line)] p-8 mb-8">
           {/* Error Message */}
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -313,10 +313,10 @@ export default function CreateDealPage() {
           {currentStep === 'basic' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">
                   Basic Information
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-[var(--ink-soft)]">
                   Tell us about your company and the deal
                 </p>
               </div>
@@ -330,7 +330,7 @@ export default function CreateDealPage() {
               />
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
                   Company Description *
                 </label>
                 <textarea
@@ -338,18 +338,18 @@ export default function CreateDealPage() {
                   value={formData.company_description}
                   onChange={(e) => handleInputChange('company_description', e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2 border border-[var(--line-strong)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--ink)] text-[var(--ink)] placeholder-gray-400"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
                   Industry *
                 </label>
                 <select
                   value={formData.industry}
                   onChange={(e) => handleInputChange('industry', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2 border border-[var(--line-strong)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--ink)] text-[var(--ink)] placeholder-gray-400"
                 >
                   <option value="">Select an industry</option>
                   {INDUSTRIES.map((industry) => (
@@ -374,22 +374,22 @@ export default function CreateDealPage() {
           {currentStep === 'details' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">
                   Deal Details
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-[var(--ink-soft)]">
                   Share the financial and structural details of this deal
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
                   Deal Stage *
                 </label>
                 <select
                   value={formData.stage}
                   onChange={(e) => handleInputChange('stage', e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2 border border-[var(--line-strong)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--ink)] text-[var(--ink)] placeholder-gray-400"
                 >
                   {DEAL_STAGES.map((stage) => (
                     <option key={stage.value} value={stage.value}>
@@ -451,16 +451,16 @@ export default function CreateDealPage() {
           {currentStep === 'narrative' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">
                   Company Narrative
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-[var(--ink-soft)]">
                   Tell the story of your company and opportunity
                 </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
                   Problem Statement
                 </label>
                 <textarea
@@ -468,12 +468,12 @@ export default function CreateDealPage() {
                   value={formData.problem_statement}
                   onChange={(e) => handleInputChange('problem_statement', e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2 border border-[var(--line-strong)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--ink)] text-[var(--ink)] placeholder-gray-400"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
                   Solution
                 </label>
                 <textarea
@@ -481,7 +481,7 @@ export default function CreateDealPage() {
                   value={formData.solution}
                   onChange={(e) => handleInputChange('solution', e.target.value)}
                   rows={4}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900 placeholder-gray-400"
+                  className="w-full px-4 py-2 border border-[var(--line-strong)] rounded-lg focus:outline-none focus:ring-1 focus:ring-[var(--ink)] text-[var(--ink)] placeholder-gray-400"
                 />
               </div>
 
@@ -499,10 +499,10 @@ export default function CreateDealPage() {
           {currentStep === 'documents' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">
                   Documents
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-[var(--ink-soft)]">
                   Upload pitch deck, financials, or term sheet (optional)
                 </p>
               </div>
@@ -517,64 +517,64 @@ export default function CreateDealPage() {
           {currentStep === 'review' && (
             <div className="space-y-6">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">
                   Review Your Deal
                 </h2>
-                <p className="text-gray-600">
+                <p className="text-[var(--ink-soft)]">
                   Please review the information before submitting
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Company Name</p>
-                  <p className="font-semibold text-gray-900">
+                <div className="bg-[var(--bg-sunk)] rounded-lg p-4">
+                  <p className="text-sm text-[var(--ink-soft)] mb-1">Company Name</p>
+                  <p className="font-semibold text-[var(--ink)]">
                     {formData.company_name}
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Industry</p>
-                  <p className="font-semibold text-gray-900">
+                <div className="bg-[var(--bg-sunk)] rounded-lg p-4">
+                  <p className="text-sm text-[var(--ink-soft)] mb-1">Industry</p>
+                  <p className="font-semibold text-[var(--ink)]">
                     {formData.industry}
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Deal Stage</p>
-                  <p className="font-semibold text-gray-900">
+                <div className="bg-[var(--bg-sunk)] rounded-lg p-4">
+                  <p className="text-sm text-[var(--ink-soft)] mb-1">Deal Stage</p>
+                  <p className="font-semibold text-[var(--ink)]">
                     {DEAL_STAGES.find((s) => s.value === formData.stage)?.label}
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Funding Requested</p>
-                  <p className="font-semibold text-gray-900">
+                <div className="bg-[var(--bg-sunk)] rounded-lg p-4">
+                  <p className="text-sm text-[var(--ink-soft)] mb-1">Funding Requested</p>
+                  <p className="font-semibold text-[var(--ink)]">
                     {formData.funding_amount_requested
                       ? `$${Number(formData.funding_amount_requested).toLocaleString()}`
                       : 'Not specified'}
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Valuation</p>
-                  <p className="font-semibold text-gray-900">
+                <div className="bg-[var(--bg-sunk)] rounded-lg p-4">
+                  <p className="text-sm text-[var(--ink-soft)] mb-1">Valuation</p>
+                  <p className="font-semibold text-[var(--ink)]">
                     {formData.post_money_valuation
                       ? `$${Number(formData.post_money_valuation).toLocaleString()}`
                       : 'Not specified'}
                   </p>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <p className="text-sm text-gray-600 mb-1">Documents Uploaded</p>
-                  <p className="font-semibold text-gray-900">
+                <div className="bg-[var(--bg-sunk)] rounded-lg p-4">
+                  <p className="text-sm text-[var(--ink-soft)] mb-1">Documents Uploaded</p>
+                  <p className="font-semibold text-[var(--ink)]">
                     {formData.documents.length} file(s)
                   </p>
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm text-blue-700">
+              <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-4">
+                <p className="text-sm text-[var(--ink)]">
                   Once you submit, your deal will be reviewed by our system and made available
                   to investors. You'll receive an AI analysis within 24 hours.
                 </p>

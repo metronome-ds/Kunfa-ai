@@ -7,8 +7,8 @@ type ModalSize = 'sm' | 'md' | 'lg';
 
 const sizeStyles: Record<ModalSize, string> = {
   sm: 'max-w-sm',
-  md: 'max-w-md',
-  lg: 'max-w-lg',
+  md: 'w-full md:max-w-md',
+  lg: 'w-full md:max-w-lg',
 };
 
 interface ModalProps {
@@ -35,16 +35,16 @@ export function Modal({
         onClick={onClose}
       />
       <div
-        className={`relative bg-white rounded-xl shadow-xl w-full mx-4 ${sizeStyles[size]} animate-in fade-in zoom-in-95`}
+        className={`relative bg-[var(--bg-elev)] rounded-xl w-full mx-4 ${sizeStyles[size]} animate-in fade-in zoom-in-95`}
       >
         {title && (
-          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+          <div className="px-6 py-4 border-b border-[var(--line)] flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-[var(--ink)]">{title}</h2>
             <button
               onClick={onClose}
-              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1 hover:bg-[var(--bg-sunk)] rounded-lg transition-colors"
             >
-              <X className="h-5 w-5 text-gray-600" />
+              <X className="h-5 w-5 text-[var(--ink-soft)]" />
             </button>
           </div>
         )}

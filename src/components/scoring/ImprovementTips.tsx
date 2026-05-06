@@ -1,0 +1,175 @@
+'use client'
+
+/**
+ * ImprovementTips — KUN-21
+ *
+ * Templated improvement recommendations for sub-75 companies.
+ * Identifies the 2-3 weakest dimensions and shows static, actionable tips.
+ */
+
+import Link from 'next/link'
+import { RefreshCw, ArrowRight } from 'lucide-react'
+
+interface ImprovementTipsProps {
+  dimensions: Record<string, unknown> | null | undefined
+  onRescore?: () => void
+}
+
+const TIPS: Record<string, { label: string; icon: string; tips: string[] }> = {
+  team: {
+    label: 'Team & Founders',
+    icon: '👥',
+    tips: [
+      'Highlight prior startup or domain experience for each founder with specific outcomes (exits, revenue, users).',
+      'Add complete LinkedIn URLs and explicit roles (CEO, CTO, etc.) for every co-founder.',
+      'Close critical gaps (e.g. technical lead, GTM lead) — or explain your hiring plan to fill them.',
+    ],
+  },
+  market: {
+    label: 'Market Opportunity',
+    icon: '📈',
+    tips: [
+      'Include a credible, bottom-up TAM / SAM / SOM with sources — not just a top-down industry number.',
+      'Demonstrate why now: regulatory shifts, tech unlocks, or behaviour changes driving the timing.',
+      'Name 3-5 comparable companies and articulate your concrete differentiation vs. each.',
+    ],
+  },
+  product: {
+    label: 'Product & Tech',
+    icon: '💡',
+    tips: [
+      'Show real product screenshots or a live demo — not just mockups or roadmap slides.',
+      'Quantify your technical moat: proprietary data, models, IP, or hard-to-replicate workflow.',
+      'Describe the 10x better experience vs. incumbents with a concrete before/after example.',
+    ],
+  },
+  traction: {
+    label: 'Traction & Growth',
+    icon: '📊',
+    tips: [
+      'Report month-over-month growth for the last 6 months with a clear chart (revenue, users, or usage).',
+      'Add retention / engagement metrics (D30, weekly active, NRR) — growth without retention is a red flag.',
+      'Show early customer logos, design partners, or signed LOIs to validate demand.',
+    ],
+  },
+  financial: {
+    label: 'Financial Health',
+    icon: '💰',
+    tips: [
+      'Upload a full financial model: historicals, 24-36 month projections, unit economics, burn, runway.',
+      'Disclose current cash, monthly burn, and runway clearly — investors will ask on slide 1.',
+      'Show a credible path to break-even or the next milestone this round unlocks.',
+    ],
+  },
+  fundraise_readiness: {
+    label: 'Fundraise Readiness',
+    icon: '🎯',
+    tips: [
+      'State the exact round size, valuation (or cap), instrument (SAFE / priced), and minimum ticket.',
+      'Break down use of funds by category (team, product, GTM) with measurable milestones.',
+      'Prepare a data room with deck, financials, cap table, and customer references before reaching out.',
+    ],
+  },
+}
+
+const ORDER = ['team', 'market', 'product', 'traction', 'financial', 'fundraise_readiness'] as const
+
+// Threshold: 70% of 25 = 17.5 — below this, show upsell link
+const UPSELL_THRESHOLD = 17.5
+
+const DIMENSION_SERVICE_LABEL: Record<string, string> = {
+  team: 'team building',
+  market: 'market research',
+  product: 'product strategy',
+  traction: 'growth',
+  financial: 'financial modeling',
+  fundraise_readiness: 'fundraise readiness',
+}
+
+export default function ImprovementTips({ dimensions, onRescore }: ImprovementTipsProps) {
+  if (!dimensions || typeof dimensions !== 'object') return null
+
+  const raw = dimensions as Record<string, unknown>
+
+  // Extract scores for each known dimension
+  const scored = ORDER
+    .map((key) => {
+      const v = raw[key]
+      if (!v || typeof v !== 'object') return null
+      const score = (v as Record<string, unknown>).score
+      if (typeof score !== 'number') return null
+      return { key, score }
+    })
+    .filter((x): x is { key: typeof ORDER[number]; score: number } => x !== null)
+
+  if (scored.length === 0) return null
+
+  // Pick the 3 weakest dimensions (lowest raw score out of 25)
+  const weakest = [...scored].sort((a, b) => a.score - b.score).slice(0, 3)
+
+  return (
+    <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold text-[var(--ink)]">How to improve your score</h3>
+        <p className="text-xs text-[var(--ink-mute)] mt-1">
+          Focus on these dimensions to unlock investor discovery (Kunfa Score 75+).
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {weakest.map(({ key, score }) => {
+          const tip = TIPS[key]
+          if (!tip) return null
+          return (
+            <div key={key} className="rounded-lg border border-[var(--line)] bg-[var(--bg-sunk)] p-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{tip.icon}</span>
+                  <h4 className="text-sm font-semibold text-[var(--ink)]">{tip.label}</h4>
+                </div>
+                <span className="text-xs text-[var(--ink-mute)] tabular-nums">
+                  {score}<span className="text-[var(--ink-faint)]">/25</span>
+                </span>
+              </div>
+              <ul className="space-y-1.5 mt-2">
+                {tip.tips.map((t, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-[var(--ink-soft)] leading-relaxed">
+                    <span className="text-[var(--accent-ink)] mt-0.5">•</span>
+                    <span>{t}</span>
+                  </li>
+                ))}
+              </ul>
+              {score < UPSELL_THRESHOLD && (
+                <Link
+                  href="/services"
+                  className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-[var(--accent-ink)] hover:text-[var(--ink)] transition-colors"
+                >
+                  Need help improving {DIMENSION_SERVICE_LABEL[key] || 'this'}?
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      <div className="mt-5 flex items-center gap-2">
+        {onRescore && (
+          <button
+            onClick={onRescore}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Re-score My Company
+          </button>
+        )}
+        <Link
+          href="/how-it-works"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--bg-elev)] border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
+        >
+          How scoring works
+        </Link>
+      </div>
+    </div>
+  )
+}

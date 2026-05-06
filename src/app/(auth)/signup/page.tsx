@@ -1,16 +1,20 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, useCallback, useRef, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import { Building2, TrendingUp } from 'lucide-react'
+import { Building2, TrendingUp, RefreshCw, Users, Tag, ChevronDown } from 'lucide-react'
+import KunfaLogo from '@/components/common/KunfaLogo'
+import { useTenantBranding } from '@/lib/use-tenant-branding'
+
+type SignupStep = 'form' | 'otp'
 
 export default function SignupPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white" />
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
       </div>
     }>
       <SignupContent />
@@ -18,237 +22,737 @@ export default function SignupPage() {
   )
 }
 
+/**
+ * 6-digit OTP input: individual boxes with auto-advance, backspace nav, and paste support.
+ * Calls onComplete(code) when all 6 digits are filled.
+ */
+function OtpInput({
+  value,
+  onChange,
+  onComplete,
+  disabled,
+}: {
+  value: string
+  onChange: (v: string) => void
+  onComplete: (v: string) => void
+  disabled?: boolean
+}) {
+  const inputsRef = useRef<Array<HTMLInputElement | null>>([])
+
+  const digits = value.padEnd(6, ' ').slice(0, 6).split('').map(c => c === ' ' ? '' : c)
+
+  const focusInput = (index: number) => {
+    const el = inputsRef.current[index]
+    if (el) el.focus()
+  }
+
+  const setDigit = (index: number, digit: string) => {
+    const current = value.padEnd(6, ' ').split('')
+    current[index] = digit || ' '
+    const next = current.join('').trimEnd()
+    onChange(next)
+    return next
+  }
+
+  const handleChange = (index: number, raw: string) => {
+    if (disabled) return
+    // Only last digit if multiple characters typed
+    const digit = raw.replace(/\D/g, '').slice(-1)
+    const next = setDigit(index, digit)
+
+    if (digit && index < 5) {
+      focusInput(index + 1)
+    }
+
+    const cleaned = next.replace(/\s/g, '')
+    if (cleaned.length === 6) {
+      onComplete(cleaned)
+    }
+  }
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (disabled) return
+    if (e.key === 'Backspace') {
+      if (digits[index]) {
+        setDigit(index, '')
+      } else if (index > 0) {
+        setDigit(index - 1, '')
+        focusInput(index - 1)
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      focusInput(index - 1)
+    } else if (e.key === 'ArrowRight' && index < 5) {
+      focusInput(index + 1)
+    }
+  }
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    if (disabled) return
+    e.preventDefault()
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    if (!pasted) return
+    onChange(pasted)
+    const lastIndex = Math.min(pasted.length - 1, 5)
+    focusInput(lastIndex)
+    if (pasted.length === 6) {
+      onComplete(pasted)
+    }
+  }
+
+  return (
+    <div className="flex justify-center gap-2 sm:gap-3">
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <input
+          key={i}
+          ref={(el) => { inputsRef.current[i] = el }}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          maxLength={1}
+          value={digits[i]}
+          onChange={(e) => handleChange(i, e.target.value)}
+          onKeyDown={(e) => handleKeyDown(i, e)}
+          onPaste={handlePaste}
+          onFocus={(e) => e.target.select()}
+          disabled={disabled}
+          autoComplete="one-time-code"
+          className="w-11 h-14 sm:w-12 sm:h-16 text-center text-2xl font-semibold bg-[var(--bg-elev)] border-2 border-[var(--line-strong)] rounded-lg text-[var(--ink)] focus:outline-none focus:border-[var(--line-strong)] focus:shadow-[var(--focus-ring)] disabled:bg-[var(--bg-sunk)] disabled:text-[var(--ink-faint)] transition-all"
+        />
+      ))}
+    </div>
+  )
+}
+
 function SignupContent() {
   const searchParams = useSearchParams()
+  const { tenant, isTenantContext } = useTenantBranding()
+
+  // Step state
+  const [step, setStep] = useState<SignupStep>('form')
+
+  // Form state
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [fullName, setFullName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  const [showRoleSelection, setShowRoleSelection] = useState(false)
-  const [userId, setUserId] = useState<string | null>(null)
+  const [tosAgreed, setTosAgreed] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<'startup' | 'investor' | null>(null)
 
+  // Invite state
+  const [inviteId, setInviteId] = useState<string | null>(null)
+  const [inviteEmailLocked, setInviteEmailLocked] = useState(false)
+  const [inviteTeamOwnerRole, setInviteTeamOwnerRole] = useState<string | null>(null)
+  const [inviteOwnerName, setInviteOwnerName] = useState<string | null>(null)
+  const [inviteTeamName, setInviteTeamName] = useState<string | null>(null)
+  const [inviteExistingUser, setInviteExistingUser] = useState(false)
+
+  // Claim state (preserved from previous flow)
+  const [claimToken, setClaimToken] = useState<string | null>(null)
+  const [claimCompanyName, setClaimCompanyName] = useState<string | null>(null)
+
+  // Promo code state
+  const [promoCode, setPromoCode] = useState('')
+  const [showPromoField, setShowPromoField] = useState(false)
+
+  // Community invite state
+  const [communitySlug, setCommunitySlug] = useState<string | null>(null)
+
+  // OTP state
+  const [signupEmail, setSignupEmail] = useState('')
+  const [otpCode, setOtpCode] = useState('')
+  const [otpLoading, setOtpLoading] = useState(false)
+  const [otpError, setOtpError] = useState('')
+  const [otpSuccess, setOtpSuccess] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const [resending, setResending] = useState(false)
+
+  // Load invite details
   useEffect(() => {
-    if (searchParams.get('step') === 'role') {
-      // Coming from OAuth callback — user needs to pick a role
-      const checkUser = async () => {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          setUserId(user.id)
-          setShowRoleSelection(true)
-        }
-      }
-      checkUser()
+    const claim = searchParams.get('claim')
+    if (claim) {
+      setClaimToken(claim)
+      fetch(`/api/claim/info?token=${claim}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.valid) {
+            setClaimCompanyName(data.company_name)
+            if (data.claim_invited_email) {
+              setEmail(data.claim_invited_email)
+              setInviteEmailLocked(true)
+            }
+          }
+        })
+        .catch(() => {})
+    }
+
+    const promo = searchParams.get('promo')
+    if (promo) {
+      setPromoCode(promo.toUpperCase())
+      setShowPromoField(true)
+    }
+
+    const community = searchParams.get('community')
+    if (community) {
+      setCommunitySlug(community)
+    }
+
+    const invite = searchParams.get('invite')
+    if (invite) {
+      setInviteId(invite)
+      fetch(`/api/auth/invite?id=${invite}`)
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.email) {
+            setEmail(data.email)
+            setInviteEmailLocked(true)
+          }
+          if (data?.name) setFullName(data.name)
+          if (data?.teamOwnerRole) setInviteTeamOwnerRole(data.teamOwnerRole)
+          if (data?.teamOwnerName) setInviteOwnerName(data.teamOwnerName)
+          if (data?.fundName) setInviteTeamName(data.fundName)
+          if (data?.existingUser) setInviteExistingUser(true)
+        })
+        .catch(() => {})
     }
   }, [searchParams])
+
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [resendCooldown])
+
+  const handleResendOtp = useCallback(async () => {
+    if (resendCooldown > 0 || resending || !signupEmail) return
+    setResending(true)
+    setOtpError('')
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: signupEmail,
+      })
+      if (error) throw error
+      setResendCooldown(60)
+    } catch {
+      setOtpError('Failed to resend code. Please try again.')
+    } finally {
+      setResending(false)
+    }
+  }, [signupEmail, resendCooldown, resending])
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    const { data, error } = await supabase.auth.signUp({
+    // Invite signups: validate password confirmation
+    if (inviteId && password !== confirmPassword) {
+      setError('Passwords do not match')
+      setLoading(false)
+      return
+    }
+
+    const signupRole = claimToken
+      ? 'startup'
+      : inviteId
+        ? (inviteTeamOwnerRole || 'investor')
+        : selectedRole
+
+    const { data, error: signupError } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/confirm` }
+      options: {
+        // Fallback redirect only — OTP happens on this page. A click on a
+        // legacy email link will land in /auth/confirm which now redirects
+        // to /login.
+        emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        data: {
+          role: signupRole,
+          ...(fullName ? { full_name: fullName } : {}),
+          ...(inviteId ? { invite: inviteId } : {}),
+        },
+      },
     })
 
-    if (error) {
-      setError(error.message)
+    if (signupError) {
+      const msg = signupError.message.toLowerCase()
+      if (msg.includes('already registered') || msg.includes('user already')) {
+        setError('An account with this email already exists. Please sign in instead.')
+      } else {
+        setError(signupError.message)
+      }
       setLoading(false)
       return
     }
 
     if (data.user) {
+      // Immediate session (email confirmation disabled) — complete signup directly.
       if (data.session) {
-        // Auto-confirmed — create profile and show role selection
-        await supabase.from('profiles').insert({
-          user_id: data.user.id,
-          email,
-        })
-        setUserId(data.user.id)
-        setShowRoleSelection(true)
-      } else {
-        // Email confirmation required
-        setSuccess(true)
+        await completeSignupWithSession(signupRole)
+        return
       }
-    }
 
-    setLoading(false)
-  }
-
-  async function handleRoleSelect(role: 'startup' | 'investor') {
-    if (!userId) return
-    setLoading(true)
-
-    const { error } = await supabase
-      .from('profiles')
-      .update({ role })
-      .eq('user_id', userId)
-
-    if (error) {
-      setError('Failed to set role. Please try again.')
+      // Email confirmation ON → move to OTP screen
+      setSignupEmail(email)
+      setStep('otp')
       setLoading(false)
       return
     }
 
-    if (role === 'startup') {
-      window.location.href = '/'
-    } else {
-      window.location.href = '/dashboard'
+    setError('Something went wrong. Please try again.')
+    setLoading(false)
+  }
+
+  async function completeSignupWithSession(signupRole: string | null) {
+    try {
+      // Handle claim flow first (preserves existing behavior)
+      if (claimToken) {
+        try {
+          const res = await fetch('/api/claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: claimToken }),
+          })
+          const claimData = await res.json()
+          if (claimData.approved) {
+            window.location.href = '/dashboard?claimed=true'
+          } else {
+            window.location.href = '/dashboard?claim_pending=true'
+          }
+        } catch {
+          window.location.href = '/dashboard'
+        }
+        return
+      }
+
+      // Call complete-signup to create profile + accept invite + set active_team_id
+      const res = await fetch('/api/auth/complete-signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: signupRole,
+          ...(inviteId ? { inviteId } : {}),
+          ...(fullName ? { fullName } : {}),
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        setError(data?.error || 'Failed to complete signup')
+        setOtpLoading(false)
+        setLoading(false)
+        return
+      }
+
+      const result = await res.json()
+
+      // Redeem promo code if provided (fire-and-forget, silently ignore errors)
+      if (promoCode.trim()) {
+        fetch('/api/subscription/redeem-promo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: promoCode.trim() }),
+        }).catch(() => {})
+      }
+
+      // Activate community membership if signing up via community invite
+      if (communitySlug) {
+        try {
+          const cmRes = await fetch('/api/communities/join-on-signup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ communitySlug }),
+          })
+          if (cmRes.ok) {
+            // Fire welcome email (fire-and-forget)
+            fetch('/api/auth/welcome', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ role: result.role || signupRole || 'investor' }),
+            }).catch(() => {})
+            window.location.href = `/communities/${communitySlug}`
+            return
+          }
+        } catch { /* fall through to normal redirect */ }
+      }
+
+      // Fire welcome email (fire-and-forget)
+      fetch('/api/auth/welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: result.role || signupRole || 'investor' }),
+      }).catch(() => {})
+
+      window.location.href = result.redirectTo || '/dashboard'
+    } catch (err) {
+      console.error('completeSignupWithSession error:', err)
+      setError('Failed to complete signup. Please try again.')
+      setOtpLoading(false)
+      setLoading(false)
     }
   }
 
-  async function handleGoogleLogin() {
-    setLoading(true)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: `${window.location.origin}/auth/callback` }
+  const handleVerifyOtp = useCallback(async (code: string) => {
+    if (code.length !== 6 || otpLoading) return
+
+    setOtpLoading(true)
+    setOtpError('')
+
+    const { data, error } = await supabase.auth.verifyOtp({
+      email: signupEmail,
+      token: code,
+      type: 'email',
     })
-    if (error) { setError(error.message); setLoading(false) }
+
+    if (error || !data.session) {
+      setOtpError(error?.message || 'Invalid code. Please try again.')
+      setOtpCode('')
+      setOtpLoading(false)
+      return
+    }
+
+    setOtpSuccess(true)
+
+    const signupRole = claimToken
+      ? 'startup'
+      : inviteId
+        ? (inviteTeamOwnerRole || 'investor')
+        : selectedRole
+
+    await completeSignupWithSession(signupRole)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [otpLoading, signupEmail, claimToken, inviteId, inviteTeamOwnerRole, selectedRole])
+
+  function handleUseDifferentEmail() {
+    setStep('form')
+    setOtpCode('')
+    setOtpError('')
+    setOtpSuccess(false)
+    setSignupEmail('')
   }
 
-  async function handleLinkedInLogin() {
-    setLoading(true)
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'linkedin_oidc',
-      options: { redirectTo: `${window.location.origin}/auth/callback` }
-    })
-    if (error) { setError(error.message); setLoading(false) }
-  }
-
-  if (showRoleSelection) {
+  // ====== OTP STEP ======
+  if (step === 'otp') {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
-        <div className="w-full max-w-lg">
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
+        <div className="w-full w-full md:max-w-md">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-[#10B981] flex items-center justify-center">
-                <span className="text-white font-bold text-xl">K</span>
-              </div>
-              <span className="text-white font-bold text-xl">Kunfa.AI</span>
+            <Link href="/" className="inline-block mb-6">
+              {isTenantContext && tenant?.logo_url ? (
+                <img src={tenant.logo_url} alt={tenant.display_name || tenant.name} className="h-8 mx-auto" />
+              ) : (
+                <KunfaLogo height={32} />
+              )}
+            </Link>
+          </div>
+
+          <div className="bg-[var(--bg-elev)] rounded-xl p-8 border border-[var(--line)] text-center">
+            <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-2">Check your email</h2>
+            <p className="text-sm text-[var(--ink-soft)] mb-1">
+              Enter the 6-digit code we sent to
+            </p>
+            <p className="font-semibold text-[var(--ink)] mb-6 break-all">{signupEmail}</p>
+
+            <div className="mb-4">
+              <OtpInput
+                value={otpCode}
+                onChange={setOtpCode}
+                onComplete={handleVerifyOtp}
+                disabled={otpLoading || otpSuccess}
+              />
             </div>
-            <h1 className="text-2xl font-bold text-white">How will you use Kunfa?</h1>
-            <p className="text-gray-400 mt-2">Choose your role to get started</p>
-          </div>
 
-          {error && (
-            <div className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3 mb-6">{error}</div>
-          )}
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <button
-              onClick={() => handleRoleSelect('startup')}
-              disabled={loading}
-              className="group bg-[#1E293B] rounded-xl p-8 border-2 border-gray-700 hover:border-[#10B981] transition-all text-left disabled:opacity-50"
-            >
-              <div className="w-14 h-14 rounded-xl bg-[#10B981]/20 flex items-center justify-center mb-4 group-hover:bg-[#10B981]/30 transition">
-                <Building2 className="w-7 h-7 text-[#10B981]" />
+            {otpLoading && !otpSuccess && (
+              <div className="flex items-center justify-center gap-2 text-sm text-[var(--ink-mute)] mb-4">
+                <div className="w-4 h-4 border-2 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin" />
+                Verifying...
               </div>
-              <h3 className="text-lg font-semibold text-white mb-1">I'm a Startup</h3>
-              <p className="text-sm text-gray-400">Get your pitch scored by AI and connect with investors</p>
-            </button>
+            )}
 
-            <button
-              onClick={() => handleRoleSelect('investor')}
-              disabled={loading}
-              className="group bg-[#1E293B] rounded-xl p-8 border-2 border-gray-700 hover:border-blue-500 transition-all text-left disabled:opacity-50"
-            >
-              <div className="w-14 h-14 rounded-xl bg-blue-500/20 flex items-center justify-center mb-4 group-hover:bg-blue-500/30 transition">
-                <TrendingUp className="w-7 h-7 text-blue-400" />
+            {otpSuccess && (
+              <div className="text-sm text-green-700 font-medium mb-4">
+                Verified! Setting up your account...
               </div>
-              <h3 className="text-lg font-semibold text-white mb-1">I'm an Investor</h3>
-              <p className="text-sm text-gray-400">Discover deals, manage pipeline, and track portfolio</p>
-            </button>
+            )}
+
+            {otpError && (
+              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                {otpError}
+              </div>
+            )}
+
+            {!otpSuccess && (
+              <div className="space-y-3 pt-2">
+                <button
+                  type="button"
+                  onClick={handleResendOtp}
+                  disabled={resendCooldown > 0 || resending || otpLoading}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-[var(--accent-ink)] hover:text-[var(--ink)] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <RefreshCw className={`w-4 h-4 ${resending ? 'animate-spin' : ''}`} />
+                  {resending
+                    ? 'Sending...'
+                    : resendCooldown > 0
+                      ? `Resend in ${resendCooldown}s`
+                      : 'Resend code'
+                  }
+                </button>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleUseDifferentEmail}
+                    disabled={otpLoading}
+                    className="text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] font-medium"
+                  >
+                    Use a different email
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
     )
   }
 
-  if (success) {
-    return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
-        <div className="w-full max-w-md text-center">
-          <div className="w-16 h-16 rounded-full bg-[#10B981]/20 flex items-center justify-center mx-auto mb-6">
-            <svg className="w-8 h-8 text-[#10B981]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Check your email</h2>
-          <p className="text-gray-400 mb-6">
-            We sent a confirmation link to <strong className="text-white">{email}</strong>. Click the link to activate your account.
-          </p>
-          <Link href="/login" className="text-[#10B981] hover:underline text-sm">
-            Back to login
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  // ====== FORM STEP ======
+
+  // Invite-specific heading
+  const inviteHeading = inviteId
+    ? (inviteTeamName ? `Join ${inviteTeamName} on Kunfa` : 'Join your team on Kunfa')
+    : null
+
+  const inviteSubheading = inviteId && inviteOwnerName
+    ? `${inviteOwnerName} has invited you to join their team`
+    : inviteId
+      ? 'You have been invited to join a team'
+      : null
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
+      <div className="w-full w-full md:max-w-md">
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-[#10B981] flex items-center justify-center">
-              <span className="text-white font-bold text-xl">K</span>
-            </div>
-            <span className="text-white font-bold text-xl">Kunfa.AI</span>
+          <Link href="/" className="inline-block mb-6">
+            {isTenantContext && tenant?.logo_url ? (
+              <img src={tenant.logo_url} alt={tenant.display_name || tenant.name} className="h-8 mx-auto" />
+            ) : (
+              <KunfaLogo height={32} />
+            )}
           </Link>
-          <h1 className="text-2xl font-bold text-white">Create your account</h1>
-          <p className="text-gray-400 mt-2">Get your startup scored by AI</p>
+          {inviteHeading ? (
+            <>
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--ink)]/10 mb-3">
+                <Users className="w-6 h-6 text-[var(--accent-ink)]" />
+              </div>
+              <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{inviteHeading}</h1>
+              {inviteSubheading && (
+                <p className="text-[var(--ink-mute)] mt-2">{inviteSubheading}</p>
+              )}
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">
+                {isTenantContext ? `Join ${tenant?.display_name || tenant?.name}` : 'Create your account'}
+              </h1>
+              <p className="text-[var(--ink-mute)] mt-2">
+                {isTenantContext && tenant?.tagline
+                  ? tenant.tagline
+                  : claimCompanyName
+                    ? `Sign up to claim ${claimCompanyName}`
+                    : 'Get your startup scored by AI'}
+              </p>
+            </>
+          )}
         </div>
 
-        <div className="bg-[#1E293B] rounded-xl p-8 border border-gray-700">
-          <div className="space-y-3 mb-6">
-            <button onClick={handleGoogleLogin} disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-gray-800 rounded-lg font-medium hover:bg-gray-100 transition disabled:opacity-50">
-              <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-              Sign up with Google
-            </button>
-            <button onClick={handleLinkedInLogin} disabled={loading}
-              className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-[#0A66C2] text-white rounded-lg font-medium hover:bg-[#004182] transition disabled:opacity-50">
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-              Sign up with LinkedIn
-            </button>
-          </div>
-
-          <div className="relative mb-6">
-            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-600"></div></div>
-            <div className="relative flex justify-center text-sm"><span className="px-2 bg-[#1E293B] text-gray-400">or</span></div>
-          </div>
+        <div className="bg-[var(--bg-elev)] rounded-xl p-8 border border-[var(--line)]">
+          {/* Existing user nudge for invite flow */}
+          {inviteId && inviteExistingUser && (
+            <div className="mb-5 rounded-lg bg-[var(--accent-soft)] border border-[var(--line)] p-4">
+              <p className="text-sm text-[var(--ink)] font-medium mb-1">
+                You already have a Kunfa account
+              </p>
+              <p className="text-sm text-[var(--ink)]">
+                Sign in to accept this invitation.{' '}
+                <Link
+                  href={`/login?invite=${inviteId}`}
+                  className="font-semibold underline hover:no-underline"
+                >
+                  Go to sign in →
+                </Link>
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSignup} className="space-y-4">
+            {/* Role selector — only for normal signups (not invite/claim) */}
+            {!claimToken && !inviteId && (
+              <div>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">I am a...</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRole('startup')}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-medium transition ${
+                      selectedRole === 'startup'
+                        ? 'border-[var(--line-strong)] bg-[var(--ink)]/5 text-[var(--accent-ink)]'
+                        : 'border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--line-strong)]'
+                    }`}
+                  >
+                    <Building2 className="w-5 h-5" />
+                    Startup
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedRole('investor')}
+                    className={`flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-medium transition ${
+                      selectedRole === 'investor'
+                        ? 'border-[var(--line-strong)] bg-[var(--ink)]/5 text-[var(--accent-ink)]'
+                        : 'border-[var(--line)] text-[var(--ink-soft)] hover:border-[var(--line-strong)]'
+                    }`}
+                  >
+                    <TrendingUp className="w-5 h-5" />
+                    Investor
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Full Name — shown for invite flow */}
+            {inviteId && (
+              <div>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Full Name</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  placeholder="Jane Smith"
+                />
+              </div>
+            )}
+
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Email</label>
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
-                className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
-                placeholder="you@company.com" />
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                readOnly={inviteEmailLocked}
+                className={`w-full px-4 py-3 border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] ${inviteEmailLocked ? 'bg-[var(--bg-sunk)]' : 'bg-[var(--bg-elev)]'}`}
+                placeholder="you@company.com"
+              />
             </div>
+
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-1">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={6}
-                className="w-full px-4 py-3 bg-[#0F172A] border border-gray-600 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]"
-                placeholder="Min 6 characters" />
+              <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="w-full px-4 py-3 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                placeholder="Min 6 characters"
+              />
+            </div>
+
+            {/* Confirm Password — only for invite flow */}
+            {inviteId && (
+              <div>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Confirm Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="w-full px-4 py-3 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]"
+                  placeholder="Re-enter password"
+                />
+              </div>
+            )}
+
+            <label className="flex items-start gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={tosAgreed}
+                onChange={(e) => setTosAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-[var(--line-strong)] text-[var(--accent-ink)] focus:ring-[var(--ink)]"
+              />
+              <span className="text-xs text-[var(--ink-soft)] leading-relaxed">
+                I agree to the{' '}
+                <Link href="/terms" target="_blank" className="text-[var(--accent-ink)] hover:underline">Terms of Service</Link>
+                {' '}and{' '}
+                <Link href="/privacy" target="_blank" className="text-[var(--accent-ink)] hover:underline">Privacy Policy</Link>
+              </span>
+            </label>
+
+            {/* Promo code — collapsible */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowPromoField(!showPromoField)}
+                className="flex items-center gap-1.5 text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] transition"
+              >
+                <Tag className="w-3.5 h-3.5" />
+                Have a promo code?
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showPromoField ? 'rotate-180' : ''}`} />
+              </button>
+              {showPromoField && (
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                  className="mt-2 w-full px-4 py-3 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] uppercase tracking-wider"
+                  placeholder="PROMO CODE"
+                />
+              )}
             </div>
 
             {error && (
-              <div className="text-red-400 text-sm bg-red-900/20 border border-red-800 rounded-lg p-3">{error}</div>
+              <div className="text-red-700 text-sm bg-red-50 border border-red-200 rounded-lg p-3">{error}</div>
             )}
 
-            <button type="submit" disabled={loading}
-              className="w-full py-3 bg-[#10B981] text-white rounded-lg font-semibold hover:bg-[#059669] transition disabled:opacity-50">
-              {loading ? 'Creating account...' : 'Create Account'}
+            <button
+              type="submit"
+              disabled={loading || !tosAgreed || (!claimToken && !inviteId && !selectedRole)}
+              className="w-full py-3 bg-[var(--ink)] text-white rounded-lg font-semibold hover:bg-[var(--ink-2)] transition disabled:opacity-50"
+            >
+              {loading
+                ? 'Creating account...'
+                : inviteId
+                  ? 'Create Account & Join Team'
+                  : 'Create Account'}
             </button>
           </form>
 
-          <p className="text-center text-gray-400 text-sm mt-6">
+          <p className="text-center text-[var(--ink-soft)] text-sm mt-6">
             Already have an account?{' '}
-            <Link href="/login" className="text-[#10B981] hover:underline">Sign in</Link>
+            <Link
+              href={inviteId ? `/login?invite=${inviteId}` : '/login'}
+              className="text-[var(--accent-ink)] font-medium hover:underline"
+            >
+              Sign in
+            </Link>
           </p>
         </div>
+
+        {/* Powered by Kunfa */}
+        {isTenantContext && tenant?.show_powered_by && (
+          <p className="text-center text-[var(--ink-faint)] text-xs mt-6">
+            Powered by{' '}
+            <a href="https://kunfa.ai" target="_blank" rel="noopener noreferrer" className="text-[var(--ink-mute)] hover:text-[var(--ink-soft)] font-medium">
+              Kunfa
+            </a>
+          </p>
+        )}
       </div>
     </div>
   )

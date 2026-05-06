@@ -8,6 +8,12 @@ const ACCEPTED_TYPES = [
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv',
+  'text/plain',
+  'image/png',
+  'image/jpeg',
 ];
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
@@ -59,7 +65,7 @@ export async function POST(request: NextRequest) {
     if (!ACCEPTED_TYPES.includes(file.type)) {
       return NextResponse.json(
         {
-          message: 'Invalid file type. Accepted: PDF, PowerPoint (.pptx), Word (.docx)',
+          message: 'Invalid file type. Accepted: PDF, PowerPoint, Word, Excel, CSV, TXT, PNG, JPG',
           code: 'INVALID_FILE_TYPE',
         },
         { status: 400 }

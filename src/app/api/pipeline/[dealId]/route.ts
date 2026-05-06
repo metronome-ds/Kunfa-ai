@@ -1,9 +1,29 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const DEAL_FIELDS = [
+  'notes',
+  'priority_flag',
+  'next_action',
+  'next_action_date',
+  'deal_size',
+  'source',
+  'thesis_fit',
+  'contact_name',
+  'contact_email',
+  'assigned_to_name',
+  'valuation_pre',
+  'valuation_post',
+  'lead_investor',
+  'co_investors',
+  'round_type',
+] as const;
+
 /**
  * PUT /api/pipeline/[dealId]
- * Update deal stage and stage_changed_at
+ * Update deal stage and/or management fields
  */
 export async function PUT(
   request: NextRequest,
@@ -12,6 +32,10 @@ export async function PUT(
   try {
     const supabase = await createServerSupabaseClient();
     const { dealId } = await params;
+
+    if (!UUID_REGEX.test(dealId)) {
+      return NextResponse.json({ error: 'Invalid deal ID format' }, { status: 400 });
+    }
 
     const {
       data: { user },
@@ -23,14 +47,32 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { stage, notes } = body;
 
     const updateData: Record<string, unknown> = {};
-    if (stage) {
-      updateData.stage = stage;
+
+    // Handle stage change
+    if (body.stage) {
+      updateData.stage = body.stage;
       updateData.stage_changed_at = new Date().toISOString();
     }
-    if (notes !== undefined) updateData.notes = notes;
+
+    // Handle all deal management fields
+    for (const field of DEAL_FIELDS) {
+      if (field in body) {
+        const val = body[field];
+        if (field === 'deal_size' || field === 'valuation_pre' || field === 'valuation_post') {
+          updateData[field] = val != null && val !== '' ? Number(val) : null;
+        } else if (field === 'priority_flag') {
+          updateData[field] = !!val;
+        } else {
+          updateData[field] = val ?? null;
+        }
+      }
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
+    }
 
     const { data, error } = await supabase
       .from('deals')
@@ -67,6 +109,10 @@ export async function DELETE(
   try {
     const supabase = await createServerSupabaseClient();
     const { dealId } = await params;
+
+    if (!UUID_REGEX.test(dealId)) {
+      return NextResponse.json({ error: 'Invalid deal ID format' }, { status: 400 });
+    }
 
     const {
       data: { user },

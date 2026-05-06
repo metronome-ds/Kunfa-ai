@@ -4,7 +4,7 @@ export default function DebtPartnersPage() {
   return (
     <ComingSoon
       title="Debt Partners"
-      description="Browse lenders and debt providers in the Gulf/MENA region. Request introductions and explore financing options for your startup."
+      description="Explore alternative financing options. Shariah-compliant and conventional debt financing for growth."
     />
   );
 }

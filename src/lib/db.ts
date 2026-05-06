@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
+import { normalizeStage } from './constants'
+import { extractDomain, fetchLogoUrl } from './utils'
 
 // Use service role key to bypass RLS in API routes
-function getSupabase() {
+export function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -82,7 +84,7 @@ export async function getProfileByUserId(userId: string) {
   const supabase = getSupabase()
   const { data } = await supabase
     .from('profiles')
-    .select('full_name, job_title, company_name, company_country, company_website, one_liner')
+    .select('full_name, job_title, company_name, company_country, company_website, one_liner, industry, company_stage, linkedin_url, team_size')
     .eq('user_id', userId)
     .single()
   return data
@@ -103,12 +105,11 @@ export async function createSubmission(data: {
   id: string
   user_id: string
   email: string
-  linkedin_url: string
+  linkedin_url?: string | null
   pitch_deck_url: string
-  pitch_deck_filename?: string
-  financials_url: string
-  financials_filename?: string
-  voice_note_url?: string
+  pitch_deck_filename?: string | null
+  financials_url?: string | null
+  financials_filename?: string | null
 }) {
   const supabase = getSupabase()
   const { data: submission, error } = await supabase
@@ -117,12 +118,11 @@ export async function createSubmission(data: {
       id: data.id,
       user_id: data.user_id,
       email: data.email,
-      linkedin_url: data.linkedin_url,
+      linkedin_url: data.linkedin_url || null,
       pitch_deck_url: data.pitch_deck_url,
       pitch_deck_filename: data.pitch_deck_filename || null,
-      financials_url: data.financials_url,
+      financials_url: data.financials_url || null,
       financials_filename: data.financials_filename || null,
-      voice_note_url: data.voice_note_url || null,
     })
     .select()
     .single()
@@ -137,12 +137,58 @@ export async function updateSubmissionScore(
 ) {
   const a = analysis as {
     overall_score: number
-    dimensions: {
-      team: { score: number; letter_grade: string }
-      market: { score: number; letter_grade: string }
-      product: { score: number; letter_grade: string }
-      financial: { score: number; letter_grade: string }
-    }
+    team_score: number
+    team_grade: string
+    team_summary?: string
+    market_score: number
+    market_grade: string
+    market_summary?: string
+    product_score: number
+    product_grade: string
+    product_summary?: string
+    traction_score?: number
+    traction_grade?: string
+    traction_summary?: string
+    financial_score: number
+    financial_grade: string
+    financial_summary?: string
+    fundraise_readiness_score?: number
+    fundraise_readiness_grade?: string
+    fundraise_readiness_summary?: string
+  }
+
+  // Build the 6-dimension breakdown jsonb — KUN-21 scoring transparency
+  const dimensionScores = {
+    team: {
+      score: a.team_score ?? 0,
+      grade: a.team_grade ?? null,
+      summary: a.team_summary ?? null,
+    },
+    market: {
+      score: a.market_score ?? 0,
+      grade: a.market_grade ?? null,
+      summary: a.market_summary ?? null,
+    },
+    product: {
+      score: a.product_score ?? 0,
+      grade: a.product_grade ?? null,
+      summary: a.product_summary ?? null,
+    },
+    traction: {
+      score: a.traction_score ?? 0,
+      grade: a.traction_grade ?? null,
+      summary: a.traction_summary ?? null,
+    },
+    financial: {
+      score: a.financial_score ?? 0,
+      grade: a.financial_grade ?? null,
+      summary: a.financial_summary ?? null,
+    },
+    fundraise_readiness: {
+      score: a.fundraise_readiness_score ?? 0,
+      grade: a.fundraise_readiness_grade ?? null,
+      summary: a.fundraise_readiness_summary ?? null,
+    },
   }
 
   const supabase = getSupabase()
@@ -150,14 +196,21 @@ export async function updateSubmissionScore(
     .from('submissions')
     .update({
       overall_score: a.overall_score,
-      team_score: a.dimensions.team.score,
-      team_grade: a.dimensions.team.letter_grade,
-      market_score: a.dimensions.market.score,
-      market_grade: a.dimensions.market.letter_grade,
-      product_score: a.dimensions.product.score,
-      product_grade: a.dimensions.product.letter_grade,
-      financial_score: a.dimensions.financial.score,
-      financial_grade: a.dimensions.financial.letter_grade,
+      team_score: a.team_score,
+      team_grade: a.team_grade,
+      market_score: a.market_score,
+      market_grade: a.market_grade,
+      product_score: a.product_score,
+      product_grade: a.product_grade,
+      traction_score: a.traction_score ?? null,
+      traction_grade: a.traction_grade ?? null,
+      traction_summary: a.traction_summary ?? null,
+      financial_score: a.financial_score,
+      financial_grade: a.financial_grade,
+      fundraise_readiness_score: a.fundraise_readiness_score ?? null,
+      fundraise_readiness_grade: a.fundraise_readiness_grade ?? null,
+      fundraise_readiness_summary: a.fundraise_readiness_summary ?? null,
+      dimension_scores: dimensionScores,
       full_analysis: analysis,
     })
     .eq('id', id)
@@ -179,7 +232,28 @@ export async function getSubmission(id: string) {
 
 export async function markSubmissionPaid(id: string, stripeSessionId: string) {
   const supabase = getSupabase()
-  await supabase
+
+  // First verify the submission exists
+  const { data: existing, error: lookupError } = await supabase
+    .from('submissions')
+    .select('id, paid')
+    .eq('id', id)
+    .maybeSingle()
+
+  if (lookupError) {
+    console.error(`markSubmissionPaid: lookup failed for ${id}:`, lookupError.message)
+    throw lookupError
+  }
+  if (!existing) {
+    console.error(`markSubmissionPaid: submission ${id} not found in database`)
+    throw new Error(`Submission ${id} not found`)
+  }
+  if (existing.paid) {
+    console.log(`markSubmissionPaid: submission ${id} already paid, skipping`)
+    return
+  }
+
+  const { data: updated, error } = await supabase
     .from('submissions')
     .update({
       paid: true,
@@ -187,6 +261,13 @@ export async function markSubmissionPaid(id: string, stripeSessionId: string) {
       paid_at: new Date().toISOString(),
     })
     .eq('id', id)
+    .select('id, paid')
+
+  if (error) {
+    console.error(`markSubmissionPaid: update failed for ${id}:`, error.message)
+    throw error
+  }
+  console.log(`markSubmissionPaid: success for ${id}, updated rows:`, updated?.length ?? 0)
 }
 
 export async function updateReportUrl(id: string, reportUrl: string) {
@@ -200,13 +281,64 @@ export async function updateReportUrl(id: string, reportUrl: string) {
     .eq('id', id)
 }
 
+// Update an existing company page with new score data (for re-scoring)
+export async function updateCompanyPageScore(companyPageId: string, data: {
+  submissionId: string
+  overallScore: number
+  description?: string
+  problemSummary?: string
+  solutionSummary?: string
+  businessModel?: string
+  traction?: string
+  useOfFunds?: string
+  keyRisks?: string
+  pdfUrl?: string
+  financialsUrl?: string
+  dimensionScores?: Record<string, unknown>
+}) {
+  const supabase = getSupabase()
+
+  // First get current score_count to increment
+  const { data: current } = await supabase
+    .from('company_pages')
+    .select('score_count')
+    .eq('id', companyPageId)
+    .single()
+
+  const newScoreCount = ((current?.score_count as number) || 0) + 1
+
+  const { error } = await supabase
+    .from('company_pages')
+    .update({
+      submission_id: data.submissionId,
+      overall_score: data.overallScore,
+      description: data.description || undefined,
+      problem_summary: data.problemSummary || undefined,
+      solution_summary: data.solutionSummary || undefined,
+      business_model: data.businessModel || undefined,
+      traction: data.traction || undefined,
+      use_of_funds: data.useOfFunds || undefined,
+      key_risks: data.keyRisks || undefined,
+      pdf_url: data.pdfUrl || undefined,
+      financials_url: data.financialsUrl || undefined,
+      dimension_scores: data.dimensionScores || undefined,
+      score_count: newScoreCount,
+      last_scored_at: new Date().toISOString(),
+    })
+    .eq('id', companyPageId)
+
+  if (error) console.error('Failed to update company page score:', error)
+}
+
 // Create a company page from a scored submission
 export async function createCompanyPage(data: {
   userId: string
   submissionId: string
   companyName: string
   overallScore: number
+  slug?: string
   description?: string
+  oneLiner?: string
   industry?: string
   stage?: string
   raiseAmount?: number
@@ -220,19 +352,29 @@ export async function createCompanyPage(data: {
   useOfFunds?: string
   keyRisks?: string
   country?: string
+  headquarters?: string
   websiteUrl?: string
   founderName?: string
   founderTitle?: string
+  linkedinUrl?: string
+  companyLinkedinUrl?: string
+  foundingTeam?: { name: string; title: string; email?: string; linkedin?: string }[]
+  pdfUrl?: string
+  financialsUrl?: string
+  dimensionScores?: Record<string, unknown>
 }) {
   const supabase = getSupabase()
-  // Generate slug from company name
-  const slug = data.companyName
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    + '-' + data.submissionId.slice(0, 8)
 
-  const { error } = await supabase
+  // Use user-provided slug, or auto-generate from company name
+  const slug = data.slug || (
+    data.companyName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      + '-' + data.submissionId.slice(0, 8)
+  )
+
+  const { data: inserted, error } = await supabase
     .from('company_pages')
     .insert({
       user_id: data.userId,
@@ -241,8 +383,9 @@ export async function createCompanyPage(data: {
       slug,
       overall_score: data.overallScore,
       description: data.description || null,
+      one_liner: data.oneLiner || null,
       industry: data.industry || null,
-      stage: data.stage || null,
+      stage: data.stage ? normalizeStage(data.stage) : null,
       raise_amount: data.raiseAmount || null,
       team_size: data.teamSize || null,
       founded_year: data.foundedYear || null,
@@ -254,11 +397,36 @@ export async function createCompanyPage(data: {
       use_of_funds: data.useOfFunds || null,
       key_risks: data.keyRisks || null,
       country: data.country || null,
+      headquarters: data.headquarters || null,
       website_url: data.websiteUrl || null,
       founder_name: data.founderName || null,
       founder_title: data.founderTitle || null,
+      linkedin_url: data.linkedinUrl || null,
+      company_linkedin_url: data.companyLinkedinUrl || null,
+      founding_team: data.foundingTeam && data.foundingTeam.length > 0 ? data.foundingTeam : null,
+      pdf_url: data.pdfUrl || null,
+      financials_url: data.financialsUrl || null,
+      dimension_scores: data.dimensionScores || null,
     })
+    .select('id')
+    .single()
 
   if (error) console.error('Failed to create company page:', error)
-  return slug
+
+  // Auto-fetch logo if website_url provided
+  if (inserted?.id && data.websiteUrl) {
+    const domain = extractDomain(data.websiteUrl)
+    if (domain) {
+      fetchLogoUrl(domain).then(async (logoUrl) => {
+        if (logoUrl) {
+          await supabase
+            .from('company_pages')
+            .update({ logo_url: logoUrl })
+            .eq('id', inserted.id)
+        }
+      }).catch((err) => console.error('[FETCH-LOGO] Auto-fetch error:', err))
+    }
+  }
+
+  return { slug, id: inserted?.id as string | undefined }
 }

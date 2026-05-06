@@ -1,7 +1,9 @@
 'use client';
 
-import { useCallback, useState } from 'react';
-import { FileText, Upload, X, AlertCircle } from 'lucide-react';
+import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { FileText, Upload, X } from 'lucide-react';
+import UploadErrorBanner from '@/components/common/UploadErrorBanner';
 
 interface UploadedFile {
   file: File;
@@ -24,9 +26,15 @@ const ACCEPTED_TYPES = [
   'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/csv',
+  'text/plain',
+  'image/png',
+  'image/jpeg',
 ];
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB — aligned with AI scoring pipeline ceiling
 const MAX_FILES = 5;
 
 export function DocumentUpload({
@@ -42,11 +50,11 @@ export function DocumentUpload({
 
   const validateFile = (file: File): string | null => {
     if (!acceptedTypes.includes(file.type)) {
-      return `Invalid file type. Accepted: PDF, PowerPoint, Word`;
+      return 'Please upload a PDF, PowerPoint, Word, Excel, CSV, TXT, or image file. Other file types are not supported.';
     }
 
     if (file.size > maxSize) {
-      return `File too large. Maximum size: ${(maxSize / 1024 / 1024).toFixed(0)}MB`;
+      return `This file is too large. Maximum size is ${(maxSize / 1024 / 1024).toFixed(0)}MB. Try compressing your PDF or reducing the number of pages.`;
     }
 
     return null;
@@ -55,24 +63,21 @@ export function DocumentUpload({
   const handleFiles = async (files: FileList) => {
       setGlobalError(null);
       const newFiles: UploadedFile[] = [];
+      let rejectedMessage: string | null = null;
 
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
 
         // Check max files limit
         if (uploadedFiles.length + newFiles.length >= maxFiles) {
-          setGlobalError(`Maximum ${maxFiles} files allowed`);
+          rejectedMessage = `Maximum ${maxFiles} files allowed.`;
           break;
         }
 
-        // Validate file
+        // Validate file — surface the first rejection as a persistent banner
         const error = validateFile(file);
         if (error) {
-          newFiles.push({
-            file,
-            id: `${file.name}-${Date.now()}`,
-            error,
-          });
+          if (!rejectedMessage) rejectedMessage = error;
           continue;
         }
 
@@ -82,6 +87,8 @@ export function DocumentUpload({
           progress: 0,
         });
       }
+
+      if (rejectedMessage) setGlobalError(rejectedMessage);
 
       const allFiles = [...uploadedFiles, ...newFiles];
       setUploadedFiles(allFiles);
@@ -106,27 +113,49 @@ export function DocumentUpload({
     if (!dealId) return;
 
     try {
-      const formData = new FormData();
-      formData.append('file', uploadedFile.file);
-      formData.append('document_type', 'other');
+      // Upload directly to Supabase Storage from browser
+      const storagePath = `${dealId}/${Date.now()}-${uploadedFile.file.name}`;
+      const { error: storageError } = await supabase.storage
+        .from('documents')
+        .upload(storagePath, uploadedFile.file, {
+          cacheControl: '3600',
+          upsert: false,
+        });
 
-      const response = await fetch(`/api/deals/${dealId}/documents`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
+      if (storageError) {
         setUploadedFiles((prev) =>
           prev.map((f) =>
             f.id === uploadedFile.id
-              ? { ...f, error: 'Upload failed' }
+              ? { ...f, error: 'Upload failed. Please check your connection and try again.' }
               : f
           )
         );
         return;
       }
 
-      const result = await response.json();
+      // Create document record via API
+      const response = await fetch(`/api/deals/${dealId}/documents`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fileName: uploadedFile.file.name,
+          filePath: storagePath,
+          fileSize: uploadedFile.file.size,
+          mimeType: uploadedFile.file.type,
+          documentType: 'other',
+        }),
+      });
+
+      if (!response.ok) {
+        setUploadedFiles((prev) =>
+          prev.map((f) =>
+            f.id === uploadedFile.id
+              ? { ...f, error: 'Upload failed. Please check your connection and try again.' }
+              : f
+          )
+        );
+        return;
+      }
 
       setUploadedFiles((prev) =>
         prev.map((f) =>
@@ -135,11 +164,11 @@ export function DocumentUpload({
             : f
         )
       );
-    } catch (error) {
+    } catch {
       setUploadedFiles((prev) =>
         prev.map((f) =>
           f.id === uploadedFile.id
-            ? { ...f, error: 'Network error' }
+            ? { ...f, error: 'Upload failed. Please try again.' }
             : f
         )
       );
@@ -195,8 +224,8 @@ export function DocumentUpload({
         onDrop={handleDrop}
         className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
           isDragging
-            ? 'border-blue-500 bg-blue-50'
-            : 'border-gray-300 bg-gray-50'
+            ? 'border-[var(--line-strong)] bg-[var(--accent-soft)]'
+            : 'border-[var(--line-strong)] bg-[var(--bg-sunk)]'
         }`}
       >
         <input
@@ -208,27 +237,27 @@ export function DocumentUpload({
         />
 
         <div className="space-y-2">
-          <Upload className="h-8 w-8 mx-auto text-gray-400" />
+          <Upload className="h-8 w-8 mx-auto text-[var(--ink-faint)]" />
           <div>
-            <p className="font-medium text-gray-900">
+            <p className="font-medium text-[var(--ink)]">
               Drag and drop your files here
             </p>
-            <p className="text-sm text-gray-500">
-              or click to browse (PDF, PowerPoint, Word)
+            <p className="text-sm text-[var(--ink-mute)]">
+              or click to browse
             </p>
           </div>
-          <p className="text-xs text-gray-400">
-            Maximum {maxFiles} files, {(maxSize / 1024 / 1024).toFixed(0)}MB each
+          <p className="text-xs text-[var(--ink-faint)]">
+            Max file size: {(maxSize / 1024 / 1024).toFixed(0)}MB. Supported formats: PDF, PowerPoint, Word. Up to {maxFiles} files.
           </p>
         </div>
       </div>
 
       {/* Error Message */}
       {globalError && (
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-          <p className="text-sm text-red-700">{globalError}</p>
-        </div>
+        <UploadErrorBanner
+          message={globalError}
+          onDismiss={() => setGlobalError(null)}
+        />
       )}
 
       {/* Uploaded Files */}
@@ -240,19 +269,19 @@ export function DocumentUpload({
               className={`flex items-center gap-3 p-3 rounded-lg border ${
                 uploadedFile.error
                   ? 'bg-red-50 border-red-200'
-                  : 'bg-gray-50 border-gray-200'
+                  : 'bg-[var(--bg-sunk)] border-[var(--line)]'
               }`}
             >
               <FileText className={`h-5 w-5 flex-shrink-0 ${
-                uploadedFile.error ? 'text-red-400' : 'text-blue-400'
+                uploadedFile.error ? 'text-red-400' : 'text-[var(--accent-ink)]'
               }`} />
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
+                <p className="text-sm font-medium text-[var(--ink)] truncate">
                   {uploadedFile.file.name}
                 </p>
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-[var(--ink-mute)]">
                     {formatFileSize(uploadedFile.file.size)}
                   </p>
                   {uploadedFile.error && (
@@ -262,9 +291,9 @@ export function DocumentUpload({
                     <p className="text-xs text-green-600">Ready</p>
                   )}
                   {!uploadedFile.error && dealId && uploadedFile.progress !== undefined && uploadedFile.progress < 100 && (
-                    <div className="flex-1 mx-2 h-1 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="flex-1 mx-2 h-1 bg-[var(--bg-sunk)] rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-500 transition-all"
+                        className="h-full bg-[var(--accent-soft)]0 transition-all"
                         style={{ width: `${uploadedFile.progress}%` }}
                       />
                     </div>
@@ -277,10 +306,10 @@ export function DocumentUpload({
 
               <button
                 onClick={() => removeFile(uploadedFile.id)}
-                className="p-1 hover:bg-gray-200 rounded transition-colors flex-shrink-0"
+                className="p-1 hover:bg-[var(--bg-sunk)] rounded transition-colors flex-shrink-0"
                 title="Remove file"
               >
-                <X className="h-4 w-4 text-gray-500" />
+                <X className="h-4 w-4 text-[var(--ink-mute)]" />
               </button>
             </div>
           ))}
@@ -289,7 +318,7 @@ export function DocumentUpload({
 
       {/* File Count */}
       {uploadedFiles.length > 0 && (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-[var(--ink-mute)]">
           {uploadedFiles.filter((f) => !f.error).length} of {maxFiles} files
         </p>
       )}

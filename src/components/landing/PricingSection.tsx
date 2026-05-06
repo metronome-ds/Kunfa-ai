@@ -6,72 +6,66 @@ interface PricingSectionProps {
 
 const plans = [
   {
-    name: 'Free',
-    label: 'For Startups',
-    labelColor: 'text-kunfa-green',
+    name: 'Kunfa Score',
     price: 'Free',
-    subtitle: 'Get your Kunfa Score',
+    subtitle: 'Get started instantly',
     features: [
-      'AI-powered scoring',
-      'Profile creation',
-      'Investor discovery',
-      'Data room basics',
+      'AI-powered scoring across 6 dimensions',
+      'Public company profile page',
+      'Visibility to verified investors',
+      'Stage-adjusted analysis',
     ],
-    buttonText: 'Apply Now',
-    buttonStyle: 'border-2 border-kunfa-green text-kunfa-green hover:bg-emerald-50',
-    cardStyle: 'bg-white border border-gray-200',
+    buttonText: 'Get Your Score',
+    buttonStyle: 'bg-kunfa hover:bg-kunfa-dark text-white',
+    cardStyle: 'bg-[var(--bg-elev)] border-2 border-kunfa',
     popular: false,
-    dark: false,
+    action: 'score',
   },
   {
-    name: '$59',
-    label: 'Investment Memo',
-    labelColor: 'text-kunfa-indigo',
+    name: 'Readiness Report',
     price: '$59',
     subtitle: 'One-time purchase',
     features: [
-      '15+ page analysis',
-      'Actionable improvements',
-      'Sector benchmarks',
-      'Deck recommendations',
-      'Financial feedback',
+      'Everything in Free',
+      'Full investment readiness report',
+      'Actionable improvement plan',
+      'Sector benchmarks & comparisons',
+      'Financial model feedback',
     ],
-    buttonText: 'Get Memo',
-    buttonStyle: 'bg-kunfa-indigo hover:bg-indigo-600 text-white',
-    cardStyle: 'bg-white border-2 border-kunfa-indigo',
+    buttonText: 'Get Full Report',
+    buttonStyle: 'bg-kunfa-navy hover:bg-gray-800 text-white',
+    cardStyle: 'bg-[var(--bg-elev)] border-2 border-kunfa-navy',
     popular: true,
-    dark: false,
+    action: 'score',
   },
   {
-    name: 'Custom',
-    label: 'For Investors',
-    labelColor: 'text-kunfa-orange',
-    price: 'Custom',
-    subtitle: 'Contact for pricing',
+    name: 'Enterprise',
+    price: 'Launching Soon',
+    subtitle: 'For funds & accelerators',
     features: [
-      'Full deal pipeline',
-      'AI scoring engine',
-      'Team collaboration',
-      'LP dashboards',
+      'Everything in Readiness Report',
+      'Full deal pipeline & CRM',
+      'Team collaboration tools',
+      'Batch scoring for portfolios',
       'API access',
     ],
-    buttonText: 'Contact Sales',
-    buttonStyle: 'border-2 border-white text-white hover:bg-white/10',
-    cardStyle: 'bg-kunfa-navy text-white',
+    buttonText: 'Contact Us',
+    buttonStyle: 'border border-[var(--line-strong)] text-[var(--ink-soft)] hover:bg-[#F8F9FB]',
+    cardStyle: 'bg-[var(--bg-elev)] border border-[var(--line)]',
     popular: false,
-    dark: true,
+    action: 'contact',
   },
 ]
 
 export default function PricingSection({ onApplyNow }: PricingSectionProps) {
   return (
-    <section id="pricing" className="py-20 lg:py-28 bg-white">
+    <section id="pricing" className="py-20 lg:py-28 bg-[var(--bg-elev)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-3xl lg:text-4xl font-bold text-kunfa-navy mb-4">
+        <h2 className="text-2xl lg:text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-kunfa-navy mb-4">
           Simple, transparent pricing
         </h2>
-        <p className="text-kunfa-text-secondary text-lg max-w-xl mx-auto mb-12">
-          Get started for free. Only pay when you need more.
+        <p className="text-[var(--ink-soft)] text-base max-w-xl mx-auto mb-12">
+          Start free. Upgrade when you need deeper insights.
         </p>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
@@ -83,39 +77,31 @@ export default function PricingSection({ onApplyNow }: PricingSectionProps) {
               {/* Popular Badge */}
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <span className="bg-kunfa-yellow text-kunfa-navy text-xs font-bold px-4 py-1 rounded-full uppercase">
-                    Popular
+                  <span className="bg-kunfa-navy text-white text-xs font-bold px-4 py-1 rounded-full uppercase">
+                    Most Popular
                   </span>
                 </div>
               )}
 
-              <p className={`text-sm font-semibold mb-2 ${plan.labelColor}`}>{plan.label}</p>
-              <h3 className={`text-4xl font-bold mb-2 ${plan.dark ? 'text-white' : 'text-kunfa-navy'}`}>
-                {plan.price}
-              </h3>
-              <p className={`text-sm mb-8 ${plan.dark ? 'text-gray-400' : 'text-kunfa-text-secondary'}`}>
-                {plan.subtitle}
-              </p>
+              <h3 className="text-lg font-bold text-kunfa-navy mb-2">{plan.name}</h3>
+              <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-kunfa-navy mb-1">{plan.price}</p>
+              <p className="text-sm text-[var(--ink-mute)] mb-8">{plan.subtitle}</p>
 
               <ul className="space-y-3 mb-8 flex-1 text-left">
                 {plan.features.map((feature) => (
                   <li key={feature} className="flex items-center gap-3">
-                    <svg className="w-5 h-5 text-kunfa-green shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-5 h-5 text-kunfa shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span className={`text-sm ${plan.dark ? 'text-gray-300' : 'text-kunfa-text-secondary'}`}>
-                      {feature}
-                    </span>
+                    <span className="text-sm text-[var(--ink-soft)]">{feature}</span>
                   </li>
                 ))}
               </ul>
 
               <button
                 onClick={() => {
-                  if (plan.name === 'Free') {
-                    onApplyNow()
-                  } else if (plan.name === 'Custom') {
-                    window.location.href = 'mailto:hello@vitality.capital'
+                  if (plan.action === 'contact') {
+                    window.location.href = 'mailto:invest@kunfa.ai'
                   } else {
                     onApplyNow()
                   }

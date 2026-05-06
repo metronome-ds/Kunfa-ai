@@ -17,6 +17,7 @@ interface ProcessingAnimationProps {
 export default function ProcessingAnimation({ onComplete }: ProcessingAnimationProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [progress, setProgress] = useState(0)
+  const [showLargeDocHint, setShowLargeDocHint] = useState(false)
 
   useEffect(() => {
     const progressInterval = setInterval(() => {
@@ -30,6 +31,12 @@ export default function ProcessingAnimation({ onComplete }: ProcessingAnimationP
     }, 150)
 
     return () => clearInterval(progressInterval)
+  }, [])
+
+  // After 10 seconds show a "this may take a while" hint
+  useEffect(() => {
+    const timer = setTimeout(() => setShowLargeDocHint(true), 10_000)
+    return () => clearTimeout(timer)
   }, [])
 
   useEffect(() => {
@@ -57,9 +64,9 @@ export default function ProcessingAnimation({ onComplete }: ProcessingAnimationP
     <div className="p-8 text-center">
       {/* Spinning loader */}
       <div className="relative w-24 h-24 mx-auto mb-8">
-        <div className="absolute inset-0 rounded-full border-4 border-gray-200" />
+        <div className="absolute inset-0 rounded-full border-4 border-[var(--line)]" />
         <div
-          className="absolute inset-0 rounded-full border-4 border-kunfa-green border-t-transparent animate-spin"
+          className="absolute inset-0 rounded-full border-4 border-kunfa border-t-transparent animate-spin"
         />
         <div className="absolute inset-0 flex items-center justify-center">
           <span className="text-lg font-bold text-kunfa-navy">{progress}%</span>
@@ -76,24 +83,30 @@ export default function ProcessingAnimation({ onComplete }: ProcessingAnimationP
             }`}
           >
             {i < currentStep ? (
-              <svg className="w-5 h-5 text-kunfa-green shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-5 h-5 text-kunfa shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
             ) : i === currentStep ? (
               <div className="w-5 h-5 shrink-0 flex items-center justify-center">
-                <div className="w-3 h-3 bg-kunfa-green rounded-full animate-pulse" />
+                <div className="w-3 h-3 bg-kunfa rounded-full animate-pulse" />
               </div>
             ) : (
               <div className="w-5 h-5 shrink-0 flex items-center justify-center">
                 <div className="w-3 h-3 bg-gray-300 rounded-full" />
               </div>
             )}
-            <span className={`text-sm text-left ${i <= currentStep ? 'text-kunfa-navy font-medium' : 'text-gray-400'}`}>
+            <span className={`text-sm text-left ${i <= currentStep ? 'text-kunfa-navy font-medium' : 'text-[var(--ink-faint)]'}`}>
               {step}
             </span>
           </div>
         ))}
       </div>
+
+      {showLargeDocHint && (
+        <p className="mt-6 text-xs text-[var(--ink-faint)] animate-fade-in">
+          Scoring in progress&hellip; This may take up to a minute for large documents.
+        </p>
+      )}
     </div>
   )
 }

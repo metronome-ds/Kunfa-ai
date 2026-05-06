@@ -1,30 +1,40 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, Suspense } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { StatsCard } from '@/components/dashboard/StatsCard';
-import { QuickActions } from '@/components/dashboard/QuickActions';
-import { RecentActivity } from '@/components/dashboard/RecentActivity';
-import { TopDeals } from '@/components/dashboard/TopDeals';
-import { PipelineSummary } from '@/components/dashboard/PipelineSummary';
-import { MarketPulse } from '@/components/dashboard/MarketPulse';
-import { UserRole, PipelineStage } from '@/lib/types';
+import { UserRole } from '@/lib/types';
 import {
-  BarChart3,
-  Briefcase,
   TrendingUp,
-  Zap,
-  FileUp,
+  Bookmark,
+  DollarSign,
   Brain,
-  Users,
-  Settings,
-  Compass,
-  PieChart,
-  Eye,
+  Briefcase,
   Star,
   Clock,
+  ExternalLink,
+  RefreshCw,
   CheckCircle,
+  PlusCircle,
+  Compass,
+  ArrowRight,
+  Search,
+  ChevronUp,
+  ChevronDown,
+  MessageSquare,
+  Loader2,
 } from 'lucide-react';
+import NotesTimeline from '@/components/pipeline/NotesTimeline';
+import ScoreModal from '@/components/scoring/ScoreModal';
+import ScoreBreakdown from '@/components/scoring/ScoreBreakdown';
+import ImprovementTips from '@/components/scoring/ImprovementTips';
+import DealRoomActivityCard from '@/components/dashboard/DealRoomActivityCard';
+import WwipDashboard from '@/components/dashboard/WwipDashboard';
+import { useTenant } from '@/components/TenantProvider';
+import { PageHead, StatCard, SectionHead, EmptyState, WelcomeBanner, Button, LinkText } from '@/components/ui/design-system';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import { MobileDashboard } from '@/components/mobile/MobileDashboard';
 
 interface UserProfile {
   id: string;
@@ -33,559 +43,1008 @@ interface UserProfile {
   email: string;
   role: UserRole;
   avatar_url?: string;
+  fund_name?: string;
   company_name?: string;
+  one_liner?: string;
+  industry?: string;
+  company_stage?: string;
+  company_country?: string;
+  company_website?: string;
+  linkedin_url?: string;
+  team_size?: number;
+  job_title?: string;
 }
 
-interface DealData {
+interface CompanyData {
+  id: string;
+  slug: string;
+  company_name: string;
+  overall_score: number | null;
+  one_liner: string | null;
+  industry: string | null;
+  stage: string | null;
+  description: string | null;
+  website_url: string | null;
+  linkedin_url: string | null;
+  raise_amount: number | null;
+  team_size: number | null;
+  founded_year: number | null;
+  use_of_funds: string | null;
+  traction: string | null;
+  submission_id: string | null;
+  dimension_scores: Record<string, unknown> | null;
+  created_at: string;
+  is_raising?: boolean | null;
+  raising_amount?: string | null;
+  raising_instrument?: string | null;
+}
+
+// ── Investor types ──
+
+interface InvestorStats {
+  pipelineDeals: number;
+  watchlisted: number;
+  totalPipelineValue: number;
+  avgKunfaScore: number | null;
+}
+
+interface StageCounts {
+  sourced: number;
+  screening: number;
+  due_diligence: number;
+  term_sheet: number;
+  closed: number;
+}
+
+interface TopDeal {
   id: string;
   company_name: string;
-  industry: string;
+  slug: string | null;
+  score: number | null;
   stage: string;
-  overall_score: number | null;
-  funding_amount_requested: number | null;
+  raise_amount: number | null;
+  days_in_stage: number;
 }
 
-// Map actual DB stages to UI pipeline stages
-function mapStageToPipeline(dbStage: string): PipelineStage {
-  switch (dbStage) {
-    case 'sourced': return 'sourcing';
-    case 'screening': return 'screening';
-    case 'due_diligence':
-    case 'ic_review': return 'diligence';
-    case 'term_sheet':
-    case 'closed': return 'close';
-    default: return 'sourcing';
-  }
-}
-
-// Transform a raw deal row (with company_pages join) into DealData for the UI
-function transformDeal(row: Record<string, unknown>): DealData {
-  const company = row.company_pages as Record<string, unknown> | null;
-  return {
-    id: row.id as string,
-    company_name: (company?.company_name as string) || (row.sector as string) || 'Unknown',
-    industry: (company?.industry as string) || (row.sector as string) || 'N/A',
-    stage: row.stage as string,
-    overall_score: (row.ai_score as number | null) ?? (company?.overall_score as number | null) ?? null,
-    funding_amount_requested: row.raise_amount as number | null,
-  };
-}
-
-interface ActivityData {
+interface PipelineDeal {
   id: string;
-  title: string;
-  description: string;
-  icon: 'deal' | 'score' | 'document' | 'pipeline';
-  timestamp: string;
+  company_id: string;
+  company_name: string;
+  slug: string | null;
+  score: number | null;
+  stage: string;
+  raise_amount: number | null;
+  assigned_to_name: string | null;
+  next_action: string | null;
+  next_action_date: string | null;
+  note_count: number;
+}
+
+interface ActivityItem {
+  id: string;
+  text: string;
+  time: string;
   href?: string;
 }
 
+// ── Helpers ──
+
+function getScoreColor(score: number | null) {
+  if (!score) return 'text-[var(--ink-faint)]';
+  if (score >= 80) return 'text-emerald-600';
+  if (score >= 60) return 'text-[var(--ink)]';
+  if (score >= 40) return 'text-yellow-600';
+  return 'text-red-600';
+}
+
+function getScoreBg(score: number | null) {
+  if (!score) return 'bg-[var(--bg-sunk)] border-[var(--line)]';
+  if (score >= 80) return 'bg-emerald-50 border-emerald-200';
+  if (score >= 60) return 'bg-[var(--accent-soft)] border-[var(--line)]';
+  if (score >= 40) return 'bg-yellow-50 border-yellow-200';
+  return 'bg-red-50 border-red-200';
+}
+
+function getScoreBadgeColor(score: number | null) {
+  if (!score) return 'bg-[var(--bg-sunk)] text-[var(--ink-mute)]';
+  if (score >= 80) return 'bg-emerald-100 text-emerald-700';
+  if (score >= 60) return 'bg-[var(--accent-soft)] text-[var(--ink)]';
+  if (score >= 40) return 'bg-yellow-100 text-yellow-700';
+  return 'bg-red-100 text-red-700';
+}
+
+function daysSince(dateStr: string) {
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function formatCompact(n: number | null): string {
+  if (!n) return '$0';
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  return `$${n.toLocaleString()}`;
+}
+
+function formatStageLabel(stage: string): string {
+  const map: Record<string, string> = {
+    sourced: 'Sourced',
+    screening: 'Screening',
+    due_diligence: 'Due Diligence',
+    term_sheet: 'Term Sheet',
+    closed: 'Closed',
+  };
+  return map[stage] || stage;
+}
+
+function timeAgo(dateStr: string): string {
+  const s = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  if (s < 60) return 'just now';
+  if (s < 3600) return `${Math.floor(s / 60)}m ago`;
+  if (s < 86400) return `${Math.floor(s / 3600)}h ago`;
+  if (s < 604800) return `${Math.floor(s / 86400)}d ago`;
+  return new Date(dateStr).toLocaleDateString();
+}
+
+const STAGE_COLORS: Record<string, string> = {
+  sourced: 'bg-gray-400',
+  screening: 'bg-[var(--accent-soft)]0',
+  due_diligence: 'bg-purple-500',
+  term_sheet: 'bg-amber-500',
+  closed: 'bg-emerald-500',
+};
+
+// ── Main Component ──
+
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-[var(--ink-mute)]">Loading...</div>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
+  const isMobile = useIsMobile();
+  const { isTenantContext, isLoading: tenantLoading } = useTenant();
+  const searchParams = useSearchParams();
+  const paidParam = searchParams.get('paid') === 'true';
+  const claimedParam = searchParams.get('claimed') === 'true';
+  const claimPendingParam = searchParams.get('claim_pending') === 'true';
+  const sidParam = searchParams.get('sid');
+
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [stats, setStats] = useState({
-    activePipeline: 0,
-    savedDeals: 0,
-    portfolioValue: 0,
-    scoresGenerated: 0,
-    myActiveDeals: 0,
-    totalViews: 0,
-    documentsUploaded: 0,
-    averageScore: 0,
-  });
-  const [topDeals, setTopDeals] = useState<DealData[]>([]);
-  const [pipelineData, setPipelineData] = useState<Array<{ stage: PipelineStage; count: number }>>([]);
-  const [activity, setActivity] = useState<ActivityData[]>([]);
-  const [marketPulse, setMarketPulse] = useState({
-    newDealsThisWeek: 0,
-    topIndustry: 'B2B SaaS',
-    topIndustryCount: 0,
-    averageScore: null as number | null,
-  });
+  const [isStartup, setIsStartup] = useState(false);
+
+  // Permission: can the current user edit?
+  const [canEdit, setCanEdit] = useState(false);
+  const [activeEntityName, setActiveEntityName] = useState<string | null>(null);
+
+  // Startup state
+  const [company, setCompany] = useState<CompanyData | null>(null);
+  const [paid, setPaid] = useState(paidParam);
+  const [hasReport, setHasReport] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [showScoreModal, setShowScoreModal] = useState(false);
+
+  // Investor state
+  const [investorStats, setInvestorStats] = useState<InvestorStats>({ pipelineDeals: 0, watchlisted: 0, totalPipelineValue: 0, avgKunfaScore: null });
+  const [stageCounts, setStageCounts] = useState<StageCounts>({ sourced: 0, screening: 0, due_diligence: 0, term_sheet: 0, closed: 0 });
+  const [topDeals, setTopDeals] = useState<TopDeal[]>([]);
+  const [activity, setActivity] = useState<ActivityItem[]>([]);
+  const [allDealsFlat, setAllDealsFlat] = useState<PipelineDeal[]>([]);
+  const [allDealsByStage, setAllDealsByStage] = useState<Record<string, { company_name: string; slug: string | null }[]>>({});
+  const [hoveredStage, setHoveredStage] = useState<{ stage: string; x: number; y: number } | null>(null);
+  const [pipelineSearch, setPipelineSearch] = useState('');
+  const [pipelineSort, setPipelineSort] = useState<{ key: string; asc: boolean }>({ key: 'company_name', asc: true });
+  const [expandedDealId, setExpandedDealId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadDashboardData = async () => {
+    const load = async () => {
       try {
-        const {
-          data: { user },
-        } = await supabase.auth.getUser();
-
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Load user profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
+        const [{ data: profile }, teamRes] = await Promise.all([
+          supabase.from('profiles').select('*').eq('user_id', user.id).single(),
+          fetch('/api/team-context').then(r => r.json()).catch(() => ({})),
+        ]);
+        const memberRole = teamRes?.context?.memberRole;
+        const entityName = teamRes?.context?.fundName || teamRes?.context?.teamOwnerName || null;
+        setCanEdit(memberRole === 'owner' || memberRole === 'admin');
+        if (entityName) setActiveEntityName(entityName);
 
         if (profile) {
           setUserProfile(profile);
-
-          // Load role-specific data
-          if (profile.role === 'investor') {
+          const startup = profile.role === 'founder' || profile.role === 'startup';
+          setIsStartup(startup);
+          if (startup) {
+            loadStartupData();
+          } else {
+            setCurrentUserId(user.id);
             loadInvestorData(user.id);
-          } else if (profile.role === 'founder') {
-            loadFounderData(user.id);
           }
         }
-      } catch (error) {
-        console.error('Failed to load dashboard data:', error);
+      } catch (err) {
+        console.error('Dashboard load error:', err);
       } finally {
         setIsLoading(false);
       }
     };
-
-    loadDashboardData();
+    load();
   }, []);
+
+  const loadStartupData = useCallback(async () => {
+    try {
+      const res = await fetch('/api/my-company');
+      const data = await res.json();
+      setCompany(data.company || null);
+      // If user arrived with ?paid=true, trust that over API (webhook race condition)
+      setPaid((prev) => prev || !!data.paid);
+      setHasReport(!!data.hasReport);
+    } catch { /* ignore */ }
+  }, []);
+
+  // Auto-open ScoreModal when arriving from a claim with no score
+  useEffect(() => {
+    if (claimedParam && isStartup && company && !company.overall_score) {
+      setShowScoreModal(true);
+    }
+  }, [claimedParam, isStartup, company]);
+
+  // Poll for report readiness when paid but report not yet generated
+  useEffect(() => {
+    if (!paid || hasReport || !isStartup) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/my-company');
+        const data = await res.json();
+        if (data.paid) setPaid(true);
+        if (data.hasReport) {
+          setHasReport(true);
+          clearInterval(interval);
+        }
+      } catch { /* ignore */ }
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [paid, hasReport, isStartup]);
 
   const loadInvestorData = async (userId: string) => {
     try {
-      // Load watchlisted deals count (replaces saved_deals)
-      const { count: savedCount } = await supabase
-        .from('watchlist')
-        .select('*', { count: 'exact' })
-        .eq('investor_id', userId);
+      // Fetch pipeline data
+      const pipelineRes = await fetch('/api/pipeline');
+      const pipelineData = pipelineRes.ok ? await pipelineRes.json() : { deals: {}, watchlist: [] };
+      const allDeals = pipelineData.deals || {};
+      const watchlistCount = (pipelineData.watchlist || []).length;
 
-      // Load deals with company info for scoring
-      const { data: rawDeals } = await supabase
-        .from('deals')
-        .select(`
-          id, created_by, assigned_to, company_id, stage, ai_score, sector,
-          raise_amount, priority_flag, is_watchlisted, days_in_stage,
-          stage_changed_at, created_at, updated_at,
-          company_pages (id, company_name, slug, description, overall_score, industry, logo_url)
-        `)
-        .order('ai_score', { ascending: false, nullsFirst: false })
-        .limit(10);
+      // Compute stage counts + total value + scores
+      const counts: StageCounts = { sourced: 0, screening: 0, due_diligence: 0, term_sheet: 0, closed: 0 };
+      let totalValue = 0;
+      const scores: number[] = [];
+      const allDealsList: TopDeal[] = [];
+      const flatDeals: PipelineDeal[] = [];
+      const byStage: Record<string, { company_name: string; slug: string | null }[]> = {};
 
-      const deals: DealData[] = (rawDeals || []).map(transformDeal);
-
-      // Load all deals for pipeline counts
-      const { data: allDeals } = await supabase
-        .from('deals')
-        .select('stage');
-
-      // Map DB stages to UI pipeline stages and count
-      const pipelineCounts: Array<{ stage: PipelineStage; count: number }> = [
-        { stage: 'sourcing', count: allDeals?.filter((d) => d.stage === 'sourced').length || 0 },
-        { stage: 'screening', count: allDeals?.filter((d) => d.stage === 'screening').length || 0 },
-        { stage: 'diligence', count: allDeals?.filter((d) => d.stage === 'due_diligence' || d.stage === 'ic_review').length || 0 },
-        { stage: 'close', count: allDeals?.filter((d) => d.stage === 'term_sheet' || d.stage === 'closed').length || 0 },
-      ];
-
-      // Load portfolio value from funds
-      const { data: funds } = await supabase
-        .from('funds')
-        .select('committed')
-        .eq('owner_id', userId);
-      const totalPortfolio = funds?.reduce((sum, f) => sum + (Number(f.committed) || 0), 0) || 0;
-
-      setStats({
-        activePipeline: allDeals?.length || 0,
-        savedDeals: savedCount || 0,
-        portfolioValue: totalPortfolio,
-        scoresGenerated: deals.filter((d) => d.overall_score !== null).length,
-        myActiveDeals: 0,
-        totalViews: 0,
-        documentsUploaded: 0,
-        averageScore: 0,
-      });
-
-      setTopDeals(deals.slice(0, 4));
-      setPipelineData(pipelineCounts);
-
-      // Load recent notifications as activity
-      const { data: notifications } = await supabase
-        .from('notifications')
-        .select('id, title, body, type, link, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      const activityItems: ActivityData[] = (notifications || []).map((n) => ({
-        id: n.id,
-        title: n.title,
-        description: n.body || '',
-        icon: (n.type === 'score' ? 'score' : n.type === 'pipeline' ? 'pipeline' : n.type === 'document' ? 'document' : 'deal') as ActivityData['icon'],
-        timestamp: n.created_at,
-        href: n.link || undefined,
-      }));
-
-      // Fallback mock activity if no notifications
-      if (activityItems.length === 0) {
-        activityItems.push(
-          { id: '1', title: 'Welcome to Kunfa', description: 'Your deal flow platform is ready', icon: 'deal', timestamp: new Date().toISOString() },
-        );
+      for (const [stage, deals] of Object.entries(allDeals) as [string, any[]][]) {
+        counts[stage as keyof StageCounts] = deals.length;
+        byStage[stage] = [];
+        for (const d of deals) {
+          if (d.raise_amount) totalValue += Number(d.raise_amount);
+          if (d.ai_score) scores.push(d.ai_score);
+          allDealsList.push({
+            id: d.id,
+            company_name: d.company_name,
+            slug: d.slug,
+            score: d.ai_score,
+            stage,
+            raise_amount: d.raise_amount,
+            days_in_stage: d.days_in_stage || 0,
+          });
+          flatDeals.push({
+            id: d.id,
+            company_id: d.company_id,
+            company_name: d.company_name,
+            slug: d.slug,
+            score: d.ai_score,
+            stage,
+            raise_amount: d.raise_amount,
+            assigned_to_name: d.assigned_to_name || null,
+            next_action: d.next_action || null,
+            next_action_date: d.next_action_date || null,
+            note_count: d.note_count || 0,
+          });
+          byStage[stage].push({ company_name: d.company_name, slug: d.slug });
+        }
       }
 
-      setActivity(activityItems);
+      const totalDeals = Object.values(counts).reduce((a, b) => a + b, 0);
+      const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : null;
 
-      // Market pulse data
-      const { count: recentCount } = await supabase
-        .from('deals')
-        .select('*', { count: 'exact' })
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+      setInvestorStats({ pipelineDeals: totalDeals, watchlisted: watchlistCount, totalPipelineValue: totalValue, avgKunfaScore: avgScore });
+      setStageCounts(counts);
 
-      const scores = deals.filter((d) => d.overall_score !== null).map((d) => d.overall_score!);
-      const avgScore = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null;
+      // Recent pipeline deals: scored first (highest score), then unscored (newest first)
+      const sorted = [...allDealsList].sort((a, b) => {
+        const aScored = a.score !== null && a.score !== undefined;
+        const bScored = b.score !== null && b.score !== undefined;
+        if (aScored && !bScored) return -1;
+        if (!aScored && bScored) return 1;
+        if (aScored && bScored) return (b.score || 0) - (a.score || 0);
+        return 0; // both unscored — keep pipeline order
+      }).slice(0, 10);
+      setTopDeals(sorted);
 
-      // Find top sector
-      const sectorCounts: Record<string, number> = {};
-      deals.forEach((d) => { if (d.industry) sectorCounts[d.industry] = (sectorCounts[d.industry] || 0) + 1; });
-      const topSector = Object.entries(sectorCounts).sort((a, b) => b[1] - a[1])[0];
+      // Recent activity: from deals (created_at, stage_changed_at) + notifications
+      const activityItems: ActivityItem[] = [];
 
-      setMarketPulse({
-        newDealsThisWeek: recentCount || 0,
-        topIndustry: topSector?.[0] || 'N/A',
-        topIndustryCount: topSector?.[1] || 0,
-        averageScore: avgScore,
-      });
-    } catch (error) {
-      console.error('Failed to load investor data:', error);
-    }
-  };
-
-  const loadFounderData = async (userId: string) => {
-    try {
-      // Load founder's deals (deals assigned to them or where their company is referenced)
-      const { data: rawDeals } = await supabase
-        .from('deals')
-        .select(`
-          id, created_by, assigned_to, company_id, stage, ai_score, sector,
-          raise_amount, priority_flag, is_watchlisted, days_in_stage,
-          stage_changed_at, created_at, updated_at,
-          company_pages (id, company_name, slug, description, overall_score, industry, logo_url)
-        `)
-        .eq('assigned_to', userId)
-        .order('created_at', { ascending: false });
-
-      const myDeals = (rawDeals || []).map(transformDeal);
-
-      // Load document views for founder's companies
-      const { data: companyPages } = await supabase
-        .from('company_pages')
-        .select('id')
-        .eq('user_id', userId);
-
-      const companyIds = (companyPages || []).map(c => c.id);
-      let viewCount = 0;
-      if (companyIds.length > 0) {
-        const { count } = await supabase
-          .from('document_views')
-          .select('*', { count: 'exact' })
-          .in('company_id', companyIds);
-        viewCount = count || 0;
+      for (const deals of Object.values(allDeals) as any[][]) {
+        for (const d of deals) {
+          activityItems.push({
+            id: `deal-created-${d.id}`,
+            text: `Added ${d.company_name} to pipeline`,
+            time: d.created_at || d.stage_changed_at || new Date().toISOString(),
+            href: d.slug ? `/company/${d.slug}` : undefined,
+          });
+          if (d.stage_changed_at && d.stage !== 'sourced') {
+            activityItems.push({
+              id: `deal-stage-${d.id}`,
+              text: `Moved ${d.company_name} to ${formatStageLabel(d.stage)}`,
+              time: d.stage_changed_at,
+              href: d.slug ? `/company/${d.slug}` : undefined,
+            });
+          }
+        }
       }
 
-      const scoredDeals = myDeals.filter((d) => d.overall_score !== null);
-      const avgScore = scoredDeals.length > 0
-        ? scoredDeals.reduce((sum, d) => sum + (d.overall_score || 0), 0) / scoredDeals.length
-        : 0;
-
-      setStats({
-        activePipeline: 0,
-        savedDeals: 0,
-        portfolioValue: 0,
-        scoresGenerated: scoredDeals.length,
-        myActiveDeals: myDeals.length,
-        totalViews: viewCount,
-        documentsUploaded: 0,
-        averageScore: avgScore,
-      });
-
-      setTopDeals(myDeals.slice(0, 4));
-
-      // Load notifications as activity
-      const { data: notifications } = await supabase
-        .from('notifications')
-        .select('id, title, body, type, link, created_at')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      const activityItems: ActivityData[] = (notifications || []).map((n) => ({
-        id: n.id,
-        title: n.title,
-        description: n.body || '',
-        icon: (n.type === 'score' ? 'score' : n.type === 'document' ? 'document' : 'deal') as ActivityData['icon'],
-        timestamp: n.created_at,
-        href: n.link || undefined,
-      }));
-
-      if (activityItems.length === 0) {
-        activityItems.push(
-          { id: '1', title: 'Welcome to Kunfa', description: 'Set up your company profile to get started', icon: 'deal', timestamp: new Date().toISOString() },
-        );
-      }
-
-      setActivity(activityItems);
-    } catch (error) {
-      console.error('Failed to load founder data:', error);
+      // Sort by time, take latest 10
+      activityItems.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+      setActivity(activityItems.slice(0, 10));
+      setAllDealsFlat(flatDeals);
+      setAllDealsByStage(byStage);
+    } catch (err) {
+      console.error('Failed to load investor data:', err);
     }
   };
 
-  const investorQuickActions = [
-    {
-      title: 'Browse Deals',
-      description: 'Discover new investment opportunities',
-      icon: Compass,
-      href: '/deals',
-      color: 'blue' as const,
-    },
-    {
-      title: 'View Pipeline',
-      description: 'Track deals through your pipeline stages',
-      icon: TrendingUp,
-      href: '/pipeline',
-      color: 'purple' as const,
-    },
-    {
-      title: 'View Portfolio',
-      description: 'Monitor your active investments',
-      icon: PieChart,
-      href: '/portfolio',
-      color: 'green' as const,
-    },
-    {
-      title: 'AI Tools',
-      description: 'Score deals, generate briefs, analyze terms',
-      icon: Brain,
-      href: '/deals',
-      color: 'indigo' as const,
-    },
-  ];
-
-  const founderQuickActions = [
-    {
-      title: 'Create Deal',
-      description: 'Pitch your company to investors',
-      icon: Briefcase,
-      href: '/deals/create',
-      color: 'blue' as const,
-    },
-    {
-      title: 'View My Deals',
-      description: 'See all your fundraising deals',
-      icon: Eye,
-      href: '/deals/my-deals',
-      color: 'purple' as const,
-    },
-    {
-      title: 'Upload Documents',
-      description: 'Share pitch decks and financials',
-      icon: FileUp,
-      href: '/deals/create',
-      color: 'green' as const,
-    },
-    {
-      title: 'Get AI Score',
-      description: 'Get AI analysis of your deal',
-      icon: Star,
-      href: '/deals',
-      color: 'indigo' as const,
-    },
-  ];
-
-  const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'deal':
-        return Briefcase;
-      case 'score':
-        return Brain;
-      case 'document':
-        return FileUp;
-      case 'pipeline':
-        return TrendingUp;
-      default:
-        return Clock;
-    }
-  };
-
-  const getActivityColor = (type: string): 'blue' | 'green' | 'purple' | 'orange' => {
-    switch (type) {
-      case 'deal':
-        return 'blue';
-      case 'score':
-        return 'purple';
-      case 'document':
-        return 'green';
-      case 'pipeline':
-        return 'orange';
-      default:
-        return 'blue';
-    }
-  };
-
-  const isInvestor = userProfile?.role === 'investor';
-  const isFounder = userProfile?.role === 'founder';
-
-  if (isLoading) {
+  if (isLoading || tenantLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4" />
-          <p className="text-gray-600">Loading dashboard...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[var(--line-strong)] mb-4" />
+          <p className="text-[var(--ink-soft)]">Loading dashboard...</p>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="p-8 max-w-7xl mx-auto">
-      {/* Welcome Banner */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">
-          Welcome back, {userProfile?.full_name?.split(' ')[0]}!
-        </h1>
-        <p className="text-gray-600 mt-2">
-          {isInvestor
-            ? 'Manage your deal pipeline and discover new investment opportunities'
-            : isFounder
-              ? 'Track your fundraising progress and investor engagement'
-              : 'Your deal flow intelligence platform is ready to use'}
-        </p>
-      </div>
+  // ─── TENANT (WWIP) DASHBOARD ───────────────────────────
+  if (isTenantContext) {
+    return <WwipDashboard />;
+  }
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        {isInvestor ? (
-          <>
-            <StatsCard
-              label="Active Pipeline"
-              value={stats.activePipeline}
-              icon={TrendingUp}
-              color="blue"
-              isLoading={isLoading}
-            />
-            <StatsCard
-              label="Saved Deals"
-              value={stats.savedDeals}
-              icon={BarChart3}
-              color="green"
-              isLoading={isLoading}
-            />
-            <StatsCard
-              label="Portfolio Value"
-              value={stats.portfolioValue > 0 ? `$${(stats.portfolioValue / 1_000_000).toFixed(1)}M` : '$0'}
-              icon={PieChart}
-              color="purple"
-              isLoading={isLoading}
-            />
-            <StatsCard
-              label="AI Scores Generated"
-              value={stats.scoresGenerated}
-              icon={Brain}
-              color="indigo"
-              isLoading={isLoading}
-            />
-          </>
-        ) : (
-          <>
-            <StatsCard
-              label="My Active Deals"
-              value={stats.myActiveDeals}
-              icon={Briefcase}
-              color="blue"
-              isLoading={isLoading}
-            />
-            <StatsCard
-              label="Total Views"
-              value={stats.totalViews}
-              icon={Eye}
-              color="green"
-              isLoading={isLoading}
-            />
-            <StatsCard
-              label="Documents Uploaded"
-              value={stats.documentsUploaded}
-              icon={FileUp}
-              color="purple"
-              isLoading={isLoading}
-            />
-            <StatsCard
-              label="Average AI Score"
-              value={stats.averageScore > 0 ? stats.averageScore.toFixed(1) : '—'}
-              icon={Brain}
-              color="indigo"
-              isLoading={isLoading}
-            />
-          </>
-        )}
-      </div>
+  // ─── STARTUP DASHBOARD ───────────────────────────────────
+  if (isStartup) {
+    const scored = company?.created_at ? daysSince(company.created_at) : null;
+    const profileFields = company ? [
+      company.company_name, company.one_liner, company.description, company.industry,
+      company.stage, company.website_url, company.linkedin_url, company.raise_amount,
+      company.team_size, company.traction, company.use_of_funds,
+    ] : [];
+    const filledFields = profileFields.filter(Boolean).length;
+    const totalFields = profileFields.length;
+    const completeness = totalFields > 0 ? Math.round((filledFields / totalFields) * 100) : 0;
 
-      {/* Quick Actions */}
-      <div className="mb-8">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-        <QuickActions
-          actions={isInvestor ? investorQuickActions : founderQuickActions}
-          isLoading={isLoading}
-        />
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        {/* Left Column: Activity Feed */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h2>
-            <RecentActivity
-              items={activity.map((item) => ({
-                id: item.id,
-                icon: getActivityIcon(item.icon),
-                title: item.title,
-                description: item.description,
-                timestamp: item.timestamp,
-                href: item.href,
-                color: getActivityColor(item.icon),
-              }))}
-              isLoading={isLoading}
-              emptyMessage="No recent activity yet"
-            />
-          </div>
+    return (
+      <div className="px-4 md:px-8 py-6 md:py-8 max-w-4xl mx-auto">
+        <div className="mb-6 md:mb-8">
+          <h1 style={{ fontFamily: 'var(--serif)', fontSize: undefined }} className="text-2xl md:text-3xl font-normal text-[var(--ink)]">
+            Welcome back{userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}!
+          </h1>
+          <p className="text-[var(--ink-mute)] mt-1 text-sm">Manage your startup profile and track your investment readiness.</p>
         </div>
 
-        {/* Right Column: Market Pulse */}
-        <div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Market Pulse</h2>
-            <MarketPulse
-              newDealsThisWeek={marketPulse.newDealsThisWeek}
-              topIndustry={marketPulse.topIndustry}
-              topIndustryCount={marketPulse.topIndustryCount}
-              averageScore={marketPulse.averageScore}
-              isLoading={isLoading}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Top Deals */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              {isInvestor ? 'Top Scored Deals' : 'My Latest Deals'}
-            </h2>
-            <TopDeals
-              deals={topDeals}
-              isLoading={isLoading}
-              emptyMessage={isInvestor ? 'No scored deals yet' : 'No deals created yet'}
-            />
-          </div>
-        </div>
-
-        {/* Pipeline Summary */}
-        {isInvestor && (
-          <div>
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Pipeline Summary</h2>
-              <PipelineSummary counts={pipelineData} isLoading={isLoading} />
+        {/* Payment Success Banner */}
+        {paidParam && (
+          <div className="rounded-xl p-4 mb-6 border bg-emerald-50 border-emerald-200">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-4 h-4 text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[var(--ink)]">Payment confirmed!</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">Your Readiness Report is being generated. You&apos;ll see it below when it&apos;s ready.</p>
+              </div>
             </div>
           </div>
         )}
+
+        {/* Claim Success Banner */}
+        {claimedParam && (
+          <div className="rounded-xl p-4 mb-6 border bg-emerald-50 border-emerald-200">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[var(--ink)]">Company claimed successfully!</p>
+                  <p className="text-xs text-[var(--ink-mute)] mt-0.5">Upload your pitch deck to get your AI-powered investment readiness score.</p>
+                </div>
+              </div>
+              {canEdit && company && !company.overall_score && (
+                <button
+                  onClick={() => setShowScoreModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition flex-shrink-0 w-full md:w-auto justify-center"
+                >
+                  <Star className="w-4 h-4" /> Get Your Score
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Claim Pending Banner */}
+        {claimPendingParam && (
+          <div className="rounded-xl p-4 mb-6 border bg-amber-50 border-amber-200">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <Clock className="w-4 h-4 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-[var(--ink)]">Claim submitted for review</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">Your claim request has been submitted. We&apos;ll notify you by email once it&apos;s approved.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {company ? (
+          <>
+            {/* Score + Company Card */}
+            <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4 md:p-6 mb-6">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-4 md:gap-6">
+                <div className={`w-20 h-20 md:w-24 md:h-24 rounded-2xl border-2 flex flex-col items-center justify-center flex-shrink-0 ${getScoreBg(company.overall_score)}`}>
+                  <span className={`text-3xl md:text-4xl font-[family-name:var(--serif)] tracking-tight ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
+                  <span className="text-[10px] text-[var(--ink-faint)] mt-0.5">/ 100</span>
+                </div>
+                <div className="flex-1 min-w-0 text-center md:text-left">
+                  <h2 className="text-lg md:text-xl font-bold text-[var(--ink)]">{company.company_name}</h2>
+                  {company.one_liner && <p className="text-[var(--ink-mute)] text-sm mt-1 line-clamp-3">{company.one_liner}</p>}
+                  <div className="flex flex-wrap items-center justify-center md:justify-start gap-2 mt-3">
+                    {company.industry && <span className="px-2.5 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-medium">{company.industry}</span>}
+                    {company.stage && <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">{company.stage}</span>}
+                    {company.is_raising && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-semibold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        {company.raising_amount ? `Raising ${company.raising_amount}` : 'Currently Raising'}
+                      </span>
+                    )}
+                    {scored !== null && <span className="px-2.5 py-0.5 rounded-full bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-xs font-medium">Scored {scored}d ago</span>}
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2 w-full md:w-auto flex-shrink-0">
+                  <Link href={`/company/${company.slug}`} target="_blank" className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition w-full md:w-auto">
+                    View Public Profile <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                  <Link href="/company-profile" className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition w-full md:w-auto">
+                    <RefreshCw className="w-3.5 h-3.5" /> Manage Profile
+                  </Link>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
+              <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-lg flex items-center justify-center"><Star className="w-5 h-5 text-[var(--accent-ink)]" /></div>
+                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Kunfa Score</p><p className={`text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</p></div>
+                </div>
+              </div>
+              <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[var(--accent-soft)] rounded-lg flex items-center justify-center"><Clock className="w-5 h-5 text-[var(--ink)]" /></div>
+                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Days Since Scored</p><p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{scored ?? '—'}</p></div>
+                </div>
+              </div>
+              <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center"><CheckCircle className="w-5 h-5 text-purple-600" /></div>
+                  <div><p className="text-xs text-[var(--ink-mute)] font-medium">Profile Completeness</p><p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{completeness}%</p></div>
+                </div>
+                <div className="mt-3 w-full bg-[var(--bg-sunk)] rounded-full h-1.5">
+                  <div className="bg-purple-500 h-1.5 rounded-full transition-all" style={{ width: `${completeness}%` }} />
+                </div>
+              </div>
+            </div>
+
+            {/* KUN-21: Sub-75 score gate messaging for startups */}
+            {(company.overall_score ?? 0) < 75 && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 mb-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm font-semibold text-[var(--ink)]">
+                      {company.overall_score == null ? 'Get your Kunfa Score to unlock investor discovery' : 'Your Kunfa Score is below 75'}
+                    </h3>
+                    <p className="text-xs text-[var(--ink-soft)] mt-1 leading-relaxed">
+                      {company.overall_score == null
+                        ? 'Upload your pitch deck and financials to get scored. Companies with a Kunfa Score of 75+ become eligible for investor matching on the platform.'
+                        : 'Improve your score to 75+ to unlock investor discovery. Update your pitch deck and financials, then re-score to see your new result.'}
+                    </p>
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-3">
+                      {canEdit && (
+                        <button
+                          onClick={() => setShowScoreModal(true)}
+                          className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                          {company.overall_score == null ? 'Get Your Score' : 'Re-score My Company'}
+                        </button>
+                      )}
+                      <Link
+                        href="/how-it-works"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--bg-elev)] border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
+                      >
+                        How scoring works
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* KUN-21: Score Breakdown — show whenever we have dimension scores */}
+            {company.dimension_scores && (
+              <div className="mb-6">
+                <ScoreBreakdown
+                  dimensions={company.dimension_scores}
+                  overallScore={company.overall_score}
+                  title="Your Kunfa Score Breakdown"
+                  showSummaries
+                />
+              </div>
+            )}
+
+            {/* KUN-21: Improvement Recommendations — only for sub-75 with dimension scores */}
+            {company.dimension_scores && (company.overall_score ?? 0) < 75 && (
+              <div className="mb-6">
+                <ImprovementTips dimensions={company.dimension_scores} />
+              </div>
+            )}
+
+            {/* Deal Room Activity — only visible for 75+ companies (KUN-21) */}
+            {(company.overall_score ?? 0) >= 75 && (
+              <DealRoomActivityCard companyId={company.id} companyName={company.company_name} />
+            )}
+
+            {/* Report Status */}
+            {company.submission_id && (
+              <div className={`rounded-xl p-5 mb-6 border ${
+                paid && hasReport ? 'bg-emerald-50 border-emerald-200'
+                  : paid ? 'bg-[var(--accent-soft)] border-[var(--line)]'
+                  : 'bg-amber-50 border-amber-200'
+              }`}>
+                {paid && hasReport ? (
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-[var(--ink)]">Kunfa Readiness Report</h3>
+                      <p className="text-xs text-[var(--ink-soft)] mt-0.5">Your full AI-powered investment analysis is ready.</p>
+                    </div>
+                    <Link href={`/report/${company.submission_id}`} className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition w-full sm:w-auto">View Report</Link>
+                  </div>
+                ) : paid ? (
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <Loader2 className="w-5 h-5 text-[var(--accent-ink)] animate-spin flex-shrink-0" />
+                      <div>
+                        <h3 className="text-sm font-semibold text-[var(--ink)]">Report Generating...</h3>
+                        <p className="text-xs text-[var(--ink-soft)] mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => loadStartupData()}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-[var(--line-strong)] text-[var(--ink-soft)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition w-full sm:w-auto"
+                    >
+                      <RefreshCw className="w-4 h-4" /> Check Status
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-sm font-semibold text-[var(--ink)]">Unlock Your Full Readiness Report</h3>
+                      <p className="text-xs text-[var(--ink-soft)] mt-0.5">Detailed analysis, sector benchmarks, and actionable recommendations.</p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        setCheckoutLoading(true);
+                        try {
+                          const res = await fetch('/api/stripe/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ submissionId: company.submission_id }) });
+                          const data = await res.json();
+                          if (data.url) window.location.href = data.url;
+                        } catch { /* ignore */ } finally { setCheckoutLoading(false); }
+                      }}
+                      disabled={checkoutLoading}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition disabled:opacity-50 w-full sm:w-auto"
+                    >
+                      {checkoutLoading ? 'Redirecting...' : 'Unlock Report — $59'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Quick Links */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: 'Edit Profile', href: '/company-profile', icon: '✏️' },
+                { label: 'Data Room', href: '/data-room', icon: '📁' },
+                { label: 'Find Investors', href: '/investors', icon: '🔍' },
+                { label: 'Score Details', href: company.submission_id ? `/score/${company.submission_id}` : '#', icon: '📊' },
+              ].map((link) => (
+                <Link key={link.label} href={link.href} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-4 hover:border-[var(--line-strong)] hover:shadow transition text-center">
+                  <span className="text-2xl mb-2 block">{link.icon}</span>
+                  <span className="text-sm font-medium text-[var(--ink-soft)]">{link.label}</span>
+                </Link>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-12 text-center">
+            <div className="w-16 h-16 bg-[var(--bg-sunk)] rounded-2xl flex items-center justify-center mx-auto mb-4"><Star className="w-8 h-8 text-[var(--ink-faint)]" /></div>
+            <h2 className="text-lg font-semibold text-[var(--ink)] mb-2">Get Your Kunfa Score</h2>
+            <p className="text-[var(--ink-mute)] text-sm mb-6 w-full md:max-w-md mx-auto">Upload your pitch deck to get your AI-powered investment readiness score and create your company profile.</p>
+            {canEdit && (
+              <button
+                onClick={() => setShowScoreModal(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--ink)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition"
+              >
+                Get Your Kunfa Score
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Score Modal */}
+        <ScoreModal isOpen={showScoreModal} onClose={() => { setShowScoreModal(false); loadStartupData(); }} />
       </div>
+    );
+  }
+
+  // ─── INVESTOR DASHBOARD ──────────────────────────────────
+  const totalStageDeals = Object.values(stageCounts).reduce((a, b) => a + b, 0);
+
+  // Mobile layout — completely different structure per m-screens.jsx
+  if (isMobile) {
+    return (
+      <MobileDashboard
+        userName={userProfile?.full_name || null}
+        pipelineDeals={investorStats.pipelineDeals}
+        watchlisted={investorStats.watchlisted}
+        totalPipelineValue={formatCompact(investorStats.totalPipelineValue)}
+        avgScore={investorStats.avgKunfaScore ? String(investorStats.avgKunfaScore) : '—'}
+        deals={topDeals.map(d => ({
+          id: d.id,
+          company_name: d.company_name,
+          slug: d.slug,
+          score: d.score,
+          stage: d.stage,
+          raise_amount: d.raise_amount,
+        }))}
+      />
+    );
+  }
+
+  return (
+    <div>
+      <WelcomeBanner
+        title={`Welcome back${userProfile?.full_name ? `, ${userProfile.full_name.split(' ')[0]}` : ''}`}
+        body="Every new Kunfa member receives a $100 credit toward AI-assisted deal scoring and diligence. Apply it on any deal in your inbox."
+        cta={<Button variant="on-dark" href="/deals">Browse deals</Button>}
+      />
+
+      <PageHead
+        title={activeEntityName || userProfile?.fund_name || 'Platform Overview'}
+        subtitle="A live view of your portfolio, the Kunfa marketplace, and the deals scored by our intelligence layer this week."
+        cta={
+          <Button variant="primary" href="/deals" iconRight={<ArrowRight size={14} />}>
+            Browse Deals
+          </Button>
+        }
+      />
+
+      {/* Stat Grid */}
+      <div className="stat-grid-responsive" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
+        <StatCard label="Pipeline Deals" value={String(investorStats.pipelineDeals)} foot={`Tracking ${investorStats.pipelineDeals}`} icon={<Briefcase size={14} />} />
+        <StatCard label="Watchlisted" value={String(investorStats.watchlisted)} foot={`${investorStats.watchlisted} saved`} icon={<Bookmark size={14} />} />
+        <StatCard label="Total Pipeline Value" value={formatCompact(investorStats.totalPipelineValue)} foot="Across all deals" icon={<DollarSign size={14} />} />
+        <StatCard label="Avg Kunfa Score" value={investorStats.avgKunfaScore ? String(investorStats.avgKunfaScore) : '—'} foot="Scored deals" icon={<Brain size={14} />} />
+      </div>
+
+
+      {/* Stage Breakdown */}
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-8">
+        <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-4">Deal Stage Breakdown</h2>
+        {totalStageDeals > 0 ? (
+          <>
+            {/* Horizontal bar with tooltips */}
+            <div className="relative">
+              <div className="flex h-8 rounded-lg overflow-hidden mb-4">
+                {(Object.entries(stageCounts) as [string, number][]).map(([stage, count]) => {
+                  if (count === 0) return null;
+                  const pct = (count / totalStageDeals) * 100;
+                  return (
+                    <div
+                      key={stage}
+                      className={`${STAGE_COLORS[stage]} flex items-center justify-center text-white text-xs font-semibold transition-all cursor-pointer`}
+                      style={{ width: `${pct}%` }}
+                      onMouseEnter={(e) => {
+                        const rect = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
+                        const segRect = e.currentTarget.getBoundingClientRect();
+                        setHoveredStage({
+                          stage,
+                          x: segRect.left - rect.left + segRect.width / 2,
+                          y: -8,
+                        });
+                      }}
+                      onMouseLeave={() => setHoveredStage(null)}
+                    >
+                      {pct > 8 ? count : ''}
+                    </div>
+                  );
+                })}
+              </div>
+              {/* Tooltip */}
+              {hoveredStage && allDealsByStage[hoveredStage.stage] && (
+                <div
+                  className="absolute z-10 bg-[var(--bg-elev)] border border-[var(--line)] rounded-lg p-3 pointer-events-none"
+                  style={{
+                    left: `${hoveredStage.x}px`,
+                    bottom: '100%',
+                    transform: 'translateX(-50%)',
+                    marginBottom: '4px',
+                    minWidth: '160px',
+                    maxWidth: '240px',
+                  }}
+                >
+                  <p className="text-xs font-semibold text-[var(--ink)] mb-1.5">{formatStageLabel(hoveredStage.stage)}</p>
+                  <ul className="space-y-0.5">
+                    {allDealsByStage[hoveredStage.stage].map((d, i) => (
+                      <li key={i} className="text-xs text-[var(--ink-soft)] truncate">{d.company_name}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            {/* Legend */}
+            <div className="flex flex-wrap items-center gap-4">
+              {(Object.entries(stageCounts) as [string, number][]).map(([stage, count]) => (
+                <div key={stage} className="flex items-center gap-2">
+                  <div className={`w-3 h-3 rounded-sm ${STAGE_COLORS[stage]}`} />
+                  <span className="text-xs text-[var(--ink-soft)]">{formatStageLabel(stage)}</span>
+                  <span className="text-xs font-semibold text-[var(--ink)]">{count}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-[var(--ink-faint)] py-4 text-center">No deals in pipeline yet. <Link href="/deals" className="text-[var(--accent-ink)] hover:underline">Browse companies</Link> to get started.</p>
+        )}
+      </div>
+
+      {/* Two-column: Top Deals + Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+        {/* Top Deals Table — 3 cols */}
+        <div className="lg:col-span-3 bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Pipeline Deals</h2>
+            <Link href="/pipeline" className="text-xs text-[var(--accent-ink)] font-medium hover:underline flex items-center gap-1">
+              View Pipeline <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+          {topDeals.length > 0 ? (
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[var(--line)]">
+                  <th className="text-left text-xs font-medium text-[var(--ink-faint)] pb-3">Company</th>
+                  <th className="text-left text-xs font-medium text-[var(--ink-faint)] pb-3">Score</th>
+                  <th className="text-left text-xs font-medium text-[var(--ink-faint)] pb-3">Stage</th>
+                  <th className="text-right text-xs font-medium text-[var(--ink-faint)] pb-3">Raise</th>
+                  <th className="text-right text-xs font-medium text-[var(--ink-faint)] pb-3">Days</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topDeals.map(deal => (
+                  <tr key={deal.id} className="border-b border-[var(--line)] last:border-0 hover:bg-[var(--bg-sunk)] transition cursor-pointer" onClick={() => { if (deal.slug) window.location.href = `/company/${deal.slug}`; }}>
+                    <td className="py-3 pr-3">
+                      <span className="text-sm font-medium text-[var(--ink)]">{deal.company_name}</span>
+                    </td>
+                    <td className="py-3 pr-3">
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${getScoreBadgeColor(deal.score)}`}>
+                        {deal.score ?? '—'}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-3">
+                      <span className="text-xs text-[var(--ink-soft)]">{formatStageLabel(deal.stage)}</span>
+                    </td>
+                    <td className="py-3 text-right">
+                      <span className="text-xs text-[var(--ink-soft)]">{deal.raise_amount ? formatCompact(deal.raise_amount) : '—'}</span>
+                    </td>
+                    <td className="py-3 text-right">
+                      <span className="text-xs text-[var(--ink-faint)]">{deal.days_in_stage}d</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <div className="text-center py-8">
+              <TrendingUp className="w-8 h-8 text-[var(--ink-faint)] mx-auto mb-2" />
+              <p className="text-sm text-[var(--ink-faint)]">No deals in pipeline yet</p>
+            </div>
+          )}
+        </div>
+
+        {/* Recent Activity — 2 cols */}
+        <div className="lg:col-span-2 bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+          <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-4">Recent Activity</h2>
+          {activity.length > 0 ? (
+            <div className="space-y-1">
+              {activity.map(item => (
+                <div key={item.id} className="py-2.5 border-b border-[var(--line)] last:border-0">
+                  {item.href ? (
+                    <Link href={item.href} className="text-sm text-[var(--ink-soft)] hover:text-[var(--accent-ink)] transition">{item.text}</Link>
+                  ) : (
+                    <p className="text-sm text-[var(--ink-soft)]">{item.text}</p>
+                  )}
+                  <p className="text-xs text-[var(--ink-faint)] mt-0.5">{timeAgo(item.time)}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Clock className="w-8 h-8 text-[var(--ink-faint)] mx-auto mb-2" />
+              <p className="text-sm text-[var(--ink-faint)]">No recent activity</p>
+              <Link href="/deals" className="text-xs text-[var(--accent-ink)] hover:underline mt-2 inline-block">Browse companies to get started</Link>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Pipeline Deals Table */}
+      {allDealsFlat.length > 0 && (
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Pipeline Deals</h2>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--ink-faint)]" />
+              <input
+                type="text"
+                value={pipelineSearch}
+                onChange={(e) => setPipelineSearch(e.target.value)}
+                placeholder="Search companies..."
+                className="pl-9 pr-3 py-1.5 border border-[var(--line-strong)] rounded-lg text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)] w-56"
+              />
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[var(--line)]">
+                  {[
+                    { key: 'company_name', label: 'Company', align: 'left' },
+                    { key: 'score', label: 'Score', align: 'left' },
+                    { key: 'stage', label: 'Stage', align: 'left' },
+                    { key: 'raise_amount', label: 'Raise', align: 'right' },
+                    { key: 'assigned_to_name', label: 'Assigned', align: 'left' },
+                    { key: 'next_action', label: 'Next Action', align: 'left' },
+                    { key: 'note_count', label: 'Notes', align: 'center' },
+                  ].map((col) => (
+                    <th
+                      key={col.key}
+                      className={`text-${col.align} text-xs font-medium text-[var(--ink-faint)] pb-3 cursor-pointer hover:text-[var(--ink-soft)] transition select-none`}
+                      onClick={() =>
+                        setPipelineSort((prev) =>
+                          prev.key === col.key ? { key: col.key, asc: !prev.asc } : { key: col.key, asc: true }
+                        )
+                      }
+                    >
+                      <span className="inline-flex items-center gap-1">
+                        {col.label}
+                        {pipelineSort.key === col.key && (
+                          pipelineSort.asc ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />
+                        )}
+                      </span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {(() => {
+                  const filtered = allDealsFlat.filter((d) =>
+                    d.company_name.toLowerCase().includes(pipelineSearch.toLowerCase())
+                  );
+                  const sorted = [...filtered].sort((a, b) => {
+                    const k = pipelineSort.key as keyof PipelineDeal;
+                    const av = a[k];
+                    const bv = b[k];
+                    if (av == null && bv == null) return 0;
+                    if (av == null) return 1;
+                    if (bv == null) return -1;
+                    const cmp = typeof av === 'string'
+                      ? av.localeCompare(bv as string)
+                      : (av as number) - (bv as number);
+                    return pipelineSort.asc ? cmp : -cmp;
+                  });
+                  return sorted.map((deal) => (
+                    <>
+                      <tr key={deal.id} className="border-b border-[var(--line)] last:border-0 hover:bg-[var(--bg-sunk)] transition">
+                        <td className="py-3 pr-3">
+                          {deal.slug ? (
+                            <Link href={`/company/${deal.slug}`} className="text-sm font-medium text-[var(--ink)] hover:text-[var(--accent-ink)] transition">
+                              {deal.company_name}
+                            </Link>
+                          ) : (
+                            <span className="text-sm font-medium text-[var(--ink)]">{deal.company_name}</span>
+                          )}
+                        </td>
+                        <td className="py-3 pr-3">
+                          <span className={`text-xs font-bold px-2 py-0.5 rounded ${getScoreBadgeColor(deal.score)}`}>
+                            {deal.score ?? '—'}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-3">
+                          <span className={`inline-block text-xs font-medium px-2 py-0.5 rounded text-white ${STAGE_COLORS[deal.stage] || 'bg-gray-400'}`}>
+                            {formatStageLabel(deal.stage)}
+                          </span>
+                        </td>
+                        <td className="py-3 pr-3 text-right">
+                          <span className="text-xs text-[var(--ink-soft)]">{deal.raise_amount ? formatCompact(deal.raise_amount) : '—'}</span>
+                        </td>
+                        <td className="py-3 pr-3">
+                          <span className="text-xs text-[var(--ink-soft)]">{deal.assigned_to_name || '—'}</span>
+                        </td>
+                        <td className="py-3 pr-3">
+                          <div>
+                            <span className="text-xs text-[var(--ink-soft)]">{deal.next_action || '—'}</span>
+                            {deal.next_action_date && (
+                              <span className="text-[10px] text-[var(--ink-faint)] ml-1">({deal.next_action_date})</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 text-center">
+                          <button
+                            onClick={() => setExpandedDealId(expandedDealId === deal.id ? null : deal.id)}
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition ${
+                              expandedDealId === deal.id
+                                ? 'bg-[var(--accent-soft)] text-[var(--ink)]'
+                                : 'text-[var(--ink-mute)] hover:bg-[var(--bg-sunk)]'
+                            }`}
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            {deal.note_count > 0 && <span>{deal.note_count}</span>}
+                          </button>
+                        </td>
+                      </tr>
+                      {expandedDealId === deal.id && currentUserId && (
+                        <tr key={`${deal.id}-notes`}>
+                          <td colSpan={7} className="px-4 py-3 bg-[var(--bg-sunk)] border-b border-[var(--line)]">
+                            <NotesTimeline dealId={deal.id} currentUserId={currentUserId} />
+                          </td>
+                        </tr>
+                      )}
+                    </>
+                  ));
+                })()}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

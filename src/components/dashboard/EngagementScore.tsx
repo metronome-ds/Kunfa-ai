@@ -46,8 +46,8 @@ export function EngagementScore() {
     return (
       <Card>
         <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-gray-200 rounded w-1/3" />
-          <div className="h-20 bg-gray-200 rounded-full mx-auto w-20" />
+          <div className="h-4 bg-[var(--bg-sunk)] rounded w-1/3" />
+          <div className="h-20 bg-[var(--bg-sunk)] rounded-full mx-auto w-20" />
         </div>
       </Card>
     );
@@ -57,8 +57,8 @@ export function EngagementScore() {
     return (
       <Card>
         <div className="text-center py-4">
-          <Activity className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-          <p className="text-sm text-gray-500">{error || 'Unable to load engagement score'}</p>
+          <Activity className="h-8 w-8 text-[var(--ink-faint)] mx-auto mb-2" />
+          <p className="text-sm text-[var(--ink-mute)]">{error || 'Unable to load engagement score'}</p>
         </div>
       </Card>
     );
@@ -67,13 +67,13 @@ export function EngagementScore() {
   const scorePercentage = (metrics.score / 1000) * 100;
   const scoreColor =
     metrics.score >= 750 ? 'text-green-600' :
-    metrics.score >= 500 ? 'text-blue-600' :
+    metrics.score >= 500 ? 'text-[var(--ink)]' :
     metrics.score >= 250 ? 'text-yellow-600' :
-    'text-gray-600';
+    'text-[var(--ink-soft)]';
 
   const scoreRingColor =
     metrics.score >= 750 ? 'stroke-green-600' :
-    metrics.score >= 500 ? 'stroke-blue-600' :
+    metrics.score >= 500 ? 'stroke-[var(--ink)]' :
     metrics.score >= 250 ? 'stroke-yellow-600' :
     'stroke-gray-600';
 
@@ -141,15 +141,15 @@ export function EngagementScore() {
             </svg>
             {/* Score text in center */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className={`text-3xl font-bold ${scoreColor}`}>
+              <div className={`text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight ${scoreColor}`}>
                 {Math.round(metrics.score)}
               </div>
-              <div className="text-xs text-gray-500">out of 1000</div>
+              <div className="text-xs text-[var(--ink-mute)]">out of 1000</div>
             </div>
           </div>
 
           {/* Score Label */}
-          <p className="text-sm font-medium text-gray-600">
+          <p className="text-sm font-medium text-[var(--ink-soft)]">
             {metrics.score >= 750 ? 'Highly Active' :
              metrics.score >= 500 ? 'Active' :
              metrics.score >= 250 ? 'Moderate' :
@@ -158,28 +158,28 @@ export function EngagementScore() {
         </div>
 
         {/* Metrics Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-1 md:grid-cols-3 gap-4">
           {engagementItems.map((item) => {
             const Icon = item.icon;
             const contribution = item.count * item.weight;
             const percentOfTotal = metrics.score > 0 ? (contribution / metrics.score) * 100 : 0;
 
             return (
-              <div key={item.label} className="bg-gray-50 rounded-lg p-4">
+              <div key={item.label} className="bg-[var(--bg-sunk)] rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
-                  <Icon className="h-5 w-5 text-blue-600" />
-                  <span className="text-xs font-semibold text-gray-500">
+                  <Icon className="h-5 w-5 text-[var(--ink)]" />
+                  <span className="text-xs font-semibold text-[var(--ink-mute)]">
                     {Math.round(percentOfTotal)}%
                   </span>
                 </div>
                 <div className="mb-2">
-                  <p className="text-sm font-medium text-gray-900">{item.count}</p>
-                  <p className="text-xs text-gray-500">{item.label}</p>
+                  <p className="text-sm font-medium text-[var(--ink)]">{item.count}</p>
+                  <p className="text-xs text-[var(--ink-mute)]">{item.label}</p>
                 </div>
                 {/* Mini progress bar */}
-                <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div className="w-full h-1 bg-[var(--bg-sunk)] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-600 rounded-full transition-all"
+                    className="h-full bg-[var(--ink)] rounded-full transition-all"
                     style={{ width: `${Math.min(percentOfTotal, 100)}%` }}
                   />
                 </div>
@@ -189,9 +189,9 @@ export function EngagementScore() {
         </div>
 
         {/* Tips */}
-        <div className="bg-blue-50 rounded-lg p-4">
-          <h4 className="text-sm font-semibold text-blue-900 mb-2">Boost Your Score</h4>
-          <ul className="text-xs text-blue-800 space-y-1">
+        <div className="bg-[var(--accent-soft)] rounded-lg p-4">
+          <h4 className="text-sm font-semibold text-[var(--ink)] mb-2">Boost Your Score</h4>
+          <ul className="text-xs text-[var(--ink)] space-y-1">
             <li>• View and analyze deals in the marketplace</li>
             <li>• Save deals to your watchlist</li>
             <li>• Upload and organize deal documents</li>

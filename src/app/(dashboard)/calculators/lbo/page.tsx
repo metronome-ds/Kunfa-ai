@@ -7,8 +7,8 @@ export default function LBOCalculatorPage() {
     <div className="p-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">LBO Calculator</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">LBO Calculator</h1>
+        <p className="text-[var(--ink-soft)] mt-2">
           Model leveraged buyout transactions and analyze return metrics
         </p>
       </div>

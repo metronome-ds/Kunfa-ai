@@ -19,7 +19,7 @@ interface QuickActionsProps {
 }
 
 const colorClasses = {
-  blue: 'hover:bg-blue-50 border-blue-100',
+  blue: 'hover:bg-[var(--accent-soft)] border-[var(--line)]',
   green: 'hover:bg-green-50 border-green-100',
   purple: 'hover:bg-purple-50 border-purple-100',
   orange: 'hover:bg-orange-50 border-orange-100',
@@ -28,7 +28,7 @@ const colorClasses = {
 };
 
 const iconColorClasses = {
-  blue: 'text-blue-600',
+  blue: 'text-[var(--ink)]',
   green: 'text-green-600',
   purple: 'text-purple-600',
   orange: 'text-orange-600',
@@ -41,14 +41,14 @@ function ActionCard({ title, description, icon: Icon, href, color }: QuickAction
     <Link href={href}>
       <div
         className={cn(
-          'bg-white rounded-xl shadow-sm p-6 border cursor-pointer transition-all hover:shadow-md',
+          'bg-[var(--bg-elev)] rounded-xl p-6 border cursor-pointer transition-all ',
           colorClasses[color]
         )}
       >
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">{title}</h3>
-            <p className="text-sm text-gray-600 mt-1">{description}</p>
+            <h3 className="font-semibold text-[var(--ink)]">{title}</h3>
+            <p className="text-sm text-[var(--ink-soft)] mt-1">{description}</p>
           </div>
           <div className="ml-4 flex-shrink-0">
             <Icon className={cn('h-5 w-5', iconColorClasses[color])} />
@@ -62,11 +62,11 @@ function ActionCard({ title, description, icon: Icon, href, color }: QuickAction
 export function QuickActions({ actions, isLoading = false }: QuickActionsProps) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-            <div className="h-5 w-32 bg-gray-200 rounded animate-pulse mb-2" />
-            <div className="h-4 w-48 bg-gray-100 rounded animate-pulse" />
+          <div key={i} className="bg-[var(--bg-elev)] rounded-xl p-6 border border-[var(--line)]">
+            <div className="h-5 w-32 bg-[var(--bg-sunk)] rounded animate-pulse mb-2" />
+            <div className="h-4 w-48 bg-[var(--bg-sunk)] rounded animate-pulse" />
           </div>
         ))}
       </div>
@@ -74,7 +74,7 @@ export function QuickActions({ actions, isLoading = false }: QuickActionsProps) 
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-4">
       {actions.map((action) => (
         <ActionCard key={action.href} {...action} />
       ))}

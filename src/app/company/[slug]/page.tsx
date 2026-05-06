@@ -1,6 +1,32 @@
+import { Suspense } from 'react'
 import { createClient } from '@supabase/supabase-js'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { CompanyActions } from '@/components/company/CompanyActions'
+import ScoreBreakdown from '@/components/scoring/ScoreBreakdown'
+import { CompanyNav } from '@/components/company/CompanyNav'
+import { ReportBanner } from '@/components/company/ReportBanner'
+import { ScoreTooltip } from '@/components/ui/ScoreTooltip'
+import { OptionalSidebarLayout } from '@/components/common/OptionalSidebarLayout'
+import { SourceBadge } from '@/components/common/SourceBadge'
+import DealRoomSection from '@/components/dealroom/DealRoomSection'
+import PaidReportBanner from '@/components/company/PaidReportBanner'
+import { getRaisingUrgency } from '@/lib/utils'
+
+
+
+interface TeamMember {
+  name: string
+  title?: string
+  linkedin?: string
+}
+
+interface ScoreGrades {
+  team_grade: string | null
+  market_grade: string | null
+  product_grade: string | null
+  financial_grade: string | null
+}
 
 async function getCompanyPage(slug: string) {
   const supabase = createClient(
@@ -18,12 +44,36 @@ async function getCompanyPage(slug: string) {
   return data
 }
 
+async function getSubmissionGrades(submissionId: string | null): Promise<ScoreGrades | null> {
+  if (!submissionId) return null
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
+  const { data } = await supabase
+    .from('submissions')
+    .select('team_grade, market_grade, product_grade, financial_grade')
+    .eq('id', submissionId)
+    .single()
+
+  return data
+}
+
 function getScoreColor(score: number | null) {
-  if (!score) return 'text-gray-400 bg-gray-700 border-gray-600'
-  if (score >= 80) return 'text-emerald-400 bg-emerald-500/20 border-emerald-500/30'
-  if (score >= 60) return 'text-blue-400 bg-blue-500/20 border-blue-500/30'
-  if (score >= 40) return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30'
-  return 'text-red-400 bg-red-500/20 border-red-500/30'
+  if (!score) return 'text-[var(--ink-mute)] bg-[var(--bg-sunk)] border-[var(--line)]'
+  if (score >= 80) return 'text-emerald-700 bg-emerald-50 border-emerald-200'
+  if (score >= 60) return 'text-[var(--ink)] bg-[var(--accent-soft)] border-[var(--line)]'
+  if (score >= 40) return 'text-yellow-700 bg-yellow-50 border-yellow-200'
+  return 'text-red-700 bg-red-50 border-red-200'
+}
+
+function getGradeColor(grade: string) {
+  if (grade.startsWith('A')) return 'bg-emerald-100 text-emerald-700'
+  if (grade.startsWith('B')) return 'bg-[var(--accent-soft)] text-[var(--ink)]'
+  if (grade.startsWith('C')) return 'bg-yellow-100 text-yellow-700'
+  return 'bg-red-100 text-red-700'
 }
 
 function formatRaiseAmount(amount: number | string | null) {
@@ -35,218 +85,491 @@ function formatRaiseAmount(amount: number | string | null) {
   return `$${num.toLocaleString()}`
 }
 
-export default async function CompanyPublicPage({ params }: { params: Promise<{ slug: string }> }) {
+async function validateShareToken(token: string, companyId: string): Promise<boolean> {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+  const { data } = await supabase
+    .from('share_invitations')
+    .select('id, expires_at, is_active')
+    .eq('token', token)
+    .eq('company_id', companyId)
+    .single()
+
+  if (!data || !data.is_active) return false
+  if (new Date(data.expires_at) < new Date()) return false
+
+  // Increment view count
+  await supabase
+    .from('share_invitations')
+    .update({ view_count: (data as { view_count?: number }).view_count ?? 0 + 1, last_viewed_at: new Date().toISOString() })
+    .eq('id', data.id)
+
+  return true
+}
+
+export default async function CompanyPublicPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const { slug } = await params
+  const search = await searchParams
+  const shareToken = typeof search.share === 'string' ? search.share : null
+
   const company = await getCompanyPage(slug)
 
   if (!company) {
     notFound()
   }
 
+  // If share token provided, validate it for unauthenticated access
+  let shareAccess = false
+  if (shareToken) {
+    shareAccess = await validateShareToken(shareToken, company.id)
+  }
+
+  const grades = await getSubmissionGrades(company.submission_id)
+
   const scoreColor = getScoreColor(company.overall_score)
   const raiseFormatted = formatRaiseAmount(company.raise_amount)
+  const subtitle = company.one_liner || company.description
+  const hq = company.headquarters || company.country
 
-  const hasOverview = company.description || company.website_url || company.founder_name
+  // Build team members list from founding_team jsonb or fallback
+  const teamMembers: TeamMember[] = []
+  if (company.founding_team && Array.isArray(company.founding_team) && company.founding_team.length > 0) {
+    for (const m of company.founding_team) {
+      if (m && typeof m === 'object' && m.name) {
+        teamMembers.push({ name: m.name, title: m.title, linkedin: m.linkedin })
+      }
+    }
+  }
+  if (teamMembers.length === 0 && company.founder_name) {
+    teamMembers.push({
+      name: company.founder_name,
+      title: company.founder_title || undefined,
+      linkedin: company.linkedin_url || undefined,
+    })
+  }
+
+  const hasTeamSection = teamMembers.length > 0 || company.team_size || company.founded_year
   const hasFunding = raiseFormatted || company.stage || company.use_of_funds
-  const hasTeam = company.founder_name || company.team_size || company.founded_year
   const hasAnalysis = company.problem_summary || company.solution_summary || company.business_model || company.traction || company.key_risks
 
-  return (
-    <div className="min-h-screen bg-[#0F172A]">
-      {/* Nav */}
-      <nav className="border-b border-gray-800 px-6 py-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#10B981] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">K</span>
-            </div>
-            <span className="text-white font-semibold text-lg">Kunfa.AI</span>
-          </Link>
-          <Link
-            href="/"
-            className="bg-[#10B981] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#059669] transition"
-          >
-            Get Your Score
-          </Link>
-        </div>
-      </nav>
+  // Grade pills data
+  const gradePills = grades ? [
+    { label: 'Team', grade: grades.team_grade },
+    { label: 'Market', grade: grades.market_grade },
+    { label: 'Product', grade: grades.product_grade },
+    { label: 'Financial', grade: grades.financial_grade },
+  ].filter(p => p.grade) : []
 
-      {/* Content */}
-      <main className="max-w-4xl mx-auto px-6 py-12 space-y-8">
+  return (
+    <OptionalSidebarLayout fallbackNav={<CompanyNav />}>
+      <main className="max-w-4xl mx-auto px-6 py-12 space-y-6">
         {/* Header */}
         <div className="flex items-start gap-6">
-          {/* Score badge */}
-          <div className={`w-20 h-20 rounded-2xl border flex items-center justify-center flex-shrink-0 ${scoreColor}`}>
-            <span className="text-3xl font-bold">{company.overall_score ?? '—'}</span>
+          {/* Logo or Score badge */}
+          <div className="flex flex-col items-center flex-shrink-0 gap-1">
+            {company.logo_url ? (
+              <>
+                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-[var(--bg-sunk)] flex-shrink-0">
+                  <img src={company.logo_url} alt={`${company.company_name} logo`} className="w-full h-full object-cover" />
+                </div>
+                {company.overall_score != null && (
+                  <div className="flex items-center gap-1">
+                    <span className={`text-xs font-bold ${scoreColor.split(' ')[0]}`}>{company.overall_score}</span>
+                    <ScoreTooltip />
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className={`w-20 h-20 rounded-2xl border-2 flex items-center justify-center ${scoreColor}`}>
+                  <span className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight">{company.overall_score ?? '—'}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] text-[var(--ink-faint)] uppercase tracking-wider font-medium">Kunfa Score</span>
+                  <ScoreTooltip />
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-3xl font-bold text-white">{company.company_name}</h1>
-            <div className="flex flex-wrap items-center gap-2 mt-2">
+            <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{company.company_name}</h1>
+
+            {/* Subtitle / one-liner */}
+            {subtitle && (
+              <p className="text-[var(--ink-soft)] mt-1 text-sm leading-relaxed line-clamp-2">{subtitle}</p>
+            )}
+
+            {/* Privacy banner */}
+            {company.is_public === false && (
+              <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-[var(--bg-sunk)] border border-[var(--line)] rounded-lg text-xs text-[var(--ink-soft)]">
+                <svg className="w-3.5 h-3.5 text-[var(--ink-mute)] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
+                This profile is private — only visible to your organization.
+              </div>
+            )}
+
+            {/* Tags row: industry, stage, HQ, website, linkedin */}
+            <div className="flex flex-wrap items-center gap-2 mt-3">
               {company.industry && (
-                <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-medium">
+                <span className="px-3 py-1 rounded-full bg-[#F0F7FF] text-[var(--accent-ink)] text-xs font-medium">
                   {company.industry}
                 </span>
               )}
               {company.stage && (
-                <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-medium">
+                <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">
                   {company.stage}
                 </span>
               )}
-              {company.country && (
-                <span className="px-3 py-1 rounded-full bg-gray-500/20 text-gray-300 text-xs font-medium">
-                  {company.country}
+              <SourceBadge source={company.source} />
+              {hq && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-xs font-medium">
+                  {/* Map pin icon */}
+                  <svg className="w-3 h-3 text-[var(--ink-mute)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+                  </svg>
+                  {hq}
                 </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Overview */}
-        {hasOverview && (
-          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Overview</h2>
-            {company.description && (
-              <p className="text-gray-300 leading-relaxed mb-4">{company.description}</p>
-            )}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-              {company.founder_name && (
-                <div className="text-sm">
-                  <span className="text-gray-400">Founder: </span>
-                  <span className="text-white font-medium">{company.founder_name}</span>
-                  {company.founder_title && (
-                    <span className="text-gray-400"> — {company.founder_title}</span>
-                  )}
-                </div>
               )}
               {company.website_url && (
                 <a
                   href={company.website_url.startsWith('http') ? company.website_url : `https://${company.website_url}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#10B981] text-sm hover:underline"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-xs font-medium hover:bg-[var(--bg-sunk)] transition"
                 >
-                  {company.website_url.replace(/^https?:\/\//, '')}
+                  {/* External link icon */}
+                  <svg className="w-3 h-3 text-[var(--ink-mute)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                  </svg>
+                  {company.website_url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
                 </a>
               )}
+              {company.company_linkedin_url && (
+                <a
+                  href={company.company_linkedin_url.startsWith('http') ? company.company_linkedin_url : `https://${company.company_linkedin_url}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[#0A66C2]/10 text-[#0A66C2] text-xs font-medium hover:bg-[#0A66C2]/20 transition"
+                >
+                  <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                  LinkedIn
+                </a>
+              )}
+            </div>
+
+            {/* Score category pills */}
+            {gradePills.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                {gradePills.map(p => (
+                  <span key={p.label} className={`px-2.5 py-0.5 rounded-lg text-xs font-bold ${getGradeColor(p.grade!)}`}>
+                    {p.label}: {p.grade}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Document buttons — visible to everyone */}
+            {(company.pdf_url || company.financials_url) && (
+              <div className="flex flex-wrap items-center gap-2 mt-3">
+                {company.pdf_url && (
+                  <a
+                    href={company.pdf_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[var(--line-strong)] text-[var(--ink-soft)] bg-[var(--bg-elev)] hover:bg-[var(--bg-sunk)] transition"
+                  >
+                    <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
+                    </svg>
+                    View Pitch Deck
+                  </a>
+                )}
+                {company.financials_url && (
+                  <a
+                    href={company.financials_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-[var(--line-strong)] text-[var(--ink-soft)] bg-[var(--bg-elev)] hover:bg-[var(--bg-sunk)] transition"
+                  >
+                    <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125M12 10.875v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 10.875c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125M13.125 12h7.5m-7.5 0c-.621 0-1.125.504-1.125 1.125M20.625 12c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125m-17.25 0h7.5M12 14.625v-1.5m0 1.5c0 .621-.504 1.125-1.125 1.125M12 14.625c0 .621.504 1.125 1.125 1.125m-2.25 0c.621 0 1.125.504 1.125 1.125m0 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 13.125c0-.621.504-1.125 1.125-1.125" />
+                    </svg>
+                    View Financials
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Action row: investor actions + edit (auth-gated) */}
+            <div className="flex flex-wrap items-center gap-3 mt-4">
+              <CompanyActions
+                companyId={company.id}
+                claimStatus={company.claim_status}
+                claimToken={company.claim_token}
+                claimInvitedEmail={company.claim_invited_email}
+                overallScore={company.overall_score}
+                company={{
+                  id: company.id,
+                  company_name: company.company_name,
+                  one_liner: company.one_liner,
+                  description: company.description,
+                  industry: company.industry,
+                  stage: company.stage,
+                  country: company.country,
+                  headquarters: company.headquarters,
+                  website_url: company.website_url,
+                  linkedin_url: company.linkedin_url,
+                  company_linkedin_url: company.company_linkedin_url,
+                  logo_url: company.logo_url,
+                  raise_amount: company.raise_amount,
+                  team_size: company.team_size,
+                  founded_year: company.founded_year,
+                  founder_name: company.founder_name,
+                  founder_title: company.founder_title,
+                  is_raising: company.is_raising,
+                  raising_amount: company.raising_amount,
+                  raising_instrument: company.raising_instrument,
+                  raising_target_close: company.raising_target_close,
+                  added_by: company.added_by,
+                  user_id: company.user_id,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Currently Raising banner */}
+        {company.is_raising && (() => {
+          const urgency = getRaisingUrgency(company.raising_target_close, company.is_raising)
+          return (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V12Zm-12 0h.008v.008H6V12Z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-bold text-emerald-900">
+                      Currently Raising
+                      {company.raising_amount && <> — {company.raising_amount}</>}
+                      {company.stage && <> {company.stage}</>}
+                      {company.raising_instrument && <> ({company.raising_instrument})</>}
+                    </p>
+                    {urgency && (
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold rounded-full ${urgency.color}`}>
+                        {urgency.label}
+                      </span>
+                    )}
+                  </div>
+                  {company.raising_target_close && (
+                    <p className="text-xs text-emerald-700 mt-1">
+                      Target close: {new Date(company.raising_target_close).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
+        {/* KUN-21: Sub-75 score gate banner */}
+        {(company.overall_score ?? 0) < 75 && (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+            <div className="flex items-start gap-3">
+              <svg className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-amber-900">Not yet eligible for investor matching</p>
+                <p className="text-sm text-amber-800 mt-1">
+                  This company has not yet met the minimum Kunfa Score (75) for investor matching.{' '}
+                  <Link href="/how-it-works" className="underline font-medium">Learn how scoring works</Link>.
+                </p>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Funding Ask */}
-        {hasFunding && (
-          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Funding</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
-              {raiseFormatted && (
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Raise Amount</p>
-                  <p className="text-lg font-semibold text-white">{raiseFormatted}</p>
-                </div>
-              )}
-              {company.stage && (
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Stage</p>
-                  <p className="text-lg font-semibold text-white">{company.stage}</p>
-                </div>
-              )}
-            </div>
-            {company.use_of_funds && (
-              <div>
-                <p className="text-xs text-gray-400 mb-1">Use of Funds</p>
-                <p className="text-gray-300 text-sm leading-relaxed">{company.use_of_funds}</p>
+        {/* Report Banner */}
+        <Suspense fallback={null}>
+          <ReportBanner submissionId={company.submission_id} />
+        </Suspense>
+
+        {/* Post-payment report generation indicator */}
+        <Suspense fallback={null}>
+          <PaidReportBanner submissionId={company.submission_id} />
+        </Suspense>
+
+        {/* Overview */}
+        {company.description && (
+          <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] p-6 border border-[var(--line)]">
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-4">Overview</h2>
+            <p className="text-[var(--ink-soft)] leading-relaxed">{company.description}</p>
+          </div>
+        )}
+
+        {/* KUN-21: Kunfa Score Breakdown */}
+        {company.dimension_scores && (
+          <ScoreBreakdown
+            dimensions={company.dimension_scores as Record<string, unknown>}
+            overallScore={company.overall_score}
+            title="Kunfa Score Breakdown"
+            showSummaries
+          />
+        )}
+
+        {/* Team */}
+        {hasTeamSection && (
+          <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] p-6 border border-[var(--line)]">
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-4">Team</h2>
+
+            {/* Team member cards */}
+            {teamMembers.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+                {teamMembers.map((member, idx) => (
+                  <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border border-[var(--line)] bg-[var(--bg-sunk)]">
+                    {/* Avatar placeholder */}
+                    <div className="w-10 h-10 rounded-full bg-[var(--bg-sunk)] flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm font-semibold text-[var(--ink-mute)]">
+                        {member.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[var(--ink)] truncate">{member.name}</p>
+                      {member.title && (
+                        <p className="text-xs text-[var(--ink-mute)] truncate">{member.title}</p>
+                      )}
+                    </div>
+                    {member.linkedin && (
+                      <a
+                        href={member.linkedin.startsWith('http') ? member.linkedin : `https://${member.linkedin}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-shrink-0 text-[#0A66C2] hover:text-[#004182] transition"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Team size + founded year */}
+            {(company.team_size || company.founded_year) && (
+              <div className="flex items-center gap-6 text-sm text-[var(--ink-soft)]">
+                {company.team_size && (
+                  <span>Team Size: <span className="font-semibold text-[var(--ink)]">{company.team_size}</span></span>
+                )}
+                {company.founded_year && (
+                  <span>Founded: <span className="font-semibold text-[var(--ink)]">{company.founded_year}</span></span>
+                )}
               </div>
             )}
           </div>
         )}
 
-        {/* Team */}
-        {hasTeam && (
-          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Team</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {company.founder_name && (
+        {/* Funding */}
+        {hasFunding && (
+          <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] p-6 border border-[var(--line)]">
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-4">Funding</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {raiseFormatted && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Founder</p>
-                  <p className="text-white font-medium">{company.founder_name}</p>
-                  {company.founder_title && (
-                    <p className="text-gray-400 text-sm">{company.founder_title}</p>
-                  )}
+                  <p className="text-xs text-[var(--ink-mute)] mb-1">Raise Amount</p>
+                  <p className="text-lg font-semibold text-[var(--ink)]">{raiseFormatted}</p>
                 </div>
               )}
-              {company.team_size && (
+              {company.stage && (
                 <div>
-                  <p className="text-xs text-gray-400 mb-1">Team Size</p>
-                  <p className="text-lg font-semibold text-white">{company.team_size}</p>
-                </div>
-              )}
-              {company.founded_year && (
-                <div>
-                  <p className="text-xs text-gray-400 mb-1">Founded</p>
-                  <p className="text-lg font-semibold text-white">{company.founded_year}</p>
+                  <p className="text-xs text-[var(--ink-mute)] mb-1">Stage</p>
+                  <p className="text-lg font-semibold text-[var(--ink)]">{company.stage}</p>
                 </div>
               )}
             </div>
+            {company.use_of_funds && (
+              <div>
+                <p className="text-xs text-[var(--ink-mute)] mb-1">Use of Funds</p>
+                <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{company.use_of_funds}</p>
+              </div>
+            )}
           </div>
         )}
 
         {/* Traction */}
         {company.traction && (
-          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">Traction</h2>
-            <p className="text-gray-300 leading-relaxed">{company.traction}</p>
+          <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] p-6 border border-[var(--line)]">
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-4">Traction</h2>
+            <p className="text-[var(--ink-soft)] leading-relaxed">{company.traction}</p>
           </div>
         )}
 
         {/* AI Analysis */}
         {hasAnalysis && (
-          <div className="bg-[#1E293B] rounded-xl p-6 border border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">AI Analysis</h2>
+          <div className="bg-[var(--bg-elev)] rounded-[var(--radius-lg)] p-6 border border-[var(--line)]">
+            <h2 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-4">AI Analysis</h2>
             <div className="space-y-5">
               {company.problem_summary && (
                 <div>
-                  <h3 className="text-sm font-medium text-white mb-1">Problem</h3>
-                  <p className="text-gray-300 text-sm leading-relaxed">{company.problem_summary}</p>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Problem</h3>
+                  <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{company.problem_summary}</p>
                 </div>
               )}
               {company.solution_summary && (
                 <div>
-                  <h3 className="text-sm font-medium text-white mb-1">Solution</h3>
-                  <p className="text-gray-300 text-sm leading-relaxed">{company.solution_summary}</p>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Solution</h3>
+                  <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{company.solution_summary}</p>
                 </div>
               )}
               {company.business_model && (
                 <div>
-                  <h3 className="text-sm font-medium text-white mb-1">Business Model</h3>
-                  <p className="text-gray-300 text-sm leading-relaxed">{company.business_model}</p>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Business Model</h3>
+                  <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{company.business_model}</p>
                 </div>
               )}
               {company.key_risks && (
                 <div>
-                  <h3 className="text-sm font-medium text-white mb-1">Key Risks</h3>
-                  <p className="text-gray-300 text-sm leading-relaxed">{company.key_risks}</p>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Key Risks</h3>
+                  <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{company.key_risks}</p>
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {/* CTA */}
-        {company.submission_id && (
-          <div className="bg-gradient-to-r from-[#10B981]/10 to-blue-500/10 rounded-xl p-8 border border-[#10B981]/20 text-center">
-            <h2 className="text-xl font-bold text-white mb-2">Get the Full Investment Memo</h2>
-            <p className="text-gray-400 mb-6 text-sm max-w-md mx-auto">
-              Detailed AI-powered analysis with actionable insights, risk assessment, and investment recommendations.
-            </p>
-            <a
-              href={`/api/stripe/checkout?submissionId=${company.submission_id}`}
-              className="inline-block bg-[#10B981] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#059669] transition"
-            >
-              Get Full Investment Memo
-            </a>
-          </div>
-        )}
+        {/* Deal Room */}
+        <DealRoomSection
+          companyId={company.id}
+          companyName={company.company_name}
+          companyUserId={company.user_id}
+          companyAddedBy={company.added_by}
+        />
       </main>
-    </div>
+
+      {/* Footer */}
+      <footer className="border-t border-[var(--line)] mt-16 py-8">
+        <div className="max-w-4xl mx-auto px-6 flex items-center justify-between text-xs text-[var(--ink-faint)]">
+          <span>&copy; {new Date().getFullYear()} Kunfa.AI</span>
+          <div className="flex items-center gap-4">
+            <Link href="/terms" className="hover:text-[var(--ink-soft)] transition">Terms</Link>
+            <Link href="/privacy" className="hover:text-[var(--ink-soft)] transition">Privacy</Link>
+          </div>
+        </div>
+      </footer>
+    </OptionalSidebarLayout>
   )
 }

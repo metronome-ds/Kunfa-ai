@@ -1,10 +1,867 @@
-import { ComingSoon } from '@/components/common/ComingSoon';
+'use client'
+
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import { ExternalLink, Copy, Check, FileText, Pencil, RefreshCw, X, Loader2, Upload } from 'lucide-react'
+import CompanyLogo from '@/components/common/CompanyLogo'
+import { supabase } from '@/lib/supabase'
+import RescoringModal from '@/components/scoring/RescoringModal'
+import { STAGES, INDUSTRIES } from '@/lib/constants'
+
+interface TeamMember {
+  name: string
+  title?: string
+  email?: string
+  linkedin?: string
+}
+
+interface CompanyData {
+  id: string
+  slug: string
+  company_name: string
+  one_liner: string | null
+  description: string | null
+  industry: string | null
+  stage: string | null
+  country: string | null
+  headquarters: string | null
+  website_url: string | null
+  linkedin_url: string | null
+  company_linkedin_url: string | null
+  logo_url: string | null
+  overall_score: number | null
+  raise_amount: number | string | null
+  team_size: number | null
+  founded_year: number | null
+  founder_name: string | null
+  founder_title: string | null
+  founding_team: TeamMember[] | null
+  use_of_funds: string | null
+  traction: string | null
+  problem_summary: string | null
+  solution_summary: string | null
+  business_model: string | null
+  key_risks: string | null
+  pdf_url: string | null
+  submission_id: string | null
+  created_at: string
+}
+
+// STAGES and INDUSTRIES imported from @/lib/constants
+
+function getScoreColor(score: number | null) {
+  if (!score) return 'text-[var(--ink-faint)]'
+  if (score >= 80) return 'text-emerald-600'
+  if (score >= 60) return 'text-[var(--ink)]'
+  if (score >= 40) return 'text-yellow-600'
+  return 'text-red-600'
+}
+
+function getScoreBg(score: number | null) {
+  if (!score) return 'bg-[var(--bg-sunk)] border-[var(--line)]'
+  if (score >= 80) return 'bg-emerald-50 border-emerald-200'
+  if (score >= 60) return 'bg-[var(--accent-soft)] border-[var(--line)]'
+  if (score >= 40) return 'bg-yellow-50 border-yellow-200'
+  return 'bg-red-50 border-red-200'
+}
+
+function formatRaiseAmount(amount: number | string | null) {
+  if (!amount) return null
+  const num = Number(amount)
+  if (isNaN(num)) return String(amount)
+  if (num >= 1_000_000) return `$${(num / 1_000_000).toFixed(1)}M`
+  if (num >= 1_000) return `$${(num / 1_000).toFixed(0)}K`
+  return `$${num.toLocaleString()}`
+}
+
+function daysSince(dateStr: string) {
+  return Math.floor((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
+}
+
+const INPUT_CLASS = 'w-full bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg px-3 py-2 text-sm text-[var(--ink)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent'
+const SELECT_CLASS = 'w-full bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg px-3 py-2 text-sm text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent'
 
 export default function CompanyProfilePage() {
+  const [company, setCompany] = useState<CompanyData | null>(null)
+  const [paid, setPaid] = useState(false)
+  const [hasReport, setHasReport] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState(false)
+  const [userEmail, setUserEmail] = useState('')
+
+  // Re-scoring modal
+  const [showRescore, setShowRescore] = useState(false)
+
+  // Permission: can the current user edit?
+  const [canEdit, setCanEdit] = useState(false)
+
+  // Edit mode
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [editForm, setEditForm] = useState({
+    company_name: '',
+    one_liner: '',
+    industry: '',
+    stage: '',
+    country: '',
+    headquarters: '',
+    website_url: '',
+    company_linkedin_url: '',
+    logo_url: '',
+    raise_amount: '',
+    team_size: '',
+    founded_year: '',
+    use_of_funds: '',
+    traction: '',
+  })
+  const [editTeam, setEditTeam] = useState<{ name: string; title: string; email: string; linkedin: string }[]>([])
+
+  useEffect(() => {
+    async function load() {
+      try {
+        // Get user email for re-scoring
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user?.email) setUserEmail(user.email)
+
+        const [companyRes, teamRes] = await Promise.all([
+          window.fetch('/api/my-company'),
+          window.fetch('/api/team-context'),
+        ])
+        const data = await companyRes.json()
+        setCompany(data.company || null)
+        setPaid(!!data.paid)
+        setHasReport(!!data.hasReport)
+
+        const teamData = await teamRes.json()
+        const role = teamData?.context?.memberRole
+        setCanEdit(role === 'owner' || role === 'admin')
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  // Poll for report readiness when paid but report not yet generated
+  useEffect(() => {
+    if (!paid || hasReport) return
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/my-company')
+        const data = await res.json()
+        if (data.paid) setPaid(true)
+        if (data.hasReport) {
+          setHasReport(true)
+          clearInterval(interval)
+        }
+      } catch { /* ignore */ }
+    }, 10000)
+    return () => clearInterval(interval)
+  }, [paid, hasReport])
+
+  const startEditing = () => {
+    if (!company) return
+    setEditForm({
+      company_name: company.company_name || '',
+      one_liner: company.one_liner || '',
+      industry: company.industry || '',
+      stage: company.stage || '',
+      country: company.country || '',
+      headquarters: company.headquarters || '',
+      website_url: company.website_url || '',
+      company_linkedin_url: company.company_linkedin_url || '',
+      logo_url: company.logo_url || '',
+      raise_amount: company.raise_amount ? String(company.raise_amount) : '',
+      team_size: company.team_size ? String(company.team_size) : '',
+      founded_year: company.founded_year ? String(company.founded_year) : '',
+      use_of_funds: company.use_of_funds || '',
+      traction: company.traction || '',
+    })
+    // Populate team editing from founding_team or fallback
+    const team: { name: string; title: string; email: string; linkedin: string }[] = []
+    if (company.founding_team && Array.isArray(company.founding_team) && company.founding_team.length > 0) {
+      for (const m of company.founding_team) {
+        if (m && typeof m === 'object' && m.name) {
+          team.push({ name: m.name, title: m.title || '', email: m.email || '', linkedin: m.linkedin || '' })
+        }
+      }
+    } else if (company.founder_name) {
+      team.push({ name: company.founder_name, title: company.founder_title || '', email: '', linkedin: company.linkedin_url || '' })
+    }
+    if (team.length === 0) {
+      team.push({ name: '', title: '', email: '', linkedin: '' })
+    }
+    setEditTeam(team)
+    setEditing(true)
+    setSaveSuccess(false)
+  }
+
+  const cancelEditing = () => {
+    setEditing(false)
+    setSaveSuccess(false)
+  }
+
+  const handleSave = async () => {
+    setSaving(true)
+    setSaveSuccess(false)
+    try {
+      // Build founding_team from editTeam, filtering out empty entries
+      const foundingTeam = editTeam
+        .filter(m => m.name.trim())
+        .map(m => ({ name: m.name.trim(), title: m.title.trim(), email: m.email.trim(), linkedin: m.linkedin.trim() }))
+
+      const res = await fetch('/api/my-company', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company_name: editForm.company_name || undefined,
+          one_liner: editForm.one_liner || null,
+          industry: editForm.industry || null,
+          stage: editForm.stage || null,
+          country: editForm.country || null,
+          headquarters: editForm.headquarters || null,
+          website_url: editForm.website_url || null,
+          company_linkedin_url: editForm.company_linkedin_url || null,
+          logo_url: editForm.logo_url || null,
+          raise_amount: editForm.raise_amount ? Number(editForm.raise_amount) : null,
+          team_size: editForm.team_size ? Number(editForm.team_size) : null,
+          founded_year: editForm.founded_year ? Number(editForm.founded_year) : null,
+          use_of_funds: editForm.use_of_funds || null,
+          traction: editForm.traction || null,
+          founding_team: foundingTeam.length > 0 ? foundingTeam : null,
+        }),
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setCompany(data.company)
+        setEditing(false)
+        setSaveSuccess(true)
+        setTimeout(() => setSaveSuccess(false), 3000)
+      }
+    } catch {
+      // ignore
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCopyLink = () => {
+    if (!company?.slug) return
+    navigator.clipboard.writeText(`https://www.kunfa.ai/company/${company.slug}`)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  if (loading) {
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-6">Company Profile</h1>
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 animate-pulse">
+              <div className="h-5 bg-[var(--bg-sunk)] rounded w-1/3 mb-3" />
+              <div className="h-4 bg-[var(--bg-sunk)] rounded w-2/3" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  // No company page — show CTA
+  if (!company) {
+    return (
+      <div className="p-8">
+        <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-6">Company Profile</h1>
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-12 text-center">
+          <div className="w-16 h-16 bg-[var(--bg-sunk)] rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-8 h-8 text-[var(--ink-faint)]" />
+          </div>
+          <h2 className="text-lg font-semibold text-[var(--ink)] mb-2">No company profile yet</h2>
+          <p className="text-[var(--ink-mute)] text-sm mb-6 w-full md:max-w-md mx-auto">
+            Get your Kunfa Score to create your company profile. Investors will be able to discover and evaluate your startup.
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--ink)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition"
+          >
+            Get Your Kunfa Score
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const hq = company.headquarters || company.country
+  const raiseFormatted = formatRaiseAmount(company.raise_amount)
+  const scored = company.created_at ? daysSince(company.created_at) : null
+
+  // Build team members
+  const teamMembers: TeamMember[] = []
+  if (company.founding_team && Array.isArray(company.founding_team) && company.founding_team.length > 0) {
+    for (const m of company.founding_team) {
+      if (m && typeof m === 'object' && m.name) {
+        teamMembers.push({ name: m.name, title: m.title, linkedin: m.linkedin })
+      }
+    }
+  }
+  if (teamMembers.length === 0 && company.founder_name) {
+    teamMembers.push({
+      name: company.founder_name,
+      title: company.founder_title || undefined,
+      linkedin: company.linkedin_url || undefined,
+    })
+  }
+
+  const hasAnalysis = company.problem_summary || company.solution_summary || company.business_model || company.key_risks
+
   return (
-    <ComingSoon
-      title="Company Profile"
-      description="Build and manage your company profile. Investors will see this when reviewing your startup. Complete your profile to earn points."
-    />
-  );
+    <div className="p-8">
+      {/* Header row: score + company info + actions */}
+      <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-6">
+        <div className="flex items-start gap-6">
+          {/* Logo or Score badge */}
+          <div className="flex flex-col items-center flex-shrink-0 gap-1">
+            {company.logo_url ? (
+              <>
+                <CompanyLogo name={company.company_name} logoUrl={company.logo_url} size="lg" className="w-20 h-20" />
+                {company.overall_score != null && (
+                  <span className={`text-xs font-bold ${getScoreColor(company.overall_score)}`}>Score: {company.overall_score}</span>
+                )}
+              </>
+            ) : (
+              <div className={`w-20 h-20 rounded-2xl border-2 flex flex-col items-center justify-center ${getScoreBg(company.overall_score)}`}>
+                <span className={`text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight ${getScoreColor(company.overall_score)}`}>{company.overall_score ?? '—'}</span>
+                {scored !== null && (
+                  <span className="text-[10px] text-[var(--ink-faint)]">{scored}d ago</span>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{company.company_name}</h1>
+            {company.one_liner && (
+              <p className="text-[var(--ink-mute)] text-sm mt-1">{company.one_liner}</p>
+            )}
+
+            {/* Tags */}
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              {company.industry && (
+                <span className="px-2.5 py-0.5 rounded-full bg-[var(--accent-soft)] text-[var(--ink)] text-xs font-medium">
+                  {company.industry}
+                </span>
+              )}
+              {company.stage && (
+                <span className="px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">
+                  {company.stage}
+                </span>
+              )}
+              {hq && (
+                <span className="px-2.5 py-0.5 rounded-full bg-[var(--bg-sunk)] text-[var(--ink-soft)] text-xs font-medium">
+                  {hq}
+                </span>
+              )}
+            </div>
+
+            {/* Links row */}
+            <div className="flex flex-wrap items-center gap-3 mt-3">
+              {company.website_url && (
+                <a
+                  href={company.website_url.startsWith('http') ? company.website_url : `https://${company.website_url}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-[var(--ink-mute)] hover:text-[var(--ink)] transition"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  {company.website_url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
+                </a>
+              )}
+              {company.company_linkedin_url && (
+                <a
+                  href={company.company_linkedin_url.startsWith('http') ? company.company_linkedin_url : `https://${company.company_linkedin_url}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-xs text-[var(--ink)] hover:text-[var(--ink)] transition"
+                >
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                  LinkedIn
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex flex-col gap-2 flex-shrink-0">
+            <Link
+              href={`/company/${company.slug}`}
+              target="_blank"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
+            >
+              View Public Profile
+              <ExternalLink className="w-3.5 h-3.5" />
+            </Link>
+            {canEdit && (
+              <button
+                onClick={() => setShowRescore(true)}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:opacity-90 transition"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Update My Score
+              </button>
+            )}
+            {canEdit && (
+              <button
+                onClick={editing ? cancelEditing : startEditing}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--bg-sunk)] text-[var(--ink-soft)] border border-[var(--line)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
+              >
+                {editing ? (
+                  <>
+                    <X className="w-3.5 h-3.5" />
+                    Cancel Editing
+                  </>
+                ) : (
+                  <>
+                    <Pencil className="w-3.5 h-3.5" />
+                    Edit Profile
+                  </>
+                )}
+              </button>
+            )}
+            <button
+              onClick={handleCopyLink}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--bg-sunk)] text-[var(--ink-soft)] border border-[var(--line)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
+            >
+              {copied ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-[var(--accent-ink)]" />
+                  Copied!
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  Share Profile
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Save success */}
+      {saveSuccess && (
+        <div className="rounded-xl p-3 mb-6 bg-green-50 border border-green-200 flex items-center gap-2">
+          <Check className="w-4 h-4 text-[var(--accent-ink)]" />
+          <p className="text-sm text-green-700">Profile updated successfully.</p>
+        </div>
+      )}
+
+      {/* Edit Mode Form */}
+      {editing && (
+        <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6 mb-6">
+          <h2 className="text-sm font-semibold text-[var(--ink)] mb-4">Edit Profile</h2>
+
+          {/* Logo upload */}
+          <div className="mb-4">
+            <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Company Logo</label>
+            <div className="flex items-center gap-3">
+              <CompanyLogo name={editForm.company_name || 'C'} logoUrl={editForm.logo_url || null} size="lg" />
+              <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border border-[var(--line-strong)] text-[var(--ink-soft)] bg-[var(--bg-elev)] hover:bg-[var(--bg-sunk)] transition cursor-pointer">
+                <Upload className="w-3.5 h-3.5" />
+                {editForm.logo_url ? 'Change Logo' : 'Upload Logo'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0]
+                    if (!file) return
+                    try {
+                      const supa = (await import('@supabase/ssr')).createBrowserClient(
+                        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+                      )
+                      const path = `logos/${Date.now()}-${file.name}`
+                      const { data, error: uploadError } = await supa.storage
+                        .from('documents')
+                        .upload(path, file, { cacheControl: '3600', upsert: false })
+                      if (uploadError) throw uploadError
+                      const { data: { publicUrl } } = supa.storage
+                        .from('documents')
+                        .getPublicUrl(data.path)
+                      setEditForm(f => ({ ...f, logo_url: publicUrl }))
+                    } catch (err) {
+                      console.error('Logo upload error:', err)
+                    }
+                  }}
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Company Name</label>
+              <input type="text" value={editForm.company_name}
+                onChange={(e) => setEditForm(f => ({ ...f, company_name: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">One-Liner</label>
+              <input type="text" value={editForm.one_liner}
+                onChange={(e) => setEditForm(f => ({ ...f, one_liner: e.target.value }))}
+                maxLength={160}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Industry</label>
+              <select value={editForm.industry}
+                onChange={(e) => setEditForm(f => ({ ...f, industry: e.target.value }))}
+                className={SELECT_CLASS}>
+                <option value="">Select...</option>
+                {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Stage</label>
+              <select value={editForm.stage}
+                onChange={(e) => setEditForm(f => ({ ...f, stage: e.target.value }))}
+                className={SELECT_CLASS}>
+                <option value="">Select...</option>
+                {STAGES.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Country / HQ</label>
+              <input type="text" value={editForm.country}
+                onChange={(e) => setEditForm(f => ({ ...f, country: e.target.value, headquarters: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Website</label>
+              <input type="url" value={editForm.website_url}
+                onChange={(e) => setEditForm(f => ({ ...f, website_url: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Company LinkedIn URL</label>
+              <input type="url" value={editForm.company_linkedin_url}
+                onChange={(e) => setEditForm(f => ({ ...f, company_linkedin_url: e.target.value }))}
+                placeholder="linkedin.com/company/your-company"
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Raise Amount ($)</label>
+              <input type="number" value={editForm.raise_amount}
+                onChange={(e) => setEditForm(f => ({ ...f, raise_amount: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Team Size</label>
+              <input type="number" value={editForm.team_size}
+                onChange={(e) => setEditForm(f => ({ ...f, team_size: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Founded Year</label>
+              <input type="number" value={editForm.founded_year}
+                onChange={(e) => setEditForm(f => ({ ...f, founded_year: e.target.value }))}
+                className={INPUT_CLASS} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Use of Funds</label>
+              <textarea value={editForm.use_of_funds}
+                onChange={(e) => setEditForm(f => ({ ...f, use_of_funds: e.target.value }))}
+                rows={2}
+                className={INPUT_CLASS} />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Traction</label>
+              <textarea value={editForm.traction}
+                onChange={(e) => setEditForm(f => ({ ...f, traction: e.target.value }))}
+                rows={2}
+                className={INPUT_CLASS} />
+            </div>
+          </div>
+
+          {/* Founding Team Editor */}
+          <div className="mt-6 border-t border-[var(--line)] pt-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-[var(--ink)]">Founding Team</h3>
+              {editTeam.length < 5 && (
+                <button
+                  type="button"
+                  onClick={() => setEditTeam([...editTeam, { name: '', title: '', email: '', linkedin: '' }])}
+                  className="text-sm text-[var(--accent-ink)] font-medium hover:text-[var(--ink)] transition"
+                >
+                  + Add Co-Founder
+                </button>
+              )}
+            </div>
+            <div className="space-y-3">
+              {editTeam.map((member, i) => (
+                <div key={i} className="bg-[var(--bg-sunk)] rounded-lg p-3 relative">
+                  {i > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setEditTeam(editTeam.filter((_, j) => j !== i))}
+                      className="absolute top-2 right-2 text-[var(--ink-faint)] hover:text-red-500 transition"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                  <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${i > 0 ? 'pr-6' : ''}`}>
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Name {i === 0 ? '*' : ''}</label>
+                      <input type="text" value={member.name}
+                        onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, name: e.target.value } : m))}
+                        placeholder="Jane Smith"
+                        className={INPUT_CLASS} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Title</label>
+                      <input type="text" value={member.title}
+                        onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, title: e.target.value } : m))}
+                        placeholder="CEO & Co-Founder"
+                        className={INPUT_CLASS} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">Email</label>
+                      <input type="email" value={member.email}
+                        onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, email: e.target.value } : m))}
+                        placeholder="jane@company.com"
+                        className={INPUT_CLASS} />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-[var(--ink-mute)] mb-1">LinkedIn</label>
+                      <input type="url" value={member.linkedin}
+                        onChange={(e) => setEditTeam(editTeam.map((m, j) => j === i ? { ...m, linkedin: e.target.value } : m))}
+                        placeholder="linkedin.com/in/..."
+                        className={INPUT_CLASS} />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 mt-4">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-6 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+            <button
+              onClick={cancelEditing}
+              className="px-6 py-2 bg-[var(--bg-sunk)] text-[var(--ink-soft)] border border-[var(--line)] rounded-lg text-sm font-medium hover:bg-[var(--bg-sunk)] transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Report Status */}
+      {company.submission_id && (
+        <div className={`rounded-xl p-4 mb-6 border ${
+          paid && hasReport ? 'bg-emerald-50 border-emerald-200'
+            : paid ? 'bg-[var(--accent-soft)] border-[var(--line)]'
+            : 'bg-amber-50 border-amber-200'
+        }`}>
+          {paid && hasReport ? (
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-[var(--ink)]">Kunfa Readiness Report</h3>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">Your full AI-powered investment analysis is ready.</p>
+              </div>
+              <Link
+                href={`/report/${company.submission_id}`}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--ink)] text-white rounded-lg text-sm font-medium hover:bg-[var(--ink-2)] transition"
+              >
+                View Report
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          ) : paid ? (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Loader2 className="w-5 h-5 text-[var(--accent-ink)] animate-spin flex-shrink-0" />
+                <div>
+                  <h3 className="text-sm font-semibold text-[var(--ink)]">Report Generating...</h3>
+                  <p className="text-xs text-[var(--ink-mute)] mt-0.5">Your Readiness Report is being prepared. We&apos;ll notify you when it&apos;s ready.</p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-semibold text-[var(--ink)]">Unlock Your Full Readiness Report</h3>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">Detailed analysis, sector benchmarks, and actionable recommendations.</p>
+              </div>
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch('/api/stripe/checkout', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ submissionId: company.submission_id }),
+                    })
+                    const data = await res.json()
+                    if (data.url) window.location.href = data.url
+                  } catch (err) {
+                    console.error('Checkout error:', err)
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition cursor-pointer"
+              >
+                Unlock Report — $59
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="space-y-4">
+        {/* Overview */}
+        {company.description && (
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+            <h2 className="text-sm font-semibold text-[var(--ink)] uppercase tracking-wider mb-3">Overview</h2>
+            <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{company.description}</p>
+          </div>
+        )}
+
+        {/* Funding */}
+        {(raiseFormatted || company.stage || company.use_of_funds) && (
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+            <h2 className="text-sm font-semibold text-[var(--ink)] uppercase tracking-wider mb-3">Funding</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+              {raiseFormatted && (
+                <div>
+                  <p className="text-[10px] text-[var(--ink-mute)] mb-0.5">Raise Amount</p>
+                  <p className="text-lg font-semibold text-[var(--ink)]">{raiseFormatted}</p>
+                </div>
+              )}
+              {company.stage && (
+                <div>
+                  <p className="text-[10px] text-[var(--ink-mute)] mb-0.5">Stage</p>
+                  <p className="text-lg font-semibold text-[var(--ink)]">{company.stage}</p>
+                </div>
+              )}
+            </div>
+            {company.use_of_funds && (
+              <div>
+                <p className="text-[10px] text-[var(--ink-mute)] mb-0.5">Use of Funds</p>
+                <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{company.use_of_funds}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Team */}
+        {(teamMembers.length > 0 || company.team_size || company.founded_year) && (
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+            <h2 className="text-sm font-semibold text-[var(--ink)] uppercase tracking-wider mb-3">Team</h2>
+            {teamMembers.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+                {teamMembers.map((member, idx) => (
+                  <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-[var(--bg-sunk)] border border-[var(--line)]">
+                    <div className="w-9 h-9 rounded-full bg-[var(--bg-sunk)] flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-semibold text-[var(--ink-soft)]">
+                        {member.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-[var(--ink)] truncate">{member.name}</p>
+                      {member.title && (
+                        <p className="text-xs text-[var(--ink-mute)] truncate">{member.title}</p>
+                      )}
+                    </div>
+                    {member.linkedin && (
+                      <a
+                        href={member.linkedin.startsWith('http') ? member.linkedin : `https://${member.linkedin}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[var(--ink)] hover:text-[var(--ink)] flex-shrink-0"
+                      >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {(company.team_size || company.founded_year) && (
+              <div className="flex items-center gap-6 text-sm text-[var(--ink-mute)]">
+                {company.team_size && (
+                  <span>Team Size: <span className="font-semibold text-[var(--ink)]">{company.team_size}</span></span>
+                )}
+                {company.founded_year && (
+                  <span>Founded: <span className="font-semibold text-[var(--ink)]">{company.founded_year}</span></span>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Traction */}
+        {company.traction && (
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+            <h2 className="text-sm font-semibold text-[var(--ink)] uppercase tracking-wider mb-3">Traction</h2>
+            <p className="text-[var(--ink-soft)] text-sm leading-relaxed">{company.traction}</p>
+          </div>
+        )}
+
+        {/* AI Analysis */}
+        {hasAnalysis && (
+          <div className="bg-[var(--bg-elev)] rounded-xl border border-[var(--line)] p-6">
+            <h2 className="text-sm font-semibold text-[var(--ink)] uppercase tracking-wider mb-3">AI Analysis</h2>
+            <div className="space-y-4">
+              {company.problem_summary && (
+                <div>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Problem</h3>
+                  <p className="text-[var(--ink-mute)] text-sm leading-relaxed">{company.problem_summary}</p>
+                </div>
+              )}
+              {company.solution_summary && (
+                <div>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Solution</h3>
+                  <p className="text-[var(--ink-mute)] text-sm leading-relaxed">{company.solution_summary}</p>
+                </div>
+              )}
+              {company.business_model && (
+                <div>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Business Model</h3>
+                  <p className="text-[var(--ink-mute)] text-sm leading-relaxed">{company.business_model}</p>
+                </div>
+              )}
+              {company.key_risks && (
+                <div>
+                  <h3 className="text-sm font-medium text-[var(--ink)] mb-1">Key Risks</h3>
+                  <p className="text-[var(--ink-mute)] text-sm leading-relaxed">{company.key_risks}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Re-scoring Modal */}
+      {company && (
+        <RescoringModal
+          isOpen={showRescore}
+          onClose={() => setShowRescore(false)}
+          companyPageId={company.id}
+          companyName={company.company_name}
+          currentScore={company.overall_score}
+          email={userEmail}
+        />
+      )}
+    </div>
+  )
 }

@@ -1,196 +1,258 @@
-import { createServerSupabaseClient } from '@/lib/supabase-server';
-import { NextRequest, NextResponse } from 'next/server';
+import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { getSupabase } from '@/lib/db'
+import { NextRequest, NextResponse } from 'next/server'
+import { requirePermission } from '@/lib/permissions'
+import { updateEntityMemberRole, removeFromEntity } from '@/lib/entity-context'
 
-/**
- * PUT /api/team/[id]
- * Update team member role
- * Body: { role }
- */
-export async function PUT(
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+async function resolveContext(supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>, authUserId: string) {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, active_entity_id')
+    .eq('user_id', authUserId)
+    .single()
+  return profile
+}
+
+// ---------------------------------------------------------------------------
+// PATCH /api/team/[id] — update member role
+// ---------------------------------------------------------------------------
+
+export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const resolvedParams = await params;
+    const supabase = await createServerSupabaseClient()
+    const { id } = await params
 
-    // Get current user
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
-
+    } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json();
-    const { role } = body;
+    const body = await request.json()
+    const { role } = body
 
-    // Validate role
+    const profile = await resolveContext(supabase, user.id)
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    // ── Entity mode ──────────────────────────────────────────────────────
+    if (profile.active_entity_id) {
+      const entityRoles = ['owner', 'admin', 'member', 'observer']
+      if (!role || !entityRoles.includes(role)) {
+        return NextResponse.json(
+          { error: `Invalid role. Must be one of: ${entityRoles.join(', ')}` },
+          { status: 400 },
+        )
+      }
+
+      // Look up the target member to get their user_id (profiles.id)
+      const db = getSupabase()
+      const { data: targetMem } = await db
+        .from('entity_members')
+        .select('id, entity_id, user_id, role')
+        .eq('id', id)
+        .eq('entity_id', profile.active_entity_id)
+        .maybeSingle()
+
+      if (!targetMem) {
+        return NextResponse.json({ error: 'Member not found' }, { status: 404 })
+      }
+
+      // Permission: caller must be owner/admin
+      const { data: selfMem } = await db
+        .from('entity_members')
+        .select('role')
+        .eq('entity_id', profile.active_entity_id)
+        .eq('user_id', profile.id)
+        .eq('status', 'active')
+        .maybeSingle()
+
+      if (selfMem?.role !== 'owner' && selfMem?.role !== 'admin') {
+        return NextResponse.json({ error: 'Only owners and admins can change roles' }, { status: 403 })
+      }
+
+      // Prevent non-owners from setting owner role
+      if (role === 'owner' && selfMem.role !== 'owner') {
+        return NextResponse.json({ error: 'Only owners can grant owner role' }, { status: 403 })
+      }
+
+      try {
+        await updateEntityMemberRole(profile.active_entity_id, targetMem.user_id, role)
+      } catch (err) {
+        return NextResponse.json(
+          { error: err instanceof Error ? err.message : 'Failed to update role' },
+          { status: 400 },
+        )
+      }
+
+      return NextResponse.json({ data: { id, role } })
+    }
+
+    // ── Legacy team_members mode ─────────────────────────────────────────
     if (!role || !['admin', 'member', 'viewer'].includes(role)) {
       return NextResponse.json(
         { error: 'Invalid role. Must be admin, member, or viewer' },
-        { status: 400 }
-      );
+        { status: 400 },
+      )
     }
 
-    // Get current user's profile
-    const { data: userProfile } = await supabase
+    let teamCtx
+    try {
+      teamCtx = await requirePermission(user.id, 'manage_team')
+    } catch {
+      return NextResponse.json({ error: 'Permission denied' }, { status: 403 })
+    }
+
+    const { data: ownerProfile } = await supabase
       .from('profiles')
       .select('id')
-      .eq('user_id', user.id)
-      .single();
+      .eq('user_id', teamCtx.effectiveUserId)
+      .single()
 
-    if (!userProfile) {
-      return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 404 }
-      );
+    if (!ownerProfile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    const teamId = user.id;
-
-    // Get the team member
-    const { data: teamMember } = await supabase
+    const { data: member } = await supabase
       .from('team_members')
       .select('id, team_id')
-      .eq('id', resolvedParams.id)
-      .single();
+      .eq('id', id)
+      .single()
 
-    if (!teamMember) {
-      return NextResponse.json(
-        { error: 'Team member not found' },
-        { status: 404 }
-      );
+    if (!member || member.team_id !== ownerProfile.id) {
+      return NextResponse.json({ error: 'Not found or unauthorized' }, { status: 403 })
     }
 
-    // Verify current user is admin of the team
-    if (teamMember.team_id !== teamId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
-
-    // Update team member role
     const { data: updated, error } = await supabase
       .from('team_members')
-      .update({ role })
-      .eq('id', resolvedParams.id)
+      .update({ role, updated_at: new Date().toISOString() })
+      .eq('id', id)
       .select()
-      .single();
+      .single()
 
     if (error) {
-      console.error('Error updating team member:', error);
-      return NextResponse.json(
-        { error: 'Failed to update team member' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to update' }, { status: 500 })
     }
 
-    return NextResponse.json(
-      { data: updated, message: 'Team member updated successfully' },
-      { status: 200 }
-    );
+    return NextResponse.json({ data: updated })
   } catch (error) {
-    console.error('Unexpected error in PUT /api/team/[id]:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('PATCH /api/team/[id] error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-/**
- * DELETE /api/team/[id]
- * Remove a team member
- */
+// ---------------------------------------------------------------------------
+// DELETE /api/team/[id] — remove member
+// ---------------------------------------------------------------------------
+
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const supabase = await createServerSupabaseClient();
-    const resolvedParams = await params;
+    const supabase = await createServerSupabaseClient()
+    const { id } = await params
 
-    // Get current user
     const {
       data: { user },
       error: authError,
-    } = await supabase.auth.getUser();
-
+    } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Get current user's profile
-    const { data: userProfile } = await supabase
+    const profile = await resolveContext(supabase, user.id)
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    // ── Entity mode ──────────────────────────────────────────────────────
+    if (profile.active_entity_id) {
+      const db = getSupabase()
+
+      const { data: targetMem } = await db
+        .from('entity_members')
+        .select('id, entity_id, user_id, role')
+        .eq('id', id)
+        .eq('entity_id', profile.active_entity_id)
+        .maybeSingle()
+
+      if (!targetMem) {
+        return NextResponse.json({ error: 'Member not found' }, { status: 404 })
+      }
+
+      // Permission: caller must be owner/admin (or removing self)
+      const { data: selfMem } = await db
+        .from('entity_members')
+        .select('role')
+        .eq('entity_id', profile.active_entity_id)
+        .eq('user_id', profile.id)
+        .eq('status', 'active')
+        .maybeSingle()
+
+      const isSelf = targetMem.user_id === profile.id
+      if (!isSelf && selfMem?.role !== 'owner' && selfMem?.role !== 'admin') {
+        return NextResponse.json({ error: 'Only owners and admins can remove members' }, { status: 403 })
+      }
+
+      try {
+        await removeFromEntity(profile.active_entity_id, targetMem.user_id)
+      } catch (err) {
+        return NextResponse.json(
+          { error: err instanceof Error ? err.message : 'Failed to remove member' },
+          { status: 400 },
+        )
+      }
+
+      return NextResponse.json({ message: 'Member removed' })
+    }
+
+    // ── Legacy team_members mode ─────────────────────────────────────────
+    let teamCtx
+    try {
+      teamCtx = await requirePermission(user.id, 'manage_team')
+    } catch {
+      return NextResponse.json({ error: 'Permission denied' }, { status: 403 })
+    }
+
+    const { data: ownerProfile } = await supabase
       .from('profiles')
       .select('id')
-      .eq('user_id', user.id)
-      .single();
+      .eq('user_id', teamCtx.effectiveUserId)
+      .single()
 
-    if (!userProfile) {
-      return NextResponse.json(
-        { error: 'User profile not found' },
-        { status: 404 }
-      );
+    if (!ownerProfile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
-    const teamId = user.id;
-
-    // Get the team member
-    const { data: teamMember } = await supabase
+    const { data: member } = await supabase
       .from('team_members')
       .select('id, team_id')
-      .eq('id', resolvedParams.id)
-      .single();
+      .eq('id', id)
+      .single()
 
-    if (!teamMember) {
-      return NextResponse.json(
-        { error: 'Team member not found' },
-        { status: 404 }
-      );
+    if (!member || member.team_id !== ownerProfile.id) {
+      return NextResponse.json({ error: 'Not found or unauthorized' }, { status: 403 })
     }
 
-    // Verify current user is admin of the team
-    if (teamMember.team_id !== teamId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 403 }
-      );
-    }
-
-    // Delete team member
-    const { error } = await supabase
-      .from('team_members')
-      .delete()
-      .eq('id', resolvedParams.id);
-
+    const { error } = await supabase.from('team_members').delete().eq('id', id)
     if (error) {
-      console.error('Error deleting team member:', error);
-      return NextResponse.json(
-        { error: 'Failed to remove team member' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to remove member' }, { status: 500 })
     }
 
-    return NextResponse.json(
-      { message: 'Team member removed successfully' },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: 'Member removed' })
   } catch (error) {
-    console.error('Unexpected error in DELETE /api/team/[id]:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('DELETE /api/team/[id] error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

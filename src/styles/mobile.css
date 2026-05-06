@@ -1,0 +1,143 @@
+/* Mobile responsive overrides — max-width: 768px
+   Applied via media queries on existing components.
+   No separate mobile components. */
+
+@media (max-width: 768px) {
+  /* Layout: single column, no sidebar */
+  :root {
+    --page-px: 16px;
+    --page-pt: 16px;
+    --page-pb: 100px; /* space for tab bar */
+  }
+
+  /* Page head: smaller serif heading */
+  h1 { font-size: 28px !important; }
+  h2 { font-size: 20px !important; }
+  h3 { font-size: 17px !important; }
+
+  /* Stat grid: 2x2 on mobile */
+  .stat-grid-responsive {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Stat values: smaller on mobile */
+  .type-stat-val {
+    font-size: 26px;
+  }
+
+  /* Form grids: single column on mobile */
+  .form-grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Community: single column, no right sidebar */
+  .community-grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Tabs: horizontal scroll pills on mobile */
+  .tabs-mobile-scroll {
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 6px !important;
+    border-bottom: none !important;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .tabs-mobile-scroll::-webkit-scrollbar { display: none; }
+  .tabs-mobile-scroll button {
+    white-space: nowrap;
+    border-radius: 99px !important;
+    border-bottom: none !important;
+    background: var(--bg-sunk);
+    padding: 7px 14px !important;
+    font-size: 12.5px !important;
+    margin-bottom: 0 !important;
+  }
+  .tabs-mobile-scroll button[data-active="true"] {
+    background: var(--ink);
+    color: #f4f3ee !important;
+  }
+
+  /* Deal rows: compact */
+  .deal-row-responsive {
+    grid-template-columns: 38px 1fr auto !important;
+  }
+  .deal-row-responsive .deal-cell-hide {
+    display: none;
+  }
+
+  /* Invite cards: single column */
+  .invite-grid-responsive {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Hide search bar width constraint */
+  .search-responsive {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 1;
+  }
+}
+
+/* Tab bar — bottom navigation for mobile */
+.mobile-tabbar {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-tabbar {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid var(--line);
+    padding: 8px 4px 22px;
+  }
+
+  [data-theme="dark"] .mobile-tabbar {
+    background: rgba(28, 28, 36, 0.92);
+  }
+
+  .mobile-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 4px 0;
+    color: var(--ink-mute);
+    font-size: 10px;
+    letter-spacing: 0.02em;
+    font-weight: 500;
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .mobile-tab.active {
+    color: var(--ink);
+  }
+
+  .mobile-tab.active::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+}

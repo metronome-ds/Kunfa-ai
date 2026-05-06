@@ -6,36 +6,63 @@
 import { DealStage, PipelineStage, UserRole, ServiceType } from './types';
 
 /**
- * Industry categories for deal classification
+ * Canonical company stages (Title Case)
+ * Used across scoring, onboarding, filters, and company pages.
  */
-export const INDUSTRIES = [
-  'B2B SaaS',
-  'B2C',
-  'AI & Machine Learning',
-  'Climate Tech',
-  'Biotech',
-  'Healthcare',
-  'FinTech',
-  'EdTech',
-  'E-commerce',
-  'Marketplace',
-  'Social',
-  'Gaming',
-  'Cybersecurity',
-  'DevTools',
-  'Infrastructure',
-  'Web3 & Crypto',
-  'Consumer Hardware',
-  'Logistics & Supply Chain',
-  'Food & Beverage',
-  'Travel & Hospitality',
-  'Real Estate',
-  'Energy',
-  'Other',
-] as const;
+export const STAGES = ['Pre-Seed', 'Seed', 'Series A', 'Series B', 'Series C+', 'Growth'] as const;
+export type Stage = (typeof STAGES)[number];
 
 /**
- * Deal funding stages
+ * Normalize any stage string to canonical Title Case.
+ * E.g. "pre-seed" → "Pre-Seed", "SEED" → "Seed", "series a" → "Series A"
+ */
+export function normalizeStage(stage: string): string {
+  const s = stage.toLowerCase().replace(/[-_]/g, ' ').trim();
+  const map: Record<string, string> = {
+    'pre seed': 'Pre-Seed',
+    'preseed': 'Pre-Seed',
+    'seed': 'Seed',
+    'series a': 'Series A',
+    'series b': 'Series B',
+    'series c': 'Series C+',
+    'series c+': 'Series C+',
+    'series d': 'Series C+',
+    'series d+': 'Series C+',
+    'growth': 'Growth',
+  };
+  return map[s] || stage;
+}
+
+/**
+ * Industry categories used across the platform
+ */
+export const INDUSTRIES = [
+  'AI & Machine Learning',
+  'B2B SaaS',
+  'B2C',
+  'Biotech & Life Sciences',
+  'CleanTech & Energy',
+  'Consumer Hardware',
+  'Cybersecurity',
+  'DevTools & Infrastructure',
+  'E-commerce & Marketplace',
+  'EdTech',
+  'FinTech',
+  'Food & Beverage',
+  'Gaming',
+  'HealthTech',
+  'Logistics & Supply Chain',
+  'Media & Entertainment',
+  'PropTech & Real Estate',
+  'Social',
+  'Travel & Hospitality',
+  'Web3 & Crypto',
+  'Other',
+] as const;
+export type Industry = (typeof INDUSTRIES)[number];
+
+/**
+ * Deal funding stages (legacy slug-based for deals table)
  * Progression from idea to large growth rounds
  */
 export const DEAL_STAGES: Array<{ value: DealStage; label: string; description: string }> = [
@@ -284,8 +311,8 @@ export const SCORE_RANGES = [
     max: 80,
     label: 'Good',
     color: 'blue',
-    bgColor: 'bg-blue-100',
-    textColor: 'text-blue-600',
+    bgColor: 'bg-[var(--accent-soft)]',
+    textColor: 'text-[var(--ink)]',
     recommendation: 'Solid opportunity - worth deeper diligence',
   },
   {
@@ -347,8 +374,12 @@ export const SUPPORTED_MIME_TYPES = [
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.ms-excel',
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'text/plain',
   'text/csv',
+  'image/png',
+  'image/jpeg',
 ] as const;
 
 /**
@@ -412,7 +443,7 @@ export const FEATURE_FLAGS = {
  * Platform configuration
  */
 export const PLATFORM_CONFIG = {
-  APP_NAME: 'Kunfa AI',
+  APP_NAME: 'Kunfa',
   VERSION: '0.1.0',
   ENVIRONMENT: process.env.NODE_ENV || 'development',
   MAX_CONCURRENT_SCORES: 5,

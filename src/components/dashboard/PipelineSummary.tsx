@@ -13,7 +13,7 @@ interface PipelineSummaryProps {
 }
 
 const stageConfig: Record<PipelineStage, { label: string; color: string; bgColor: string }> = {
-  sourcing: { label: 'Sourcing', color: 'bg-blue-500', bgColor: 'bg-blue-100' },
+  sourcing: { label: 'Sourcing', color: 'bg-[var(--accent-soft)]0', bgColor: 'bg-[var(--accent-soft)]' },
   screening: { label: 'Screening', color: 'bg-purple-500', bgColor: 'bg-purple-100' },
   diligence: { label: 'Diligence', color: 'bg-orange-500', bgColor: 'bg-orange-100' },
   close: { label: 'Close', color: 'bg-green-500', bgColor: 'bg-green-100' },
@@ -27,8 +27,8 @@ export function PipelineSummary({ counts, isLoading = false }: PipelineSummaryPr
       <div className="space-y-4">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="animate-pulse">
-            <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
-            <div className="h-6 bg-gray-100 rounded" />
+            <div className="h-4 w-24 bg-[var(--bg-sunk)] rounded mb-2" />
+            <div className="h-6 bg-[var(--bg-sunk)] rounded" />
           </div>
         ))}
       </div>
@@ -38,7 +38,7 @@ export function PipelineSummary({ counts, isLoading = false }: PipelineSummaryPr
   if (total === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500 text-sm">No deals in pipeline yet</p>
+        <p className="text-[var(--ink-mute)] text-sm">No deals in pipeline yet</p>
       </div>
     );
   }
@@ -52,10 +52,10 @@ export function PipelineSummary({ counts, isLoading = false }: PipelineSummaryPr
         return (
           <div key={item.stage}>
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700">{config.label}</span>
-              <span className="text-sm font-semibold text-gray-900">{item.count}</span>
+              <span className="text-sm font-medium text-[var(--ink-soft)]">{config.label}</span>
+              <span className="text-sm font-semibold text-[var(--ink)]">{item.count}</span>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-[var(--bg-sunk)] rounded-full h-2 overflow-hidden">
               <div
                 className={`h-full ${config.color} transition-all`}
                 style={{ width: `${percentage}%` }}
@@ -64,9 +64,9 @@ export function PipelineSummary({ counts, isLoading = false }: PipelineSummaryPr
           </div>
         );
       })}
-      <div className="pt-2 border-t border-gray-100 mt-4">
-        <p className="text-sm text-gray-600">
-          <span className="font-semibold text-gray-900">{total}</span> deals in pipeline
+      <div className="pt-2 border-t border-[var(--line)] mt-4">
+        <p className="text-sm text-[var(--ink-soft)]">
+          <span className="font-semibold text-[var(--ink)]">{total}</span> deals in pipeline
         </p>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { createServerSupabaseClient, getServerUser } from '@/lib/supabase-server';
 import { NextRequest, NextResponse } from 'next/server';
+import { normalizeStage } from '@/lib/constants';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,6 +26,17 @@ export async function POST(request: NextRequest) {
       industry,
       company_stage,
       raise_amount,
+      linkedin_url,
+      team_size,
+      // Investor-specific fields
+      fund_name,
+      aum,
+      ticket_size_min,
+      ticket_size_max,
+      stage_focus,
+      sector_interests,
+      geo_focus,
+      investment_thesis,
     } = body;
 
     if (!role) {
@@ -48,8 +60,19 @@ export async function POST(request: NextRequest) {
     if (company_country !== undefined) profileData.company_country = company_country;
     if (company_website !== undefined) profileData.company_website = company_website;
     if (industry !== undefined) profileData.industry = industry;
-    if (company_stage !== undefined) profileData.company_stage = company_stage;
+    if (company_stage !== undefined) profileData.company_stage = normalizeStage(company_stage);
     if (raise_amount !== undefined) profileData.raise_amount = raise_amount;
+    if (linkedin_url !== undefined) profileData.linkedin_url = linkedin_url;
+    if (team_size !== undefined) profileData.team_size = team_size;
+    // Investor-specific fields
+    if (fund_name !== undefined) profileData.fund_name = fund_name;
+    if (aum !== undefined) profileData.aum = aum;
+    if (ticket_size_min !== undefined) profileData.ticket_size_min = ticket_size_min;
+    if (ticket_size_max !== undefined) profileData.ticket_size_max = ticket_size_max;
+    if (stage_focus !== undefined) profileData.stage_focus = stage_focus;
+    if (sector_interests !== undefined) profileData.sector_interests = sector_interests;
+    if (geo_focus !== undefined) profileData.geo_focus = geo_focus;
+    if (investment_thesis !== undefined) profileData.investment_thesis = investment_thesis;
 
     // Check if profile already exists
     const { data: existingProfile } = await supabase

@@ -25,13 +25,17 @@ export default async function ScorePage({ params }: ScorePageProps) {
     .select(
       `
       id,
-      company_name,
+      created_by,
       assigned_to,
-      overall_score,
-      scoring_dimensions,
-      ai_summary,
-      red_flags,
-      green_flags
+      ai_score,
+      stage,
+      company_pages!company_id (
+        id,
+        company_name,
+        slug,
+        overall_score,
+        industry
+      )
     `
     )
     .eq('id', dealId)
@@ -41,8 +45,10 @@ export default async function ScorePage({ params }: ScorePageProps) {
     notFound();
   }
 
-  // Check access
-  if (deal.assigned_to !== user.id) {
+  const company = deal.company_pages as any;
+
+  // Check access — allow creator, assignee, or admin
+  if (deal.assigned_to !== user.id && deal.created_by !== user.id) {
     const { data: userData } = await supabase
       .from('profiles')
       .select('role')
@@ -54,43 +60,27 @@ export default async function ScorePage({ params }: ScorePageProps) {
     }
   }
 
-  // Fetch documents for term sheet analyzer
-  const { data: documents } = await supabase
-    .from('deal_documents')
-    .select('id, document_type, file_name')
-    .eq('deal_id', dealId)
-    .eq('parse_status', 'completed');
+  const termSheetDoc: { id: string } | null = null;
 
-  const termSheetDoc = documents?.find((doc) => doc.document_type === 'term_sheet');
-
-  // Prepare scoring data if available
-  const scoringData = deal.overall_score
-    ? {
-        overall_score: deal.overall_score,
-        dimensions: deal.scoring_dimensions,
-        summary: deal.ai_summary,
-        red_flags: deal.red_flags || [],
-        green_flags: deal.green_flags || [],
-        confidence_level: 'high' as const,
-      }
-    : undefined;
+  // Scoring data not available from deals table — DealScorer will handle the "not scored" state
+  const scoringData = undefined;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--bg-sunk)]">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-[var(--bg-elev)] border-b border-[var(--line)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center gap-4 mb-4">
             <Link
               href={`/deals/${dealId}`}
-              className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+              className="inline-flex items-center gap-2 text-[var(--ink)] hover:text-[var(--ink)] transition-colors"
             >
               <ChevronLeft className="h-5 w-5" />
               Back to Deal
             </Link>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">{deal.company_name}</h1>
-          <p className="text-gray-600 mt-1">AI-Powered Investment Analysis</p>
+          <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{company?.company_name || 'Unknown Company'}</h1>
+          <p className="text-[var(--ink-soft)] mt-1">AI-Powered Investment Analysis</p>
         </div>
       </div>
 
@@ -99,8 +89,8 @@ export default async function ScorePage({ params }: ScorePageProps) {
         <div className="space-y-12">
           {/* Deal Score Section */}
           <section className="space-y-4">
-            <h2 className="text-2xl font-bold text-gray-900">Investment Score</h2>
-            <div className="bg-white rounded-lg p-6">
+            <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Investment Score</h2>
+            <div className="bg-[var(--bg-elev)] rounded-lg p-6">
               <DealScorer dealId={dealId} scores={scoringData} />
             </div>
           </section>
@@ -109,19 +99,19 @@ export default async function ScorePage({ params }: ScorePageProps) {
           <div className="space-y-6">
             {/* Company Brief Tab */}
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-gray-900">Company Brief</h2>
-              <div className="bg-white rounded-lg p-6">
+              <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Company Brief</h2>
+              <div className="bg-[var(--bg-elev)] rounded-lg p-6">
                 <CompanyBrief dealId={dealId} />
               </div>
             </section>
 
             {/* Term Sheet Analysis Tab */}
             <section className="space-y-4">
-              <h2 className="text-2xl font-bold text-gray-900">Term Sheet Analysis</h2>
-              <div className="bg-white rounded-lg p-6">
+              <h2 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">Term Sheet Analysis</h2>
+              <div className="bg-[var(--bg-elev)] rounded-lg p-6">
                 <TermSheetAnalyzer
                   dealId={dealId}
-                  documentId={termSheetDoc?.id}
+                  documentId={undefined}
                 />
               </div>
             </section>

@@ -1,0 +1,121 @@
+/* Kunfa — Design Tokens
+   Single source of truth. Every component reads from these variables.
+   No hardcoded colors or spacing in components. */
+
+:root {
+  /* Colors — Light (default) */
+  --bg:           #fafaf7;
+  --bg-elev:      #ffffff;
+  --bg-sunk:      #f3f2ec;
+  --ink:          #1c1c28;
+  --ink-2:        #2a2a36;
+  --ink-soft:     #4a4a58;
+  --ink-mute:     #7a7a86;
+  --ink-faint:    #b0b0ba;
+  --line:         #e6e5dd;
+  --line-strong:  #d4d3ca;
+
+  --accent:       oklch(0.72 0.12 70);
+  --accent-soft:  oklch(0.94 0.04 75);
+  --accent-ink:   oklch(0.38 0.08 60);
+
+  --positive:     oklch(0.62 0.10 155);
+  --negative:     oklch(0.58 0.16 25);
+
+  /* Typography */
+  --serif: var(--font-newsreader), "Source Serif 4", Georgia, serif;
+  --sans:  var(--font-inter-tight), "Inter", -apple-system, system-ui, sans-serif;
+  --mono:  var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* Radii */
+  --radius-sm: 5px;
+  --radius:    6px;
+  --radius-lg: 10px;
+  --radius-full: 99px;
+
+  /* Spacing scale */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 14px;
+  --sp-4: 18px;
+  --sp-5: 22px;
+  --sp-6: 32px;
+  --sp-7: 40px;
+  --sp-8: 80px;
+
+  /* Layout */
+  --sidebar-w: 248px;
+  --topbar-h:  56px;
+  --page-px:   40px;
+  --page-pt:   32px;
+  --page-pb:   80px;
+  --page-max:  1280px;
+
+  /* Focus ring */
+  --focus-ring: 0 0 0 3px rgba(28, 28, 40, 0.06);
+}
+
+/* Colors — Dark */
+[data-theme="dark"] {
+  --bg:           #131319;
+  --bg-elev:      #1c1c24;
+  --bg-sunk:      #0e0e14;
+  --ink:          #f4f3ee;
+  --ink-2:        #e4e3de;
+  --ink-soft:     #b8b7b0;
+  --ink-mute:     #82817a;
+  --ink-faint:    #4d4c46;
+  --line:         #2a2a32;
+  --line-strong:  #383840;
+  --accent-soft:  oklch(0.32 0.06 70);
+  --accent-ink:   oklch(0.86 0.10 75);
+  /* --accent stays the same */
+
+  --focus-ring: 0 0 0 3px rgba(244, 243, 238, 0.06);
+}
+
+/* Base typography */
+h1, h2, h3, h4 {
+  font-family: var(--serif);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: var(--ink);
+}
+h1 { font-size: 38px; line-height: 1.1; letter-spacing: -0.02em; }
+h2 { font-size: 26px; line-height: 1.15; }
+h3 { font-size: 19px; line-height: 1.25; }
+
+/* Utility classes for type scale */
+.type-stat-val {
+  font-family: var(--serif);
+  font-size: 34px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.type-kicker {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-weight: 500;
+}
+.type-micro {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  font-weight: 500;
+}
+.type-caption {
+  font-size: 12px;
+  line-height: 1.4;
+}
+.type-body-sm {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Tabular numbers for all numeric display */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

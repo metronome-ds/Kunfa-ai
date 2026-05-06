@@ -1,62 +1,64 @@
 @import "tailwindcss";
+@import "../styles/tokens.css";
+@import "../styles/mobile.css";
 
 :root {
-  /* Primary Colors */
-  --primary-deep: #1a1f36;
-  --primary-accent: #3b82f6;
+  /* Noor Modern Design System */
+  --primary: var(--ink);
+  --primary-hover: var(--ink-2);
+  --primary-light: #F0F7FF;
 
-  /* Secondary Colors */
-  --sidebar-bg: #0f1419;
-  --card-bg: #ffffff;
+  --surface: var(--bg-elev);
+  --surface-muted: var(--bg-sunk);
 
-  /* Status Colors */
-  --success: #10b981;
-  --warning: #f59e0b;
-  --error: #ef4444;
+  --text-primary: var(--ink);
+  --text-secondary: var(--ink-soft);
+  --text-tertiary: var(--ink-mute);
 
-  /* Neutral Colors */
-  --background: #ffffff;
-  --foreground: #171717;
-  --text-secondary: #6b7280;
-  --border: #e5e7eb;
+  --border: var(--line);
+  --border-focus: var(--ink);
+
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+
+  --background: var(--bg);
+  --foreground: var(--ink);
+
+  --gray-badge-bg: var(--bg-sunk);
 }
 
 @theme inline {
-  --color-primary: var(--primary-deep);
-  --color-accent: var(--primary-accent);
+  --color-primary: var(--primary);
+  --color-accent: var(--primary);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-kunfa: var(--ink);
+  --color-kunfa-light: #F0F7FF;
+  --color-kunfa-dark: var(--ink-2);
   --color-kunfa-green: #10B981;
   --color-kunfa-green-dark: #059669;
-  --color-kunfa-navy: #0F172A;
+  --color-kunfa-navy: var(--ink);
   --color-kunfa-card-dark: #1E293B;
-  --color-kunfa-text-primary: #0F172A;
-  --color-kunfa-text-secondary: #64748B;
-  --color-kunfa-light-bg: #F8FAFC;
+  --color-kunfa-text-primary: var(--ink);
+  --color-kunfa-text-secondary: var(--ink-soft);
+  --color-kunfa-light-bg: var(--bg-sunk);
   --color-kunfa-orange: #F97316;
   --color-kunfa-indigo: #6366F1;
   --color-kunfa-yellow: #EAB308;
   --color-kunfa-red: #EF4444;
+  --color-surface-muted: var(--bg-sunk);
   --font-sans: 'Inter', system-ui, sans-serif;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --text-secondary: #9ca3af;
-    --border: #374151;
-  }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 * {
-  @apply border-gray-200;
+  @apply border-[var(--line)];
 }
 
 /* Smooth transitions for all interactive elements */
@@ -68,28 +70,30 @@ select {
   @apply transition-all duration-200;
 }
 
-/* ===== Landing Page Component Classes ===== */
+/* ===== Global Button Classes ===== */
 .btn-primary {
-  background-color: #10B981;
+  background-color: var(--ink);
   color: white;
   font-weight: 600;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   transition: all 0.2s;
+  
 }
 .btn-primary:hover {
-  background-color: #059669;
+  background-color: var(--ink-2);
+  
 }
 .btn-outline {
-  border: 1px solid #d1d5db;
-  color: #374151;
+  border: 1px solid var(--line);
+  color: var(--ink);
   font-weight: 600;
-  padding: 0.75rem 1.5rem;
+  padding: 0.625rem 1.25rem;
   border-radius: 0.5rem;
   transition: all 0.2s;
 }
 .btn-outline:hover {
-  background-color: #f9fafb;
+  background-color: var(--bg-sunk);
 }
 .badge-green {
   display: inline-flex;
@@ -98,11 +102,11 @@ select {
   border-radius: 9999px;
   font-size: 0.875rem;
   font-weight: 500;
-  background-color: #ecfdf5;
-  color: #047857;
+  background-color: var(--accent-soft);
+  color: var(--accent-ink);
 }
 .text-gradient-green {
-  background: linear-gradient(to right, #34d399, #059669);
+  background: linear-gradient(to right, var(--ink), var(--ink-2));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -125,12 +129,12 @@ select {
 
 /* Glow effect for score card */
 .card-glow {
-  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3), 0 0 30px rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--line-strong);
   animation: glow 2s ease-in-out infinite alternate;
 }
 @keyframes glow {
-  0% { box-shadow: 0 0 10px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.1); }
-  100% { box-shadow: 0 0 15px rgba(16, 185, 129, 0.5), 0 0 30px rgba(16, 185, 129, 0.2); }
+  0% { border-color: var(--line-strong); }
+  100% { border-color: var(--accent); }
 }
 
 /* Pulse animation for LIVE badge */
@@ -152,24 +156,25 @@ select {
 /* Score circle */
 .score-circle {
   background: conic-gradient(
-    #10B981 calc(var(--score) * 1%),
-    #e5e7eb calc(var(--score) * 1%)
+    var(--accent) calc(var(--score) * 1%),
+    #E5E7EB calc(var(--score) * 1%)
   );
 }
 
 /* Upload zone */
 .upload-zone {
-  border: 2px dashed #d1d5db;
-  border-radius: 0.75rem;
+  border: 2px dashed #E5E7EB;
+  border-radius: 0.5rem;
   padding: 1.5rem;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
+  background-color: var(--bg-sunk);
 }
 .upload-zone:hover,
 .upload-zone.dragover {
-  border-color: #10B981;
-  background-color: #ecfdf5;
+  border-color: var(--accent-ink);
+  background-color: var(--accent-soft);
 }
 
 /* Modal backdrop */

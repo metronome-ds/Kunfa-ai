@@ -4,6 +4,57 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY || '',
 })
 
+// KUN-37 / KUN-54: Per-category character ceilings to keep prompts within
+// Claude's 200K token window.  Rough heuristic: 1 token ≈ 4 chars.
+const MAX_PITCH_DECK_CHARS = 280_000
+const MAX_FINANCIALS_CHARS = 80_000
+
+// KUN-54: Per-category truncation limits for supplementary documents
+const CATEGORY_CHAR_LIMITS: Record<string, number> = {
+  cap_table: 40_000,
+  investment_memo: 60_000,
+  term_sheet: 40_000,
+  due_diligence: 60_000,
+  product: 40_000,
+  legal: 30_000,
+  other: 40_000,
+}
+const DEFAULT_SUPPLEMENTARY_LIMIT = 40_000
+
+// Categories excluded from AI scoring (internal-only documents)
+const EXCLUDED_CATEGORIES = new Set(['internal_memo'])
+
+function truncate(text: string, max: number, label: string): string {
+  if (!text || text.length <= max) return text
+  console.log(`[SCORE] Truncated ${label} from ${text.length} to ${max} chars`)
+  return text.slice(0, max) + `\n\n[... ${label} truncated to ${max} characters for AI context limits ...]`
+}
+
+/**
+ * Thrown when the input documents are too large for Claude's context window.
+ * The API layer catches this and returns a friendly 413 to the user.
+ */
+export class ScoringTooLargeError extends Error {
+  constructor(message = 'This file is too large for AI analysis. Please upload a deck under 50 pages.') {
+    super(message)
+    this.name = 'ScoringTooLargeError'
+  }
+}
+
+function isPromptTooLongError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false
+  const e = err as { status?: number; message?: string; error?: { type?: string; message?: string } }
+  const msg = (e.message || e.error?.message || '').toLowerCase()
+  const type = (e.error?.type || '').toLowerCase()
+  return (
+    msg.includes('prompt is too long') ||
+    msg.includes('prompt_too_long') ||
+    msg.includes('context window') ||
+    msg.includes('maximum context length') ||
+    type === 'invalid_request_error' && msg.includes('too long')
+  )
+}
+
 export interface CompanyProfile {
   company_name: string
   industry: string
@@ -20,25 +71,31 @@ export interface CompanyProfile {
 
 export interface ScoringResult {
   overall_score: number
-  percentile: number
-  summary: string
+  team_score: number
+  team_grade: string
+  team_summary: string
+  market_score: number
+  market_grade: string
+  market_summary: string
+  product_score: number
+  product_grade: string
+  product_summary: string
+  traction_score: number
+  traction_grade: string
+  traction_summary: string
+  financial_score: number
+  financial_grade: string
+  financial_summary: string
+  fundraise_readiness_score: number
+  fundraise_readiness_grade: string
+  fundraise_readiness_summary: string
+  description: string
   company_profile: CompanyProfile
-  dimensions: {
-    team: DimensionResult
-    market: DimensionResult
-    product: DimensionResult
-    financial: DimensionResult
-  }
-  sector_benchmarks: {
-    sector: string
-    avg_score: number
-    comparison: string
-  }
-  deck_recommendations: string[]
-  overall_recommendations: string[]
-  investment_readiness: string
+  stage_weights_applied: string
+  financials_analyzed: boolean
 }
 
+// Keep DimensionResult for expanded memo compatibility
 export interface DimensionResult {
   score: number
   letter_grade: string
@@ -49,6 +106,45 @@ export interface DimensionResult {
   recommendations: string[]
 }
 
+interface StageWeights {
+  team: number
+  market: number
+  product: number
+  traction: number
+  financial: number
+  fundraise_readiness: number
+  label: string
+}
+
+function getStageWeights(stage: string): StageWeights {
+  const s = (stage || '').toLowerCase().trim()
+  if (
+    s.includes('series b') ||
+    s.includes('series c') ||
+    s.includes('growth')
+  ) {
+    // Growth stage: traction + financials dominate
+    return {
+      team: 0.10, market: 0.15, product: 0.15,
+      traction: 0.25, financial: 0.25, fundraise_readiness: 0.10,
+      label: 'series_b_plus',
+    }
+  }
+  if (s.includes('series a')) {
+    return {
+      team: 0.20, market: 0.20, product: 0.15,
+      traction: 0.20, financial: 0.15, fundraise_readiness: 0.10,
+      label: 'series_a',
+    }
+  }
+  // Default: Pre-Seed / Seed / unknown — team + market matter most
+  return {
+    team: 0.30, market: 0.25, product: 0.20,
+    traction: 0.05, financial: 0.10, fundraise_readiness: 0.10,
+    label: 'pre_seed_seed',
+  }
+}
+
 const SYSTEM_PROMPT = `You are Kunfa AI, a venture capital analysis engine that outputs ONLY valid JSON.
 
 CRITICAL RULES:
@@ -57,39 +153,171 @@ CRITICAL RULES:
 - Do NOT wrap the JSON in markdown code fences or backticks.
 - Do NOT include any explanation, commentary, or preamble.
 - Start your response with { and end with }.
-- All string values must be properly escaped for JSON.`
+- All string values must be properly escaped for JSON.
+
+DOCUMENT-TYPE GUIDANCE:
+When multiple documents are provided, weigh them according to their type:
+- PITCH DECK: Primary source of truth for company narrative, team, market, product, and strategy.
+- FINANCIALS: Key source for unit economics, burn rate, revenue, projections. Directly impacts Financial score.
+- CAP TABLE: Assess ownership structure, dilution, investor quality. Impacts Fundraise Readiness score.
+- INVESTMENT MEMO: Prior analysis from another investor — cross-reference but form your own independent assessment.
+- TERM SHEET: Evaluate deal terms, valuation, governance provisions. Impacts Fundraise Readiness score.
+- DUE DILIGENCE: Legal, technical, or operational diligence findings. Look for red flags across all dimensions.
+- PRODUCT: Product specs, roadmaps, technical documentation. Impacts Product & Technology score.
+- LEGAL: Corporate structure, IP filings, regulatory compliance. Look for risks.
+- OTHER: Supplementary context — use to fill gaps in other categories.
+
+Synthesize insights across ALL provided documents. A company that provides more supporting documents should receive more informed (not necessarily higher) scores.`
+
+export interface ScoringDocument {
+  category: string
+  fileName: string
+  text: string
+}
 
 function buildUserPrompt(
   pitchDeckText: string,
   financialsText: string,
   linkedinUrl: string,
+  weights: StageWeights,
+  hasFinancials: boolean,
+  supplementaryDocs?: ScoringDocument[],
 ): string {
-  return `Analyze these startup materials and return a JSON investment memo.
+  const weightsPercent = {
+    team: Math.round(weights.team * 100),
+    market: Math.round(weights.market * 100),
+    product: Math.round(weights.product * 100),
+    traction: Math.round(weights.traction * 100),
+    financial: Math.round(weights.financial * 100),
+    fundraise_readiness: Math.round(weights.fundraise_readiness * 100),
+  }
+
+  // Build supplementary documents section (KUN-54: === DOCUMENT: Type === headers)
+  let supplementarySection = ''
+  if (supplementaryDocs && supplementaryDocs.length > 0) {
+    const filteredDocs = supplementaryDocs.filter(doc => !EXCLUDED_CATEGORIES.has(doc.category))
+    if (filteredDocs.length > 0) {
+      supplementarySection = filteredDocs.map(doc => {
+        const categoryLabel = doc.category.replace(/_/g, ' ').toUpperCase()
+        return `\n=== DOCUMENT: ${categoryLabel} (${doc.fileName}) ===\n${doc.text}\n`
+      }).join('\n')
+    }
+  }
+
+  const financialsSection = hasFinancials
+    ? `- Financial Data (separately provided):
+${financialsText}
+
+NOTE: The above financial data has been provided separately. Use this to give a more informed Financial Health & Traction score.`
+    : supplementarySection
+      ? '' // If we have supplementary docs, don't add the "no financials" note
+      : `NOTE: No separate financial data was provided. Score Financial Health based solely on what's available in the pitch deck. Note this limitation in your analysis.`
+
+  return `Analyze these startup materials and return a JSON investment scoring report.
 
 ## Documents Provided:
-- Pitch Deck Content:
+
+PRIMARY DOCUMENT — PITCH DECK:
 ${pitchDeckText || '[No pitch deck text could be extracted]'}
 
-- Financials Content:
-${financialsText || '[No financials text could be extracted]'}
+${financialsSection}
+${supplementarySection}
+- LinkedIn Profile: ${linkedinUrl || '[Not provided]'}
 
-- LinkedIn Profile: ${linkedinUrl}
+## Stage-Adjusted Scoring Weights (${weights.label}):
+- Team & Founders: ${weightsPercent.team}%
+- Market Opportunity: ${weightsPercent.market}%
+- Product & Technology: ${weightsPercent.product}%
+- Traction: ${weightsPercent.traction}%
+- Financials: ${weightsPercent.financial}%
+- Fundraise Readiness: ${weightsPercent.fundraise_readiness}%
 
-## Score across 4 dimensions (each 0-25, totaling 0-100):
-1. Team & Founders (0-25): founder experience, team completeness, domain expertise, track record
-2. Market Opportunity & TAM (0-25): market size, growth rate, timing, competitive landscape
-3. Product/Tech Differentiation (0-25): uniqueness, IP/moat, PMF evidence, scalability
-4. Financial Health & Projections (0-25): revenue model, unit economics, burn rate, runway
+## Scoring Rubric — score each category 0-25:
+
+### Team & Founders (raw score 0-25):
+- Founder background, domain expertise, relevant experience
+- Complementary skill sets across co-founders
+- Previous exits or notable company experience
+- Advisory board strength and key hires
+- Full-time commitment and skin in the game
+
+### Market Opportunity (raw score 0-25):
+- TAM/SAM/SOM sizing with supporting logic
+- Market timing and tailwinds
+- Competitive landscape awareness and differentiation
+- Defensibility and moat potential
+- Regulatory environment and barriers to entry
+
+### Product & Technology (raw score 0-25):
+- Problem clarity and severity
+- Solution differentiation vs alternatives
+- Current product stage (idea → MVP → live users → scaling)
+- Technical architecture and IP considerations
+- User feedback and validation signals
+
+### Traction (raw score 0-25):
+- Revenue or pre-revenue traction signals (paying customers, LOIs, pilots)
+- Growth rate (MoM or YoY), user/engagement metrics
+- Retention and cohort quality
+- Key partnerships, distribution channels
+- Evidence of product-market fit
+
+### Financials (raw score 0-25):
+- Unit economics (CAC, LTV, gross margin, payback period)
+- Burn rate, runway, and capital efficiency
+- Revenue model clarity and scalability
+- Financial projections credibility
+- Historical financial performance (if available)
+
+### Fundraise Readiness (raw score 0-25):
+- Clarity of use of funds and milestones tied to the raise
+- Valuation reasonableness relative to stage and traction
+- Data room completeness (pitch deck, financials, legal, team bios)
+- Storytelling and narrative tightness
+- Investor alignment and round structure
+
+## Overall Score Calculation:
+Compute the weighted overall score (0-100) using this formula:
+overall_score = round(
+  (team_raw/25 * ${weightsPercent.team}) +
+  (market_raw/25 * ${weightsPercent.market}) +
+  (product_raw/25 * ${weightsPercent.product}) +
+  (traction_raw/25 * ${weightsPercent.traction}) +
+  (financial_raw/25 * ${weightsPercent.financial}) +
+  (fundraise_readiness_raw/25 * ${weightsPercent.fundraise_readiness})
+)
+
+## Grade Mapping (apply per category based on raw score 0-25):
+23-25 = A+    20-22 = A-    18-19 = B+    16-17 = B
+14-15 = B-    12-13 = C+    10-11 = C     8-9 = C-
+6-7 = D       0-5 = F
 
 ## Required JSON structure (respond with ONLY this JSON, nothing else):
 {
-  "overall_score": 0,
-  "percentile": 0,
-  "summary": "2-3 sentence executive summary",
+  "overall_score": 78,
+  "team_score": 22,
+  "team_grade": "A-",
+  "team_summary": "One sentence summary of team assessment",
+  "market_score": 20,
+  "market_grade": "A-",
+  "market_summary": "One sentence summary of market assessment",
+  "product_score": 18,
+  "product_grade": "B+",
+  "product_summary": "One sentence summary of product assessment",
+  "traction_score": 16,
+  "traction_grade": "B",
+  "traction_summary": "One sentence summary of traction assessment",
+  "financial_score": 15,
+  "financial_grade": "B-",
+  "financial_summary": "One sentence summary of financial assessment",
+  "fundraise_readiness_score": 17,
+  "fundraise_readiness_grade": "B",
+  "fundraise_readiness_summary": "One sentence summary of fundraise readiness assessment",
+  "description": "2-3 sentence overall investment assessment",
   "company_profile": {
     "company_name": "the company name extracted from the pitch deck",
     "industry": "the sector or industry (e.g. FinTech, HealthTech, SaaS, E-commerce)",
-    "stage": "Pre-seed, Seed, Series A, Series B, or Growth",
+    "stage": "Pre-Seed, Seed, Series A, Series B, or Growth",
     "team_size": 5,
     "founded_year": 2023,
     "problem_summary": "1-2 sentence description of the problem being solved",
@@ -99,53 +327,15 @@ ${financialsText || '[No financials text could be extracted]'}
     "use_of_funds": "1-2 sentence description of how the raise will be used",
     "key_risks": "1-2 sentence summary of the top investment risks"
   },
-  "dimensions": {
-    "team": {
-      "score": 0,
-      "letter_grade": "B+",
-      "headline": "one line summary",
-      "analysis": "3-5 paragraph detailed analysis",
-      "strengths": ["strength1", "strength2"],
-      "risks": ["risk1", "risk2"],
-      "recommendations": ["rec1", "rec2"]
-    },
-    "market": {
-      "score": 0,
-      "letter_grade": "B",
-      "headline": "one line",
-      "analysis": "detailed",
-      "strengths": ["s1"],
-      "risks": ["r1"],
-      "recommendations": ["r1"]
-    },
-    "product": {
-      "score": 0,
-      "letter_grade": "B",
-      "headline": "one line",
-      "analysis": "detailed",
-      "strengths": ["s1"],
-      "risks": ["r1"],
-      "recommendations": ["r1"]
-    },
-    "financial": {
-      "score": 0,
-      "letter_grade": "B-",
-      "headline": "one line",
-      "analysis": "detailed",
-      "strengths": ["s1"],
-      "risks": ["r1"],
-      "recommendations": ["r1"]
-    }
-  },
-  "sector_benchmarks": {
-    "sector": "identified sector",
-    "avg_score": 65,
-    "comparison": "comparison text"
-  },
-  "deck_recommendations": ["improvement 1", "improvement 2"],
-  "overall_recommendations": ["strategic rec 1", "strategic rec 2"],
-  "investment_readiness": "Almost Ready"
-}`
+  "stage_weights_applied": "${weights.label}",
+  "financials_analyzed": ${hasFinancials}
+}
+
+IMPORTANT:
+- The overall_score MUST be computed using the stage-adjusted weights shown above, NOT by simply summing the raw scores.
+- Each raw score must be between 0 and 25.
+- Assign grades strictly according to the grade mapping above.
+- Be rigorous and calibrated — most startups should score 50-75 overall. Only exceptional companies score above 85.`
 }
 
 /**
@@ -192,6 +382,9 @@ async function callClaude(
   pitchDeckText: string,
   financialsText: string,
   linkedinUrl: string,
+  weights: StageWeights,
+  hasFinancials: boolean,
+  supplementaryDocs?: ScoringDocument[],
 ): Promise<string> {
   const message = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -200,7 +393,7 @@ async function callClaude(
     messages: [
       {
         role: 'user',
-        content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl),
+        content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl, weights, hasFinancials, supplementaryDocs),
       },
     ],
   })
@@ -217,12 +410,38 @@ export async function scoreStartup(
   pitchDeckText: string,
   financialsText: string,
   linkedinUrl: string,
+  companyStage: string,
+  supplementaryDocs?: ScoringDocument[],
 ): Promise<ScoringResult> {
+  const weights = getStageWeights(companyStage)
+  const hasFinancials = !!financialsText && financialsText.trim().length > 0
+
+  // Truncate inputs up-front to stay within Claude's 200K token window.
+  // We always truncate and proceed — the user's upload succeeded, so we
+  // score with whatever fits. ScoringTooLargeError is only thrown as a
+  // last resort if Claude itself still rejects the prompt after truncation.
+  const safeDeckText = truncate(pitchDeckText, MAX_PITCH_DECK_CHARS, 'pitch deck')
+  const safeFinancialsText = truncate(financialsText, MAX_FINANCIALS_CHARS, 'financials')
+  // KUN-54: Per-category truncation limits + exclude internal_memo
+  const safeSupplementary = supplementaryDocs
+    ?.filter(doc => !EXCLUDED_CATEGORIES.has(doc.category))
+    .map(doc => {
+      const limit = CATEGORY_CHAR_LIMITS[doc.category] ?? DEFAULT_SUPPLEMENTARY_LIMIT
+      return {
+        ...doc,
+        text: truncate(doc.text, limit, `${doc.category} (${doc.fileName})`),
+      }
+    })
+
   // --- Attempt 1 ---
   let rawResponse: string
   try {
-    rawResponse = await callClaude(pitchDeckText, financialsText, linkedinUrl)
+    rawResponse = await callClaude(safeDeckText, safeFinancialsText, linkedinUrl, weights, hasFinancials, safeSupplementary)
   } catch (apiErr) {
+    if (isPromptTooLongError(apiErr)) {
+      console.error('[scoring] Claude prompt too long — input exceeds context window', apiErr)
+      throw new ScoringTooLargeError()
+    }
     console.error('Claude API call failed:', apiErr)
     throw new Error(`Claude API call failed: ${(apiErr as Error).message}`)
   }
@@ -244,7 +463,7 @@ export async function scoreStartup(
       messages: [
         {
           role: 'user',
-          content: buildUserPrompt(pitchDeckText, financialsText, linkedinUrl),
+          content: buildUserPrompt(safeDeckText, safeFinancialsText, linkedinUrl, weights, hasFinancials, safeSupplementary),
         },
         {
           role: 'assistant',
@@ -263,6 +482,10 @@ export async function scoreStartup(
     const parsed = extractJson(retryRaw)
     return parsed as unknown as ScoringResult
   } catch (retryErr) {
+    if (isPromptTooLongError(retryErr)) {
+      console.error('[scoring] Claude prompt too long on retry', retryErr)
+      throw new ScoringTooLargeError()
+    }
     console.error('Attempt 2 also failed:', retryErr)
     throw new Error(
       `AI scoring failed after 2 attempts. The AI did not return valid JSON. ` +
@@ -271,32 +494,54 @@ export async function scoreStartup(
   }
 }
 
+/**
+ * Extract a teaser from a ScoringResult for quick display.
+ * Maps from the flat format to the nested teaser format the UI expects.
+ */
 export function extractTeaser(result: ScoringResult) {
+  const score = result.overall_score || 0
+
+  // Determine investment readiness from overall score
+  let investmentReadiness = 'Early Stage'
+  if (score >= 80) investmentReadiness = 'Strong'
+  else if (score >= 65) investmentReadiness = 'Almost Ready'
+  else if (score >= 50) investmentReadiness = 'Needs Work'
+
   return {
-    overall_score: result.overall_score,
-    percentile: result.percentile,
-    summary: result.summary,
-    investment_readiness: result.investment_readiness,
+    overall_score: score,
+    percentile: Math.min(99, Math.max(1, score)),
+    summary: result.description || '',
+    investment_readiness: investmentReadiness,
     dimensions: {
       team: {
-        score: result.dimensions.team.score,
-        letter_grade: result.dimensions.team.letter_grade,
-        headline: result.dimensions.team.headline,
+        score: result.team_score || 0,
+        letter_grade: result.team_grade || 'N/A',
+        headline: result.team_summary || '',
       },
       market: {
-        score: result.dimensions.market.score,
-        letter_grade: result.dimensions.market.letter_grade,
-        headline: result.dimensions.market.headline,
+        score: result.market_score || 0,
+        letter_grade: result.market_grade || 'N/A',
+        headline: result.market_summary || '',
       },
       product: {
-        score: result.dimensions.product.score,
-        letter_grade: result.dimensions.product.letter_grade,
-        headline: result.dimensions.product.headline,
+        score: result.product_score || 0,
+        letter_grade: result.product_grade || 'N/A',
+        headline: result.product_summary || '',
+      },
+      traction: {
+        score: result.traction_score || 0,
+        letter_grade: result.traction_grade || 'N/A',
+        headline: result.traction_summary || '',
       },
       financial: {
-        score: result.dimensions.financial.score,
-        letter_grade: result.dimensions.financial.letter_grade,
-        headline: result.dimensions.financial.headline,
+        score: result.financial_score || 0,
+        letter_grade: result.financial_grade || 'N/A',
+        headline: result.financial_summary || '',
+      },
+      fundraise_readiness: {
+        score: result.fundraise_readiness_score || 0,
+        letter_grade: result.fundraise_readiness_grade || 'N/A',
+        headline: result.fundraise_readiness_summary || '',
       },
     },
   }

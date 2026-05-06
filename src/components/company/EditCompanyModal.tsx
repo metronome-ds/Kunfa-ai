@@ -1,0 +1,511 @@
+'use client'
+
+import { useState, useRef } from 'react'
+import { X, Upload } from 'lucide-react'
+import { STAGES, INDUSTRIES } from '@/lib/constants'
+import { createBrowserClient } from '@supabase/ssr'
+import CompanyLogo from '@/components/common/CompanyLogo'
+
+interface CompanyData {
+  id: string
+  company_name: string
+  one_liner: string | null
+  description: string | null
+  industry: string | null
+  stage: string | null
+  country: string | null
+  headquarters: string | null
+  website_url: string | null
+  linkedin_url: string | null
+  company_linkedin_url?: string | null
+  logo_url?: string | null
+  raise_amount: number | string | null
+  team_size: number | null
+  founded_year: number | null
+  founder_name: string | null
+  founder_title: string | null
+  is_raising?: boolean | null
+  raising_amount?: string | null
+  raising_instrument?: string | null
+  raising_target_close?: string | null
+  is_public?: boolean | null
+}
+
+const RAISING_INSTRUMENTS = [
+  'SAFE',
+  'Priced Equity',
+  'Convertible Note',
+  'Revenue-Based',
+  'Murabaha',
+  'Other',
+] as const
+
+interface EditCompanyModalProps {
+  company: CompanyData
+  isOpen: boolean
+  onClose: () => void
+  onSaved: () => void
+}
+
+export default function EditCompanyModal({ company, isOpen, onClose, onSaved }: EditCompanyModalProps) {
+  const [form, setForm] = useState({
+    company_name: company.company_name || '',
+    one_liner: company.one_liner || '',
+    description: company.description || '',
+    industry: company.industry || '',
+    stage: company.stage || '',
+    country: company.country || company.headquarters || '',
+    website_url: company.website_url || '',
+    linkedin_url: company.linkedin_url || '',
+    company_linkedin_url: company.company_linkedin_url || '',
+    logo_url: company.logo_url || '',
+    raise_amount: company.raise_amount ? String(company.raise_amount) : '',
+    team_size: company.team_size ? String(company.team_size) : '',
+    founded_year: company.founded_year ? String(company.founded_year) : '',
+    founder_name: company.founder_name || '',
+    founder_title: company.founder_title || '',
+    is_raising: company.is_raising === true,
+    raising_amount: company.raising_amount || '',
+    raising_instrument: company.raising_instrument || '',
+    raising_target_close: company.raising_target_close || '',
+    is_public: company.is_public !== false,
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState(false)
+  const [logoPreview, setLogoPreview] = useState<string | null>(company.logo_url || null)
+  const [logoUploading, setLogoUploading] = useState(false)
+  const logoInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleLogoUpload(file: File) {
+    setLogoPreview(URL.createObjectURL(file))
+    setLogoUploading(true)
+    try {
+      const supabase = createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      )
+      const path = `logos/${Date.now()}-${file.name}`
+      const { data, error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(path, file, { cacheControl: '3600', upsert: false })
+      if (uploadError) throw uploadError
+      const { data: { publicUrl } } = supabase.storage
+        .from('documents')
+        .getPublicUrl(data.path)
+      setForm(prev => ({ ...prev, logo_url: publicUrl }))
+    } catch (err) {
+      console.error('Logo upload error:', err)
+      setLogoPreview(company.logo_url || null)
+    } finally {
+      setLogoUploading(false)
+    }
+  }
+
+  if (!isOpen) return null
+
+  function updateField(field: string, value: string | boolean) {
+    setForm(prev => ({ ...prev, [field]: value }))
+    setSuccess(false)
+  }
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.company_name.trim()) {
+      setError('Company name is required')
+      return
+    }
+
+    setSaving(true)
+    setError('')
+    setSuccess(false)
+
+    try {
+      const res = await fetch(`/api/companies/${company.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company_name: form.company_name,
+          one_liner: form.one_liner || null,
+          description: form.description || null,
+          industry: form.industry || null,
+          stage: form.stage || null,
+          country: form.country || null,
+          headquarters: form.country || null,
+          website_url: form.website_url || null,
+          linkedin_url: form.linkedin_url || null,
+          company_linkedin_url: form.company_linkedin_url || null,
+          logo_url: form.logo_url || null,
+          raise_amount: form.raise_amount ? Number(form.raise_amount) : null,
+          team_size: form.team_size ? Number(form.team_size) : null,
+          founded_year: form.founded_year ? Number(form.founded_year) : null,
+          founder_name: form.founder_name || null,
+          founder_title: form.founder_title || null,
+          is_raising: form.is_raising,
+          raising_amount: form.is_raising ? (form.raising_amount || null) : null,
+          raising_instrument: form.is_raising ? (form.raising_instrument || null) : null,
+          raising_target_close: form.is_raising ? (form.raising_target_close || null) : null,
+          is_public: form.is_public,
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to save')
+      }
+
+      setSuccess(true)
+      setTimeout(() => {
+        onSaved()
+      }, 800)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const inputClass =
+    'w-full px-3 py-2 bg-[var(--bg-elev)] border border-[var(--line-strong)] rounded-lg text-[var(--ink)] text-sm placeholder-gray-400 focus:outline-none focus:shadow-[var(--focus-ring)] focus:border-[var(--line-strong)]'
+  const labelClass = 'block text-sm font-medium text-[var(--ink-soft)] mb-1'
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="relative bg-[var(--bg-elev)] rounded-xl w-full w-full md:max-w-lg max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="sticky top-0 bg-[var(--bg-elev)] border-b border-[var(--line)] px-6 py-4 flex items-center justify-between rounded-t-xl z-10">
+          <h2 className="text-lg font-bold text-[var(--ink)]">Edit Company</h2>
+          <button onClick={onClose} className="p-1 text-[var(--ink-faint)] hover:text-[var(--ink-soft)] transition">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSave} className="p-6 space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+              <p className="text-sm text-emerald-700">Company updated successfully!</p>
+            </div>
+          )}
+
+          {/* Logo + Company Name */}
+          <div className="flex items-start gap-4">
+            <div className="flex-shrink-0">
+              <label className={labelClass}>Logo</label>
+              <div
+                onClick={() => logoInputRef.current?.click()}
+                className="cursor-pointer"
+              >
+                {logoPreview ? (
+                  <div className="relative group">
+                    <CompanyLogo name={form.company_name || 'C'} logoUrl={logoPreview} size="lg" />
+                    <div className="absolute inset-0 bg-black/40 rounded-2xl opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                      <Upload className="w-4 h-4 text-white" />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-14 h-14 rounded-2xl border-2 border-dashed border-[var(--line-strong)] flex items-center justify-center hover:border-[var(--line-strong)] transition bg-[var(--bg-sunk)]">
+                    {logoUploading ? (
+                      <div className="w-5 h-5 border-2 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-5 h-5 text-[var(--ink-faint)]" />
+                    )}
+                  </div>
+                )}
+              </div>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) handleLogoUpload(file)
+                }}
+              />
+            </div>
+            <div className="flex-1">
+              <label className={labelClass}>Company Name *</label>
+              <input
+                type="text"
+                value={form.company_name}
+                onChange={e => updateField('company_name', e.target.value)}
+                required
+                className={inputClass}
+                placeholder="Acme Corp"
+              />
+            </div>
+          </div>
+
+          {/* One-liner */}
+          <div>
+            <label className={labelClass}>One-Liner / Tagline</label>
+            <input
+              type="text"
+              value={form.one_liner}
+              onChange={e => updateField('one_liner', e.target.value)}
+              className={inputClass}
+              placeholder="AI-powered analytics for enterprises"
+            />
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className={labelClass}>Description</label>
+            <textarea
+              value={form.description}
+              onChange={e => updateField('description', e.target.value)}
+              rows={3}
+              className={`${inputClass} resize-none`}
+              placeholder="Brief company description..."
+            />
+          </div>
+
+          {/* Industry + Stage */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Industry</label>
+              <select
+                value={form.industry}
+                onChange={e => updateField('industry', e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Select industry</option>
+                {INDUSTRIES.map(ind => (
+                  <option key={ind} value={ind}>{ind}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Stage</label>
+              <select
+                value={form.stage}
+                onChange={e => updateField('stage', e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Select stage</option>
+                {STAGES.map(s => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Country + Website */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Country / HQ</label>
+              <input
+                type="text"
+                value={form.country}
+                onChange={e => updateField('country', e.target.value)}
+                className={inputClass}
+                placeholder="e.g. Saudi Arabia"
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Website URL</label>
+              <input
+                type="text"
+                value={form.website_url}
+                onChange={e => updateField('website_url', e.target.value)}
+                className={inputClass}
+                placeholder="https://example.com"
+              />
+            </div>
+          </div>
+
+          {/* Company LinkedIn */}
+          <div>
+            <label className={labelClass}>Company LinkedIn URL</label>
+            <input
+              type="text"
+              value={form.company_linkedin_url}
+              onChange={e => updateField('company_linkedin_url', e.target.value)}
+              className={inputClass}
+              placeholder="https://linkedin.com/company/..."
+            />
+          </div>
+
+          {/* Raise Amount + Team Size */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Raise Amount (USD)</label>
+              <input
+                type="number"
+                value={form.raise_amount}
+                onChange={e => updateField('raise_amount', e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 2000000"
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Team Size</label>
+              <input
+                type="number"
+                value={form.team_size}
+                onChange={e => updateField('team_size', e.target.value)}
+                className={inputClass}
+                placeholder="e.g. 12"
+              />
+            </div>
+          </div>
+
+          {/* Founded Year */}
+          <div>
+            <label className={labelClass}>Founded Year</label>
+            <input
+              type="number"
+              value={form.founded_year}
+              onChange={e => updateField('founded_year', e.target.value)}
+              className={inputClass}
+              placeholder="e.g. 2023"
+            />
+          </div>
+
+          {/* Founder Name + Title */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Founder Name</label>
+              <input
+                type="text"
+                value={form.founder_name}
+                onChange={e => updateField('founder_name', e.target.value)}
+                className={inputClass}
+                placeholder="Jane Doe"
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Founder Title</label>
+              <input
+                type="text"
+                value={form.founder_title}
+                onChange={e => updateField('founder_title', e.target.value)}
+                className={inputClass}
+                placeholder="CEO & Co-Founder"
+              />
+            </div>
+          </div>
+
+          {/* Currently Raising */}
+          <div className="rounded-lg border border-[var(--line)] bg-[var(--bg-sunk)] p-4 space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-[var(--ink)]">Currently Raising</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">
+                  Show investors that you&apos;re actively raising a round.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={form.is_raising}
+                onClick={() => updateField('is_raising', !form.is_raising)}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--ink)]/30 focus:ring-offset-2 ${
+                  form.is_raising ? 'bg-emerald-500' : 'bg-gray-300'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-[var(--bg-elev)] shadow transition-transform ${
+                    form.is_raising ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {form.is_raising && (
+              <div className="space-y-4 pt-2 border-t border-[var(--line)]">
+                <div>
+                  <label className={labelClass}>Round Size</label>
+                  <input
+                    type="text"
+                    value={form.raising_amount}
+                    onChange={e => updateField('raising_amount', e.target.value)}
+                    className={inputClass}
+                    placeholder="$2M"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClass}>Instrument</label>
+                    <select
+                      value={form.raising_instrument}
+                      onChange={e => updateField('raising_instrument', e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="">Select instrument</option>
+                      {RAISING_INSTRUMENTS.map(inst => (
+                        <option key={inst} value={inst}>{inst}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Target Close Date</label>
+                    <input
+                      type="date"
+                      value={form.raising_target_close}
+                      onChange={e => updateField('raising_target_close', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Profile Visibility */}
+          <div className="border-t border-[var(--line)] pt-4">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div>
+                <p className="text-sm font-medium text-[var(--ink)]">Profile Visibility</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-0.5">
+                  {form.is_public
+                    ? 'Public — appears in Browse Companies and can be viewed by all investors.'
+                    : 'Private — only visible to your organization\'s team.'}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                <span className={`text-xs font-medium ${form.is_public ? 'text-[var(--ink-faint)]' : 'text-[var(--ink-soft)]'}`}>Private</span>
+                <button
+                  type="button"
+                  onClick={() => updateField('is_public', !form.is_public)}
+                  className={`relative w-10 h-5 rounded-full transition ${form.is_public ? 'bg-[var(--ink)]' : 'bg-gray-300'}`}
+                >
+                  <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-[var(--bg-elev)] shadow transition-transform ${form.is_public ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </button>
+                <span className={`text-xs font-medium ${form.is_public ? 'text-[var(--ink-soft)]' : 'text-[var(--ink-faint)]'}`}>Public</span>
+              </div>
+            </label>
+          </div>
+
+          {/* Actions */}
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="flex-1 py-2.5 bg-[var(--ink)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2.5 bg-[var(--bg-sunk)] text-[var(--ink-soft)] rounded-lg font-semibold text-sm hover:bg-[var(--bg-sunk)] transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}

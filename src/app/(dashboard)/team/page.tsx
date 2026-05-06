@@ -1,417 +1,450 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/common/Button';
-import { Modal } from '@/components/common/Modal';
-import { Input } from '@/components/common/Input';
-import { Card } from '@/components/common/Card';
-import { supabase } from '@/lib/supabase';
-import {
-  Users,
-  UserPlus,
-  Trash2,
-  MoreVertical,
-  Mail,
-  Shield
-} from 'lucide-react';
+import { useEffect, useState } from 'react'
+import { Users, UserPlus, Trash2, X, RefreshCw } from 'lucide-react'
+import { PageHead, Button as DSButton, Card } from '@/components/ui/design-system'
 
 interface TeamMember {
-  id: string;
-  user_id: string | null;
-  email: string;
-  role: 'admin' | 'member' | 'viewer';
-  status: 'pending' | 'accepted';
-  joined_at: string;
-  users?: {
-    id: string;
-    full_name: string;
-    email: string;
-    avatar_url: string | null;
-  };
+  id: string
+  name: string
+  email: string
+  role: string
+  status: string
+  member_user_id: string | null
+  created_at: string | null
+  title: string | null
+  source?: 'entity' | 'team'
 }
 
-interface InviteForm {
-  email: string;
-  role: 'admin' | 'member' | 'viewer';
+function getRoleBadge(role: string) {
+  switch (role) {
+    case 'owner':
+      return 'bg-[#F0F7FF] text-[var(--accent-ink)]'
+    case 'admin':
+      return 'bg-red-100 text-red-700'
+    case 'member':
+      return 'bg-emerald-100 text-emerald-700'
+    case 'observer':
+    case 'viewer':
+      return 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'
+    default:
+      return 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'
+  }
+}
+
+function getRoleLabel(role: string) {
+  return role.charAt(0).toUpperCase() + role.slice(1)
+}
+
+function getStatusBadge(status: string) {
+  switch (status) {
+    case 'accepted':
+    case 'active':
+      return 'bg-emerald-100 text-emerald-700'
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-700'
+    default:
+      return 'bg-[var(--bg-sunk)] text-[var(--ink-soft)]'
+  }
+}
+
+function getStatusLabel(status: string) {
+  switch (status) {
+    case 'accepted':
+    case 'active':
+      return 'Active'
+    case 'pending':
+      return 'Pending'
+    default:
+      return status.charAt(0).toUpperCase() + status.slice(1)
+  }
+}
+
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map(w => w[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
 }
 
 export default function TeamPage() {
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [isSending, setIsSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [inviteForm, setInviteForm] = useState<InviteForm>({
-    email: '',
-    role: 'member',
-  });
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [members, setMembers] = useState<TeamMember[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [canManage, setCanManage] = useState(false)
+  const [entityMode, setEntityMode] = useState(false)
+
+  // Resend cooldown
+  const [resendCooldown, setResendCooldown] = useState<Record<string, boolean>>({})
+  const [resending, setResending] = useState<string | null>(null)
+
+  // Invite form
+  const [showInvite, setShowInvite] = useState(false)
+  const [inviteName, setInviteName] = useState('')
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('member')
+  const [inviting, setInviting] = useState(false)
+
+  const fetchTeam = async () => {
+    try {
+      const res = await fetch('/api/team')
+      if (!res.ok) throw new Error('Failed to load team')
+      const json = await res.json()
+      setMembers(json.data || [])
+      setEntityMode(!!json.entityMode)
+
+      if (json.entityMode) {
+        // In entity mode, selfRole comes from the API
+        const selfRole = json.selfRole
+        setCanManage(selfRole === 'owner' || selfRole === 'admin')
+      }
+
+      setError('')
+    } catch {
+      setError('Failed to load team members')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    fetchTeamMembers();
-  }, []);
+    fetchTeam()
 
-  const fetchTeamMembers = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/team');
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch team members');
-      }
-
-      const { data } = await response.json();
-      setTeamMembers(data || []);
-      setError(null);
-    } catch (err) {
-      console.error('Error fetching team members:', err);
-      setError('Failed to load team members');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // Legacy team-context for non-entity mode
+    fetch('/api/team-context')
+      .then(r => r.json())
+      .then(data => {
+        const role = data?.context?.memberRole
+        // Only set canManage from team-context if NOT in entity mode
+        // (entity mode sets it in fetchTeam)
+        setCanManage(prev => prev || role === 'owner' || role === 'admin')
+      })
+      .catch(() => {})
+  }, [])
 
   const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSending(true);
-    setError(null);
+    e.preventDefault()
+    if (!inviteName.trim() || !inviteEmail.trim()) return
+    setInviting(true)
+    setError('')
 
     try {
-      const response = await fetch('/api/team', {
+      const res = await fetch('/api/team', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(inviteForm),
-      });
+        body: JSON.stringify({ name: inviteName, email: inviteEmail, role: inviteRole }),
+      })
 
-      if (!response.ok) {
-        const { error: errorMsg } = await response.json();
-        throw new Error(errorMsg || 'Failed to invite team member');
-      }
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to invite')
 
-      setSuccessMessage('Team member invited successfully!');
-      setInviteForm({ email: '', role: 'member' });
-      setIsInviteModalOpen(false);
-
-      setTimeout(() => {
-        setSuccessMessage(null);
-        fetchTeamMembers();
-      }, 2000);
+      setSuccess(data.message || `Invitation sent to ${inviteEmail}`)
+      setInviteName('')
+      setInviteEmail('')
+      setInviteRole('member')
+      setShowInvite(false)
+      fetchTeam()
+      setTimeout(() => setSuccess(''), 3000)
     } catch (err) {
-      console.error('Error inviting team member:', err);
-      setError(err instanceof Error ? err.message : 'Failed to invite team member');
+      setError(err instanceof Error ? err.message : 'Failed to invite')
     } finally {
-      setIsSending(false);
+      setInviting(false)
     }
-  };
+  }
 
-  const handleRemoveMember = async (memberId: string) => {
-    if (!confirm('Are you sure you want to remove this team member?')) {
-      return;
-    }
-
+  const handleChangeRole = async (memberId: string, newRole: string) => {
     try {
-      const response = await fetch(`/api/team/${memberId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to remove team member');
-      }
-
-      setSuccessMessage('Team member removed successfully');
-      setTimeout(() => {
-        setSuccessMessage(null);
-        fetchTeamMembers();
-      }, 2000);
-      setOpenMenuId(null);
-    } catch (err) {
-      console.error('Error removing team member:', err);
-      setError('Failed to remove team member');
-    }
-  };
-
-  const handleChangeRole = async (memberId: string, newRole: 'admin' | 'member' | 'viewer') => {
-    try {
-      const response = await fetch(`/api/team/${memberId}`, {
-        method: 'PUT',
+      const res = await fetch(`/api/team/${memberId}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: newRole }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update role');
-      }
-
-      setSuccessMessage('Role updated successfully');
-      setTimeout(() => {
-        setSuccessMessage(null);
-        fetchTeamMembers();
-      }, 2000);
-      setOpenMenuId(null);
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to update role')
+      setSuccess('Role updated')
+      fetchTeam()
+      setTimeout(() => setSuccess(''), 2000)
     } catch (err) {
-      console.error('Error updating role:', err);
-      setError('Failed to update role');
+      setError(err instanceof Error ? err.message : 'Failed to update role')
     }
-  };
+  }
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-red-100 text-red-800';
-      case 'member':
-        return 'bg-blue-100 text-blue-800';
-      case 'viewer':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const handleRemove = async (memberId: string) => {
+    if (!confirm('Remove this team member?')) return
+    try {
+      const res = await fetch(`/api/team/${memberId}`, { method: 'DELETE' })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to remove')
+      setSuccess('Member removed')
+      fetchTeam()
+      setTimeout(() => setSuccess(''), 2000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to remove member')
     }
-  };
+  }
 
-  const getStatusBadge = (status: string) => {
-    return status === 'accepted'
-      ? 'bg-green-100 text-green-800'
-      : 'bg-yellow-100 text-yellow-800';
-  };
+  const handleResend = async (memberId: string, email: string) => {
+    setResending(memberId)
+    setError('')
+    try {
+      const res = await fetch('/api/team/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memberId }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Failed to resend')
+      setSuccess(`Invite resent to ${email}`)
+      setTimeout(() => setSuccess(''), 3000)
+      setResendCooldown((prev) => ({ ...prev, [memberId]: true }))
+      setTimeout(() => {
+        setResendCooldown((prev) => ({ ...prev, [memberId]: false }))
+      }, 30000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to resend invite')
+    } finally {
+      setResending(null)
+    }
+  }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
-  };
+  // Role options differ between entity mode and legacy
+  const roleOptions = entityMode
+    ? [
+        { value: 'admin', label: 'Admin — Full access' },
+        { value: 'member', label: 'Member — Can view and manage deals' },
+        { value: 'observer', label: 'Observer — Read-only access' },
+      ]
+    : [
+        { value: 'admin', label: 'Admin — Full access' },
+        { value: 'member', label: 'Member — Can view and manage deals' },
+        { value: 'viewer', label: 'Viewer — Read-only access' },
+      ]
+
+  // Role options for the inline select (shorter labels)
+  const inlineRoleOptions = entityMode
+    ? ['owner', 'admin', 'member', 'observer']
+    : ['admin', 'member', 'viewer']
+
+  // Owner row: in entity mode, the owner comes from the data directly (no
+  // synthetic "owner" row). In legacy mode, it's the first entry with id='owner'.
+  const isOwnerRow = (m: TeamMember) =>
+    entityMode ? m.role === 'owner' : m.id === 'owner'
+
+  const inputClass =
+    'w-full px-3 py-2 border rounded-[5px] text-sm placeholder:text-[var(--ink-mute)] focus:outline-none focus:border-[var(--ink)] focus:shadow-[var(--focus-ring)]'
+    + ' bg-[var(--bg)] border-[var(--line-strong)] text-[var(--ink)]'
 
   return (
-    <div className="p-8 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <Users className="h-8 w-8 text-blue-600" />
-            Team Management
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Manage your team members and their permissions
-          </p>
-        </div>
-        <Button
-          onClick={() => setIsInviteModalOpen(true)}
-          className="flex items-center gap-2"
-        >
-          <UserPlus className="h-5 w-5" />
-          Invite Member
-        </Button>
-      </div>
+    <div>
+      <PageHead
+        title="Team"
+        subtitle="Manage your team members and permissions"
+        cta={canManage ? (
+          <DSButton variant="primary" onClick={() => setShowInvite(true)} icon={<UserPlus size={14} />}>
+            Invite Member
+          </DSButton>
+        ) : undefined}
+      />
 
-      {/* Success/Error Messages */}
-      {successMessage && (
-        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg text-green-800">
-          {successMessage}
+      {success && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-6">
+          <p className="text-sm text-emerald-700">{success}</p>
         </div>
       )}
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-800">
-          {error}
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
+          <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
-      {/* Team Members Section */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4" />
-            <p className="text-gray-600">Loading team members...</p>
-          </div>
+      {loading && (
+        <div className="text-center py-16">
+          <div className="w-8 h-8 border-2 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-[var(--ink-mute)] text-sm">Loading team...</p>
         </div>
-      ) : teamMembers.length === 0 ? (
-        <Card>
-          <div className="text-center py-12">
-            <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              Build your team
-            </h3>
-            <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              Invite colleagues to collaborate with you. Start by inviting team members to get started.
-            </p>
-            <Button onClick={() => setIsInviteModalOpen(true)}>
-              Invite Your First Member
-            </Button>
-          </div>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {teamMembers.map((member) => (
-            <Card key={member.id} className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4 flex-1">
-                  {/* Avatar */}
-                  <div className="flex-shrink-0">
-                    {member.users?.avatar_url ? (
-                      <img
-                        src={member.users.avatar_url}
-                        alt={member.users.full_name}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold">
-                        {member.users?.full_name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')
-                          .toUpperCase()}
+      )}
+
+      {!loading && (
+        <div className="rounded-[var(--radius-lg)] border border-[var(--line)] overflow-hidden">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-[var(--bg-sunk)] border-b border-[var(--line)]">
+                <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Member</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Role</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--ink-mute)] uppercase tracking-wider">Status</th>
+                <th className="px-5 py-3"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {members.map((member) => (
+                <tr key={member.id} className="hover:bg-[var(--bg-sunk)] transition">
+                  <td className="px-5 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-[var(--bg-sunk)] flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-semibold text-[var(--ink-soft)]">
+                          {member.name ? getInitials(member.name) : '?'}
+                        </span>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Member Info */}
-                  <div className="flex-1">
-                    <h3 className="font-medium text-gray-900">
-                      {member.users?.full_name || 'Pending User'}
-                    </h3>
-                    <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
-                      <Mail className="h-4 w-4" />
-                      {member.email}
-                    </p>
-                  </div>
-
-                  {/* Role Badge */}
-                  <div>
-                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${getRoleColor(member.role)}`}>
-                      <Shield className="h-4 w-4" />
-                      {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
-                    </span>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div>
-                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(member.status)}`}>
-                      {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
-                    </span>
-                  </div>
-
-                  {/* Joined Date */}
-                  <div className="text-right">
-                    <p className="text-sm text-gray-600">
-                      Joined {formatDate(member.joined_at)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Actions Menu */}
-                <div className="relative ml-4">
-                  <button
-                    onClick={() => setOpenMenuId(openMenuId === member.id ? null : member.id)}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <MoreVertical className="h-5 w-5 text-gray-600" />
-                  </button>
-
-                  {openMenuId === member.id && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                      <div className="py-2">
-                        <button
-                          onClick={() => handleChangeRole(member.id, 'admin')}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700"
-                        >
-                          Make Admin
-                        </button>
-                        <button
-                          onClick={() => handleChangeRole(member.id, 'member')}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700"
-                        >
-                          Make Member
-                        </button>
-                        <button
-                          onClick={() => handleChangeRole(member.id, 'viewer')}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700"
-                        >
-                          Make Viewer
-                        </button>
-                        <hr className="my-2" />
-                        <button
-                          onClick={() => handleRemoveMember(member.id)}
-                          className="w-full text-left px-4 py-2 hover:bg-red-50 text-sm text-red-700 flex items-center gap-2"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Remove
-                        </button>
+                      <div>
+                        <p className="text-sm font-medium text-[var(--ink)]">{member.name || 'Pending'}</p>
+                        <p className="text-xs text-[var(--ink-mute)]">{member.email}</p>
+                        {member.title && (
+                          <p className="text-xs text-[var(--ink-faint)]">{member.title}</p>
+                        )}
                       </div>
                     </div>
-                  )}
-                </div>
-              </div>
-            </Card>
-          ))}
+                  </td>
+
+                  <td className="px-5 py-4">
+                    {isOwnerRow(member) || !canManage ? (
+                      <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${getRoleBadge(member.role)}`}>
+                        {getRoleLabel(member.role)}
+                      </span>
+                    ) : (
+                      <select
+                        value={member.role}
+                        onChange={(e) => handleChangeRole(member.id, e.target.value)}
+                        className="text-xs font-medium px-2 py-1 rounded-lg border border-[var(--line)] bg-[var(--bg-elev)] text-[var(--ink-soft)] focus:outline-none focus:ring-1 focus:ring-[var(--ink)]"
+                      >
+                        {inlineRoleOptions.map((r) => (
+                          <option key={r} value={r}>
+                            {getRoleLabel(r)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  </td>
+
+                  <td className="px-5 py-4">
+                    <span className={`inline-block text-xs font-medium px-2.5 py-1 rounded-full ${getStatusBadge(member.status)}`}>
+                      {getStatusLabel(member.status)}
+                    </span>
+                  </td>
+
+                  <td className="px-5 py-4 text-right">
+                    {canManage && (
+                      <div className="flex items-center justify-end gap-1">
+                        {!isOwnerRow(member) && member.status === 'pending' && (
+                          <button
+                            onClick={() => handleResend(member.id, member.email)}
+                            disabled={resending === member.id || resendCooldown[member.id]}
+                            className="px-2 py-1 text-xs font-medium text-[var(--accent-ink)] hover:bg-[var(--accent-soft)] transition rounded-lg disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                            title="Resend invite"
+                          >
+                            <RefreshCw className={`w-3 h-3 ${resending === member.id ? 'animate-spin' : ''}`} />
+                            {resendCooldown[member.id] ? 'Sent' : 'Resend'}
+                          </button>
+                        )}
+                        {!isOwnerRow(member) && (
+                          <button
+                            onClick={() => handleRemove(member.id)}
+                            className="p-1.5 text-[var(--ink-faint)] hover:text-red-500 transition rounded-lg hover:bg-red-50"
+                            title="Remove member"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {members.length === 0 && (
+            <div className="text-center py-12 px-6">
+              <Users className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+              <p className="text-[var(--ink-mute)] text-sm mb-4">
+                No team members yet.{canManage ? ' Invite your first member to get started.' : ''}
+              </p>
+              {canManage && (
+                <button
+                  onClick={() => setShowInvite(true)}
+                  className="text-[var(--accent-ink)] text-sm font-semibold hover:underline"
+                >
+                  Invite a team member
+                </button>
+              )}
+            </div>
+          )}
         </div>
       )}
 
-      {/* Invite Modal */}
-      <Modal
-        isOpen={isInviteModalOpen}
-        onClose={() => {
-          setIsInviteModalOpen(false);
-          setError(null);
-        }}
-        title="Invite Team Member"
-        size="md"
-      >
-        <form onSubmit={handleInvite} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Email Address
-            </label>
-            <Input
-              type="email"
-              placeholder="colleague@example.com"
-              value={inviteForm.email}
-              onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Role
-            </label>
-            <select
-              value={inviteForm.role}
-              onChange={(e) => setInviteForm({ ...inviteForm, role: e.target.value as 'admin' | 'member' | 'viewer' })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
-            >
-              <option value="member">Member (Can view and manage deals)</option>
-              <option value="admin">Admin (Full access)</option>
-              <option value="viewer">Viewer (Read-only access)</option>
-            </select>
-          </div>
-
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-800 text-sm">
-              {error}
+      {showInvite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowInvite(false)} />
+          <div className="relative bg-[var(--bg-elev)] rounded-xl w-full w-full md:max-w-md">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--line)]">
+              <h2 className="text-lg font-bold text-[var(--ink)]">Invite Team Member</h2>
+              <button onClick={() => setShowInvite(false)} className="p-1 text-[var(--ink-faint)] hover:text-[var(--ink-soft)]">
+                <X className="w-5 h-5" />
+              </button>
             </div>
-          )}
 
-          <div className="flex gap-3 justify-end pt-4">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => {
-                setIsInviteModalOpen(false);
-                setError(null);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              isLoading={isSending}
-              disabled={!inviteForm.email}
-            >
-              Send Invite
-            </Button>
+            <form onSubmit={handleInvite} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Name *</label>
+                <input
+                  type="text"
+                  value={inviteName}
+                  onChange={(e) => setInviteName(e.target.value)}
+                  required
+                  className={inputClass}
+                  placeholder="Jane Doe"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Email *</label>
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  required
+                  className={inputClass}
+                  placeholder="jane@company.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Role</label>
+                <select
+                  value={inviteRole}
+                  onChange={(e) => setInviteRole(e.target.value)}
+                  className={inputClass}
+                >
+                  {roleOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="submit"
+                  disabled={inviting || !inviteName || !inviteEmail}
+                  className="flex-1 py-2.5 bg-[var(--ink)] text-white rounded-lg font-semibold text-sm hover:bg-[var(--ink-2)] transition disabled:opacity-50"
+                >
+                  {inviting ? 'Sending...' : 'Send Invitation'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowInvite(false)}
+                  className="flex-1 py-2.5 bg-[var(--bg-sunk)] text-[var(--ink-soft)] rounded-lg font-semibold text-sm hover:bg-[var(--bg-sunk)] transition"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
-      </Modal>
+        </div>
+      )}
     </div>
-  );
+  )
 }

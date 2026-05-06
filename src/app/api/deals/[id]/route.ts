@@ -13,49 +13,47 @@ export async function GET(
     const supabase = await createServerSupabaseClient();
     const { id } = await params;
 
-    // Fetch deal with documents
+    // Fetch deal joined with company_pages
     const { data: deal, error: dealError } = await supabase
       .from('deals')
       .select(
         `
         id,
-        title,
-        company_name,
-        description,
-        industry,
+        created_by,
+        assigned_to,
+        company_id,
         stage,
-        status,
-        funding_amount,
-        valuation,
-        deal_type,
-        problem_statement,
-        solution,
-        market_size,
-        team_size,
-        website,
-        pitch_deck_url,
-        ai_score_overall,
-        ai_score_team,
-        ai_score_market,
-        ai_score_traction,
-        ai_score_product,
-        ai_score_financials,
-        ai_score_competitive_landscape,
-        ai_score_metadata,
-        view_count,
-        save_count,
-        creator_id,
+        ai_score,
+        sector,
+        raise_amount,
+        priority_flag,
+        is_watchlisted,
+        days_in_stage,
+        stage_changed_at,
+        notes,
         created_at,
         updated_at,
-        deal_documents(
+        company_pages!company_id (
           id,
-          document_type,
-          file_name,
-          file_path,
-          file_size,
-          mime_type,
-          parse_status,
-          created_at
+          company_name,
+          slug,
+          description,
+          overall_score,
+          industry,
+          stage,
+          raise_amount,
+          country,
+          website_url,
+          founder_name,
+          founder_title,
+          team_size,
+          founded_year,
+          problem_summary,
+          solution_summary,
+          business_model,
+          traction,
+          use_of_funds,
+          key_risks
         )
       `
       )
@@ -71,21 +69,15 @@ export async function GET(
     }
 
     // Fetch creator profile separately
-    if (deal?.creator_id) {
+    if (deal?.created_by) {
       const { data: creator } = await supabase
         .from('profiles')
-        .select('id, email, full_name, avatar_url, company_name, role, linkedin_url')
-        .eq('user_id', deal.creator_id)
+        .select('user_id, full_name, company_name, role, job_title')
+        .eq('user_id', deal.created_by)
         .single();
 
       (deal as any).creator = creator;
     }
-
-    // Increment view count
-    await supabase
-      .from('deals')
-      .update({ view_count: (deal?.view_count || 0) + 1 })
-      .eq('id', id);
 
     return NextResponse.json({ data: deal }, { status: 200 });
   } catch (error) {
@@ -123,7 +115,7 @@ export async function PUT(
 
     const { data: deal, error: dealError } = await supabase
       .from('deals')
-      .select('creator_id')
+      .select('created_by')
       .eq('id', id)
       .single();
 
@@ -134,7 +126,7 @@ export async function PUT(
       );
     }
 
-    if (deal.creator_id !== user.id) {
+    if (deal.created_by !== user.id) {
       return NextResponse.json(
         { error: 'Forbidden: You can only edit deals you created' },
         { status: 403 }
@@ -197,7 +189,7 @@ export async function DELETE(
 
     const { data: deal, error: dealError } = await supabase
       .from('deals')
-      .select('creator_id')
+      .select('created_by')
       .eq('id', id)
       .single();
 
@@ -208,19 +200,17 @@ export async function DELETE(
       );
     }
 
-    if (deal.creator_id !== user.id) {
+    if (deal.created_by !== user.id) {
       return NextResponse.json(
         { error: 'Forbidden: You can only delete deals you created' },
         { status: 403 }
       );
     }
 
-    const { data: archivedDeal, error: deleteError } = await supabase
+    const { error: deleteError } = await supabase
       .from('deals')
-      .update({ status: 'archived' })
-      .eq('id', id)
-      .select()
-      .single();
+      .delete()
+      .eq('id', id);
 
     if (deleteError) {
       console.error('Error deleting deal:', deleteError);
@@ -231,7 +221,7 @@ export async function DELETE(
     }
 
     return NextResponse.json(
-      { data: archivedDeal, message: 'Deal archived successfully' },
+      { message: 'Deal deleted successfully' },
       { status: 200 }
     );
   } catch (error) {

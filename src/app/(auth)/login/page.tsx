@@ -1,234 +1,382 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import Link from "next/link";
-import { LogIn, UserPlus } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { supabase } from '@/lib/supabase'
+import KunfaLogo from '@/components/common/KunfaLogo'
+import { RefreshCw } from 'lucide-react'
+import { useTenantBranding } from '@/lib/use-tenant-branding'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" />
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
+  )
+}
+
+function LoginContent() {
+  const searchParams = useSearchParams()
+  const { tenant, isTenantContext } = useTenantBranding()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Show error or message from URL params
+  useEffect(() => {
+    const urlError = searchParams.get('error')
+    const urlMessage = searchParams.get('message')
+    if (urlError === 'confirmation_failed' || urlError === 'verification_failed') {
+      setError('Email confirmation failed. The link may have expired. Please try signing up again.')
+    } else if (urlMessage) {
+      setError(urlMessage)
+    }
+  }, [searchParams])
+
+  // Optional invite acceptance after login
+  const inviteId = searchParams.get('invite')
+
+  // Optional claim after login
+  const claimToken = searchParams.get('claim')
+
+  // Resend confirmation state (shown when user has unconfirmed email)
+  const [showResendConfirm, setShowResendConfirm] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const [resending, setResending] = useState(false)
+
+  // Forgot password state
+  const [showForgot, setShowForgot] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+  const [forgotLoading, setForgotLoading] = useState(false)
+  const [forgotSent, setForgotSent] = useState(false)
+  const [forgotError, setForgotError] = useState('')
+
+  // Resend cooldown timer
+  useEffect(() => {
+    if (resendCooldown <= 0) return
+    const timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000)
+    return () => clearTimeout(timer)
+  }, [resendCooldown])
+
+  const handleResendConfirmation = useCallback(async () => {
+    if (resendCooldown > 0 || resending || !email) return
+    setResending(true)
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email,
+      })
+      if (error) throw error
+      setResendCooldown(60)
+      setError('Confirmation email sent! Check your inbox.')
+      setShowResendConfirm(false)
+    } catch {
+      setError('Failed to resend confirmation email. Please try again.')
+    } finally {
+      setResending(false)
+    }
+  }, [email, resendCooldown, resending])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError(null);
-    setSuccess(null);
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
 
     try {
-      if (mode === "signup") {
-        // Create account
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            // Skip email confirmation for now
-            emailRedirectTo: undefined,
-          },
-        });
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-        if (error) {
-          setError(error.message);
-          setIsLoading(false);
-          return;
+      if (error) {
+        // Detect unconfirmed email error from Supabase
+        const msg = error.message.toLowerCase()
+        if (msg.includes('email not confirmed') || msg.includes('email_not_confirmed')) {
+          setError('Please confirm your email address first. Check your inbox for the confirmation link.')
+          setShowResendConfirm(true)
+        } else {
+          setError(error.message)
+          setShowResendConfirm(false)
         }
-
-        if (data.user) {
-          // Create user profile
-          await supabase.from("profiles").insert({
-            user_id: data.user.id,
-            email: data.user.email || "",
-            onboarding_completed: false,
-          });
-
-          // If email confirmation is required, show message
-          if (!data.session) {
-            setSuccess(
-              "Account created! Check your email to confirm, or sign in directly."
-            );
-            setMode("signin");
-            setIsLoading(false);
-            return;
-          }
-
-          // Session exists — go to onboarding
-          window.location.href = "/onboarding";
-          return;
-        }
-      } else {
-        // Sign in
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) {
-          setError(error.message);
-          setIsLoading(false);
-          return;
-        }
-
-        if (data.user) {
-          // Check onboarding status
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("onboarding_completed")
-            .eq("user_id", data.user.id)
-            .single();
-
-          if (profile?.onboarding_completed) {
-            window.location.href = "/dashboard";
-          } else {
-            window.location.href = "/onboarding";
-          }
-          return;
-        }
+        setIsLoading(false)
+        return
       }
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
+
+      if (data.user) {
+        // If logging in from a team invite link, accept the invite now
+        if (inviteId) {
+          try {
+            const res = await fetch('/api/auth/complete-signup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ inviteId }),
+            })
+            if (res.ok) {
+              const result = await res.json()
+              window.location.href = result.redirectTo || '/dashboard'
+              return
+            }
+          } catch (err) {
+            console.error('Invite acceptance failed:', err)
+          }
+          // On failure, still fall through to normal redirect
+        }
+
+        // If logging in from a claim link, process the claim now
+        if (claimToken) {
+          try {
+            const res = await fetch('/api/claim', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: claimToken }),
+            })
+            if (res.ok) {
+              const claimData = await res.json()
+              if (claimData.approved) {
+                window.location.href = '/dashboard?claimed=true'
+                return
+              }
+              if (claimData.pending) {
+                window.location.href = '/dashboard?claim_pending=true'
+                return
+              }
+            }
+          } catch (err) {
+            console.error('Claim processing failed:', err)
+          }
+          // On failure, still fall through to normal redirect
+        }
+
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('onboarding_completed')
+          .eq('user_id', data.user.id)
+          .single()
+
+        if (profile?.onboarding_completed) {
+          window.location.href = '/dashboard'
+        } else {
+          window.location.href = '/onboarding'
+        }
+        return
+      }
+    } catch {
+      setError('Something went wrong. Please try again.')
     }
 
-    setIsLoading(false);
-  };
+    setIsLoading(false)
+  }
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!forgotEmail.trim()) return
+    setForgotLoading(true)
+    setForgotError('')
+
+    const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: 'https://kunfa.ai/reset-password',
+    })
+
+    if (error) {
+      setForgotError(error.message)
+    } else {
+      setForgotSent(true)
+    }
+    setForgotLoading(false)
+  }
 
   return (
-    <div className="w-full max-w-md">
-      <div className="rounded-xl bg-white shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-8 text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">Kunfa AI</h1>
-          <p className="text-blue-100 font-semibold text-sm">
-            Source. Analyze. Invest.
-          </p>
-          <p className="text-blue-50 text-xs mt-2">
-            AI-powered deal flow intelligence for founders and investors
+    <div className="min-h-screen bg-[var(--bg-sunk)] flex items-center justify-center px-4">
+      <div className="w-full w-full md:max-w-md">
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-block mb-6">
+            {isTenantContext && tenant?.logo_url ? (
+              <img src={tenant.logo_url} alt={tenant.display_name || tenant.name} className="h-8 mx-auto" />
+            ) : (
+              <KunfaLogo height={32} />
+            )}
+          </Link>
+          <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">
+            {isTenantContext ? `Welcome to ${tenant?.display_name || tenant?.name}` : 'Welcome back'}
+          </h1>
+          <p className="text-[var(--ink-mute)] mt-2">
+            {isTenantContext && tenant?.tagline
+              ? tenant.tagline
+              : inviteId
+                ? 'Sign in to accept your team invitation'
+                : claimToken
+                  ? 'Sign in to claim your company profile'
+                  : 'Sign in to your account'}
           </p>
         </div>
 
-        {/* Content */}
-        <div className="px-8 py-8">
-          {error && (
-            <div className="mb-4 rounded-lg bg-red-50 p-3 border border-red-200">
-              <p className="text-red-700 text-sm">{error}</p>
-            </div>
-          )}
+        <div className="bg-[var(--bg-elev)] rounded-xl p-8 border border-[var(--line)]">
+          {/* Forgot Password View */}
+          {showForgot ? (
+            forgotSent ? (
+              <div className="text-center">
+                <div className="w-14 h-14 rounded-full bg-[var(--ink)]/10 flex items-center justify-center mx-auto mb-4">
+                  <svg className="w-7 h-7 text-[var(--accent-ink)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <h2 className="text-lg font-bold text-[var(--ink)] mb-2">Check your email</h2>
+                <p className="text-sm text-[var(--ink-mute)] mb-6">
+                  We sent a password reset link to <strong className="text-[var(--ink)]">{forgotEmail}</strong>
+                </p>
+                <button
+                  onClick={() => { setShowForgot(false); setForgotSent(false); setForgotEmail('') }}
+                  className="text-[var(--accent-ink)] text-sm font-medium hover:underline"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            ) : (
+              <div>
+                <h2 className="text-lg font-bold text-[var(--ink)] mb-1">Reset your password</h2>
+                <p className="text-sm text-[var(--ink-mute)] mb-5">Enter your email and we&apos;ll send you a reset link.</p>
 
-          {success && (
-            <div className="mb-4 rounded-lg bg-green-50 p-3 border border-green-200">
-              <p className="text-green-700 text-sm">{success}</p>
-            </div>
-          )}
+                {forgotError && (
+                  <div className="mb-4 rounded-lg bg-red-50 p-3 border border-red-200">
+                    <p className="text-red-700 text-sm">{forgotError}</p>
+                  </div>
+                )}
 
-          {/* Tab Toggle */}
-          <div className="flex rounded-lg bg-gray-100 p-1 mb-6">
-            <button
-              type="button"
-              onClick={() => {
-                setMode("signin");
-                setError(null);
-              }}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                mode === "signin"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setMode("signup");
-                setError(null);
-              }}
-              className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
-                mode === "signup"
-                  ? "bg-white text-gray-900 shadow-sm"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              Create Account
-            </button>
-          </div>
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--ink-soft)] mb-1">Email Address</label>
+                    <input
+                      type="email"
+                      value={forgotEmail}
+                      onChange={(e) => setForgotEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      required
+                      className="w-full rounded-lg border border-[var(--line-strong)] bg-[var(--bg-elev)] px-4 py-3 text-[var(--ink)] placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={forgotLoading || !forgotEmail}
+                    className="w-full rounded-lg bg-[var(--ink)] hover:bg-[var(--ink-2)] disabled:opacity-50 px-4 py-3 text-white font-semibold transition-all"
+                  >
+                    {forgotLoading ? 'Sending...' : 'Send Reset Link'}
+                  </button>
+                </form>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
-              />
-            </div>
+                <button
+                  onClick={() => { setShowForgot(false); setForgotError('') }}
+                  className="mt-4 text-sm text-[var(--ink-mute)] hover:text-[var(--ink-soft)] font-medium w-full text-center"
+                >
+                  Back to sign in
+                </button>
+              </div>
+            )
+          ) : (
+            <>
+              {error && (
+                <div className="mb-4 rounded-lg bg-red-50 p-3 border border-red-200">
+                  <p className="text-red-700 text-sm">{error}</p>
+                  {showResendConfirm && (
+                    <button
+                      onClick={handleResendConfirmation}
+                      disabled={resendCooldown > 0 || resending}
+                      className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--accent-ink)] hover:text-[var(--ink)] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <RefreshCw className={`w-3 h-3 ${resending ? 'animate-spin' : ''}`} />
+                      {resending
+                        ? 'Sending...'
+                        : resendCooldown > 0
+                          ? `Resend in ${resendCooldown}s`
+                          : 'Resend confirmation email'
+                      }
+                    </button>
+                  )}
+                </div>
+              )}
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                minLength={6}
-                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all"
-              />
-              {mode === "signup" && (
-                <p className="text-xs text-gray-400 mt-1">
-                  Minimum 6 characters
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-[var(--ink-soft)] mb-1">
+                    Email Address
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                    className="w-full rounded-lg border border-[var(--line-strong)] bg-[var(--bg-elev)] px-4 py-3 text-[var(--ink)] placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label htmlFor="password" className="block text-sm font-medium text-[var(--ink-soft)]">
+                      Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => { setShowForgot(true); setForgotEmail(email) }}
+                      className="text-xs text-[var(--accent-ink)] hover:underline font-medium"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    required
+                    minLength={6}
+                    className="w-full rounded-lg border border-[var(--line-strong)] bg-[var(--bg-elev)] px-4 py-3 text-[var(--ink)] placeholder-gray-400 focus:border-[var(--line-strong)] focus:outline-none focus:shadow-[var(--focus-ring)] transition-all"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading || !email || !password}
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-[var(--ink)] hover:bg-[var(--ink-2)] disabled:opacity-50 disabled:cursor-not-allowed px-4 py-3 text-white font-semibold transition-all"
+                >
+                  {isLoading ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    'Sign In'
+                  )}
+                </button>
+              </form>
+
+              {/* Hide signup link for invitation-only tenants */}
+              {!(isTenantContext && tenant?.signup_mode === 'invitation_only') && (
+                <p className="text-center text-[var(--ink-mute)] text-sm mt-6">
+                  Don&apos;t have an account?{' '}
+                  <Link href="/signup" className="text-[var(--accent-ink)] font-medium hover:underline">
+                    Create one
+                  </Link>
                 </p>
               )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading || !email || !password}
-              className="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2.5 text-white font-semibold transition-all duration-200"
-            >
-              {isLoading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : mode === "signin" ? (
-                <>
-                  <LogIn size={18} /> Sign In
-                </>
-              ) : (
-                <>
-                  <UserPlus size={18} /> Create Account
-                </>
-              )}
-            </button>
-          </form>
-
-          <p className="text-center text-gray-600 text-sm mt-6">
-            By signing in, you agree to our{" "}
-            <Link href="/terms" className="text-blue-600 hover:underline">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy" className="text-blue-600 hover:underline">
-              Privacy Policy
-            </Link>
-          </p>
+            </>
+          )}
         </div>
+
+        {/* Powered by Kunfa */}
+        {isTenantContext && tenant?.show_powered_by && (
+          <p className="text-center text-[var(--ink-faint)] text-xs mt-6">
+            Powered by{' '}
+            <a href="https://kunfa.ai" target="_blank" rel="noopener noreferrer" className="text-[var(--ink-mute)] hover:text-[var(--ink-soft)] font-medium">
+              Kunfa
+            </a>
+          </p>
+        )}
       </div>
     </div>
-  );
+  )
 }

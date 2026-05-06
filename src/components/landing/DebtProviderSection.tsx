@@ -2,7 +2,7 @@ const providers = [
   {
     name: 'Silicon Valley Bank',
     type: 'Venture Debt',
-    typeColor: 'text-blue-600 bg-blue-50',
+    typeColor: 'text-[var(--accent-ink)] bg-[#F0F7FF]',
     capacity: '$50M — $500M',
     focus: 'Tech / Life Sciences',
     icon: '🏦',
@@ -32,17 +32,17 @@ export default function DebtProviderSection() {
         <span className="badge-green mb-4 inline-flex">
           🏛️ Debt Provider Network
         </span>
-        <h2 className="text-3xl lg:text-4xl font-bold text-kunfa-navy mt-4 mb-4">
+        <h2 className="text-2xl lg:text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-kunfa-navy mt-4 mb-4">
           Join our growing lender network
         </h2>
-        <p className="text-kunfa-text-secondary text-lg max-w-2xl mx-auto mb-12">
+        <p className="text-kunfa-text-secondary text-base max-w-2xl mx-auto mb-12">
           Connect with pre-vetted, high-growth startups looking for venture debt, growth
           lending, and equipment financing. AI-matched to your lending criteria.
         </p>
 
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           {providers.map((provider) => (
-            <div key={provider.name} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-lg transition-shadow text-left">
+            <div key={provider.name} className="bg-[var(--bg-elev)] rounded-2xl p-6 border border-[var(--line)]   text-left">
               <div className="text-3xl mb-4">{provider.icon}</div>
               <h3 className="text-lg font-bold text-kunfa-navy mb-2">{provider.name}</h3>
               <span className={`inline-block text-xs font-semibold px-2.5 py-1 rounded-full mb-4 ${provider.typeColor}`}>
@@ -63,7 +63,7 @@ export default function DebtProviderSection() {
         </div>
 
         <a
-          href="mailto:hello@vitality.capital"
+          href="mailto:invest@kunfa.ai"
           className="inline-flex items-center gap-2 bg-kunfa-orange hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
         >
           Register as Provider

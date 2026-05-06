@@ -1,6 +1,7 @@
 'use client'
 
 import TeaserScore from '@/components/scoring/TeaserScore'
+import KunfaLogo from '@/components/common/KunfaLogo'
 
 const demoResult = {
   overall_score: 74,
@@ -38,15 +39,10 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-kunfa-light-bg flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full">
+      <div className="bg-[var(--bg-elev)] rounded-2xl max-w-2xl w-full">
         {/* Header */}
         <div className="bg-kunfa-navy rounded-t-2xl px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-kunfa-green rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">K</span>
-            </div>
-            <span className="text-white font-semibold">Kunfa.AI</span>
-          </div>
+          <KunfaLogo height={24} inverted />
           <span className="text-xs font-semibold text-kunfa-yellow bg-kunfa-yellow/10 px-3 py-1 rounded-full">
             DEMO
           </span>
@@ -56,7 +52,7 @@ export default function DemoPage() {
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-2 m-4 mb-0">
             <p className="text-xs text-yellow-700">
               <strong>Demo Mode:</strong> This is a sample score for a fictional startup &quot;TechFlow AI&quot;.
-              <a href="/" className="text-kunfa-green font-semibold ml-1 hover:underline">Get your real score &rarr;</a>
+              <a href="/" className="text-kunfa font-semibold ml-1 hover:underline">Get your real score &rarr;</a>
             </p>
           </div>
         </div>

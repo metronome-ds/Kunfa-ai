@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import TeaserScore from '@/components/scoring/TeaserScore'
+import Link from 'next/link'
+import { ScoreTooltip } from '@/components/ui/ScoreTooltip'
+import KunfaLogo from '@/components/common/KunfaLogo'
+import { OptionalSidebarLayout } from '@/components/common/OptionalSidebarLayout'
 
 interface ScoreResult {
   overall_score: number
@@ -17,12 +20,41 @@ interface ScoreResult {
   }
 }
 
-export default function ScorePage() {
+function getScoreColor(score: number) {
+  if (score >= 80) return 'text-emerald-600'
+  if (score >= 60) return 'text-yellow-600'
+  return 'text-red-600'
+}
+
+function getScoreRingColor(score: number) {
+  if (score >= 80) return '#10B981'
+  if (score >= 60) return '#EAB308'
+  return '#EF4444'
+}
+
+function getGradeColor(grade: string) {
+  if (grade.startsWith('A')) return 'bg-emerald-100 text-emerald-700'
+  if (grade.startsWith('B')) return 'bg-[var(--accent-soft)] text-[var(--ink)]'
+  if (grade.startsWith('C')) return 'bg-yellow-100 text-yellow-700'
+  return 'bg-red-100 text-red-700'
+}
+
+const dimensionLabels: Record<string, string> = {
+  team: 'Team & Founders',
+  market: 'Market Opportunity',
+  product: 'Product & Tech',
+  financial: 'Financial Health',
+}
+
+export default function ScoreResultsPage() {
   const params = useParams()
   const id = params.id as string
   const [result, setResult] = useState<ScoreResult | null>(null)
+  const [slug, setSlug] = useState<string | null>(null)
+  const [companyName, setCompanyName] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [unlocking, setUnlocking] = useState(false)
 
   useEffect(() => {
     async function fetchScore() {
@@ -31,6 +63,8 @@ export default function ScorePage() {
         if (!res.ok) throw new Error('Failed to load score')
         const data = await res.json()
         setResult(data.teaser)
+        setSlug(data.slug)
+        setCompanyName(data.companyName)
       } catch {
         setError('Unable to load your score. Please try again.')
       } finally {
@@ -42,6 +76,7 @@ export default function ScorePage() {
   }, [id])
 
   const handleUnlock = async () => {
+    setUnlocking(true)
     try {
       const response = await fetch('/api/stripe/checkout', {
         method: 'POST',
@@ -52,45 +87,121 @@ export default function ScorePage() {
       if (data.url) window.location.href = data.url
     } catch {
       setError('Failed to initiate checkout')
+    } finally {
+      setUnlocking(false)
     }
   }
 
-  return (
-    <div className="min-h-screen bg-kunfa-light-bg flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-lg max-w-2xl w-full">
-        {/* Header */}
-        <div className="bg-kunfa-navy rounded-t-2xl px-6 py-4 flex items-center gap-2">
-          <div className="w-8 h-8 bg-kunfa-green rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold">K</span>
-          </div>
-          <span className="text-white font-semibold">Kunfa.AI</span>
-        </div>
+  const fallbackNav = (
+    <nav className="bg-[var(--bg-elev)] border-b border-[var(--line)] px-6 py-4">
+      <div className="max-w-3xl mx-auto flex items-center justify-between">
+        <Link href="/">
+          <KunfaLogo height={28} />
+        </Link>
+      </div>
+    </nav>
+  );
 
+  return (
+    <OptionalSidebarLayout fallbackNav={fallbackNav}>
+      <main className="max-w-3xl mx-auto px-6 py-12">
         {loading && (
-          <div className="p-12 text-center">
-            <div className="w-12 h-12 border-4 border-kunfa-green border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <p className="text-kunfa-text-secondary">Loading your score...</p>
+          <div className="text-center py-16">
+            <div className="w-12 h-12 border-4 border-[var(--line-strong)] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-[var(--ink-mute)]">Loading your score...</p>
           </div>
         )}
 
         {error && (
-          <div className="p-12 text-center">
+          <div className="text-center py-16">
             <p className="text-red-500 mb-4">{error}</p>
-            <a href="/" className="text-kunfa-green font-semibold hover:underline">Return Home</a>
+            <Link href="/" className="text-[var(--accent-ink)] font-semibold hover:underline">Return Home</Link>
           </div>
         )}
 
         {result && (
-          <div>
-            <TeaserScore result={result} submissionId={id} onUnlock={handleUnlock} />
-            <div className="text-center py-4 border-t border-gray-100">
-              <a href="/dashboard" className="text-kunfa-green text-sm font-medium hover:underline">
-                Go to your Dashboard
-              </a>
+          <div className="space-y-8">
+            {/* Score Header */}
+            <div className="text-center">
+              {companyName && (
+                <h1 className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mb-6">{companyName}</h1>
+              )}
+
+              {/* Large Score Circle */}
+              <div className="relative w-40 h-40 mx-auto mb-4">
+                <svg className="w-40 h-40 -rotate-90" viewBox="0 0 120 120">
+                  <circle cx="60" cy="60" r="54" fill="none" stroke="#e5e7eb" strokeWidth="8" />
+                  <circle
+                    cx="60" cy="60" r="54" fill="none"
+                    stroke={getScoreRingColor(result.overall_score)} strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${(result.overall_score / 100) * 339.292} 339.292`}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className={`text-5xl font-[family-name:var(--serif)] tabular-nums tracking-tight ${getScoreColor(result.overall_score)}`}>
+                    {result.overall_score}
+                  </span>
+                  <span className="text-sm text-[var(--ink-faint)]">/100</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center gap-1.5 mb-1">
+                <h2 className="text-xl font-bold text-[var(--ink)]">Your Kunfa Score</h2>
+                <ScoreTooltip />
+              </div>
+              <p className="text-sm text-[var(--ink-mute)]">
+                Top <span className="font-semibold text-[var(--accent-ink)]">{result.percentile}%</span> of submissions
+              </p>
+            </div>
+
+            {/* AI Summary */}
+            {result.summary && (
+              <div className="bg-[var(--bg-elev)] rounded-xl p-6 border border-[var(--line)]">
+                <h3 className="text-sm font-semibold text-[var(--ink-mute)] uppercase tracking-wider mb-3">AI Summary</h3>
+                <p className="text-[var(--ink-soft)] leading-relaxed">{result.summary}</p>
+              </div>
+            )}
+
+            {/* Category Scores */}
+            <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
+              {(Object.entries(result.dimensions) as [string, { score: number; letter_grade: string; headline: string }][]).map(([key, dim]) => (
+                <div key={key} className="bg-[var(--bg-elev)] rounded-xl p-5 border border-[var(--line)]">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-semibold text-[var(--ink)]">{dimensionLabels[key] || key}</h4>
+                    <span className={`text-sm font-bold px-2.5 py-0.5 rounded-lg ${getGradeColor(dim.letter_grade)}`}>
+                      {dim.letter_grade}
+                    </span>
+                  </div>
+                  {dim.headline && (
+                    <p className="text-xs text-[var(--ink-mute)]">{dim.headline}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* CTAs */}
+            <div className="flex flex-col items-center gap-3 pt-4">
+              <button
+                onClick={handleUnlock}
+                disabled={unlocking}
+                className="w-full w-full md:max-w-md bg-[var(--ink)] text-white px-8 py-4 rounded-xl font-semibold text-base hover:bg-[var(--ink-2)] transition disabled:opacity-50"
+              >
+                {unlocking ? 'Redirecting to checkout...' : 'Unlock Your Full Kunfa Readiness Report — $59'}
+              </button>
+
+              {slug && (
+                <Link
+                  href={`/company/${slug}`}
+                  className="w-full w-full md:max-w-md text-center border-2 border-[var(--line-strong)] text-[var(--ink-soft)] px-8 py-4 rounded-xl font-semibold text-base hover:border-[var(--line-strong)] hover:text-[var(--accent-ink)] transition"
+                >
+                  View My Company Profile &rarr;
+                </Link>
+              )}
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </main>
+    </OptionalSidebarLayout>
   )
 }

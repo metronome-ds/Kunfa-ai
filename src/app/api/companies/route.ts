@@ -1,6 +1,8 @@
 import { createServerSupabaseClient, getServerUser } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
 import { v4 as uuid } from 'uuid'
+import crypto from 'crypto'
+import { extractDomain, fetchLogoUrl } from '@/lib/utils'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,7 +13,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createServerSupabaseClient()
     const body = await request.json()
-    const { company_name, sector, stage, raise_amount, description, team_size, founded_year } = body
+    const { company_name, sector, stage, raise_amount, description, team_size, founded_year, pdf_url, website_url, company_linkedin_url, logo_url } = body
 
     if (!company_name) {
       return NextResponse.json({ error: 'Company name is required' }, { status: 400 })
@@ -23,6 +25,17 @@ export async function POST(request: NextRequest) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '')
       + '-' + uuid().slice(0, 8)
+
+    // Generate claim token for founder claim flow
+    const claimToken = crypto.randomBytes(12).toString('hex')
+
+    // Resolve entity context: if user has an active entity, scope the company to it
+    const { data: creatorProfile } = await supabase
+      .from('profiles')
+      .select('active_entity_id')
+      .eq('user_id', user.id)
+      .single()
+    const entityId = creatorProfile?.active_entity_id || null
 
     // Create company page
     const { data: companyPage, error: cpError } = await supabase
@@ -37,8 +50,15 @@ export async function POST(request: NextRequest) {
         description: description || null,
         team_size: team_size || null,
         founded_year: founded_year || null,
+        pdf_url: pdf_url || null,
+        website_url: website_url || null,
+        company_linkedin_url: company_linkedin_url || null,
+        logo_url: logo_url || null,
         source: 'investor_added',
         added_by: user.id,
+        claim_token: claimToken,
+        claim_status: 'unclaimed',
+        entity_id: entityId,
       })
       .select('id')
       .single()
@@ -48,7 +68,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create company' }, { status: 500 })
     }
 
-    // Create deal in pipeline
+    // Create deal in pipeline — entity_id ensures visibility to all entity members
     const { data: deal, error: dealError } = await supabase
       .from('deals')
       .insert({
@@ -58,6 +78,7 @@ export async function POST(request: NextRequest) {
         sector: sector || null,
         raise_amount: raise_amount || null,
         stage_changed_at: new Date().toISOString(),
+        entity_id: entityId,
       })
       .select('id')
       .single()
@@ -67,10 +88,44 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to create deal' }, { status: 500 })
     }
 
+    // Auto-populate deal room with uploaded pitch deck
+    if (pdf_url && companyPage.id) {
+      try {
+        await supabase.from('dealroom_documents').insert({
+          company_id: companyPage.id,
+          uploaded_by: user.id,
+          file_name: 'pitch-deck.pdf',
+          file_url: pdf_url,
+          file_size: 0,
+          file_type: 'application/pdf',
+          category: 'pitch_deck',
+          is_public: true,
+        })
+      } catch (drErr) {
+        console.error('Failed to create dealroom doc (continuing):', drErr)
+      }
+    }
+
+    // Auto-fetch logo if website_url provided and no logo_url
+    if (website_url && !logo_url) {
+      const domain = extractDomain(website_url)
+      if (domain) {
+        fetchLogoUrl(domain).then(async (logoUrl) => {
+          if (logoUrl) {
+            await supabase
+              .from('company_pages')
+              .update({ logo_url: logoUrl })
+              .eq('id', companyPage.id)
+          }
+        }).catch((err) => console.error('[FETCH-LOGO] Auto-fetch error:', err))
+      }
+    }
+
     return NextResponse.json({
       companyPageId: companyPage.id,
       dealId: deal.id,
       slug,
+      claimToken,
     })
   } catch (error) {
     console.error('Companies POST error:', error)

@@ -26,12 +26,12 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
     <div className="modal-backdrop" onClick={(e) => {
       if (e.target === e.currentTarget) onClose()
     }}>
-      <div className="relative bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4 shadow-2xl">
+      <div className="relative bg-[var(--bg-elev)] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto mx-4">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-[var(--bg-sunk)] hover:bg-[var(--bg-sunk)] transition-colors"
         >
-          <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-[var(--ink-mute)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>

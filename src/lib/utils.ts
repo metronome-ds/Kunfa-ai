@@ -195,7 +195,7 @@ export function getScoreColor(score: number | null | undefined): string {
   }
 
   if (score >= 60) {
-    return 'text-blue-600';
+    return 'text-[var(--ink)]';
   }
 
   if (score >= 40) {
@@ -223,7 +223,7 @@ export function getScoreBackgroundColor(score: number | null | undefined): strin
   }
 
   if (score >= 60) {
-    return 'bg-blue-100';
+    return 'bg-[var(--accent-soft)]';
   }
 
   if (score >= 40) {
@@ -367,4 +367,97 @@ export function isValidUrl(url: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Determines fundraising urgency based on raising_target_close date.
+ * Returns null if not raising or no target close date.
+ */
+export interface RaisingUrgency {
+  label: string
+  color: string       // Tailwind badge classes
+  daysUntil: number
+}
+
+/**
+ * Extracts the bare domain from a URL string.
+ * Handles URLs with or without protocol, with paths, query strings, etc.
+ * Returns null if the input is empty or unparseable.
+ */
+export function extractDomain(url: string | null | undefined): string | null {
+  if (!url || !url.trim()) return null
+
+  let cleaned = url.trim()
+
+  // Add protocol if missing so URL constructor can parse it
+  if (!/^https?:\/\//i.test(cleaned)) {
+    cleaned = 'https://' + cleaned
+  }
+
+  try {
+    const parsed = new URL(cleaned)
+    let hostname = parsed.hostname.toLowerCase()
+
+    // Strip www. prefix
+    if (hostname.startsWith('www.')) {
+      hostname = hostname.slice(4)
+    }
+
+    // Basic sanity check — must have at least one dot
+    if (!hostname.includes('.')) return null
+
+    return hostname
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Attempts to fetch a company logo URL from a domain.
+ * Strategy: Try Clearbit Logo API first, fall back to Google Favicon API.
+ * Returns the working logo URL or null if both fail.
+ * NOTE: This is a server-only function — do not import in client components.
+ */
+export async function fetchLogoUrl(domain: string): Promise<string | null> {
+  // Try Clearbit first (higher quality)
+  const clearbitUrl = `https://logo.clearbit.com/${domain}`
+  try {
+    const res = await fetch(clearbitUrl, { method: 'HEAD', redirect: 'follow' })
+    if (res.ok) {
+      return clearbitUrl
+    }
+  } catch {
+    // Clearbit failed, try fallback
+  }
+
+  // Fallback: Google Favicon API (128px)
+  const googleUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+  try {
+    const res = await fetch(googleUrl, { method: 'HEAD', redirect: 'follow' })
+    if (res.ok) {
+      return googleUrl
+    }
+  } catch {
+    // Both failed
+  }
+
+  return null
+}
+
+export function getRaisingUrgency(
+  targetClose: string | null | undefined,
+  isRaising: boolean | null | undefined,
+): RaisingUrgency | null {
+  if (!isRaising || !targetClose) return null
+
+  const now = new Date()
+  const close = new Date(targetClose)
+  if (isNaN(close.getTime())) return null
+
+  const daysUntil = Math.ceil((close.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (daysUntil < 0) return { label: 'Round Closed', color: 'bg-gray-100 text-gray-600', daysUntil }
+  if (daysUntil <= 30) return { label: 'Closing Soon', color: 'bg-red-100 text-red-700', daysUntil }
+  if (daysUntil <= 60) return { label: 'Active', color: 'bg-amber-100 text-amber-700', daysUntil }
+  return { label: 'Open', color: 'bg-green-100 text-green-700', daysUntil }
 }

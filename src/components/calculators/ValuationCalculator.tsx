@@ -75,13 +75,13 @@ export function ValuationCalculator() {
   return (
     <div className="space-y-6">
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-gray-200">
+      <div className="flex gap-2 border-b border-[var(--line)]">
         <button
           onClick={() => setSelectedTab('dcf')}
           className={`px-4 py-3 font-medium border-b-2 transition-colors ${
             selectedTab === 'dcf'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
+              ? 'border-[var(--ink)] text-[var(--ink)]'
+              : 'border-transparent text-[var(--ink-soft)] hover:text-[var(--ink)]'
           }`}
         >
           DCF Method
@@ -90,8 +90,8 @@ export function ValuationCalculator() {
           onClick={() => setSelectedTab('comps')}
           className={`px-4 py-3 font-medium border-b-2 transition-colors ${
             selectedTab === 'comps'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
+              ? 'border-[var(--ink)] text-[var(--ink)]'
+              : 'border-transparent text-[var(--ink-soft)] hover:text-[var(--ink)]'
           }`}
         >
           Comps Method
@@ -100,8 +100,8 @@ export function ValuationCalculator() {
           onClick={() => setSelectedTab('vc')}
           className={`px-4 py-3 font-medium border-b-2 transition-colors ${
             selectedTab === 'vc'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-600 hover:text-gray-900'
+              ? 'border-[var(--ink)] text-[var(--ink)]'
+              : 'border-transparent text-[var(--ink-soft)] hover:text-[var(--ink)]'
           }`}
         >
           VC Method
@@ -115,18 +115,18 @@ export function ValuationCalculator() {
             <div className="space-y-6">
               {/* Cash Flows */}
               <div>
-                <h4 className="font-semibold text-gray-900 mb-4">Projected Cash Flows (5 Years)</h4>
+                <h4 className="font-semibold text-[var(--ink)] mb-4">Projected Cash Flows (5 Years)</h4>
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                   {dcfInputs.projectedCashFlows.map((cf, idx) => (
                     <div key={idx} className="space-y-1">
-                      <label className="block text-sm font-medium text-gray-700">Year {idx + 1}</label>
+                      <label className="block text-sm font-medium text-[var(--ink-soft)]">Year {idx + 1}</label>
                       <Input
                         type="number"
                         value={cf}
                         onChange={(e) => handleDCFCashFlowChange(idx, parseFloat(e.target.value))}
                         className="w-full"
                       />
-                      <p className="text-xs text-gray-500">{formatCurrency(cf)}</p>
+                      <p className="text-xs text-[var(--ink-mute)]">{formatCurrency(cf)}</p>
                     </div>
                   ))}
                 </div>
@@ -135,7 +135,7 @@ export function ValuationCalculator() {
               {/* Discount Rate and Terminal Growth */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">Discount Rate (WACC) %</label>
+                  <label className="block text-sm font-medium text-[var(--ink-soft)]">Discount Rate (WACC) %</label>
                   <Input
                     type="number"
                     value={dcfInputs.discountRate}
@@ -143,11 +143,11 @@ export function ValuationCalculator() {
                     className="w-full"
                     step="0.5"
                   />
-                  <p className="text-xs text-gray-500">Typical range: 8-15%</p>
+                  <p className="text-xs text-[var(--ink-mute)]">Typical range: 8-15%</p>
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block text-sm font-medium text-gray-700">Terminal Growth Rate %</label>
+                  <label className="block text-sm font-medium text-[var(--ink-soft)]">Terminal Growth Rate %</label>
                   <Input
                     type="number"
                     value={dcfInputs.terminalGrowthRate}
@@ -155,7 +155,7 @@ export function ValuationCalculator() {
                     className="w-full"
                     step="0.5"
                   />
-                  <p className="text-xs text-gray-500">Typical range: 2-4%</p>
+                  <p className="text-xs text-[var(--ink-mute)]">Typical range: 2-4%</p>
                 </div>
               </div>
             </div>
@@ -164,55 +164,55 @@ export function ValuationCalculator() {
           {/* DCF Results */}
           <Card title="DCF Valuation Results">
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">PV of Cash Flows</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">
+                  <p className="text-sm font-medium text-[var(--ink-soft)]">PV of Cash Flows</p>
+                  <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                     {formatCurrency(dcfResult.sumPVCashFlows)}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Years 1-5</p>
+                  <p className="text-xs text-[var(--ink-mute)] mt-1">Years 1-5</p>
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Terminal Value</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">
+                  <p className="text-sm font-medium text-[var(--ink-soft)]">Terminal Value</p>
+                  <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                     {formatCurrency(dcfResult.terminalValue)}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Undiscounted</p>
+                  <p className="text-xs text-[var(--ink-mute)] mt-1">Undiscounted</p>
                 </div>
 
                 <div>
-                  <p className="text-sm font-medium text-gray-600">PV of Terminal Value</p>
-                  <p className="text-2xl font-bold text-gray-900 mt-2">
+                  <p className="text-sm font-medium text-[var(--ink-soft)]">PV of Terminal Value</p>
+                  <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                     {formatCurrency(dcfResult.pvTerminalValue)}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">Discounted to today</p>
+                  <p className="text-xs text-[var(--ink-mute)] mt-1">Discounted to today</p>
                 </div>
               </div>
 
               {/* Enterprise Value */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm font-medium text-blue-900">Enterprise Value</p>
-                <p className="text-3xl font-bold text-blue-600 mt-2">
+              <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-4">
+                <p className="text-sm font-medium text-[var(--ink)]">Enterprise Value</p>
+                <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                   {formatCurrency(dcfResult.enterpriseValue)}
                 </p>
               </div>
 
               {/* PV Waterfall */}
               <div>
-                <h4 className="font-semibold text-gray-900 mb-4">PV Waterfall</h4>
+                <h4 className="font-semibold text-[var(--ink)] mb-4">PV Waterfall</h4>
                 <div className="space-y-2">
                   {dcfResult.pvCashFlows.map((pv, idx) => (
-                    <div key={idx} className="flex items-center justify-between py-2 px-4 bg-gray-50 rounded">
-                      <span className="text-sm text-gray-700">
+                    <div key={idx} className="flex items-center justify-between py-2 px-4 bg-[var(--bg-sunk)] rounded">
+                      <span className="text-sm text-[var(--ink-soft)]">
                         Year {idx + 1} PV (Discount Factor: {((1 / Math.pow(1 + dcfInputs.discountRate / 100, idx + 1)) * 100).toFixed(1)}%)
                       </span>
-                      <span className="font-medium text-gray-900">{formatCurrency(pv)}</span>
+                      <span className="font-medium text-[var(--ink)]">{formatCurrency(pv)}</span>
                     </div>
                   ))}
-                  <div className="flex items-center justify-between py-2 px-4 bg-blue-50 rounded border border-blue-200 mt-4">
-                    <span className="text-sm font-medium text-blue-900">Total PV of Cash Flows</span>
-                    <span className="font-bold text-blue-600">{formatCurrency(dcfResult.sumPVCashFlows)}</span>
+                  <div className="flex items-center justify-between py-2 px-4 bg-[var(--accent-soft)] rounded border border-[var(--line)] mt-4">
+                    <span className="text-sm font-medium text-[var(--ink)]">Total PV of Cash Flows</span>
+                    <span className="font-bold text-[var(--ink)]">{formatCurrency(dcfResult.sumPVCashFlows)}</span>
                   </div>
                   <div className="flex items-center justify-between py-2 px-4 bg-green-50 rounded border border-green-200">
                     <span className="text-sm font-medium text-green-900">PV of Terminal Value</span>
@@ -231,29 +231,29 @@ export function ValuationCalculator() {
           <Card title="Comparable Companies (Comps) Inputs">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Revenue</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)]">Revenue</label>
                 <Input
                   type="number"
                   value={compsInputs.revenue}
                   onChange={(e) => handleCompsInputChange('revenue', parseFloat(e.target.value))}
                   className="w-full"
                 />
-                <p className="text-xs text-gray-500 mt-1">{formatCurrency(compsInputs.revenue)}</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-1">{formatCurrency(compsInputs.revenue)}</p>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">EBITDA</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)]">EBITDA</label>
                 <Input
                   type="number"
                   value={compsInputs.ebitda}
                   onChange={(e) => handleCompsInputChange('ebitda', parseFloat(e.target.value))}
                   className="w-full"
                 />
-                <p className="text-xs text-gray-500 mt-1">{formatCurrency(compsInputs.ebitda)}</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-1">{formatCurrency(compsInputs.ebitda)}</p>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">EV/Revenue Multiple</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)]">EV/Revenue Multiple</label>
                 <Input
                   type="number"
                   value={compsInputs.evRevenueMultiple}
@@ -261,11 +261,11 @@ export function ValuationCalculator() {
                   className="w-full"
                   step="0.5"
                 />
-                <p className="text-xs text-gray-500 mt-1">Industry comparable</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-1">Industry comparable</p>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">EV/EBITDA Multiple</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)]">EV/EBITDA Multiple</label>
                 <Input
                   type="number"
                   value={compsInputs.evEbitdaMultiple}
@@ -273,7 +273,7 @@ export function ValuationCalculator() {
                   className="w-full"
                   step="0.5"
                 />
-                <p className="text-xs text-gray-500 mt-1">Industry comparable</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-1">Industry comparable</p>
               </div>
             </div>
           </Card>
@@ -289,21 +289,21 @@ export function ValuationCalculator() {
                       {formatCurrency(compsInputs.revenue)} × {compsInputs.evRevenueMultiple}x
                     </p>
                   </div>
-                  <p className="text-3xl font-bold text-purple-600">
+                  <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-purple-600">
                     {formatCurrency(compsResult.valuationByRevenue)}
                   </p>
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <p className="text-sm font-medium text-blue-900">Valuation by EBITDA</p>
+              <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-4">
+                <p className="text-sm font-medium text-[var(--ink)]">Valuation by EBITDA</p>
                 <div className="flex items-end justify-between mt-2">
                   <div>
-                    <p className="text-xs text-blue-700">
+                    <p className="text-xs text-[var(--ink)]">
                       {formatCurrency(compsInputs.ebitda)} × {compsInputs.evEbitdaMultiple}x
                     </p>
                   </div>
-                  <p className="text-3xl font-bold text-blue-600">
+                  <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">
                     {formatCurrency(compsResult.valuationByEBITDA)}
                   </p>
                 </div>
@@ -311,31 +311,31 @@ export function ValuationCalculator() {
 
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <p className="text-sm font-medium text-green-900">Average Valuation</p>
-                <p className="text-3xl font-bold text-green-600 mt-2">
+                <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-green-600 mt-2">
                   {formatCurrency(compsResult.averageValuation)}
                 </p>
                 <p className="text-xs text-green-700 mt-2">Simple average of both methods</p>
               </div>
 
               {/* Valuation Range */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="font-semibold text-gray-900 mb-4">Valuation Range</h4>
+              <div className="mt-6 pt-6 border-t border-[var(--line)]">
+                <h4 className="font-semibold text-[var(--ink)] mb-4">Valuation Range</h4>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Minimum</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-sm text-[var(--ink-soft)]">Minimum</span>
+                    <span className="font-medium text-[var(--ink)]">
                       {formatCurrency(Math.min(compsResult.valuationByRevenue, compsResult.valuationByEBITDA))}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Average</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-sm text-[var(--ink-soft)]">Average</span>
+                    <span className="font-medium text-[var(--ink)]">
                       {formatCurrency(compsResult.averageValuation)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-700">Maximum</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-sm text-[var(--ink-soft)]">Maximum</span>
+                    <span className="font-medium text-[var(--ink)]">
                       {formatCurrency(Math.max(compsResult.valuationByRevenue, compsResult.valuationByEBITDA))}
                     </span>
                   </div>
@@ -352,18 +352,18 @@ export function ValuationCalculator() {
           <Card title="Venture Capital Method Inputs">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Expected Exit Value</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)]">Expected Exit Value</label>
                 <Input
                   type="number"
                   value={vcInputs.expectedExitValue}
                   onChange={(e) => handleVCInputChange('expectedExitValue', parseFloat(e.target.value))}
                   className="w-full"
                 />
-                <p className="text-xs text-gray-500 mt-1">{formatCurrency(vcInputs.expectedExitValue)}</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-1">{formatCurrency(vcInputs.expectedExitValue)}</p>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Target Return Multiple</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)]">Target Return Multiple</label>
                 <Input
                   type="number"
                   value={vcInputs.targetReturnMultiple}
@@ -371,11 +371,11 @@ export function ValuationCalculator() {
                   className="w-full"
                   step="1"
                 />
-                <p className="text-xs text-gray-500 mt-1">e.g., 10x, 5x</p>
+                <p className="text-xs text-[var(--ink-mute)] mt-1">e.g., 10x, 5x</p>
               </div>
 
               <div className="space-y-1">
-                <label className="block text-sm font-medium text-gray-700">Time to Exit (Years)</label>
+                <label className="block text-sm font-medium text-[var(--ink-soft)]">Time to Exit (Years)</label>
                 <Input
                   type="number"
                   value={vcInputs.timeToExitYears}
@@ -393,17 +393,17 @@ export function ValuationCalculator() {
           <Card title="Valuation & Investment Terms">
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-sm font-medium text-blue-900">Pre-Money Valuation</p>
-                  <p className="text-3xl font-bold text-blue-600 mt-2">
+                <div className="bg-[var(--accent-soft)] border border-[var(--line)] rounded-lg p-4">
+                  <p className="text-sm font-medium text-[var(--ink)]">Pre-Money Valuation</p>
+                  <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
                     {formatCurrency(vcResult.preMoneyValuation)}
                   </p>
-                  <p className="text-xs text-blue-700 mt-2">Company value before investment</p>
+                  <p className="text-xs text-[var(--ink)] mt-2">Company value before investment</p>
                 </div>
 
                 <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                   <p className="text-sm font-medium text-green-900">Post-Money Valuation</p>
-                  <p className="text-3xl font-bold text-green-600 mt-2">
+                  <p className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-green-600 mt-2">
                     {formatCurrency(vcResult.postMoneyValuation)}
                   </p>
                   <p className="text-xs text-green-700 mt-2">Company value after investment</p>
@@ -411,22 +411,22 @@ export function ValuationCalculator() {
               </div>
 
               {/* Investment Details */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-900 mb-4">Investment Terms</h4>
+              <div className="bg-[var(--bg-sunk)] border border-[var(--line)] rounded-lg p-4">
+                <h4 className="font-semibold text-[var(--ink)] mb-4">Investment Terms</h4>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-gray-700">Required Funding Amount</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-sm text-[var(--ink-soft)]">Required Funding Amount</span>
+                    <span className="font-medium text-[var(--ink)]">
                       {formatCurrency(vcResult.requiredFundingAmount)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between py-2 border-t border-gray-200 pt-2">
-                    <span className="text-sm text-gray-700">Investor Equity Stake</span>
-                    <span className="font-medium text-gray-900">{formatPercentage(vcResult.equityStake)}</span>
+                  <div className="flex items-center justify-between py-2 border-t border-[var(--line)] pt-2">
+                    <span className="text-sm text-[var(--ink-soft)]">Investor Equity Stake</span>
+                    <span className="font-medium text-[var(--ink)]">{formatPercentage(vcResult.equityStake)}</span>
                   </div>
                   <div className="flex items-center justify-between py-2">
-                    <span className="text-sm text-gray-700">Founder Dilution</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-sm text-[var(--ink-soft)]">Founder Dilution</span>
+                    <span className="font-medium text-[var(--ink)]">
                       {formatPercentage(100 - vcResult.equityStake)}
                     </span>
                   </div>
@@ -455,24 +455,24 @@ export function ValuationCalculator() {
 
       {/* Summary Comparison */}
       <Card title="Valuation Summary" subtitle="Compare valuations across all methods">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-1 md:grid-cols-3 gap-4">
           <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
             <p className="text-xs font-medium text-purple-700 uppercase">DCF Valuation</p>
-            <p className="text-2xl font-bold text-purple-600 mt-2">
+            <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-purple-600 mt-2">
               {formatCurrency(dcfResult.enterpriseValue)}
             </p>
           </div>
 
           <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
             <p className="text-xs font-medium text-green-700 uppercase">Comps Valuation</p>
-            <p className="text-2xl font-bold text-green-600 mt-2">
+            <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-green-600 mt-2">
               {formatCurrency(compsResult.averageValuation)}
             </p>
           </div>
 
-          <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-xs font-medium text-blue-700 uppercase">Post-Money (VC)</p>
-            <p className="text-2xl font-bold text-blue-600 mt-2">
+          <div className="text-center p-4 bg-[var(--accent-soft)] rounded-lg border border-[var(--line)]">
+            <p className="text-xs font-medium text-[var(--ink)] uppercase">Post-Money (VC)</p>
+            <p className="text-2xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)] mt-2">
               {formatCurrency(vcResult.postMoneyValuation)}
             </p>
           </div>

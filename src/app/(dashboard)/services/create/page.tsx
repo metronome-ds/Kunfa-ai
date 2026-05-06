@@ -134,13 +134,13 @@ export default function CreateServicePage() {
       <div className="mb-8">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4"
+          className="flex items-center gap-2 text-[var(--ink)] hover:text-[var(--ink)] font-medium mb-4"
         >
           <ArrowLeft className="h-5 w-5" />
           Back to Services
         </button>
-        <h1 className="text-3xl font-bold text-gray-900">List Your Service</h1>
-        <p className="text-gray-600 mt-2">
+        <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">List Your Service</h1>
+        <p className="text-[var(--ink-soft)] mt-2">
           Create a new service listing to showcase your expertise
         </p>
       </div>
@@ -156,7 +156,7 @@ export default function CreateServicePage() {
 
           {/* Service Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Service Title *
             </label>
             <Input
@@ -171,7 +171,7 @@ export default function CreateServicePage() {
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Service Description *
             </label>
             <textarea
@@ -180,21 +180,21 @@ export default function CreateServicePage() {
               value={form.description}
               onChange={handleInputChange}
               rows={6}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent resize-none"
+              className="w-full px-4 py-2 border border-[var(--line-strong)] rounded-lg focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent resize-none"
               required
             />
           </div>
 
           {/* Service Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Service Type *
             </label>
             <select
               name="service_type"
               value={form.service_type}
               onChange={handleInputChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+              className="w-full px-4 py-2 border border-[var(--line-strong)] rounded-lg focus:ring-2 focus:ring-[var(--ink)] focus:border-transparent"
               required
             >
               {SERVICE_TYPES.map((type) => (
@@ -207,7 +207,7 @@ export default function CreateServicePage() {
 
           {/* Hourly Rate */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Hourly Rate ($) *
             </label>
             <Input
@@ -224,7 +224,7 @@ export default function CreateServicePage() {
 
           {/* Expertise Areas */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Areas of Expertise * (Add at least 1)
             </label>
             <div className="flex gap-2 mb-3">
@@ -255,13 +255,13 @@ export default function CreateServicePage() {
                 {form.expertise_areas.map((area, index) => (
                   <div
                     key={index}
-                    className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+                    className="inline-flex items-center gap-2 px-3 py-1 bg-[var(--accent-soft)] text-[var(--ink)] rounded-full text-sm"
                   >
                     {area}
                     <button
                       type="button"
                       onClick={() => removeExpertise(index)}
-                      className="hover:text-blue-900"
+                      className="hover:text-[var(--ink)]"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -273,7 +273,7 @@ export default function CreateServicePage() {
 
           {/* Certifications */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--ink-soft)] mb-2">
               Certifications (Optional)
             </label>
             <div className="flex gap-2 mb-3">
@@ -321,7 +321,7 @@ export default function CreateServicePage() {
           </div>
 
           {/* Submit Buttons */}
-          <div className="flex gap-3 justify-end pt-6 border-t border-gray-200">
+          <div className="flex gap-3 justify-end pt-6 border-t border-[var(--line)]">
             <Button
               type="button"
               variant="secondary"
