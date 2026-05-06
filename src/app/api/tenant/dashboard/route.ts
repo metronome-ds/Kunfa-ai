@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     db.from('entity_members').select('id', { count: 'exact', head: true }).eq('entity_id', entityId).eq('status', 'active'),
     db.from('entity_members').select('id', { count: 'exact', head: true }).eq('entity_id', entityId).gte('created_at', monthStart),
     db.from('company_pages').select('id, slug, company_name, created_at, is_raising').eq('entity_id', entityId).is('deleted_at', null).order('created_at', { ascending: false }).limit(10),
-    db.from('entity_members').select('id, user_id, created_at, profiles:profiles(full_name, role)').eq('entity_id', entityId).order('created_at', { ascending: false }).limit(10),
+    db.from('entity_members').select('id, user_id, created_at, profiles:profiles!entity_members_user_id_fkey(full_name, role)').eq('entity_id', entityId).order('created_at', { ascending: false }).limit(10),
   ]);
 
   const capital = (companiesRes.data || []).reduce((sum: number, c: { raise_amount: number | null }) => sum + (Number(c.raise_amount) || 0), 0);

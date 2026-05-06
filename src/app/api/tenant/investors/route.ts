@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
     .select(
       `
       user_id, created_at,
-      profiles:profiles!inner(id, user_id, full_name, avatar_url, job_title, fund_name, company_name, sector_interests, stage_focus, ticket_size_min, ticket_size_max, company_country, linkedin_url, role)
+      profiles:profiles!entity_members_user_id_fkey!inner(id, user_id, full_name, avatar_url, job_title, fund_name, company_name, sector_interests, stage_focus, ticket_size_min, ticket_size_max, company_country, linkedin_url, role)
     `,
     )
     .eq('entity_id', entityId)
