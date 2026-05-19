@@ -565,6 +565,11 @@ function SignupContent() {
                     ? `Sign up to claim ${claimCompanyName}`
                     : 'Get your startup scored by AI'}
               </p>
+              {isTenantContext && tenant?.description && (
+                <p className="text-sm text-[var(--ink-mute)] mt-3 leading-relaxed">
+                  {tenant.description}
+                </p>
+              )}
             </>
           )}
         </div>
