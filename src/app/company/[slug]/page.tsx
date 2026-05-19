@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { notFound } from 'next/navigation'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 import { CompanyActions } from '@/components/company/CompanyActions'
 import ScoreBreakdown from '@/components/scoring/ScoreBreakdown'
@@ -12,6 +13,14 @@ import { SourceBadge } from '@/components/common/SourceBadge'
 import DealRoomSection from '@/components/dealroom/DealRoomSection'
 import PaidReportBanner from '@/components/company/PaidReportBanner'
 import { getRaisingUrgency } from '@/lib/utils'
+import { getTenantFromHeaders, getTenantById, type TenantConfig } from '@/lib/tenant-context'
+
+async function getTenantForRequest(): Promise<TenantConfig | null> {
+  const headersList = await headers()
+  const tenantHeader = getTenantFromHeaders(headersList)
+  if (!tenantHeader) return null
+  return await getTenantById(tenantHeader.id)
+}
 
 
 
@@ -133,7 +142,15 @@ export default async function CompanyPublicPage({
     shareAccess = await validateShareToken(shareToken, company.id)
   }
 
-  const grades = await getSubmissionGrades(company.submission_id)
+  const [grades, tenant] = await Promise.all([
+    getSubmissionGrades(company.submission_id),
+    getTenantForRequest(),
+  ])
+
+  const termsHref = tenant?.terms_url || '/terms'
+  const privacyHref = tenant?.privacy_policy_url || '/privacy'
+  const termsExternal = /^https?:\/\//.test(termsHref)
+  const privacyExternal = /^https?:\/\//.test(privacyHref)
 
   const scoreColor = getScoreColor(company.overall_score)
   const raiseFormatted = formatRaiseAmount(company.raise_amount)
@@ -565,8 +582,24 @@ export default async function CompanyPublicPage({
         <div className="max-w-4xl mx-auto px-6 flex items-center justify-between text-xs text-[var(--ink-faint)]">
           <span>&copy; {new Date().getFullYear()} Kunfa.AI</span>
           <div className="flex items-center gap-4">
-            <Link href="/terms" className="hover:text-[var(--ink-soft)] transition">Terms</Link>
-            <Link href="/privacy" className="hover:text-[var(--ink-soft)] transition">Privacy</Link>
+            {tenant?.support_email && (
+              <a
+                href={`mailto:${tenant.support_email}`}
+                className="hover:text-[var(--ink-soft)] transition"
+              >
+                Support
+              </a>
+            )}
+            {termsExternal ? (
+              <a href={termsHref} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--ink-soft)] transition">Terms</a>
+            ) : (
+              <Link href={termsHref} className="hover:text-[var(--ink-soft)] transition">Terms</Link>
+            )}
+            {privacyExternal ? (
+              <a href={privacyHref} target="_blank" rel="noopener noreferrer" className="hover:text-[var(--ink-soft)] transition">Privacy</a>
+            ) : (
+              <Link href={privacyHref} className="hover:text-[var(--ink-soft)] transition">Privacy</Link>
+            )}
           </div>
         </div>
       </footer>

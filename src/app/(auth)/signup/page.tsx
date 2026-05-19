@@ -126,6 +126,10 @@ function OtpInput({
 function SignupContent() {
   const searchParams = useSearchParams()
   const { tenant, isTenantContext } = useTenantBranding()
+  const termsHref = tenant?.terms_url || '/terms'
+  const privacyHref = tenant?.privacy_policy_url || '/privacy'
+  const termsExternal = /^https?:\/\//.test(termsHref)
+  const privacyExternal = /^https?:\/\//.test(privacyHref)
 
   // Step state
   const [step, setStep] = useState<SignupStep>('form')
@@ -693,9 +697,17 @@ function SignupContent() {
               />
               <span className="text-xs text-[var(--ink-soft)] leading-relaxed">
                 I agree to the{' '}
-                <Link href="/terms" target="_blank" className="text-[var(--accent-ink)] hover:underline">Terms of Service</Link>
+                {termsExternal ? (
+                  <a href={termsHref} target="_blank" rel="noopener noreferrer" className="text-[var(--accent-ink)] hover:underline">Terms of Service</a>
+                ) : (
+                  <Link href={termsHref} target="_blank" className="text-[var(--accent-ink)] hover:underline">Terms of Service</Link>
+                )}
                 {' '}and{' '}
-                <Link href="/privacy" target="_blank" className="text-[var(--accent-ink)] hover:underline">Privacy Policy</Link>
+                {privacyExternal ? (
+                  <a href={privacyHref} target="_blank" rel="noopener noreferrer" className="text-[var(--accent-ink)] hover:underline">Privacy Policy</a>
+                ) : (
+                  <Link href={privacyHref} target="_blank" className="text-[var(--accent-ink)] hover:underline">Privacy Policy</Link>
+                )}
               </span>
             </label>
 
