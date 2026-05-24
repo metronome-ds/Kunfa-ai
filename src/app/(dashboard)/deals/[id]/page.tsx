@@ -7,6 +7,7 @@ import { getScoreRange } from '@/lib/constants';
 import {
   Bookmark,
   BookmarkCheck,
+  Briefcase,
   Globe,
   AlertCircle,
   Loader2,
@@ -15,6 +16,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useTenant, useTenantFeature } from '@/components/TenantProvider';
 
 type TabType = 'overview' | 'analysis';
 
@@ -22,6 +24,8 @@ export default function DealDetailPage() {
   const params = useParams();
   const router = useRouter();
   const dealId = params.id as string;
+  const { isLoading: tenantLoading } = useTenant();
+  const hasFeature = useTenantFeature('deals_browse');
 
   const [deal, setDeal] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -93,6 +97,20 @@ export default function DealDetailPage() {
       setIsRequestingMeeting(false);
     }
   };
+
+  if (tenantLoading) {
+    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" /></div>;
+  }
+
+  if (!hasFeature) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto text-center">
+        <Briefcase className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Feature not available</h1>
+        <p className="text-sm text-[var(--ink-mute)] mt-2">Deal browsing is not enabled for this tenant.</p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

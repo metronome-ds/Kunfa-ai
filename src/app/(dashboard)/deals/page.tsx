@@ -5,10 +5,11 @@ import { CompanyCard } from '@/components/companies/CompanyCard';
 import { CompanyFilter, CompanyFilterState, InvestorPrefs } from '@/components/companies/CompanyFilter';
 import { Button } from '@/components/common/Button';
 import { PageHead } from '@/components/ui/design-system';
-import { AlertCircle, Rocket, Search as SearchIcon } from 'lucide-react';
+import { AlertCircle, Briefcase, Rocket, Search as SearchIcon } from 'lucide-react';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { useTenant, useTenantFeature } from '@/components/TenantProvider';
 
 interface PaginationData {
   page: number;
@@ -23,6 +24,8 @@ function getInitials(name: string) {
 
 export default function BrowseCompaniesPage() {
   const isMobile = useIsMobile();
+  const { isLoading: tenantLoading } = useTenant();
+  const hasFeature = useTenantFeature('deals_browse');
   const [companies, setCompanies] = useState<any[]>([]);
   const [filters, setFilters] = useState<CompanyFilterState>({
     search: '',
@@ -218,6 +221,20 @@ export default function BrowseCompaniesPage() {
     filters.sort !== 'score' ? filters.sort : null,
     filters.raisingOnly ? 'raising' : null,
   ].filter(Boolean).length;
+
+  if (tenantLoading) {
+    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" /></div>;
+  }
+
+  if (!hasFeature) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto text-center">
+        <Briefcase className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Feature not available</h1>
+        <p className="text-sm text-[var(--ink-mute)] mt-2">Deal browsing is not enabled for this tenant.</p>
+      </div>
+    );
+  }
 
   if (isMobile) {
     return (

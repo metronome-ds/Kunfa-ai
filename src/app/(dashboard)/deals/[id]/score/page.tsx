@@ -1,7 +1,9 @@
 import { notFound } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
+import { headers } from 'next/headers';
+import { Briefcase, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { createServerSupabaseClient, getServerUser } from '@/lib/supabase-server';
+import { getTenantFromHeaders, getTenantById } from '@/lib/tenant-context';
 import { DealScorer } from '@/components/ai/DealScorer';
 import { CompanyBrief } from '@/components/ai/CompanyBrief';
 import { TermSheetAnalyzer } from '@/components/ai/TermSheetAnalyzer';
@@ -16,6 +18,21 @@ export default async function ScorePage({ params }: ScorePageProps) {
 
   if (!user) {
     notFound();
+  }
+
+  // Tenant feature gate (deals_browse) — server-side equivalent of the client
+  // pages' useTenantFeature check. Default-enabled: only blocks when the
+  // tenant has explicitly set features.deals_browse to false.
+  const tenantHeader = getTenantFromHeaders(await headers());
+  const tenant = tenantHeader ? await getTenantById(tenantHeader.id) : null;
+  if (tenant && tenant.features.deals_browse === false) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto text-center">
+        <Briefcase className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Feature not available</h1>
+        <p className="text-sm text-[var(--ink-mute)] mt-2">Deal browsing is not enabled for this tenant.</p>
+      </div>
+    );
   }
 
   // Fetch deal and verify access
