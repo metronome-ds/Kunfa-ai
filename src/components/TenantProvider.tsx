@@ -13,6 +13,7 @@ export interface TenantBranding {
   slug: string;
   tagline: string | null;
   welcome_message: string | null;
+  description: string | null;
   organization_type: string | null;
 
   logo_url: string | null;

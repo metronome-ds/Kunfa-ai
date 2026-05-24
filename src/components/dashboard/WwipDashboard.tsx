@@ -79,7 +79,14 @@ export default function WwipDashboard() {
     <div className="p-8 max-w-6xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold font-[family-name:var(--serif)] tabular-nums tracking-tight text-[var(--ink)]">{displayName} Dashboard</h1>
-        <p className="text-[var(--ink-mute)] mt-1">{tenant?.tagline || 'Overview of your network activity'}</p>
+        {tenant?.welcome_message && (
+          <div className="mt-4 rounded-xl border border-[var(--line)] bg-[var(--bg-elev)] p-5">
+            <p className="font-[family-name:var(--serif)] text-lg leading-relaxed text-[var(--ink)] whitespace-pre-line">
+              {tenant.welcome_message}
+            </p>
+          </div>
+        )}
+        <p className="text-[var(--ink-mute)] mt-2">{tenant?.tagline || 'Overview of your network activity'}</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 md:grid-cols-4 gap-4 mb-8">

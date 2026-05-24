@@ -29,6 +29,7 @@ export async function GET(request: NextRequest) {
       slug: tenant.slug,
       tagline: tenant.tagline,
       welcome_message: tenant.welcome_message,
+      description: tenant.description,
       organization_type: tenant.organization_type,
 
       logo_url: tenant.logo_url,
