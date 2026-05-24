@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { FileText, Download, Lock, Eye, AlertCircle, ExternalLink } from 'lucide-react'
 import KunfaLogo from '@/components/common/KunfaLogo'
+import { useTenant } from '@/components/TenantProvider'
 
 interface RoomDocument {
   id: string
@@ -74,6 +75,11 @@ function formatFileSize(bytes: number) {
 
 export default function RoomPage() {
   const { token } = useParams<{ token: string }>()
+  const { isTenantContext, tenant } = useTenant()
+  // Show "Powered by Kunfa" badge by default; hide only when a tenant is
+  // resolved AND has explicitly set show_powered_by to false. Matches
+  // the Sidebar/signup/login client-side guards.
+  const showPoweredBy = !isTenantContext || tenant?.show_powered_by !== false
   const [status, setStatus] = useState<'loading' | 'password' | 'ready' | 'error' | 'expired'>('loading')
   const [company, setCompany] = useState<CompanyInfo | null>(null)
   const [documents, setDocuments] = useState<RoomDocument[]>([])
@@ -311,17 +317,19 @@ export default function RoomPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[var(--line)] mt-16 py-8 bg-[var(--bg-elev)]">
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <p className="text-xs text-[var(--ink-faint)]">
-            Powered by{' '}
-            <Link href="/" className="text-[var(--accent-ink)] hover:underline font-medium">
-              Kunfa
-            </Link>
-            {' '}&mdash; Venture Intelligence
-          </p>
-        </div>
-      </footer>
+      {showPoweredBy && (
+        <footer className="border-t border-[var(--line)] mt-16 py-8 bg-[var(--bg-elev)]">
+          <div className="max-w-5xl mx-auto px-6 text-center">
+            <p className="text-xs text-[var(--ink-faint)]">
+              Powered by{' '}
+              <Link href="/" className="text-[var(--accent-ink)] hover:underline font-medium">
+                Kunfa
+              </Link>
+              {' '}&mdash; Venture Intelligence
+            </p>
+          </div>
+        </footer>
+      )}
     </div>
   )
 }

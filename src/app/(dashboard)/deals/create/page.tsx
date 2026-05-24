@@ -6,8 +6,9 @@ import { Button } from '@/components/common/Button';
 import { Input } from '@/components/common/Input';
 import { DocumentUpload } from '@/components/deals/DocumentUpload';
 import { INDUSTRIES, DEAL_STAGES } from '@/lib/constants';
-import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
+import { Briefcase, ChevronLeft, ChevronRight, Save } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { useTenant, useTenantFeature } from '@/components/TenantProvider';
 
 type Step = 'basic' | 'details' | 'narrative' | 'documents' | 'review';
 
@@ -40,6 +41,8 @@ const STEPS: Step[] = ['basic', 'details', 'narrative', 'documents', 'review'];
 
 export default function CreateDealPage() {
   const router = useRouter();
+  const { isLoading: tenantLoading } = useTenant();
+  const hasFeature = useTenantFeature('deals_browse');
   const [currentStep, setCurrentStep] = useState<Step>('basic');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -243,6 +246,20 @@ export default function CreateDealPage() {
   };
 
   const progressPercent = ((currentStepIndex + 1) / STEPS.length) * 100;
+
+  if (tenantLoading) {
+    return <div className="p-8 flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--line-strong)]" /></div>;
+  }
+
+  if (!hasFeature) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto text-center">
+        <Briefcase className="w-10 h-10 text-[var(--ink-faint)] mx-auto mb-3" />
+        <h1 className="text-xl font-semibold text-[var(--ink)]">Feature not available</h1>
+        <p className="text-sm text-[var(--ink-mute)] mt-2">Deal browsing is not enabled for this tenant.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[var(--bg-sunk)] py-8 px-4">
